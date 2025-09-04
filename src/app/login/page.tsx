@@ -9,23 +9,28 @@ import { Eye, EyeOff, Mail, Lock, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePicsumImage } from '@/hooks/usePicsumImage'
+import { useLogin } from '@/hooks/useLogin'
 import { GoogleIcon } from '@/public/assets/icons/GoogleIcon'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
+  const [login, setLogin] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const { currentImageUrl, isLoading: imageLoading } = usePicsumImage()
+  const { login: loginFunction, isLoading } = useLogin()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
+    
+    if (!login || !password) {
+      return
+    }
 
-    setTimeout(() => {
-      console.log('Login:', { email, password })
-      setIsLoading(false)
-    }, 1000)
+    try {
+      await loginFunction({login, password })
+    } catch (error) {
+      // Erro já tratado no hook useLogin
+    }
   }
 
   return (
@@ -66,8 +71,8 @@ export default function LoginPage() {
                       id="email"
                       type="email"
                       placeholder="seu@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      value={login}
+                      onChange={(e) => setLogin(e.target.value)}
                       className="pl-10 h-12 text-base"
                       required
                     />
