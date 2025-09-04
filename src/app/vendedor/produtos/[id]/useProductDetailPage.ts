@@ -5,10 +5,7 @@ import { buildImageUrl } from '@/lib/utils'
 export function useProductDetailPage(productId: string) {
   const { data: product, isLoading, error } = useProduct(productId)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
-  const [selectedSize, setSelectedSize] = useState<string>('')
-  const [quantity, setQuantity] = useState(1)
 
-  // Mapeamento de cores para valores hexadecimais
   const colorMap: Record<string, string> = {
     'Azul': '#3B82F6',
     'Vermelho': '#EF4444',
@@ -73,25 +70,6 @@ export function useProductDetailPage(productId: string) {
       : { text: 'Normal', color: 'bg-gray-100 text-gray-800 border-gray-200' }
   }
 
-  // Função para incrementar quantidade
-  const incrementQuantity = () => {
-    if (product && quantity < product.stock) {
-      setQuantity(prev => prev + 1)
-    }
-  }
-
-  // Função para decrementar quantidade
-  const decrementQuantity = () => {
-    if (quantity > 1) {
-      setQuantity(prev => prev - 1)
-    }
-  }
-
-  // Função para selecionar tamanho
-  const selectSize = (size: string) => {
-    setSelectedSize(size)
-  }
-
   // Função para selecionar imagem
   const selectImage = (index: number) => {
     setSelectedImageIndex(index)
@@ -102,8 +80,6 @@ export function useProductDetailPage(productId: string) {
     isLoading,
     error,
     selectedImageIndex,
-    selectedSize,
-    quantity,
     colorMap,
     processColors,
     processSizes,
@@ -111,9 +87,6 @@ export function useProductDetailPage(productId: string) {
     formatPrice,
     getStatusInfo,
     getFeaturedInfo,
-    incrementQuantity,
-    decrementQuantity,
-    selectSize,
     selectImage
   }
 }
