@@ -14,20 +14,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient()
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('auth-token')
-    const savedUser = localStorage.getItem('user-data')
+    const loadAuthData = () => {
+      const savedToken = localStorage.getItem('auth-token')
+      const savedUser = localStorage.getItem('user-data')
 
-    if (savedToken && savedUser) {
-      try {
-        setToken(savedToken)
-        setUser(JSON.parse(savedUser))
-      } catch (error) {
-        console.error('Erro ao carregar dados do usuário:', error)
-        localStorage.removeItem('auth-token')
-        localStorage.removeItem('user-data')
+      if (savedToken && savedUser) {
+        try {
+          setToken(savedToken)
+          setUser(JSON.parse(savedUser))
+        } catch (error) {
+          console.error('Erro ao carregar dados do usuário:', error)
+          localStorage.removeItem('auth-token')
+          localStorage.removeItem('user-data')
+          setToken(null)
+          setUser(null)
+        }
+      } else {
+        setToken(null)
+        setUser(null)
+      }
+      setIsLoading(false)
+    }
+
+    // Carrega os dados iniciais
+    loadAuthData()
+
+    // Listener para mudanças no localStorage (quando o interceptor limpa os tokens)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'auth-token' && !e.newValue) {
+        setToken(null)
+        setUser(null)
       }
     }
-    setIsLoading(false)
+
+    window.addEventListener('storage', handleStorageChange)
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+    }
   }, [])
 
   const loginMutation = useMutation({
@@ -52,6 +76,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshTokenMutation = useMutation({
     mutationFn: async () => {
       const refreshToken = localStorage.getItem('refresh-token')
+      if (!refreshToken) {
+        throw new Error('No refresh token available')
+      }
       const response = await api.post('/auth/refresh', { refresh_token: refreshToken })
       return response.data
     },
@@ -61,7 +88,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('auth-token', access_token)
       localStorage.setItem('refresh-token', refresh_token)
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Erro ao renovar token:', error)
       logout()
     },
   })
