@@ -2,16 +2,19 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/axios'
 import { 
   createProductSchema, 
   CreateProductFormData
 } from '@/schemas'
 import { useProductVariations } from '@/hooks/useProductVariations'
+import { useToastContext } from '@/contexts/ToastContext'
 
 export function useCreateProductPage(user: any) {
   const router = useRouter()
+  const queryClient = useQueryClient()
+  const { error: showError, success: showSuccess } = useToastContext()
   const [selectedImages, setSelectedImages] = useState<File[]>([])
   const { selectedSizes, selectedColors, toggleSize, toggleColor } = useProductVariations()
 
@@ -49,6 +52,10 @@ export function useCreateProductPage(user: any) {
 
   const createProductMutation = useMutation({
     mutationFn: async (data: CreateProductFormData) => {
+      if (selectedImages.length === 0) {
+        throw new Error('É necessário ter pelo menos uma imagem')
+      }
+
       const formData = new FormData()
       
       formData.append('name', data.name)
@@ -78,7 +85,17 @@ export function useCreateProductPage(user: any) {
       return response.data
     },
     onSuccess: () => {
+      // Invalidar queries para atualizar a listagem
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['product'] })
+      // Forçar refetch imediato
+      queryClient.refetchQueries({ queryKey: ['products'] })
+      showSuccess('Produto criado com sucesso!', 'Sucesso')
       router.push('/vendedor/produtos')
+    },
+    onError: (error: any) => {
+      const errorMessage = error.response?.data?.message || error.message || 'Erro ao criar produto'
+      showError(errorMessage, 'Erro ao criar produto')
     }
   })
 

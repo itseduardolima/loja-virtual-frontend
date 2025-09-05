@@ -5,10 +5,12 @@ import { Button, Input, Label, Textarea, Select, SelectContent, SelectItem, Sele
 import { ArrowLeft, Package, X, Star } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCreateProductPage } from './useCreateProductPage'
+import { useToastContext } from '@/contexts/ToastContext'
 
 export default function CreateProductPage() {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
+  const { error: showError, success: showSuccess } = useToastContext()
 
   const {
     form,
@@ -239,20 +241,6 @@ export default function CreateProductPage() {
             />
           </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className="mt-8 bg-red-50 border border-red-200 rounded-xl p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-red-100 rounded-lg">
-                  <X className="h-5 w-5 text-red-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-red-800">Erro ao criar produto</h3>
-                  <p className="text-red-700 mt-1">{error.message}</p>
-                </div>
-              </div>
-            </div>
-          )}
         </form>
       </div>
     </div>

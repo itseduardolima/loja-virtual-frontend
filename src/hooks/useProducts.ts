@@ -69,7 +69,7 @@ export function useUpdateProduct() {
   
   return useMutation({
     mutationFn: async ({ id, data }: { id: string | number, data: any }) => {
-      const response = await api.put(`/products/${id}`, data, {
+      const response = await api.patch(`/products/${id}`, data, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

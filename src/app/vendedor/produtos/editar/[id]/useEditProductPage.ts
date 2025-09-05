@@ -4,14 +4,17 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/axios'
 import { createProductSchema, CreateProductFormData } from '@/schemas/productSchemas'
 import { useUpdateProduct } from '@/hooks/useProducts'
 import { useProductVariations } from '@/hooks/useProductVariations'
+import { useToastContext } from '@/contexts/ToastContext'
 
 export function useEditProductPage(productId: string, user: any) {
   const router = useRouter()
+  const queryClient = useQueryClient()
+  const { error: showError, success: showSuccess } = useToastContext()
   const [selectedImages, setSelectedImages] = useState<File[]>([])
   const { selectedSizes, selectedColors, toggleSize, toggleColor, setSizes, setColors } = useProductVariations()
 
@@ -89,6 +92,13 @@ export function useEditProductPage(productId: string, user: any) {
 
 
   const onSubmit = (data: CreateProductFormData) => {
+    
+    const totalImages = selectedImages.length + (product?.images?.length || 0)
+    if (totalImages === 0) {
+      showError('É necessário ter pelo menos uma imagem', 'Validação')
+      return
+    }
+
     const formData = new FormData()
     
     formData.append('name', data.name)
@@ -114,7 +124,14 @@ export function useEditProductPage(productId: string, user: any) {
       { id: productId, data: formData },
       {
         onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ['products'] })
+          queryClient.invalidateQueries({ queryKey: ['product'] })
+          showSuccess('Produto atualizado com sucesso!', 'Sucesso')
           router.push('/vendedor/produtos')
+        },
+        onError: (error: any) => {
+          const errorMessage = error.response?.data?.message || error.message || 'Erro ao atualizar produto'
+          showError(errorMessage, 'Erro ao atualizar produto')
         }
       }
     )
