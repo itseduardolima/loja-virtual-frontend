@@ -19,7 +19,7 @@ export function useProdutosPage() {
     status: undefined as number | undefined,
     featured: undefined as boolean | undefined,
     page: 1,
-    limit: 12
+    limit: 10
   })
 
   const debouncedSearch = useDebounce(filters.search, 500)

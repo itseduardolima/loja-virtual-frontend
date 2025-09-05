@@ -1,7 +1,7 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { Button, LoadingSpinner, ErrorState, Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis, ProductFilters, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch } from '@/components'
+import { Button, LoadingSpinner, ErrorState, Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis, ProductFilters, Switch } from '@/components'
 import {
   Package,
   Plus,
@@ -32,7 +32,6 @@ export default function ProdutosPage() {
     isLoading,
     error,
     handlePageChange,
-    handleLimitChange,
     isSearching,
     handleToggleStatus,
     isUpdatingStatus
@@ -262,89 +261,72 @@ export default function ProdutosPage() {
 
             {/* Pagination */}
             {meta && meta.lastPage > 1 && (
-              <div className="mt-12 flex flex-col items-center gap-4">
-                <div className="flex items-center gap-4">
-                  <span className="text-sm text-gray-600">
-                    Mostrando {((meta.currentPage - 1) * meta.perPage) + 1} a {Math.min(meta.currentPage * meta.perPage, meta.total)} de {meta.total} produtos
-                  </span>
-                  <Select
-                    value={filters.limit.toString()}
-                    onValueChange={(value) => handleLimitChange(parseInt(value))}
-                  >
-                    <SelectTrigger className="w-20">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="6">6</SelectItem>
-                      <SelectItem value="12">12</SelectItem>
-                      <SelectItem value="24">24</SelectItem>
-                      <SelectItem value="48">48</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <div className="mt-12">
+                {/* Pagination Navigation - Centered */}
+                <div className="flex justify-center">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            if (meta.currentPage > 1) {
+                              handlePageChange(meta.currentPage - 1)
+                            }
+                          }}
+                          className={meta.currentPage <= 1 ? 'pointer-events-none opacity-50' : ''}
+                        />
+                      </PaginationItem>
+
+                      {Array.from({ length: meta.lastPage }, (_, i) => i + 1).map((page) => {
+                        if (
+                          page === 1 ||
+                          page === meta.lastPage ||
+                          (page >= meta.currentPage - 1 && page <= meta.currentPage + 1)
+                        ) {
+                          return (
+                            <PaginationItem key={page}>
+                              <PaginationLink
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  handlePageChange(page)
+                                }}
+                                isActive={page === meta.currentPage}
+                              >
+                                {page}
+                              </PaginationLink>
+                            </PaginationItem>
+                          )
+                        } else if (
+                          page === meta.currentPage - 2 ||
+                          page === meta.currentPage + 2
+                        ) {
+                          return (
+                            <PaginationItem key={page}>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                          )
+                        }
+                        return null
+                      })}
+
+                      <PaginationItem>
+                        <PaginationNext
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            if (meta.currentPage < meta.lastPage) {
+                              handlePageChange(meta.currentPage + 1)
+                            }
+                          }}
+                          className={meta.currentPage >= meta.lastPage ? 'pointer-events-none opacity-50' : ''}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
                 </div>
-
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          if (meta.currentPage > 1) {
-                            handlePageChange(meta.currentPage - 1)
-                          }
-                        }}
-                        className={meta.currentPage <= 1 ? 'pointer-events-none opacity-50' : ''}
-                      />
-                    </PaginationItem>
-
-                    {Array.from({ length: meta.lastPage }, (_, i) => i + 1).map((page) => {
-                      if (
-                        page === 1 ||
-                        page === meta.lastPage ||
-                        (page >= meta.currentPage - 1 && page <= meta.currentPage + 1)
-                      ) {
-                        return (
-                          <PaginationItem key={page}>
-                            <PaginationLink
-                              href="#"
-                              onClick={(e) => {
-                                e.preventDefault()
-                                handlePageChange(page)
-                              }}
-                              isActive={page === meta.currentPage}
-                            >
-                              {page}
-                            </PaginationLink>
-                          </PaginationItem>
-                        )
-                      } else if (
-                        page === meta.currentPage - 2 ||
-                        page === meta.currentPage + 2
-                      ) {
-                        return (
-                          <PaginationItem key={page}>
-                            <PaginationEllipsis />
-                          </PaginationItem>
-                        )
-                      }
-                      return null
-                    })}
-
-                    <PaginationItem>
-                      <PaginationNext
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          if (meta.currentPage < meta.lastPage) {
-                            handlePageChange(meta.currentPage + 1)
-                          }
-                        }}
-                        className={meta.currentPage >= meta.lastPage ? 'pointer-events-none opacity-50' : ''}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
               </div>
             )}
           </div>
