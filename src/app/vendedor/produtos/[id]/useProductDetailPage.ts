@@ -1,10 +1,14 @@
 import { useState } from 'react'
-import { useProduct } from '@/hooks/useProducts'
+import { useRouter } from 'next/navigation'
+import { useProduct, useDeleteProduct } from '@/hooks/useProducts'
 import { buildImageUrl } from '@/lib/utils'
 
 export function useProductDetailPage(productId: string) {
+  const router = useRouter()
   const { data: product, isLoading, error } = useProduct(productId)
+  const deleteProductMutation = useDeleteProduct()
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   const colorMap: Record<string, string> = {
     'Azul': '#3B82F6',
@@ -75,6 +79,23 @@ export function useProductDetailPage(productId: string) {
     setSelectedImageIndex(index)
   }
 
+  // Função para abrir modal de confirmação
+  const openDeleteDialog = () => {
+    setShowDeleteDialog(true)
+  }
+
+  // Função para deletar produto
+  const handleDeleteProduct = async () => {
+    if (!product?.id) return
+    
+    try {
+      await deleteProductMutation.mutateAsync(product.id)
+      router.push('/vendedor/produtos')
+    } catch (error) {
+      console.error('Erro ao deletar produto:', error)
+    }
+  }
+
   return {
     product,
     isLoading,
@@ -87,6 +108,11 @@ export function useProductDetailPage(productId: string) {
     formatPrice,
     getStatusInfo,
     getFeaturedInfo,
-    selectImage
+    selectImage,
+    openDeleteDialog,
+    handleDeleteProduct,
+    showDeleteDialog,
+    setShowDeleteDialog,
+    isDeleting: deleteProductMutation.isPending
   }
 }

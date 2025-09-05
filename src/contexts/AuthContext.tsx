@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, LoginRequest, AuthContextType } from '@/types/auth'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '@/lib/axios'
+import { api } from '@/lib/api'
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 

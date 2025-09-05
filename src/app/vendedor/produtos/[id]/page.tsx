@@ -1,7 +1,7 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { Button,  Badge, LoadingSpinner, ErrorState } from '@/components'
+import { Button,  Badge, LoadingSpinner, ErrorState, ConfirmDialog } from '@/components'
 import {
   Package,
   ArrowLeft,
@@ -17,6 +17,7 @@ import {
 import { useRouter, useParams } from 'next/navigation'
 import Image from 'next/image'
 import { useProductDetailPage } from './useProductDetailPage'
+import { buildImageUrl } from '@/lib/utils'
 
 export default function ProductDetailPage() {
   const { user, isLoading: authLoading } = useAuth()
@@ -36,7 +37,12 @@ export default function ProductDetailPage() {
     formatPrice,
     getStatusInfo,
     getFeaturedInfo,
-    selectImage
+    selectImage,
+    openDeleteDialog,
+    handleDeleteProduct,
+    showDeleteDialog,
+    setShowDeleteDialog,
+    isDeleting
   } = useProductDetailPage(productId)
 
   const getColorValue = (colorName: string): string => {
@@ -157,7 +163,7 @@ export default function ProductDetailPage() {
                     }`}
                   >
                     <Image
-                      src={buildImageUrls([image])[0]}
+                      src={buildImageUrl(image)}
                       alt={`${product.name} ${index + 1}`}
                       fill
                       className="object-cover"
@@ -281,7 +287,7 @@ export default function ProductDetailPage() {
                 <Button
                   variant="outline"
                   className="px-6 h-12 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-                  onClick={() => {/* TODO: Implementar exclusão */}}
+                  onClick={openDeleteDialog}
                 >
                   <Trash2 className="h-5 w-5" />
                 </Button>
@@ -306,6 +312,19 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title="Deletar Produto"
+        description="Tem certeza que deseja deletar este produto? Esta ação não pode ser desfeita."
+        confirmText="Deletar"
+        cancelText="Cancelar"
+        variant="destructive"
+        onConfirm={handleDeleteProduct}
+        isLoading={isDeleting}
+      />
     </div>
   )
 }

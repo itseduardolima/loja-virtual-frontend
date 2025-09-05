@@ -214,6 +214,24 @@ export default function VendedorPage() {
             </CardContent>
           </Card>
 
+          <Card className="border transition-shadow cursor-pointer group"
+                onClick={() => router.push('/vendedor/categorias')}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-green-100 rounded-xl group-hover:bg-green-200 transition-colors">
+                    <Tag className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Categorias</h3>
+                    <p className="text-sm text-gray-600">Organize seus produtos</p>
+                  </div>
+                </div>
+                <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-green-600 transition-colors" />
+              </div>
+            </CardContent>
+          </Card>
+
           <Card className="border transition-shadow cursor-pointer group">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">

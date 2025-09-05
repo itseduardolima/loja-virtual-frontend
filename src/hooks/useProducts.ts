@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/axios'
 import { ProductsResponse, Product } from '@/types/product'
 
@@ -46,5 +46,20 @@ export function useProduct(id: string | number) {
     },
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
+  })
+}
+
+export function useDeleteProduct() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: async (id: string | number) => {
+      const response = await api.delete(`/products/${id}`)
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['product'] })
+    }
   })
 }

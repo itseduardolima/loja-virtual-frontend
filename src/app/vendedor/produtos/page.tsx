@@ -1,17 +1,16 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { Button, LoadingSpinner, ErrorState, Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis, ProductFilters, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components'
+import { Button, LoadingSpinner, ErrorState, Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis, ProductFilters, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, ConfirmDialog } from '@/components'
 import {
   Package,
   Plus,
   Star,
   ArrowLeft,
   LogOut,
-  Search,
-  Filter,
   TrendingUp,
-  BarChart3
+  BarChart3,
+  Trash2
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -35,7 +34,12 @@ export default function ProdutosPage() {
     error,
     handlePageChange,
     handleLimitChange,
-    isSearching
+    isSearching,
+    openDeleteDialog,
+    handleDeleteProduct,
+    showDeleteDialog,
+    setShowDeleteDialog,
+    isDeleting
   } = useProdutosPage()
 
   if (authLoading) {
@@ -82,7 +86,7 @@ export default function ProdutosPage() {
             <div className="flex items-center gap-2 sm:gap-3">
               <Button
                 className="bg-pink-600 hover:bg-pink-700 text-white shadow-sm"
-                onClick={() => {/* TODO: Implementar criação de produto */}}
+                onClick={() => router.push('/vendedor/produtos/criar')}
                 size="sm"
               >
                 <Plus className="h-4 w-4 sm:mr-2" />
@@ -195,7 +199,7 @@ export default function ProdutosPage() {
             </p>
             <Button
               className="bg-pink-600 hover:bg-pink-700 text-white shadow-sm"
-              onClick={() => {/* TODO: Implementar criação de produto */}}
+              onClick={() => router.push('/vendedor/produtos/criar')}
             >
               <Plus className="h-4 w-4 mr-2" />
               Criar Produto
@@ -238,10 +242,21 @@ export default function ProdutosPage() {
                   <p className="text-base text-gray-600 mb-5 line-clamp-3 leading-relaxed">
                     {product.description}
                   </p>
-                  <div className="flex">
+                  <div className="flex items-center justify-between">
                     <span className="text-2xl font-bold text-pink-600">
                       {formatPrice(product.price)}
                     </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        openDeleteDialog(product.id)
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -339,6 +354,19 @@ export default function ProdutosPage() {
         </div>
         </div>
       </div>
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title="Deletar Produto"
+        description="Tem certeza que deseja deletar este produto? Esta ação não pode ser desfeita."
+        confirmText="Deletar"
+        cancelText="Cancelar"
+        variant="destructive"
+        onConfirm={handleDeleteProduct}
+        isLoading={isDeleting}
+      />
     </div>
   )
 }
