@@ -9,6 +9,7 @@ export { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 export { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 export { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption } from '@/components/ui/table'
 export { Toast, ToastClose, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from '@/components/ui/toast'
+export { Switch } from '@/components/ui/switch'
 export { LoadingSpinner } from './LoadingSpinner'
 export { ErrorState } from './ErrorState'
 export { ProductFilters } from './ProductFilters'

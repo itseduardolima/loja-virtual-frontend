@@ -11,6 +11,8 @@ interface ImageUploadProps {
   onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   onRemoveImage: (index: number) => void
   existingImages?: string[]
+  onRemoveExistingImage?: (index: number) => void
+  removedExistingImages?: number[]
   title?: string
   description?: string
   maxFiles?: number
@@ -23,6 +25,8 @@ export function ImageUpload({
   onImageChange,
   onRemoveImage,
   existingImages = [],
+  onRemoveExistingImage,
+  removedExistingImages = [],
   title = "Imagens do Produto",
   description = "Adicione fotos de alta qualidade",
   maxFiles = 10,
@@ -151,18 +155,33 @@ export function ImageUpload({
           <div>
             <h3 className="text-sm font-medium text-gray-700 mb-3">Imagens Atuais</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {existingImages.map((image, index) => (
-                <div key={index} className="relative group">
-                  <img
-                    src={`${process.env.NEXT_PUBLIC_API_URL}${image}`}
-                    alt={`Produto ${index + 1}`}
-                    className="w-full h-24 object-cover rounded-lg"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <span className="text-white text-xs">Imagem atual</span>
+              {existingImages.map((image, index) => {
+                const isMarkedForRemoval = removedExistingImages.includes(index)
+                return (
+                  <div key={index} className={`relative group ${isMarkedForRemoval ? 'opacity-50' : ''}`}>
+                    <img
+                      src={`${process.env.NEXT_PUBLIC_API_URL}${image}`}
+                      alt={`Produto ${index + 1}`}
+                      className={`w-full h-24 object-cover rounded-lg ${isMarkedForRemoval ? 'grayscale' : ''}`}
+                    />
+                    {isMarkedForRemoval && (
+                      <div className="absolute inset-0 bg-red-500 bg-opacity-75 rounded-lg flex items-center justify-center">
+                        <span className="text-white text-xs font-semibold">Removida</span>
+                      </div>
+                    )}
+                    {onRemoveExistingImage && !isMarkedForRemoval && (
+                      <button
+                        type="button"
+                        onClick={() => onRemoveExistingImage(index)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                    
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}

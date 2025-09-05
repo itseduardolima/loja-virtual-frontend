@@ -16,6 +16,7 @@ export function useEditProductPage(productId: string, user: any) {
   const queryClient = useQueryClient()
   const { error: showError, success: showSuccess } = useToastContext()
   const [selectedImages, setSelectedImages] = useState<File[]>([])
+  const [removedExistingImages, setRemovedExistingImages] = useState<number[]>([])
   const { selectedSizes, selectedColors, toggleSize, toggleColor, setSizes, setColors } = useProductVariations()
 
   const { data: product, isLoading: productLoading, error: productError } = useQuery({
@@ -90,10 +91,16 @@ export function useEditProductPage(productId: string, user: any) {
     setSelectedImages(prev => prev.filter((_, i) => i !== index))
   }
 
+  const removeExistingImage = (index: number) => {
+    setRemovedExistingImages(prev => [...prev, index])
+  }
+
 
   const onSubmit = (data: CreateProductFormData) => {
+    // Calcular imagens restantes (existentes - removidas + novas)
+    const remainingExistingImages = (product?.images || []).filter((_, index) => !removedExistingImages.includes(index))
+    const totalImages = selectedImages.length + remainingExistingImages.length
     
-    const totalImages = selectedImages.length + (product?.images?.length || 0)
     if (totalImages === 0) {
       showError('É necessário ter pelo menos uma imagem', 'Validação')
       return
@@ -104,7 +111,7 @@ export function useEditProductPage(productId: string, user: any) {
     formData.append('name', data.name)
     if (data.description) formData.append('description', data.description)
     formData.append('price', data.price.toString())
-    if (data.stock) formData.append('stock', data.stock.toString())
+    formData.append('stock', (data.stock ?? 0).toString())
     if (data.category_id) formData.append('category_id', data.category_id.toString())
     formData.append('featured', data.featured ? 'true' : 'false')
     
@@ -118,6 +125,11 @@ export function useEditProductPage(productId: string, user: any) {
     
     selectedImages.forEach(image => {
       formData.append('images', image)
+    })
+
+    // Adicionar índices das imagens existentes que devem ser removidas
+    removedExistingImages.forEach(index => {
+      formData.append('remove_images[]', index.toString())
     })
 
     updateProductMutation.mutate(
@@ -144,10 +156,12 @@ export function useEditProductPage(productId: string, user: any) {
     selectedSizes,
     selectedColors,
     categories,
+    removedExistingImages,
     isLoading: productLoading || updateProductMutation.isPending,
     error: productError || updateProductMutation.error,
     handleImageChange,
     removeImage,
+    removeExistingImage,
     toggleSize,
     toggleColor,
     onSubmit

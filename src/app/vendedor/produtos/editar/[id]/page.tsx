@@ -19,10 +19,12 @@ export default function EditProductPage() {
     selectedSizes,
     selectedColors,
     categories,
+    removedExistingImages,
     isLoading,
     error,
     handleImageChange,
     removeImage,
+    removeExistingImage,
     toggleSize,
     toggleColor,
     onSubmit
@@ -220,6 +222,8 @@ export default function EditProductPage() {
                 onImageChange={handleImageChange}
                 onRemoveImage={removeImage}
                 existingImages={product?.images || []}
+                onRemoveExistingImage={removeExistingImage}
+                removedExistingImages={removedExistingImages}
               />
 
               {/* Tamanhos e Cores */}
@@ -241,6 +245,7 @@ export default function EditProductPage() {
               selectedColors={selectedColors}
               selectedImages={selectedImages}
               existingImages={product?.images || []}
+              removedExistingImages={removedExistingImages}
               onSave={handleSubmit(onSubmit)}
               onCancel={() => router.push('/vendedor/produtos')}
               isLoading={isLoading}

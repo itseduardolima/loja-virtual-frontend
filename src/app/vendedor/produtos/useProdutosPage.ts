@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { useProducts, useDeleteProduct } from '@/hooks/useProducts'
+import { useProducts, useUpdateProductStatus } from '@/hooks/useProducts'
 import { useDebounce } from '@/hooks/useDebounce'
 import { formatPrice } from '@/lib/utils'
+import { useToastContext } from '@/contexts/ToastContext'
 
 export function useProdutosPage() {
-  const deleteProductMutation = useDeleteProduct()
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [productToDelete, setProductToDelete] = useState<number | null>(null)
+  const updateStatusMutation = useUpdateProductStatus()
+  const { success: showSuccess, error: showError } = useToastContext()
 
   const [filters, setFilters] = useState({
     search: '',
@@ -77,21 +77,17 @@ export function useProdutosPage() {
                      filters.min_price !== debouncedMinPrice || 
                      filters.max_price !== debouncedMaxPrice
 
-  // Função para abrir modal de confirmação
-  const openDeleteDialog = (productId: number) => {
-    setProductToDelete(productId)
-    setShowDeleteDialog(true)
-  }
 
-  // Função para deletar produto
-  const handleDeleteProduct = async () => {
-    if (!productToDelete) return
-    
+  const handleToggleStatus = async (productId: number, currentStatus: number) => {
     try {
-      await deleteProductMutation.mutateAsync(productToDelete)
-      setProductToDelete(null)
+      const newStatus = currentStatus === 1 ? 0 : 1
+      await updateStatusMutation.mutateAsync({ id: productId, status: newStatus })
+      showSuccess(
+        newStatus === 1 ? 'Produto disponibilizado!' : 'Produto esgotado!', 
+        'Status atualizado'
+      )
     } catch (error) {
-      console.error('Erro ao deletar produto:', error)
+      showError('Erro ao atualizar status do produto', 'Erro')
     }
   }
 
@@ -109,10 +105,7 @@ export function useProdutosPage() {
     handlePageChange,
     handleLimitChange,
     isSearching,
-    openDeleteDialog,
-    handleDeleteProduct,
-    showDeleteDialog,
-    setShowDeleteDialog,
-    isDeleting: deleteProductMutation.isPending
+    handleToggleStatus,
+    isUpdatingStatus: updateStatusMutation.isPending
   }
 }

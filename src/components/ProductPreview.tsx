@@ -15,6 +15,7 @@ interface ProductPreviewProps {
   selectedColors: string[]
   selectedImages: File[]
   existingImages?: string[]
+  removedExistingImages?: number[]
   onSave?: () => void
   onCancel?: () => void
   isLoading?: boolean
@@ -30,6 +31,7 @@ export function ProductPreview({
   selectedColors,
   selectedImages,
   existingImages = [],
+  removedExistingImages = [],
   onSave,
   onCancel,
   isLoading = false,
@@ -42,10 +44,13 @@ export function ProductPreview({
     }).format(price)
   }
 
+  // Filtrar imagens existentes que não foram removidas
+  const remainingExistingImages = existingImages.filter((_, index) => !removedExistingImages.includes(index))
+  
   const previewImage = selectedImages.length > 0 
     ? URL.createObjectURL(selectedImages[0])
-    : existingImages.length > 0 
-      ? `${process.env.NEXT_PUBLIC_API_URL}${existingImages[0]}`
+    : remainingExistingImages.length > 0 
+      ? `${process.env.NEXT_PUBLIC_API_URL}${remainingExistingImages[0]}`
       : null
 
   return (

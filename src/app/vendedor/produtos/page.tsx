@@ -1,7 +1,7 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { Button, LoadingSpinner, ErrorState, Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis, ProductFilters, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, ConfirmDialog } from '@/components'
+import { Button, LoadingSpinner, ErrorState, Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis, ProductFilters, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch } from '@/components'
 import {
   Package,
   Plus,
@@ -9,9 +9,7 @@ import {
   ArrowLeft,
   LogOut,
   TrendingUp,
-  BarChart3,
-  Trash2,
-  Edit
+  BarChart3
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -36,11 +34,8 @@ export default function ProdutosPage() {
     handlePageChange,
     handleLimitChange,
     isSearching,
-    openDeleteDialog,
-    handleDeleteProduct,
-    showDeleteDialog,
-    setShowDeleteDialog,
-    isDeleting
+    handleToggleStatus,
+    isUpdatingStatus
   } = useProdutosPage()
 
   if (authLoading) {
@@ -243,29 +238,20 @@ export default function ProdutosPage() {
                         <span className="text-2xl font-bold text-pink-600">
                           {formatPrice(product.price)}
                         </span>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-200"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              router.push(`/vendedor/produtos/editar/${product.id}`)
-                            }}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              openDeleteDialog(product.id)
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm text-gray-600">
+                            {product.status === 1 ? 'Disponível' : 'Esgotado'}
+                          </span>
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <Switch
+                              checked={product.status === 1}
+                              onCheckedChange={(checked: boolean) => {
+                                handleToggleStatus(product.id, product.status)
+                              }}
+                              disabled={isUpdatingStatus}
+                              className="data-[state=checked]:bg-green-500"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -365,18 +351,6 @@ export default function ProdutosPage() {
         </div>
       </div>
 
-      {/* Modal de Confirmação de Exclusão */}
-      <ConfirmDialog
-        open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
-        title="Deletar Produto"
-        description="Tem certeza que deseja deletar este produto? Esta ação não pode ser desfeita."
-        confirmText="Deletar"
-        cancelText="Cancelar"
-        variant="destructive"
-        onConfirm={handleDeleteProduct}
-        isLoading={isDeleting}
-      />
     </div>
   )
 }

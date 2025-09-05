@@ -82,3 +82,18 @@ export function useUpdateProduct() {
     }
   })
 }
+
+export function useUpdateProductStatus() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: async ({ id, status }: { id: string | number, status: number }) => {
+      const response = await api.patch(`/products/${id}/status`, { status })
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['product'] })
+    }
+  })
+}
