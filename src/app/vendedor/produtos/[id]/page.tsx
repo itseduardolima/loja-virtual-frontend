@@ -278,15 +278,14 @@ export default function ProductDetailPage() {
             <div className="space-y-4 pt-6">
               <div className="flex gap-3">
                 <Button
-                  className="flex-1 bg-pink-600 hover:bg-pink-700 text-white h-12 text-lg font-medium"
-                  onClick={() => {/* TODO: Implementar edição */}}
+                  className="flex-1 h-12 text-lg font-medium"
+                  onClick={() => router.push(`/vendedor/produtos/editar/${productId}`)}
                 >
                   <Edit className="h-5 w-5 mr-2" />
                   Editar Produto
                 </Button>
                 <Button
-                  variant="outline"
-                  className="px-6 h-12 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                  variant="destructive"
                   onClick={openDeleteDialog}
                 >
                   <Trash2 className="h-5 w-5" />

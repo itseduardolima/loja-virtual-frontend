@@ -63,3 +63,22 @@ export function useDeleteProduct() {
     }
   })
 }
+
+export function useUpdateProduct() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string | number, data: any }) => {
+      const response = await api.put(`/products/${id}`, data, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['product'] })
+    }
+  })
+}

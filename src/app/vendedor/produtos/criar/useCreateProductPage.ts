@@ -8,12 +8,12 @@ import {
   createProductSchema, 
   CreateProductFormData
 } from '@/schemas'
+import { useProductVariations } from '@/hooks/useProductVariations'
 
 export function useCreateProductPage(user: any) {
   const router = useRouter()
   const [selectedImages, setSelectedImages] = useState<File[]>([])
-  const [selectedSizes, setSelectedSizes] = useState<string[]>([])
-  const [selectedColors, setSelectedColors] = useState<string[]>([])
+  const { selectedSizes, selectedColors, toggleSize, toggleColor } = useProductVariations()
 
   const form = useForm<CreateProductFormData>({
     resolver: yupResolver(createProductSchema) as any,
@@ -91,21 +91,6 @@ export function useCreateProductPage(user: any) {
     setSelectedImages(prev => prev.filter((_, i) => i !== index))
   }
 
-  const toggleSize = (size: string) => {
-    setSelectedSizes(prev => 
-      prev.includes(size) 
-        ? prev.filter(s => s !== size)
-        : [...prev, size]
-    )
-  }
-
-  const toggleColor = (color: string) => {
-    setSelectedColors(prev => 
-      prev.includes(color) 
-        ? prev.filter(c => c !== color)
-        : [...prev, color]
-    )
-  }
 
   const onSubmit = (data: CreateProductFormData) => {
     createProductMutation.mutate(data)
