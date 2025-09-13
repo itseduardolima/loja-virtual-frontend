@@ -2,12 +2,13 @@
 
 import { useState } from 'react'
 import { useParams } from 'next/navigation'
-import {  ProductCard, StorePagination, StoreSidebar, LoadingSpinner, ErrorState } from '@/components'
+import {  ProductCard, StorePagination, StoreSidebar, LoadingSpinner, ErrorState, CartSidebar } from '@/components'
 import { ShoppingBag, Heart, Star, Package } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useStorePage } from './useStorePage'
 import { useStoreInfo } from '@/hooks/useStoreInfo'
+import { useCart } from '@/hooks/useCart'
 import { buildImageUrl } from '@/lib/imageUtils'
 import Image from 'next/image'
 
@@ -15,6 +16,7 @@ export default function StorePage() {
   const params = useParams()
   const slug = params.slug as string
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isCartOpen, setIsCartOpen] = useState(false)
 
   const {
     // Estado
@@ -47,6 +49,9 @@ export default function StorePage() {
 
   // Hook para buscar informações da loja
   const { storeInfo, loading: storeInfoLoading } = useStoreInfo(slug)
+  
+  // Hook do carrinho
+  const { totalItems } = useCart(storeInfo?.id)
 
   if (loading && !products.length) {
     return (
@@ -107,9 +112,15 @@ export default function StorePage() {
                 <Heart className="w-4 h-4" />
                 Favoritos
               </Button>
-              <Button className="flex items-center gap-2">
+              <Button 
+                className="flex items-center gap-2"
+                onClick={() => {
+                  console.log('Botão carrinho clicado, abrindo sidebar')
+                  setIsCartOpen(true)
+                }}
+              >
                 <ShoppingBag className="w-4 h-4" />
-                Carrinho (0)
+                Carrinho ({totalItems})
               </Button>
             </div>
           </div>
@@ -199,6 +210,13 @@ export default function StorePage() {
           </div>
         </div>
       </div>
+
+      {/* Cart Sidebar */}
+      <CartSidebar
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        storeId={storeInfo?.id}
+      />
     </div>
   )
 }

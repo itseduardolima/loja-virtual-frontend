@@ -1,7 +1,7 @@
 'use client'
 
 import { useParams, useRouter } from 'next/navigation'
-import { Button, Badge, LoadingSpinner, ErrorState } from '@/components'
+import { Button, Badge, LoadingSpinner, ErrorState, CartSidebar } from '@/components'
 import {
   ArrowLeft,
   ShoppingCart,
@@ -20,12 +20,15 @@ import Image from 'next/image'
 
 import { buildImageUrl } from '@/lib/utils'
 import { useProductDetailPage } from './useProductDetailPage'
+import { useCart } from '@/hooks/useCart'
+import { useState } from 'react'
 
 export default function ProductDetailPage() {
   const params = useParams()
   const router = useRouter()
   const slug = params.slug as string
   const productId = params.id as string
+  const [isCartOpen, setIsCartOpen] = useState(false)
 
   const {
     product,
@@ -50,6 +53,9 @@ export default function ProductDetailPage() {
     isAddingToCart,
     isAddingToFavorites
   } = useProductDetailPage(slug, productId)
+
+  // Hook do carrinho para mostrar contador
+  const { totalItems } = useCart(product?.store?.id)
 
   const getColorValue = (colorName: string): string => {
     return colorMap[colorName] || '#6B7280'
@@ -122,9 +128,10 @@ export default function ProductDetailPage() {
               <Button
                 size="sm"
                 className="flex items-center gap-2"
+                onClick={() => setIsCartOpen(true)}
               >
                 <ShoppingCart className="h-4 w-4" />
-                Carrinho (0)
+                Carrinho ({totalItems})
               </Button>
             </div>
           </div>
@@ -350,6 +357,13 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Cart Sidebar */}
+      <CartSidebar
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        storeId={product?.store?.id}
+      />
     </div>
   )
 }

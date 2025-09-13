@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 import { buildImageUrl } from '@/lib/utils'
 import { useToast } from '@/hooks/useToast'
+import { useCart } from '@/hooks/useCart'
 
 interface ProductDetail {
   id: number
@@ -54,6 +55,9 @@ export function useProductDetailPage(slug: string, productId: string) {
     },
     enabled: !!slug && !!productId
   })
+
+  // Hook do carrinho
+  const { addToCart: addToCartHook, isAddingToCart } = useCart(product?.store?.id)
 
   // Mapeamento de cores
   const colorMap: Record<string, string> = {
@@ -138,28 +142,34 @@ export function useProductDetailPage(slug: string, productId: string) {
   // Mutation para adicionar ao carrinho
   const addToCartMutation = useMutation({
     mutationFn: async () => {
-      // Aqui você implementaria a lógica para adicionar ao carrinho
-      // Por enquanto, apenas simula uma requisição
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      if (!product) throw new Error('Produto não encontrado')
       
-      return {
-        productId: product?.id,
-        size: selectedSize,
-        color: selectedColor,
-        quantity
-      }
+      const response = await api.post('/cart', {
+        product_id: product.id,
+        quantity,
+        size: selectedSize || '',
+        color: selectedColor || '',
+        notes: ''
+      }, {
+        params: {
+          store_id: product.store.id
+        }
+      })
+      
+      return response.data
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: 'Produto adicionado!',
-        description: `${product?.name} foi adicionado ao carrinho`,
+        description: data.message || `${product?.name} foi adicionado ao carrinho`,
         variant: 'success'
       })
     },
-    onError: () => {
+    onError: (error: any) => {
+      const errorMessage = error.response?.data?.message || 'Não foi possível adicionar o produto ao carrinho'
       toast({
         title: 'Erro!',
-        description: 'Não foi possível adicionar o produto ao carrinho',
+        description: errorMessage,
         variant: 'destructive'
       })
     }
@@ -194,9 +204,16 @@ export function useProductDetailPage(slug: string, productId: string) {
 
   // Função para adicionar ao carrinho
   const addToCart = () => {
-    if (!product || !selectedSize || !selectedColor) return
+    if (!product) return
     
-    addToCartMutation.mutate()
+    addToCartHook({
+      productId: product.id,
+      quantity,
+      size: selectedSize || '',
+      color: selectedColor || '',
+      notes: '',
+      storeId: product.store.id
+    })
   }
 
   // Função para adicionar aos favoritos
@@ -226,7 +243,7 @@ export function useProductDetailPage(slug: string, productId: string) {
     decreaseQuantity,
     addToCart,
     addToFavorites,
-    isAddingToCart: addToCartMutation.isPending,
+    isAddingToCart,
     isAddingToFavorites: addToFavoritesMutation.isPending
   }
 }
