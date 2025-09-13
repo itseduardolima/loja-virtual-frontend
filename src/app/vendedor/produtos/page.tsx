@@ -1,7 +1,7 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { Button, LoadingSpinner, ErrorState, Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis, ProductFilters, Switch } from '@/components'
+import { Button, LoadingSpinner, ErrorState, Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis, StoreSidebar, Switch } from '@/components'
 import {
   Package,
   Plus,
@@ -96,239 +96,275 @@ export default function ProdutosPage() {
         </div>
       </div>
 
-      {/* Sidebar Filters */}
-      <div className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-96 bg-white border-r border-gray-200 shadow-lg z-40 overflow-y-auto">
-        <div className="p-6">
-          <ProductFilters
-            filters={filters}
-            setFilters={setFilters}
-            availableSizes={availableSizes}
+      <div className="flex gap-6 p-6">
+        {/* Sidebar Filters */}
+        <div className="w-80 flex-shrink-0">
+          <StoreSidebar
+            isOpen={true}
+            onClose={() => { }}
+            variant="inline"
+            showSearch={true}
+            onSearch={(search) => setFilters(prev => ({ ...prev, search }))}
+            onSortChange={(sort, sortField) => {
+              // Mapear os valores para o formato esperado
+              const sortMap: { [key: string]: 'newest' | 'price_asc' | 'price_desc' | 'name_asc' | 'name_desc' } = {
+                'DESC': 'newest',
+                'ASC': 'newest'
+              }
+              setFilters(prev => ({ ...prev, sort: sortMap[sort] || 'newest' }))
+            }}
+            onFilterChange={(newFilters) => setFilters(prev => ({ ...prev, ...newFilters }))}
+            onClearFilters={() => setFilters({
+              search: '',
+              sort: 'newest',
+              category_id: undefined,
+              min_price: undefined,
+              max_price: undefined,
+              size: '',
+              color: '',
+              status: undefined,
+              featured: undefined,
+              page: 1,
+              limit: 10
+            })}
+            searchValue={filters.search || ''}
+            sortValue={filters.sort === 'newest' ? 'DESC' : 'ASC'}
+            sortFieldValue="created_at"
+            activeFilters={{
+              categoryId: filters.category_id,
+              minPrice: filters.min_price,
+              maxPrice: filters.max_price,
+              size: filters.size,
+              color: filters.color,
+              featured: filters.featured
+            }}
+            categories={[]}
             availableColors={availableColors}
-            isSearching={isSearching}
+            availableSizes={availableSizes}
           />
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="ml-96">
-        <div className="py-6 px-20">
-          {/* Page Title */}
-          <div className="mb-8 px-4 sm:px-6 lg:px-8">
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
-              Meus Produtos
-            </h1>
-            <p className="text-lg text-gray-600">
-              {stats.total} produtos encontrados
-            </p>
-          </div>
+        {/* Main Content */}
+        <div className="flex-1">
+          <div className="py-6 px-20">
+            {/* Page Title */}
+            <div className="mb-8 px-4 sm:px-6 lg:px-8">
+              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
+                Meus Produtos
+              </h1>
+              <p className="text-lg text-gray-600">
+                {stats.total} produtos encontrados
+              </p>
+            </div>
 
-          {/* Statistics Cards */}
-          <div className="px-4 sm:px-6 lg:px-8 mb-8">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Total de Produtos</p>
-                    <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
-                  </div>
-                  <div className="p-3 bg-blue-50 rounded-lg">
-                    <Package className="h-6 w-6 text-blue-600" />
+            {/* Statistics Cards */}
+            <div className="px-4 sm:px-6 lg:px-8 mb-8">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 mb-1">Total de Produtos</p>
+                      <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
+                    </div>
+                    <div className="p-3 bg-blue-50 rounded-lg">
+                      <Package className="h-6 w-6 text-blue-600" />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Produtos Ativos</p>
-                    <p className="text-3xl font-bold text-green-600">{stats.active}</p>
-                  </div>
-                  <div className="p-3 bg-green-50 rounded-lg">
-                    <TrendingUp className="h-6 w-6 text-green-600" />
+                <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 mb-1">Produtos Ativos</p>
+                      <p className="text-3xl font-bold text-green-600">{stats.active}</p>
+                    </div>
+                    <div className="p-3 bg-green-50 rounded-lg">
+                      <TrendingUp className="h-6 w-6 text-green-600" />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Em Destaque</p>
-                    <p className="text-3xl font-bold text-yellow-600">{stats.featured}</p>
-                  </div>
-                  <div className="p-3 bg-yellow-50 rounded-lg">
-                    <Star className="h-6 w-6 text-yellow-600" />
+                <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 mb-1">Em Destaque</p>
+                      <p className="text-3xl font-bold text-yellow-600">{stats.featured}</p>
+                    </div>
+                    <div className="p-3 bg-yellow-50 rounded-lg">
+                      <Star className="h-6 w-6 text-yellow-600" />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Estoque Total</p>
-                    <p className="text-3xl font-bold text-purple-600">{stats.totalStock}</p>
-                  </div>
-                  <div className="p-3 bg-purple-50 rounded-lg">
-                    <BarChart3 className="h-6 w-6 text-purple-600" />
+                <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 mb-1">Estoque Total</p>
+                      <p className="text-3xl font-bold text-purple-600">{stats.totalStock}</p>
+                    </div>
+                    <div className="p-3 bg-purple-50 rounded-lg">
+                      <BarChart3 className="h-6 w-6 text-purple-600" />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Products */}
-          <div className="px-4 sm:px-6 lg:px-8">
-            {products.length === 0 ? (
-              <div className="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-sm">
-                <div className="p-4 bg-gray-50 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
-                  <Package className="h-12 w-12 text-gray-400" />
-                </div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-3">
-                  {filters.search || filters.status || filters.featured ? 'Nenhum produto encontrado' : 'Nenhum produto cadastrado'}
-                </h3>
-                <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                  {filters.search || filters.status || filters.featured ? 'Tente ajustar os filtros de busca para encontrar o que procura' : 'Comece criando seu primeiro produto para começar a vender'}
-                </p>
-                <Button
-                  className="bg-pink-600 hover:bg-pink-700 text-white shadow-sm"
-                  onClick={() => router.push('/vendedor/produtos/criar')}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Criar Produto
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-8">
-                {products.map((product) => (
-                  <div
-                    key={product.id}
-                    className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group"
-                    onClick={() => router.push(`/vendedor/produtos/${product.id}`)}
+            {/* Products */}
+            <div className="px-4 sm:px-6 lg:px-8">
+              {products.length === 0 ? (
+                <div className="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-sm">
+                  <div className="p-4 bg-gray-50 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+                    <Package className="h-12 w-12 text-gray-400" />
+                  </div>
+                  <h3 className="text-2xl font-semibold text-gray-900 mb-3">
+                    {filters.search || filters.status || filters.featured ? 'Nenhum produto encontrado' : 'Nenhum produto cadastrado'}
+                  </h3>
+                  <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                    {filters.search || filters.status || filters.featured ? 'Tente ajustar os filtros de busca para encontrar o que procura' : 'Comece criando seu primeiro produto para começar a vender'}
+                  </p>
+                  <Button
+                    className="bg-pink-600 hover:bg-pink-700 text-white shadow-sm"
+                    onClick={() => router.push('/vendedor/produtos/criar')}
                   >
-                    {/* Image */}
-                    <div className="relative aspect-[4/3] bg-gray-50">
-                      {product.images && product.images.length > 0 ? (
-                        <Image
-                          src={buildImageUrl(product.images[0])}
-                          alt={product.name}
-                          fill
-                          className="object-cover group-hover:scale-110 transition-transform duration-500"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement
-                            target.style.display = 'none'
-                          }}
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center h-full">
-                          <Package className="h-16 w-16 text-gray-300" />
-                        </div>
-                      )}
+                    <Plus className="h-4 w-4 mr-2" />
+                    Criar Produto
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-8">
+                  {products.map((product) => (
+                    <div
+                      key={product.id}
+                      className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group"
+                      onClick={() => router.push(`/vendedor/produtos/${product.id}`)}
+                    >
+                      {/* Image */}
+                      <div className="relative aspect-[4/3] bg-gray-50">
+                        {product.images && product.images.length > 0 ? (
+                          <Image
+                            src={buildImageUrl(product.images[0])}
+                            alt={product.name}
+                            fill
+                            className="object-cover group-hover:scale-110 transition-transform duration-500"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement
+                              target.style.display = 'none'
+                            }}
+                          />
+                        ) : (
+                          <div className="flex items-center justify-center h-full">
+                            <Package className="h-16 w-16 text-gray-300" />
+                          </div>
+                        )}
 
-                    </div>
+                      </div>
 
-                    {/* Content */}
-                    <div className="p-6">
-                      <h3 className="font-semibold text-gray-900 mb-3 line-clamp-2 text-xl">
-                        {product.name}
-                      </h3>
-                      <p className="text-base text-gray-600 mb-5 line-clamp-3 leading-relaxed">
-                        {product.description}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-2xl font-bold text-pink-600">
-                          {formatPrice(product.price)}
-                        </span>
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm text-gray-600">
-                            {product.status === 1 ? 'Disponível' : 'Esgotado'}
+                      {/* Content */}
+                      <div className="p-6">
+                        <h3 className="font-semibold text-gray-900 mb-3 line-clamp-2 text-xl">
+                          {product.name}
+                        </h3>
+                        <p className="text-base text-gray-600 mb-5 line-clamp-3 leading-relaxed">
+                          {product.description}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-2xl font-bold text-pink-600">
+                            {formatPrice(product.price)}
                           </span>
-                          <div onClick={(e) => e.stopPropagation()}>
-                            <Switch
-                              checked={product.status === 1}
-                              onCheckedChange={(checked: boolean) => {
-                                handleToggleStatus(product.id, product.status)
-                              }}
-                              disabled={isUpdatingStatus}
-                              className="data-[state=checked]:bg-green-500"
-                            />
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm text-gray-600">
+                              {product.status === 1 ? 'Disponível' : 'Esgotado'}
+                            </span>
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <Switch
+                                checked={product.status === 1}
+                                onCheckedChange={(checked: boolean) => {
+                                  handleToggleStatus(product.id, product.status)
+                                }}
+                                disabled={isUpdatingStatus}
+                                className="data-[state=checked]:bg-green-500"
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Pagination */}
-            {meta && meta.lastPage > 1 && (
-              <div className="mt-12">
-                {/* Pagination Navigation - Centered */}
-                <div className="flex justify-center">
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault()
-                            if (meta.currentPage > 1) {
-                              handlePageChange(meta.currentPage - 1)
-                            }
-                          }}
-                          className={meta.currentPage <= 1 ? 'pointer-events-none opacity-50' : ''}
-                        />
-                      </PaginationItem>
-
-                      {Array.from({ length: meta.lastPage }, (_, i) => i + 1).map((page) => {
-                        if (
-                          page === 1 ||
-                          page === meta.lastPage ||
-                          (page >= meta.currentPage - 1 && page <= meta.currentPage + 1)
-                        ) {
-                          return (
-                            <PaginationItem key={page}>
-                              <PaginationLink
-                                href="#"
-                                onClick={(e) => {
-                                  e.preventDefault()
-                                  handlePageChange(page)
-                                }}
-                                isActive={page === meta.currentPage}
-                              >
-                                {page}
-                              </PaginationLink>
-                            </PaginationItem>
-                          )
-                        } else if (
-                          page === meta.currentPage - 2 ||
-                          page === meta.currentPage + 2
-                        ) {
-                          return (
-                            <PaginationItem key={page}>
-                              <PaginationEllipsis />
-                            </PaginationItem>
-                          )
-                        }
-                        return null
-                      })}
-
-                      <PaginationItem>
-                        <PaginationNext
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault()
-                            if (meta.currentPage < meta.lastPage) {
-                              handlePageChange(meta.currentPage + 1)
-                            }
-                          }}
-                          className={meta.currentPage >= meta.lastPage ? 'pointer-events-none opacity-50' : ''}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
+                  ))}
                 </div>
-              </div>
-            )}
+              )}
+
+              {/* Pagination */}
+              {meta && meta.lastPage > 1 && (
+                <div className="mt-12">
+                  {/* Pagination Navigation - Centered */}
+                  <div className="flex justify-center">
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              if (meta.currentPage > 1) {
+                                handlePageChange(meta.currentPage - 1)
+                              }
+                            }}
+                            className={meta.currentPage <= 1 ? 'pointer-events-none opacity-50' : ''}
+                          />
+                        </PaginationItem>
+
+                        {Array.from({ length: meta.lastPage }, (_, i) => i + 1).map((page) => {
+                          if (
+                            page === 1 ||
+                            page === meta.lastPage ||
+                            (page >= meta.currentPage - 1 && page <= meta.currentPage + 1)
+                          ) {
+                            return (
+                              <PaginationItem key={page}>
+                                <PaginationLink
+                                  href="#"
+                                  onClick={(e) => {
+                                    e.preventDefault()
+                                    handlePageChange(page)
+                                  }}
+                                  isActive={page === meta.currentPage}
+                                >
+                                  {page}
+                                </PaginationLink>
+                              </PaginationItem>
+                            )
+                          } else if (
+                            page === meta.currentPage - 2 ||
+                            page === meta.currentPage + 2
+                          ) {
+                            return (
+                              <PaginationItem key={page}>
+                                <PaginationEllipsis />
+                              </PaginationItem>
+                            )
+                          }
+                          return null
+                        })}
+
+                        <PaginationItem>
+                          <PaginationNext
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              if (meta.currentPage < meta.lastPage) {
+                                handlePageChange(meta.currentPage + 1)
+                              }
+                            }}
+                            className={meta.currentPage >= meta.lastPage ? 'pointer-events-none opacity-50' : ''}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

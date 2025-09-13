@@ -98,7 +98,7 @@ export function useEditProductPage(productId: string, user: any) {
 
   const onSubmit = (data: CreateProductFormData) => {
     // Calcular imagens restantes (existentes - removidas + novas)
-    const remainingExistingImages = (product?.images || []).filter((_, index) => !removedExistingImages.includes(index))
+    const remainingExistingImages = (product?.images || []).filter((_: any, index: number) => !removedExistingImages.includes(index))
     const totalImages = selectedImages.length + remainingExistingImages.length
     
     if (totalImages === 0) {

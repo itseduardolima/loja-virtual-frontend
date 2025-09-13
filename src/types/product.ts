@@ -10,15 +10,13 @@ export interface Product {
   colors: string[]
   stock: number
   status: number
-  featured: number
+  featured: boolean | number
   created_at: string
   updated_at: string
-  store_id: number
-  category_id: number
   category: {
     id: number
     name: string
-  }
+  } | null
   store: {
     id: number
     name: string
