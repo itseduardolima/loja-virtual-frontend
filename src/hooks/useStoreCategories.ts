@@ -1,25 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '@/lib/api'
-
-interface StoreCategory {
-  id: number
-  name: string
-  description: string
-  _count: {
-    products: number
-  }
-}
-
-interface StoreCategoriesResponse {
-  data: StoreCategory[]
-}
-
-interface UseStoreCategoriesReturn {
-  categories: StoreCategory[]
-  loading: boolean
-  error: string | null
-  refetch: () => void
-}
+import { StoreCategory, StoreCategoriesResponse, UseStoreCategoriesReturn } from '@/types/store'
 
 export function useStoreCategories(slug: string): UseStoreCategoriesReturn {
   const [categories, setCategories] = useState<StoreCategory[]>([])

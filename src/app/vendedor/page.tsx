@@ -155,7 +155,7 @@ export default function VendedorPage() {
                           <p className="text-xs text-blue-600">Total cadastrados</p>
                         </div>
                       </div>
-                      <span className="text-3xl font-bold text-blue-900">{store?._count.products}</span>
+                      <span className="text-3xl font-bold text-blue-900">{store?._count?.products || 0}</span>
                     </div>
                   </div>
                   
@@ -170,7 +170,7 @@ export default function VendedorPage() {
                           <p className="text-xs text-green-600">Total realizados</p>
                         </div>
                       </div>
-                      <span className="text-3xl font-bold text-green-900">{store?._count.orders}</span>
+                      <span className="text-3xl font-bold text-green-900">{store?._count?.orders || 0}</span>
                     </div>
                   </div>
                   
@@ -185,7 +185,7 @@ export default function VendedorPage() {
                           <p className="text-xs text-purple-600">Total criadas</p>
                         </div>
                       </div>
-                      <span className="text-3xl font-bold text-purple-900">{store?.categories.length}</span>
+                      <span className="text-3xl font-bold text-purple-900">{store?.categories?.length || 0}</span>
                     </div>
                   </div>
                 </div>

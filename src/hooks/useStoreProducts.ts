@@ -1,37 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '@/lib/api'
 import { Product, ProductsResponse } from '@/types/product'
-
-interface StoreProductsParams {
-  slug: string
-  page?: number
-  limit?: number
-  sort?: 'ASC' | 'DESC'
-  sort_field?: string
-  featured?: boolean
-  color?: string
-  size?: string
-  max_price?: number
-  min_price?: number
-  category_id?: number
-  search?: string
-}
-
-interface UseStoreProductsReturn {
-  products: Product[]
-  loading: boolean
-  error: string | null
-  meta: {
-    total: number
-    lastPage: number
-    currentPage: number
-    perPage: number
-    prev: number | null
-    next: number | null
-  } | null
-  refetch: () => void
-  updateParams: (newParams: Partial<StoreProductsParams>) => void
-}
+import { StoreProductsParams, UseStoreProductsReturn } from '@/types/store'
 
 export function useStoreProducts(params: StoreProductsParams): UseStoreProductsReturn {
   const [products, setProducts] = useState<Product[]>([])

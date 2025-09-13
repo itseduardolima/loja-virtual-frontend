@@ -1,38 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/axios'
 import { PaginatedResponse, Meta } from '@/types/api'
-
-export interface Category {
-  id: number
-  name: string
-  description?: string
-  image?: string
-  status: number
-  created_at: string
-  updated_at: string
-  store_id: number
-  _count?: {
-    products: number
-  }
-}
-
-export interface CreateCategoryData {
-  name: string
-  description?: string
-  image?: File
-}
-
-export interface UpdateCategoryData extends CreateCategoryData {
-  id: number
-}
-
-export interface CategoryFilters {
-  page?: number
-  limit?: number
-  search?: string
-  status?: number
-  sort?: string
-}
+import { Category, CreateCategoryData, UpdateCategoryData, CategoryFilters } from '@/types/category'
 
 export function useCategories(filters?: CategoryFilters) {
   const queryClient = useQueryClient()

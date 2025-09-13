@@ -1,20 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/axios'
-import { ProductsResponse, Product } from '@/types/product'
-
-interface ProductFilters {
-  page?: number
-  limit?: number
-  sort?: 'price_asc' | 'price_desc' | 'name_asc' | 'name_desc' | 'newest'
-  search?: string
-  category_id?: number
-  min_price?: number
-  max_price?: number
-  size?: string
-  color?: string
-  status?: number
-  featured?: boolean
-}
+import { ProductsResponse, Product, ProductFilters } from '@/types/product'
 
 export function useProducts(filters?: ProductFilters) {
   return useQuery<ProductsResponse>({

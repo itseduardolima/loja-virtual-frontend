@@ -1,26 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '@/lib/api'
-
-interface StoreInfo {
-  id: number
-  name: string
-  slug: string
-  description: string
-  logo: string
-  banner: string
-  created_at: string
-}
-
-interface StoreInfoResponse {
-  data: StoreInfo
-}
-
-interface UseStoreInfoReturn {
-  storeInfo: StoreInfo | null
-  loading: boolean
-  error: string | null
-  refetch: () => void
-}
+import { StoreInfo, StoreInfoResponse, UseStoreInfoReturn } from '@/types/store'
 
 export function useStoreInfo(slug: string): UseStoreInfoReturn {
   const [storeInfo, setStoreInfo] = useState<StoreInfo | null>(null)

@@ -179,7 +179,7 @@ export default function ProductDetailPage() {
             {/* Product Title & Rating */}
             <div>
               <div className="flex items-center gap-2 mb-2">
-                {product.featured === 1 && (
+                {product.featured && (
                   <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
                     Destaque
                   </Badge>

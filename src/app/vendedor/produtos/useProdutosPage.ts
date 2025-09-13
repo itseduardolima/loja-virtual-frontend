@@ -57,7 +57,7 @@ export function useProdutosPage() {
     total: meta?.total || 0,
     active: products.filter(p => p.status === 1).length,
     inactive: products.filter(p => p.status === 0).length,
-    featured: products.filter(p => p.featured === 1).length,
+    featured: products.filter(p => p.featured).length,
     totalStock: products.reduce((sum, p) => sum + p.stock, 0),
     averagePrice: products.length > 0
       ? products.reduce((sum, p) => sum + parseFloat(p.price), 0) / products.length

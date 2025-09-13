@@ -2,12 +2,12 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/axios'
-import { Store } from '@/types/store'
+import { StoreInfo } from '@/types/store'
 
 export function useStore() {
   return useQuery({
     queryKey: ['store', 'my-store'],
-    queryFn: async (): Promise<Store> => {
+    queryFn: async (): Promise<StoreInfo> => {
       const response = await api.get('/stores/my-store')
       return response.data
     },

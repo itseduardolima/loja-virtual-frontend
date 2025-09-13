@@ -1,32 +1,81 @@
-export interface StoreCategory {
-  id: number
-  name: string
-  description: string
-  image: string | null
-  status: number
-  created_at: string
-  updated_at: string
-  store_id: number
-}
-
-export interface StoreCounts {
-  products: number
-  orders: number
-}
-
-export interface Store {
+export interface StoreInfo {
   id: number
   name: string
   slug: string
   description: string
   logo: string
   banner: string
-  whatsapp: string
-  instagram: string
-  status: number
+  whatsapp?: string
+  instagram?: string
   created_at: string
-  updated_at: string
-  user_id: number
+  _count?: {
+    products: number
+    orders: number
+  }
+  categories?: Array<{
+    id: number
+    name: string
+  }>
+}
+
+export interface StoreInfoResponse {
+  data: StoreInfo
+}
+
+export interface StoreCategory {
+  id: number
+  name: string
+  description: string
+  _count: {
+    products: number
+  }
+}
+
+export interface StoreCategoriesResponse {
+  data: StoreCategory[]
+}
+
+export interface StoreProductsParams {
+  slug: string
+  page?: number
+  limit?: number
+  sort?: 'ASC' | 'DESC'
+  sort_field?: string
+  featured?: boolean
+  color?: string
+  size?: string
+  max_price?: number
+  min_price?: number
+  category_id?: number
+  search?: string
+}
+
+export interface UseStoreProductsReturn {
+  products: import('./product').Product[]
+  loading: boolean
+  error: string | null
+  meta: {
+    total: number
+    lastPage: number
+    currentPage: number
+    perPage: number
+    prev: number | null
+    next: number | null
+  } | null
+  refetch: () => void
+  updateParams: (newParams: Partial<StoreProductsParams>) => void
+}
+
+export interface UseStoreInfoReturn {
+  storeInfo: StoreInfo | null
+  loading: boolean
+  error: string | null
+  refetch: () => void
+}
+
+export interface UseStoreCategoriesReturn {
   categories: StoreCategory[]
-  _count: StoreCounts
+  loading: boolean
+  error: string | null
+  refetch: () => void
 }
