@@ -139,8 +139,8 @@ export function useStorePage({ slug }: UseStorePageProps): UseStorePageReturn {
   }
 
   const handleViewDetails = (product: Product) => {
-    // TODO: Implementar navegação para detalhes do produto
-    console.log('Ver detalhes:', product)
+    // Navegar para página de detalhes do produto
+    window.location.href = `/loja/${slug}/produto/${product.id}`
   }
 
   return {

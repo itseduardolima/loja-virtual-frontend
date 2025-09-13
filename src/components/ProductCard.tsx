@@ -5,8 +5,7 @@ import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Heart, Star, Eye } from 'lucide-react'
-import { Product } from '@/types/product'
+import { Heart, Eye } from 'lucide-react'
 import { ProductCardProps } from '@/app/loja/[slug]/types'
 import { formatPrice, buildImageUrl } from '@/lib/utils'
 
@@ -32,9 +31,10 @@ export function ProductCard({
 
   return (
     <Card 
-      className="group relative overflow-hidden bg-white hover:shadow-xl transition-all duration-300 border-0"
+      className="group relative overflow-hidden bg-white transition-all duration-300 border-0"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={() => onViewDetails?.(product)}
     >
       <CardContent className="p-0">
         {/* Container da Imagem */}
@@ -56,12 +56,7 @@ export function ProductCard({
 
           {/* Badges */}
           <div className="absolute top-2 left-2 flex flex-col gap-1">
-            {product.featured && (
-              <Badge className="bg-pink-500 text-white text-xs px-2 py-1">
-                <Star className="w-3 h-3 mr-1" />
-                Destaque
-              </Badge>
-            )}
+            
             {isOutOfStock && (
               <Badge variant="destructive" className="text-xs px-2 py-1">
                 Esgotado
@@ -96,7 +91,7 @@ export function ProductCard({
         {/* Informações do Produto */}
         <div className="p-3 space-y-2">
           {/* Nome do Produto */}
-          <h3 className="font-medium text-gray-900 text-sm line-clamp-2 group-hover:text-pink-600 transition-colors">
+          <h3 className="font-medium text-gray-900 text-sm line-clamp-2 transition-colors">
             {product.name}
           </h3>
 
@@ -109,7 +104,7 @@ export function ProductCard({
 
           {/* Preço */}
           <div className="flex items-center justify-between">
-            <span className="text-lg font-bold text-pink-600">
+            <span className="text-lg font-bold text-text-dark">
               {formatPrice(product.price)}
             </span>
             {!isOutOfStock && (

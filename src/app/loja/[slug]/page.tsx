@@ -143,9 +143,6 @@ export default function StorePage() {
             {/* Informações dos Produtos */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-600">
-                  {meta?.total || 0} produtos encontrados
-                </span>
                 {filters.featured && (
                   <Badge className="bg-pink-500 text-white">
                     <Star className="w-3 h-3 mr-1" />
