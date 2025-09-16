@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import { useParams } from 'next/navigation'
 import {  ProductCard, StorePagination, StoreSidebar, LoadingSpinner, ErrorState, CartSidebar } from '@/components'
-import { ShoppingBag, Heart, Star, Package } from 'lucide-react'
+import { ShoppingBag, Heart, Star, Package, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import { useStorePage } from './useStorePage'
 import { useStoreInfo } from '@/hooks/useStoreInfo'
 import { useCart } from '@/hooks/useCart'
@@ -48,10 +49,19 @@ export default function StorePage() {
   } = useStorePage({ slug })
 
   // Hook para buscar informações da loja
-  const { storeInfo, loading: storeInfoLoading } = useStoreInfo(slug)
+  const { storeInfo} = useStoreInfo(slug)
   
   // Hook do carrinho
   const { totalItems } = useCart(storeInfo?.id)
+
+  // Função para determinar o título da página
+  const getPageTitle = () => {
+    if (filters.categoryId && categories.length > 0) {
+      const selectedCategory = categories.find(cat => cat.id === filters.categoryId)
+      return selectedCategory ? selectedCategory.name : 'Todos os produtos'
+    }
+    return 'Todos os produtos'
+  }
 
   if (loading && !products.length) {
     return (
@@ -151,16 +161,38 @@ export default function StorePage() {
         <div className="flex-1">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-            {/* Informações dos Produtos */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-4">
-                {filters.featured && (
-                  <Badge className="bg-pink-500 text-white">
-                    <Star className="w-3 h-3 mr-1" />
-                    Em destaque
-                  </Badge>
-                )}
+            {/* Título e Campo de Busca */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-bold text-text-dark mb-2">
+                  {getPageTitle()}
+                </h2>
+                <p className="text-gray-600">
+                  {meta?.total || 0} produtos encontrados
+                </p>
               </div>
+              
+              {/* Campo de Busca */}
+              <div className="relative max-w-md w-full">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Input
+                  type="text"
+                  placeholder="Buscar produtos..."
+                  value={search}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="pl-10 pr-4 py-3"
+                />
+              </div>
+            </div>
+
+            {/* Informações dos Produtos */}
+            <div className="flex items-center gap-4 mb-6">
+              {filters.featured && (
+                <Badge className="bg-pink-500 text-white">
+                  <Star className="w-3 h-3 mr-1" />
+                  Em destaque
+                </Badge>
+              )}
             </div>
 
             {/* Grid de Produtos */}

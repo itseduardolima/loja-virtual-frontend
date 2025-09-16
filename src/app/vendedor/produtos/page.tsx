@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext'
 import { Button, LoadingSpinner, ErrorState, Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis, StoreSidebar, Switch, ProductCard } from '@/components'
+import { Input } from '@/components/ui/input'
 import {
   Package,
   Plus,
@@ -9,7 +10,8 @@ import {
   ArrowLeft,
   LogOut,
   TrendingUp,
-  BarChart3
+  BarChart3,
+  Search
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useProdutosPage } from './useProdutosPage'
@@ -146,12 +148,33 @@ export default function ProdutosPage() {
           <div className="py-6 px-20">
             {/* Page Title */}
             <div className="mb-8 px-4 sm:px-6 lg:px-8">
-              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
-                Meus Produtos
-              </h1>
-              <p className="text-lg text-gray-600">
-                {stats.total} produtos encontrados
-              </p>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
+                    Meus Produtos
+                  </h1>
+                  <p className="text-lg text-gray-600">
+                    {stats.total} produtos encontrados
+                  </p>
+                </div>
+                
+                {/* Campo de Busca */}
+                <div className="relative max-w-md w-full">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Input
+                    type="text"
+                    placeholder="Buscar produtos..."
+                    value={filters.search}
+                    onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value, page: 1 }))}
+                    className="pl-10 pr-4 py-3"
+                  />
+                  {isSearching && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-t-transparent"></div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Statistics Cards */}
@@ -221,7 +244,6 @@ export default function ProdutosPage() {
                     {filters.search || filters.status || filters.featured ? 'Tente ajustar os filtros de busca para encontrar o que procura' : 'Comece criando seu primeiro produto para começar a vender'}
                   </p>
                   <Button
-                    className="bg-pink-600 hover:bg-pink-700 text-white shadow-sm"
                     onClick={() => router.push('/vendedor/produtos/criar')}
                   >
                     <Plus className="h-4 w-4 mr-2" />
