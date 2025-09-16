@@ -23,7 +23,7 @@ export function useCategoriesPage() {
     limit: 12,
     search: '',
     status: 1,
-    sort: 'name_asc'
+    sort: 'ASC'
   })
 
   const debouncedSearch = useDebounce(filters.search, 500)

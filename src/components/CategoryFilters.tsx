@@ -67,10 +67,10 @@ export function CategoryFilters({
               <SelectValue placeholder="Ordenar por" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="name_asc">Nome A-Z</SelectItem>
-              <SelectItem value="name_desc">Nome Z-A</SelectItem>
-              <SelectItem value="created_at_asc">Data (Mais antigas)</SelectItem>
-              <SelectItem value="created_at_desc">Data (Mais recentes)</SelectItem>
+              <SelectItem value="ASC">Nome A-Z</SelectItem>
+              <SelectItem value="DESC">Nome Z-A</SelectItem>
+              <SelectItem value="DATE_ASC">Data (Mais antigas)</SelectItem>
+              <SelectItem value="DATE_DESC">Data (Mais recentes)</SelectItem>
             </SelectContent>
           </Select>
         </div>

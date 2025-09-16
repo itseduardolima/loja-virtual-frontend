@@ -264,7 +264,7 @@ export default function CategoriesPage() {
             {!filters.search && (
               <Button 
                 onClick={() => setIsCreating(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3"
+                className="px-6 py-3"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Criar Primeira Categoria
