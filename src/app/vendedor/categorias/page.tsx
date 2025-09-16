@@ -1,7 +1,7 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { Button, Input, Label, Textarea, Card, Badge, LoadingSpinner, ErrorState, CategoryFilters, Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, ConfirmDialog, Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components'
+import { Button, Input, Label, Textarea, Card, Badge, LoadingSpinner, ErrorState, CategoryFilters, Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, ConfirmDialog, Table, TableHeader, TableBody, TableHead, TableRow, TableCell, Switch } from '@/components'
 import { Plus, Edit, Trash2, ArrowLeft, X, Tag } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCategoriesPage } from './useCategoriesPage'
@@ -29,6 +29,7 @@ export default function CategoriesPage() {
     onSubmit,
     handleEdit,
     handleDelete,
+    handleToggleStatus,
     cancelForm,
     setIsCreating,
     
@@ -38,7 +39,8 @@ export default function CategoriesPage() {
     
     isCreatingCategory,
     isUpdating,
-    isDeleting
+    isDeleting,
+    isUpdatingStatus
   } = useCategoriesPage()
 
   if (authLoading) {
@@ -223,24 +225,35 @@ export default function CategoriesPage() {
                     {new Date(category.created_at).toLocaleDateString('pt-BR')}
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(category)}
-                        className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(category.id)}
-                        disabled={isDeleting}
-                        className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                    <div className="flex items-center justify-end gap-3">
+                      <div className="flex items-center gap-2">
+                       
+                        <Switch
+                          checked={category.status === 1}
+                          onCheckedChange={() => handleToggleStatus(category.id, category.status)}
+                          disabled={isUpdatingStatus}
+                          className="data-[state=checked]:bg-green-500"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(category)}
+                          className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(category.id)}
+                          disabled={isDeleting}
+                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </TableCell>
                 </TableRow>

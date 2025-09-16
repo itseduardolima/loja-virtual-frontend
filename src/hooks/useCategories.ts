@@ -76,6 +76,17 @@ export function useCategories(filters?: CategoryFilters) {
     }
   })
 
+  // Atualizar status da categoria
+  const updateCategoryStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: number, status: number }) => {
+      const response = await api.patch(`/categories/${id}/status`, { status })
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] })
+    }
+  })
+
   return {
     categories,
     meta,
@@ -84,8 +95,10 @@ export function useCategories(filters?: CategoryFilters) {
     createCategory: createCategoryMutation.mutate,
     updateCategory: updateCategoryMutation.mutate,
     deleteCategory: deleteCategoryMutation.mutate,
+    updateCategoryStatus: updateCategoryStatusMutation.mutate,
     isCreating: createCategoryMutation.isPending,
     isUpdating: updateCategoryMutation.isPending,
-    isDeleting: deleteCategoryMutation.isPending
+    isDeleting: deleteCategoryMutation.isPending,
+    isUpdatingStatus: updateCategoryStatusMutation.isPending
   }
 }

@@ -6,6 +6,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { useCategories } from '@/hooks/useCategories'
 import { createCategorySchema, CreateCategoryFormData } from '@/schemas'
 import { useDebounce } from '@/hooks/useDebounce'
+import { useToastContext } from '@/contexts/ToastContext'
 
 export interface CategoryFilters {
   page: number
@@ -16,6 +17,7 @@ export interface CategoryFilters {
 }
 
 export function useCategoriesPage() {
+  const { success, error: showError } = useToastContext()
   const [isCreating, setIsCreating] = useState(false)
   const [editingCategory, setEditingCategory] = useState<number | null>(null)
   const [filters, setFilters] = useState<CategoryFilters>({
@@ -40,9 +42,11 @@ export function useCategoriesPage() {
     createCategory,
     updateCategory,
     deleteCategory,
+    updateCategoryStatus,
     isCreating: isCreatingCategory,
     isUpdating,
     isDeleting,
+    isUpdatingStatus,
     meta
   } = useCategories(debouncedFilters)
 
@@ -85,6 +89,19 @@ export function useCategoriesPage() {
   const handleDelete = (id: number) => {
     if (confirm('Tem certeza que deseja deletar esta categoria?')) {
       deleteCategory(id)
+    }
+  }
+
+  const handleToggleStatus = async (id: number, currentStatus: number) => {
+    try {
+      const newStatus = currentStatus === 1 ? 0 : 1
+      await updateCategoryStatus({ id, status: newStatus })
+      success(
+        newStatus === 1 ? 'Categoria ativada com sucesso!' : 'Categoria desativada com sucesso!',
+        'Status atualizado'
+      )
+    } catch (err) {
+      showError('Erro ao atualizar status da categoria', 'Erro')
     }
   }
 
@@ -132,6 +149,7 @@ export function useCategoriesPage() {
     onSubmit,
     handleEdit,
     handleDelete,
+    handleToggleStatus,
     cancelForm,
     setIsCreating,
     
@@ -143,6 +161,7 @@ export function useCategoriesPage() {
     
     isCreatingCategory,
     isUpdating,
-    isDeleting
+    isDeleting,
+    isUpdatingStatus
   }
 }
