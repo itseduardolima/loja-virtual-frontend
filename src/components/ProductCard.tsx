@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Heart, Eye } from 'lucide-react'
+import { Heart } from 'lucide-react'
 import { ProductCardProps } from '@/app/loja/[slug]/types'
 import { formatPrice, buildImageUrl } from '@/lib/utils'
 
@@ -76,14 +76,7 @@ export function ProductCard({
             >
               <Heart className="w-4 h-4" />
             </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              className="w-8 h-8 p-0 rounded-full bg-white/90 hover:bg-white shadow-md"
-              onClick={() => onViewDetails?.(product)}
-            >
-              <Eye className="w-4 h-4" />
-            </Button>
+            
           </div>
 
         </div>
