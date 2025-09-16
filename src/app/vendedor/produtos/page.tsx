@@ -102,7 +102,6 @@ export default function ProdutosPage() {
           <StoreSidebar
             isOpen={true}
             onClose={() => { }}
-            variant="inline"
             showSearch={true}
             onSearch={(search) => setFilters(prev => ({ ...prev, search }))}
             onSortChange={(sort, sortField) => {
