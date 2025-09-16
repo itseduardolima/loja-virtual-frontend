@@ -164,13 +164,17 @@ export function StoreSidebar({
           <div>
             <Label className="text-sm font-medium text-gray-700 mb-2 block">Preço Mínimo</Label>
             <Input
-              type="number"
+              type="text"
               placeholder="R$ 0,00"
               value={filterProps.activeFilters.minPrice || ''}
-              onChange={(e) => filterProps.onFilterChange({
-                ...filterProps.activeFilters,
-                minPrice: e.target.value ? parseFloat(e.target.value) : undefined
-              })}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^\d.,]/g, '')
+                filterProps.onFilterChange({
+                  ...filterProps.activeFilters,
+                  minPrice: value ? parseFloat(value.replace(',', '.')) : undefined
+                })
+              }}
+              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           </div>
 
@@ -178,13 +182,17 @@ export function StoreSidebar({
           <div>
             <Label className="text-sm font-medium text-gray-700 mb-2 block">Preço Máximo</Label>
             <Input
-              type="number"
+              type="text"
               placeholder="R$ 999,99"
               value={filterProps.activeFilters.maxPrice || ''}
-              onChange={(e) => filterProps.onFilterChange({
-                ...filterProps.activeFilters,
-                maxPrice: e.target.value ? parseFloat(e.target.value) : undefined
-              })}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^\d.,]/g, '')
+                filterProps.onFilterChange({
+                  ...filterProps.activeFilters,
+                  maxPrice: value ? parseFloat(value.replace(',', '.')) : undefined
+                })
+              }}
+              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           </div>
         </div>
@@ -343,13 +351,17 @@ export function StoreSidebar({
           <div>
             <Label className="text-sm font-medium text-gray-700 mb-2 block">Preço Mínimo</Label>
             <Input
-              type="number"
+              type="text"
               placeholder="R$ 0,00"
               value={filterProps.activeFilters.minPrice || ''}
-              onChange={(e) => filterProps.onFilterChange({
-                ...filterProps.activeFilters,
-                minPrice: e.target.value ? parseFloat(e.target.value) : undefined
-              })}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^\d.,]/g, '')
+                filterProps.onFilterChange({
+                  ...filterProps.activeFilters,
+                  minPrice: value ? parseFloat(value.replace(',', '.')) : undefined
+                })
+              }}
+              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           </div>
 
@@ -357,13 +369,17 @@ export function StoreSidebar({
           <div>
             <Label className="text-sm font-medium text-gray-700 mb-2 block">Preço Máximo</Label>
             <Input
-              type="number"
+              type="text"
               placeholder="R$ 999,99"
               value={filterProps.activeFilters.maxPrice || ''}
-              onChange={(e) => filterProps.onFilterChange({
-                ...filterProps.activeFilters,
-                maxPrice: e.target.value ? parseFloat(e.target.value) : undefined
-              })}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^\d.,]/g, '')
+                filterProps.onFilterChange({
+                  ...filterProps.activeFilters,
+                  maxPrice: value ? parseFloat(value.replace(',', '.')) : undefined
+                })
+              }}
+              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           </div>
 
