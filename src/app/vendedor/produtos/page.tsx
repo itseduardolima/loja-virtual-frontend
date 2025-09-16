@@ -105,12 +105,20 @@ export default function ProdutosPage() {
             showSearch={true}
             onSearch={(search) => setFilters(prev => ({ ...prev, search }))}
             onSortChange={(sort, sortField) => {
-              // Mapear os valores para o formato esperado
-              const sortMap: { [key: string]: 'newest' | 'price_asc' | 'price_desc' | 'name_asc' | 'name_desc' } = {
-                'DESC': 'newest',
-                'ASC': 'newest'
+              // Mapear os valores para o formato esperado baseado no campo e ordem
+              const getSortValue = (order: string, field: string) => {
+                if (field === 'created_at') {
+                  return order === 'DESC' ? 'newest' : 'oldest'
+                } else if (field === 'name') {
+                  return order === 'ASC' ? 'name_asc' : 'name_desc'
+                } else if (field === 'price') {
+                  return order === 'ASC' ? 'price_asc' : 'price_desc'
+                }
+                return 'newest'
               }
-              setFilters(prev => ({ ...prev, sort: sortMap[sort] || 'newest' }))
+              
+              const sortValue = getSortValue(sort, sortField)
+              setFilters(prev => ({ ...prev, sort: sortValue }))
             }}
             onFilterChange={(newFilters) => setFilters(prev => ({ ...prev, ...newFilters }))}
             onClearFilters={() => setFilters({
@@ -244,6 +252,7 @@ export default function ProdutosPage() {
                     {filters.search || filters.status || filters.featured ? 'Tente ajustar os filtros de busca para encontrar o que procura' : 'Comece criando seu primeiro produto para começar a vender'}
                   </p>
                   <Button
+                    
                     onClick={() => router.push('/vendedor/produtos/criar')}
                   >
                     <Plus className="h-4 w-4 mr-2" />

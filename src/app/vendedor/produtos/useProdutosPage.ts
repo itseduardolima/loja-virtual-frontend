@@ -10,7 +10,7 @@ export function useProdutosPage() {
 
   const [filters, setFilters] = useState({
     search: '',
-    sort: 'newest' as 'price_asc' | 'price_desc' | 'name_asc' | 'name_desc' | 'newest',
+    sort: 'newest',
     category_id: undefined as number | undefined,
     min_price: undefined as number | undefined,
     max_price: undefined as number | undefined,

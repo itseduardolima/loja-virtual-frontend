@@ -35,6 +35,7 @@ export default function CategoriesPage() {
     
     handlePageChange,
     handleSearchChange,
+    handleSortChange,
     setFilters,
     
     isCreatingCategory,
@@ -100,6 +101,7 @@ export default function CategoriesPage() {
             filters={filters}
             setFilters={setFilters}
             onSearchChange={handleSearchChange}
+            onSortChange={handleSortChange}
             isSearching={isLoading}
           />
         </div>

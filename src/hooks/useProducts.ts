@@ -11,7 +11,25 @@ export function useProducts(filters?: ProductFilters) {
       if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
           if (value !== undefined && value !== null && value !== '') {
-            params.append(key, value.toString())
+            // Mapear sort para sort e sort_field separadamente
+            if (key === 'sort') {
+              const sortMapping: { [key: string]: { sort: string, sort_field: string } } = {
+                'newest': { sort: 'DESC', sort_field: 'created_at' },
+                'oldest': { sort: 'ASC', sort_field: 'created_at' },
+                'name_asc': { sort: 'ASC', sort_field: 'name' },
+                'name_desc': { sort: 'DESC', sort_field: 'name' },
+                'price_asc': { sort: 'ASC', sort_field: 'price' },
+                'price_desc': { sort: 'DESC', sort_field: 'price' }
+              }
+              
+              const mappedSort = sortMapping[value as string]
+              if (mappedSort) {
+                params.append('sort', mappedSort.sort)
+                params.append('sort_field', mappedSort.sort_field)
+              }
+            } else {
+              params.append(key, value.toString())
+            }
           }
         })
       }

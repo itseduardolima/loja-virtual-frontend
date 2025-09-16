@@ -127,6 +127,17 @@ export function useCategoriesPage() {
     setFilters(prev => ({ ...prev, search }))
   }
 
+  const handleSortChange = (sort: string, sortField: string) => {
+    // Mapear os valores para o formato esperado
+    const sortMap: { [key: string]: 'ASC' | 'DESC' | 'DATE_ASC' | 'DATE_DESC' } = {
+      'ASC': 'ASC',
+      'DESC': 'DESC',
+      'DATE_ASC': 'DATE_ASC',
+      'DATE_DESC': 'DATE_DESC'
+    }
+    setFilters(prev => ({ ...prev, sort: sortMap[sort] || 'ASC' }))
+  }
+
   const isSearching = filters.search !== debouncedSearch
 
   return {
@@ -156,6 +167,7 @@ export function useCategoriesPage() {
     updateFilters,
     handlePageChange,
     handleSearchChange,
+    handleSortChange,
     setFilters,
     isSearching,
     

@@ -39,7 +39,7 @@ export interface ProductsResponse {
 export interface ProductFilters {
   page?: number
   limit?: number
-  sort?: 'price_asc' | 'price_desc' | 'name_asc' | 'name_desc' | 'newest'
+  sort?: string
   search?: string
   category_id?: number
   min_price?: number
