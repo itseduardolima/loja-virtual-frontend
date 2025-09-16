@@ -12,8 +12,9 @@ import { formatPrice, buildImageUrl } from '@/lib/utils'
 export function ProductCard({ 
   product, 
   onAddToFavorites, 
-  onViewDetails 
-}: ProductCardProps) {
+  onViewDetails,
+  showFavorites = true
+}: ProductCardProps & { showFavorites?: boolean }) {
   const [isHovered, setIsHovered] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
@@ -68,14 +69,16 @@ export function ProductCard({
           <div className={`absolute top-2 right-2 flex flex-col gap-2 transition-opacity duration-200 ${
             isHovered ? 'opacity-100' : 'opacity-0'
           }`}>
-            <Button
-              size="sm"
-              variant="secondary"
-              className="w-8 h-8 p-0 rounded-full bg-white/90 hover:bg-white shadow-md"
-              onClick={() => onAddToFavorites?.(product)}
-            >
-              <Heart className="w-4 h-4" />
-            </Button>
+            {showFavorites && (
+              <Button
+                size="sm"
+                variant="secondary"
+                className="w-8 h-8 p-0 rounded-full bg-white/90 hover:bg-white shadow-md"
+                onClick={() => onAddToFavorites?.(product)}
+              >
+                <Heart className="w-4 h-4" />
+              </Button>
+            )}
             
           </div>
 

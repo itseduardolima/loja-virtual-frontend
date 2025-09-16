@@ -54,7 +54,7 @@ export function useCategories(filters?: CategoryFilters) {
       if (data.description) formData.append('description', data.description)
       if (data.image) formData.append('image', data.image)
 
-      const response = await api.put(`/categories/${data.id}`, formData, {
+      const response = await api.patch(`/categories/${data.id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

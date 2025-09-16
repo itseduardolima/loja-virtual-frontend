@@ -1,7 +1,7 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { Button, LoadingSpinner, ErrorState, Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis, StoreSidebar, Switch } from '@/components'
+import { Button, LoadingSpinner, ErrorState, Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis, StoreSidebar, Switch, ProductCard } from '@/components'
 import {
   Package,
   Plus,
@@ -12,8 +12,6 @@ import {
   BarChart3
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
-import { buildImageUrl } from '@/lib/utils'
 import { useProdutosPage } from './useProdutosPage'
 
 export default function ProdutosPage() {
@@ -231,63 +229,33 @@ export default function ProdutosPage() {
                   </Button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-8">
+                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                   {products.map((product) => (
-                    <div
-                      key={product.id}
-                      className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group"
-                      onClick={() => router.push(`/vendedor/produtos/${product.id}`)}
-                    >
-                      {/* Image */}
-                      <div className="relative aspect-[4/3] bg-gray-50">
-                        {product.images && product.images.length > 0 ? (
-                          <Image
-                            src={buildImageUrl(product.images[0])}
-                            alt={product.name}
-                            fill
-                            className="object-cover group-hover:scale-110 transition-transform duration-500"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement
-                              target.style.display = 'none'
-                            }}
-                          />
-                        ) : (
-                          <div className="flex items-center justify-center h-full">
-                            <Package className="h-16 w-16 text-gray-300" />
-                          </div>
-                        )}
-
-                      </div>
-
-                      {/* Content */}
-                      <div className="p-6">
-                        <h3 className="font-semibold text-gray-900 mb-3 line-clamp-2 text-xl">
-                          {product.name}
-                        </h3>
-                        <p className="text-base text-gray-600 mb-5 line-clamp-3 leading-relaxed">
-                          {product.description}
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <span className="text-2xl font-bold text-pink-600">
-                            {formatPrice(product.price)}
-                          </span>
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm text-gray-600">
+                    <div key={product.id} className="relative group">
+                      <ProductCard
+                        product={product}
+                        onAddToFavorites={() => {}} // Função vazia para vendedor
+                        onViewDetails={() => router.push(`/vendedor/produtos/${product.id}`)}
+                        showFavorites={false}
+                      />
+                      {/* Switch de status posicionado na parte inferior direita */}
+                      <div className="absolute bottom-2 right-2 z-10">
+                      
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-600 font-medium">
                               {product.status === 1 ? 'Disponível' : 'Esgotado'}
                             </span>
-                            <div onClick={(e) => e.stopPropagation()}>
-                              <Switch
-                                checked={product.status === 1}
-                                onCheckedChange={(checked: boolean) => {
-                                  handleToggleStatus(product.id, product.status)
-                                }}
-                                disabled={isUpdatingStatus}
-                                className="data-[state=checked]:bg-green-500"
-                              />
-                            </div>
+                            <Switch
+                              checked={product.status === 1}
+                              onCheckedChange={(checked: boolean) => {
+                                handleToggleStatus(product.id, product.status)
+                              }}
+                              disabled={isUpdatingStatus}
+                              className="data-[state=checked]:bg-green-500"
+                            />
                           </div>
                         </div>
-                      </div>
+                 
                     </div>
                   ))}
                 </div>
