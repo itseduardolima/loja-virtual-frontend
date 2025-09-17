@@ -52,14 +52,6 @@ export function useProductDetailPage(productId: string) {
     return images.map(image => buildImageUrl(image))
   }
 
-  // Função para formatar preço
-  const formatPrice = (price: string | number): string => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(parseFloat(price.toString()))
-  }
-
   // Função para obter status do produto
   const getStatusInfo = (status: number) => {
     return status === 1 
@@ -77,6 +69,24 @@ export function useProductDetailPage(productId: string) {
   // Função para selecionar imagem
   const selectImage = (index: number) => {
     setSelectedImageIndex(index)
+  }
+
+  // Função para navegar para a imagem anterior
+  const previousImage = () => {
+    if (product && product.images && product.images.length > 0) {
+      setSelectedImageIndex(prev => 
+        prev === 0 ? product.images.length - 1 : prev - 1
+      )
+    }
+  }
+
+  // Função para navegar para a próxima imagem
+  const nextImage = () => {
+    if (product && product.images && product.images.length > 0) {
+      setSelectedImageIndex(prev => 
+        prev === product.images.length - 1 ? 0 : prev + 1
+      )
+    }
   }
 
   // Função para abrir modal de confirmação
@@ -105,10 +115,11 @@ export function useProductDetailPage(productId: string) {
     processColors,
     processSizes,
     buildImageUrls,
-    formatPrice,
     getStatusInfo,
     getFeaturedInfo,
     selectImage,
+    previousImage,
+    nextImage,
     openDeleteDialog,
     handleDeleteProduct,
     showDeleteDialog,

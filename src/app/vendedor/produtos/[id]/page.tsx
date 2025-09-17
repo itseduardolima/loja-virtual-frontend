@@ -12,12 +12,15 @@ import {
   Trash2,
   Truck,
   Shield,
-  RotateCcw
+  RotateCcw,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 import { useRouter, useParams } from 'next/navigation'
 import Image from 'next/image'
 import { useProductDetailPage } from './useProductDetailPage'
-import { buildImageUrl } from '@/lib/utils'
+import { buildImageUrl, formatPrice } from '@/lib/utils'
+import { useState, useEffect } from 'react'
 
 export default function ProductDetailPage() {
   const { user, isLoading: authLoading } = useAuth()
@@ -34,10 +37,10 @@ export default function ProductDetailPage() {
     processColors,
     processSizes,
     buildImageUrls,
-    formatPrice,
     getStatusInfo,
-    getFeaturedInfo,
     selectImage,
+    previousImage,
+    nextImage,
     openDeleteDialog,
     handleDeleteProduct,
     showDeleteDialog,
@@ -48,6 +51,24 @@ export default function ProductDetailPage() {
   const getColorValue = (colorName: string): string => {
     return colorMap[colorName] || '#6B7280' // Cinza como fallback
   }
+
+  // Suporte a navegação por teclado
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (product && product.images && product.images.length > 1) {
+        if (event.key === 'ArrowLeft') {
+          event.preventDefault()
+          previousImage()
+        } else if (event.key === 'ArrowRight') {
+          event.preventDefault()
+          nextImage()
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [product, previousImage, nextImage])
 
   if (authLoading) {
     return <LoadingSpinner />
@@ -147,29 +168,61 @@ export default function ProductDetailPage() {
                   <Package className="h-24 w-24 text-gray-300" />
                 </div>
               )}
+
+              {/* Navigation Controls */}
+              {product.images && product.images.length > 1 && (
+                <>
+                  {/* Previous Button */}
+                  <button
+                    onClick={previousImage}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-700 hover:text-gray-900 rounded-full p-2 shadow-md transition-all duration-200"
+                    aria-label="Imagem anterior"
+                  >
+                    <ChevronLeft className="h-6 w-6" />
+                  </button>
+
+                  {/* Next Button */}
+                  <button
+                    onClick={nextImage}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-700 hover:text-gray-900 rounded-full p-2 shadow-md transition-all duration-200"
+                    aria-label="Próxima imagem"
+                  >
+                    <ChevronRight className="h-6 w-6" />
+                  </button>
+
+                  {/* Image Counter */}
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white text-sm px-3 py-1 rounded-full">
+                    {selectedImageIndex + 1} / {product.images.length}
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Thumbnail Images */}
             {product.images && product.images.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto pb-2">
-                {product.images.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => selectImage(index)}
-                    className={`relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${
-                      selectedImageIndex === index 
-                        ? 'border-pink-500' 
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <Image
-                      src={buildImageUrl(image)}
-                      alt={`${product.name} ${index + 1}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </button>
-                ))}
+              <div className="space-y-2">
+                <div className="flex gap-3 overflow-x-auto pb-2">
+                  {product.images.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => selectImage(index)}
+                      className={`relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${
+                        selectedImageIndex === index 
+                          ? 'border-primary' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <Image
+                        src={buildImageUrl(image)}
+                        alt={`${product.name} ${index + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+                
+            
               </div>
             )}
           </div>
@@ -198,7 +251,7 @@ export default function ProductDetailPage() {
 
             {/* Price */}
             <div className="flex items-center gap-4">
-              <span className="text-4xl font-bold text-pink-600">
+              <span className="text-4xl font-bold text-text-dark">
                 {formatPrice(product.price)}
               </span>
             </div>

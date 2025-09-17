@@ -102,17 +102,27 @@ export function useProductDetailPage(slug: string, productId: string) {
     return images.map(image => buildImageUrl(image))
   }
 
-  // Função para formatar preço
-  const formatPrice = (price: string | number): string => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(parseFloat(price.toString()))
-  }
-
   // Função para selecionar imagem
   const selectImage = (index: number) => {
     setSelectedImageIndex(index)
+  }
+
+  // Função para navegar para a imagem anterior
+  const previousImage = () => {
+    if (product && product.images && product.images.length > 0) {
+      setSelectedImageIndex(prev => 
+        prev === 0 ? product.images.length - 1 : prev - 1
+      )
+    }
+  }
+
+  // Função para navegar para a próxima imagem
+  const nextImage = () => {
+    if (product && product.images && product.images.length > 0) {
+      setSelectedImageIndex(prev => 
+        prev === product.images.length - 1 ? 0 : prev + 1
+      )
+    }
   }
 
   // Função para selecionar tamanho
@@ -235,8 +245,9 @@ export function useProductDetailPage(slug: string, productId: string) {
     processColors,
     processSizes,
     buildImageUrls,
-    formatPrice,
     selectImage,
+    previousImage,
+    nextImage,
     selectSize,
     selectColor,
     increaseQuantity,
