@@ -22,9 +22,9 @@ export function useProdutosPage() {
     limit: 10
   })
 
-  const debouncedSearch = useDebounce(filters.search, 500)
-  const debouncedMinPrice = useDebounce(filters.min_price, 800)
-  const debouncedMaxPrice = useDebounce(filters.max_price, 800)
+  const debouncedSearch = useDebounce(filters.search, 2000)
+  const debouncedMinPrice = useDebounce(filters.min_price, 2000)
+  const debouncedMaxPrice = useDebounce(filters.max_price, 2000)
   
   const debouncedFilters = {
     ...filters,

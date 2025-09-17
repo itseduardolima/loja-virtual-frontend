@@ -20,7 +20,7 @@ export function useStorePage({ slug }: UseStorePageProps): UseStorePageReturn {
   const [filters, setFilters] = useState<StoreFilters>({})
   
   // Debounce para busca automática
-  const debouncedSearch = useDebounce(search, 500)
+  const debouncedSearch = useDebounce(search, 2000)
 
   // Executa busca automática quando debouncedSearch muda
   useEffect(() => {

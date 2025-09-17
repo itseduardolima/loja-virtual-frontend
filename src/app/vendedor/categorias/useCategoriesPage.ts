@@ -28,7 +28,7 @@ export function useCategoriesPage() {
     sort: 'ASC'
   })
 
-  const debouncedSearch = useDebounce(filters.search, 500)
+  const debouncedSearch = useDebounce(filters.search, 2000)
 
   const debouncedFilters = {
     ...filters,
