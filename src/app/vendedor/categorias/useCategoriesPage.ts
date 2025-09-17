@@ -7,14 +7,7 @@ import { useCategories } from '@/hooks/useCategories'
 import { createCategorySchema, CreateCategoryFormData } from '@/schemas'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useToastContext } from '@/contexts/ToastContext'
-
-export interface CategoryFilters {
-  page: number
-  limit: number
-  search: string
-  status?: number
-  sort: string
-}
+import { CategoryFilters } from '@/types/category'
 
 export function useCategoriesPage() {
   const { success, error: showError } = useToastContext()
@@ -24,7 +17,7 @@ export function useCategoriesPage() {
     page: 1,
     limit: 12,
     search: '',
-    status: 1,
+    status: undefined,
     sort: 'ASC'
   })
 

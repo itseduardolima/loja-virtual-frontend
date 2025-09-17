@@ -6,12 +6,13 @@ import { useState } from 'react'
 
 interface CategoryFiltersProps {
   filters: {
-    search: string
+    search?: string
     status?: number
-    sort: string
+    sort?: string
   }
   setFilters: (filters: any) => void
   onSearchChange: (search: string) => void
+  onSortChange: (sort: string, sortField: string) => void
   isSearching?: boolean
 }
 
@@ -21,7 +22,7 @@ export function CategoryFilters({
   onSearchChange,
   isSearching = false
 }: CategoryFiltersProps) {
-  const [searchValue, setSearchValue] = useState(filters.search)
+  const [searchValue, setSearchValue] = useState(filters.search || '')
 
   return (
     <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
@@ -58,7 +59,7 @@ export function CategoryFilters({
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Ordenar por</label>
           <Select
-            value={filters.sort}
+            value={filters.sort || 'ASC'}
             onValueChange={(value: string) => 
               setFilters((prev: any) => ({ ...prev, sort: value }))
             }
