@@ -134,7 +134,8 @@ export default function CreateProductPage() {
                           min="0.01"
                           {...register('price', { valueAsNumber: true })}
                           placeholder="0,00"
-                          className={`h-12 pl-8 text-lg ${errors.price ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
+                          value={watch('price') || ''}
+                          className={`h-12 pl-8 text-lg [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${errors.price ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
                         />
                       </div>
                       {errors.price && (
@@ -155,7 +156,8 @@ export default function CreateProductPage() {
                         min="0"
                         {...register('stock', { valueAsNumber: true })}
                         placeholder="0"
-                        className={`h-12 text-lg ${errors.stock ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
+                        value={watch('stock') || ''}
+                        className={`h-12 text-lg [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${errors.stock ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
                       />
                       {errors.stock && (
                         <p className="text-red-500 text-sm mt-2 flex items-center gap-1">

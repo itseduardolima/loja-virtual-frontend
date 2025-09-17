@@ -46,8 +46,8 @@ export function useEditProductPage(productId: string, user: any) {
     defaultValues: {
       name: '',
       description: '',
-      price: 0,
-      stock: 0,
+      price: undefined,
+      stock: undefined,
       category_id: undefined,
       featured: false
     }
@@ -58,8 +58,8 @@ export function useEditProductPage(productId: string, user: any) {
       form.reset({
         name: product.name || '',
         description: product.description || '',
-        price: parseFloat(product.price) || 0,
-        stock: product.stock || 0,
+        price: product.price ? parseFloat(product.price) : undefined,
+        stock: product.stock || undefined,
         category_id: product.category_id || undefined,
         featured: product.featured === 1
       })
@@ -110,8 +110,8 @@ export function useEditProductPage(productId: string, user: any) {
     
     formData.append('name', data.name)
     if (data.description) formData.append('description', data.description)
-    formData.append('price', data.price.toString())
-    formData.append('stock', (data.stock ?? 0).toString())
+    formData.append('price', (data.price || 0).toString())
+    formData.append('stock', (data.stock || 0).toString())
     if (data.category_id) formData.append('category_id', data.category_id.toString())
     formData.append('featured', data.featured ? 'true' : 'false')
     

@@ -23,8 +23,8 @@ export function useCreateProductPage(user: any) {
     defaultValues: {
       name: '',
       description: '',
-      price: 0,
-      stock: 0,
+      price: undefined,
+      stock: undefined,
       featured: false,
       sizes: [],
       colors: [],
@@ -60,8 +60,8 @@ export function useCreateProductPage(user: any) {
       
       formData.append('name', data.name)
       if (data.description) formData.append('description', data.description)
-      formData.append('price', data.price.toString())
-      if (data.stock) formData.append('stock', data.stock.toString())
+      formData.append('price', (data.price || 0).toString())
+      formData.append('stock', (data.stock || 0).toString())
       if (data.category_id) formData.append('category_id', data.category_id.toString())
       formData.append('featured', data.featured ? 'true' : 'false')
       

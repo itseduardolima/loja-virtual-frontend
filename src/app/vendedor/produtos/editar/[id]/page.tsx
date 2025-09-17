@@ -152,7 +152,8 @@ export default function EditProductPage() {
                         step="0.01"
                         {...register('price')}
                         placeholder="0,00"
-                        className="h-12 text-base"
+                        value={watch('price') || ''}
+                        className="h-12 text-base [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
                       />
                       {errors.price && (
                         <p className="text-sm text-red-600">{errors.price.message}</p>
@@ -168,7 +169,8 @@ export default function EditProductPage() {
                         type="number"
                         {...register('stock')}
                         placeholder="0"
-                        className="h-12 text-base"
+                        value={watch('stock') || ''}
+                        className="h-12 text-base [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
                       />
                       {errors.stock && (
                         <p className="text-sm text-red-600">{errors.stock.message}</p>
