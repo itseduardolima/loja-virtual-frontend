@@ -46,6 +46,7 @@ export interface ProcessedStoreData {
 // Tipos para os handlers da página
 export interface StorePageHandlers {
   handleSearch: (searchTerm: string) => void
+  handleSearchSubmit: (searchTerm: string) => void
   handleSortChange: (newSort: string, newSortField: string) => void
   handleFilterChange: (newFilters: StoreFilters) => void
   handleClearFilters: () => void

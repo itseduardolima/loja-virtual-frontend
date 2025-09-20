@@ -13,21 +13,29 @@ interface UseStorePageProps {
 }
 
 export function useStorePage({ slug }: UseStorePageProps): UseStorePageReturn {
-  // Estado local
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<SortOrder>('DESC')
   const [sortField, setSortField] = useState('created_at')
   const [filters, setFilters] = useState<StoreFilters>({})
+  const [isManualSearch, setIsManualSearch] = useState(false)
   
-  // Debounce para busca automática
-  const debouncedSearch = useDebounce(search, 2000)
+  const debouncedSearch = useDebounce(search, 1000)
 
-  // Executa busca automática quando debouncedSearch muda
   useEffect(() => {
-    updateParams({ search: debouncedSearch || undefined, page: 1 })
-  }, [debouncedSearch])
+    if (!isManualSearch) {
+      updateParams({ search: debouncedSearch || undefined, page: 1 })
+    }
+  }, [debouncedSearch, isManualSearch])
 
-  // Hook da API
+  useEffect(() => {
+    if (isManualSearch) {
+      const timer = setTimeout(() => {
+        setIsManualSearch(false)
+      }, 1500)
+      return () => clearTimeout(timer)
+    }
+  }, [isManualSearch])
+
   const {
     products,
     loading,
@@ -48,8 +56,6 @@ export function useStorePage({ slug }: UseStorePageProps): UseStorePageReturn {
     category_id: filters.categoryId,
     search: debouncedSearch || undefined
   })
-
-  // Dados processados
   const categories = useMemo(() => {
     const uniqueCategories = new Map()
     products.forEach(product => {
@@ -80,10 +86,15 @@ export function useStorePage({ slug }: UseStorePageProps): UseStorePageReturn {
     return Array.from(sizes)
   }, [products])
 
-  // Handlers
   const handleSearch = (searchTerm: string) => {
     setSearch(searchTerm)
-    // A busca automática será executada via debounce
+    setIsManualSearch(false)
+  }
+
+  const handleSearchSubmit = (searchTerm: string) => {
+    setSearch(searchTerm)
+    setIsManualSearch(true)
+    updateParams({ search: searchTerm || undefined, page: 1 })
   }
 
   const handleSortChange = (newSort: string, newSortField: string) => {
@@ -134,35 +145,27 @@ export function useStorePage({ slug }: UseStorePageProps): UseStorePageReturn {
 
 
   const handleAddToFavorites = (product: Product) => {
-    // TODO: Implementar lógica de adicionar aos favoritos
     console.log('Adicionar aos favoritos:', product)
   }
 
   const handleViewDetails = (product: Product) => {
-    // Navegar para página de detalhes do produto
     window.location.href = `/loja/${slug}/produto/${product.id}`
   }
 
   return {
-    // Estado
     search,
     sort,
     sortField,
     filters,
-    
-    // Dados da API
     products,
     loading,
     error,
     meta,
-    
-    // Dados processados
     categories,
     availableColors,
     availableSizes,
-    
-    // Handlers
     handleSearch,
+    handleSearchSubmit,
     handleSortChange,
     handleFilterChange,
     handleClearFilters,

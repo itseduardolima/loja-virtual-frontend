@@ -39,6 +39,7 @@ export default function StorePage() {
     
     // Handlers
     handleSearch,
+    handleSearchSubmit,
     handleSortChange,
     handleFilterChange,
     handleClearFilters,
@@ -180,6 +181,11 @@ export default function StorePage() {
                   placeholder="Buscar produtos..."
                   value={search}
                   onChange={(e) => handleSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSearchSubmit(search)
+                    }
+                  }}
                   className="pl-10 pr-4 py-3"
                 />
               </div>
