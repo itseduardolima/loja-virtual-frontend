@@ -254,6 +254,8 @@ export default function StorePage() {
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
         storeId={storeInfo?.id}
+        storeSlug={slug}
+        currentPath={`/loja/${slug}`}
       />
     </div>
   )

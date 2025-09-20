@@ -416,6 +416,8 @@ export default function ProductDetailPage() {
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
         storeId={product?.store?.id}
+        storeSlug={slug}
+        currentPath={`/loja/${slug}/produto/${productId}`}
       />
     </div>
   )
