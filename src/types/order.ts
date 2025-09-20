@@ -65,8 +65,9 @@ export interface OrdersFilters {
 export const ORDER_STATUS = {
   1: { label: 'Pendente', color: 'yellow', icon: 'clock' },
   2: { label: 'Confirmado', color: 'blue', icon: 'check-circle' },
-  3: { label: 'Entregue', color: 'green', icon: 'truck' },
-  4: { label: 'Cancelado', color: 'red', icon: 'x-circle' }
+  3: { label: 'Enviado', color: 'purple', icon: 'truck' },
+  4: { label: 'Entregue', color: 'green', icon: 'check-circle' },
+  5: { label: 'Cancelado', color: 'red', icon: 'x-circle' }
 } as const
 
 export const SORT_OPTIONS = {

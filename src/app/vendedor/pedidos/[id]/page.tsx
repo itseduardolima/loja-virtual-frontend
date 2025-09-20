@@ -17,7 +17,6 @@ import {
   Truck, 
   XCircle,
   MessageCircle,
-  CreditCard,
   FileText,
   ShoppingBag
 } from 'lucide-react'
@@ -27,6 +26,7 @@ import { formatPrice } from '@/lib/utils'
 import { buildImageUrl } from '@/lib/imageUtils'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorState } from '@/components/ErrorState'
+import { UpdateOrderStatusModal } from '@/components/UpdateOrderStatusModal'
 import { useAuth } from '@/contexts/AuthContext'
 import { useEffect } from 'react'
 
@@ -149,15 +149,16 @@ Em breve entraremos em contato para confirmar o pedido! 🛍️`
             </div>
             <Badge 
               variant="outline" 
-              className={`py-4 px-6 text-base ${
+              className={`py-4 px-8 text-base ${
                 statusInfo.color === 'yellow' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
                 statusInfo.color === 'blue' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                statusInfo.color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-200' :
                 statusInfo.color === 'green' ? 'bg-green-50 text-green-700 border-green-200' :
                 'bg-red-50 text-red-700 border-red-200'
               }`}
             >
-              {getStatusIcon(order.status)}
-              <span className="ml-1">{statusInfo.label}</span>
+           
+              <span>{statusInfo.label}</span>
             </Badge>
           </div>
         </div>
@@ -321,42 +322,16 @@ Em breve entraremos em contato para confirmar o pedido! 🛍️`
                   </Button>
                 )}
                 
-                <Button variant="outline" className="w-full">
-                  <CreditCard className="h-4 w-4 mr-2" />
-                  Atualizar Status
-                </Button>
+                <UpdateOrderStatusModal
+                  orderId={order.id}
+                  currentStatus={order.status}
+                  orderNumber={order.order_number}
+                />
                 
                 <Button variant="outline" className="w-full">
                   <FileText className="h-4 w-4 mr-2" />
                   Imprimir Pedido
                 </Button>
-              </CardContent>
-            </Card>
-
-            {/* Status do WhatsApp */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Status do WhatsApp</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
-                  {order.whatsapp_sent ? (
-                    <>
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                      <span className="text-sm text-green-700">Mensagem enviada</span>
-                    </>
-                  ) : (
-                    <>
-                      <Clock className="h-4 w-4 text-yellow-500" />
-                      <span className="text-sm text-yellow-700">WhatsApp não enviado</span>
-                    </>
-                  )}
-                </div>
-                {order.whatsapp_sent_at && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    Enviado em: {formatDate(order.whatsapp_sent_at)}
-                  </p>
-                )}
               </CardContent>
             </Card>
           </div>

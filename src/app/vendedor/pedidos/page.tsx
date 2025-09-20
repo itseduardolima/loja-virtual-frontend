@@ -7,25 +7,18 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import {
   Search,
   Filter,
   Download,
   Eye,
-  MessageCircle,
   Calendar,
   User,
   Phone,
-  Mail,
   Package,
-  DollarSign,
-  Clock,
-  CheckCircle,
-  Truck,
-  XCircle
 } from 'lucide-react'
 import { useOrders } from '@/hooks/useOrders'
+import { useDebounce } from '@/hooks/useDebounce'
 import { ORDER_STATUS, SORT_OPTIONS, type Order, type OrdersFilters } from '@/types/order'
 import { formatPrice } from '@/lib/utils'
 import { buildImageUrl } from '@/lib/imageUtils'
@@ -42,8 +35,13 @@ export default function OrdersPage() {
     limit: 10,
     sort: 'DATE_DESC'
   })
+  const [searchTerm, setSearchTerm] = useState('')
+  const debouncedSearchTerm = useDebounce(searchTerm, 1000)
 
-  const { data, isLoading, error } = useOrders(filters)
+  const { data, isLoading, error } = useOrders({
+    ...filters,
+    search: debouncedSearchTerm || undefined
+  })
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -52,6 +50,11 @@ export default function OrdersPage() {
       router.push('/')
     }
   }, [isAuthenticated, user, router])
+
+  // Reset página quando termo de busca mudar
+  useEffect(() => {
+    setFilters(prev => ({ ...prev, page: 1 }))
+  }, [debouncedSearchTerm])
 
   const handleFilterChange = (key: keyof OrdersFilters, value: any) => {
     setFilters(prev => ({
@@ -67,17 +70,6 @@ export default function OrdersPage() {
 
   const getStatusInfo = (status: number) => {
     return ORDER_STATUS[status as keyof typeof ORDER_STATUS] || ORDER_STATUS[1]
-  }
-
-  const getStatusIcon = (status: number) => {
-    const statusInfo = getStatusInfo(status)
-    switch (statusInfo.icon) {
-      case 'clock': return <Clock className="h-4 w-4" />
-      case 'check-circle': return <CheckCircle className="h-4 w-4" />
-      case 'truck': return <Truck className="h-4 w-4" />
-      case 'x-circle': return <XCircle className="h-4 w-4" />
-      default: return <Clock className="h-4 w-4" />
-    }
   }
 
   const formatDate = (dateString: string) => {
@@ -130,7 +122,7 @@ export default function OrdersPage() {
             </div>
             <div className="flex items-center gap-3">
               <Button variant="outline" className="flex items-center gap-2">
-                <Download className="h-4 w-4" />
+                <Download className="h-5 w-5" />
                 Exportar
               </Button>
             </div>
@@ -153,11 +145,11 @@ export default function OrdersPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">Buscar</label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <Input
                     placeholder="Cliente ou código do pedido"
-                    value={filters.search || ''}
-                    onChange={(e) => handleFilterChange('search', e.target.value)}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
                   />
                 </div>
@@ -257,21 +249,22 @@ export default function OrdersPage() {
 
                             <Badge
                               variant="outline"
-                              className={`py-1 px-2 text-base ${getStatusInfo(order.status).color === 'yellow' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                              className={`py-2 px-4 text-sm ${getStatusInfo(order.status).color === 'yellow' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
                                   getStatusInfo(order.status).color === 'blue' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                    getStatusInfo(order.status).color === 'green' ? 'bg-green-50 text-green-700 border-green-200' :
-                                      'bg-red-50 text-red-700 border-red-200'
+                                    getStatusInfo(order.status).color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                                      getStatusInfo(order.status).color === 'green' ? 'bg-green-50 text-green-700 border-green-200' :
+                                        'bg-red-50 text-red-700 border-red-200'
                                 }`}
                             >
-                              {getStatusIcon(order.status)}
-                              <span className="ml-1">{getStatusInfo(order.status).label}</span>
+                              
+                              <span>{getStatusInfo(order.status).label}</span>
                             </Badge>
                           </div>
                           <p className="text-sm text-gray-600 mb-1">
                             Código: {order.order_code}
                           </p>
                           <p className="text-sm text-gray-500">
-                            <Calendar className="h-4 w-4 inline mr-1" />
+                            <Calendar className="h-5 w-5 inline mr-1" />
                             {formatDate(order.created_at)}
                           </p>
                         </div>
@@ -285,14 +278,14 @@ export default function OrdersPage() {
                       {/* Informações do Cliente */}
                       <div className="grid grid-cols-1 gap-4 mb-4 py-4 rounded-lg">
                         <div className="flex items-center gap-2">
-                          <User className="h-4 w-4 text-gray-400" />
+                          <User className="h-5 w-5 text-gray-400" />
                           <span className="text-sm font-medium text-gray-700">
                             {order.customer_name}
                           </span>
                         </div>
                         {order.customer_phone && (
                           <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4 text-gray-400" />
+                            <Phone className="h-5 w-5 text-gray-400" />
                             <span className="text-sm text-gray-600">
                               {order.customer_phone}
                             </span>
@@ -344,26 +337,14 @@ export default function OrdersPage() {
 
                       {/* Ações */}
                       <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                        <div className="flex items-center gap-2">
-                          {order.whatsapp_sent ? (
-                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 py-2 px-5">
-                              <img className='mr-2' width="24" height="20" src="https://img.icons8.com/color/48/whatsapp--v1.png" alt="whatsapp--v1" />
-                              WhatsApp enviado
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 py-2 px-5">
-                              <img className='mr-2' width="24" height="20" src="https://img.icons8.com/color/48/whatsapp--v1.png" alt="whatsapp--v1" />
-                              WhatsApp não enviado
-                            </Badge>
-                          )}
-                        </div>
+                       
                         <div className="flex items-center gap-2">
                           <Button
                             variant="outline"
 
                             onClick={() => router.push(`/vendedor/pedidos/${order.id}`)}
                           >
-                            <Eye className="h-4 w-4 mr-1" />
+                            <Eye className="h-5 w-5 mr-1" />
                             Ver detalhes
                           </Button>
 
