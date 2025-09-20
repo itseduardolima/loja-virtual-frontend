@@ -12,7 +12,8 @@ import {
   Instagram,
   LogOut,
   ArrowRight,
-  TrendingUp
+  TrendingUp,
+  FileText
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -228,6 +229,24 @@ export default function VendedorPage() {
                   </div>
                 </div>
                 <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-green-600 transition-colors" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border transition-shadow cursor-pointer group"
+                onClick={() => router.push('/vendedor/pedidos')}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-purple-100 rounded-xl group-hover:bg-purple-200 transition-colors">
+                    <FileText className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Pedidos</h3>
+                    <p className="text-sm text-gray-600">Gerencie seus pedidos</p>
+                  </div>
+                </div>
+                <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-purple-600 transition-colors" />
               </div>
             </CardContent>
           </Card>
