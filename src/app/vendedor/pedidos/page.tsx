@@ -8,12 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { 
-  Search, 
-  Filter, 
-  Download, 
-  Eye, 
-  MessageCircle, 
+import {
+  Search,
+  Filter,
+  Download,
+  Eye,
+  MessageCircle,
   Calendar,
   User,
   Phone,
@@ -105,7 +105,7 @@ export default function OrdersPage() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <ErrorState 
+        <ErrorState
           message="Erro ao carregar pedidos"
           onRetry={() => window.location.reload()}
         />
@@ -254,17 +254,14 @@ export default function OrdersPage() {
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-lg font-semibold text-gray-900">
-                              #{order.order_number}
-                            </h3>
-                            <Badge 
-                              variant="outline" 
-                              className={`${
-                                getStatusInfo(order.status).color === 'yellow' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                                getStatusInfo(order.status).color === 'blue' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                getStatusInfo(order.status).color === 'green' ? 'bg-green-50 text-green-700 border-green-200' :
-                                'bg-red-50 text-red-700 border-red-200'
-                              }`}
+
+                            <Badge
+                              variant="outline"
+                              className={`py-1 px-2 text-base ${getStatusInfo(order.status).color === 'yellow' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                                  getStatusInfo(order.status).color === 'blue' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                    getStatusInfo(order.status).color === 'green' ? 'bg-green-50 text-green-700 border-green-200' :
+                                      'bg-red-50 text-red-700 border-red-200'
+                                }`}
                             >
                               {getStatusIcon(order.status)}
                               <span className="ml-1">{getStatusInfo(order.status).label}</span>
@@ -286,7 +283,7 @@ export default function OrdersPage() {
                       </div>
 
                       {/* Informações do Cliente */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
+                      <div className="grid grid-cols-1 gap-4 mb-4 py-4 rounded-lg">
                         <div className="flex items-center gap-2">
                           <User className="h-4 w-4 text-gray-400" />
                           <span className="text-sm font-medium text-gray-700">
@@ -301,12 +298,7 @@ export default function OrdersPage() {
                             </span>
                           </div>
                         )}
-                        <div className="flex items-center gap-2">
-                          <Mail className="h-4 w-4 text-gray-400" />
-                          <span className="text-sm text-gray-600">
-                            {order.customer_email}
-                          </span>
-                        </div>
+
                       </div>
 
                       {/* Itens do Pedido */}
@@ -348,39 +340,33 @@ export default function OrdersPage() {
                         </div>
                       </div>
 
-                      {/* Observações */}
-                      {order.notes && (
-                        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                          <p className="text-sm text-blue-800">
-                            <strong>Observações:</strong> {order.notes}
-                          </p>
-                        </div>
-                      )}
+
 
                       {/* Ações */}
                       <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                         <div className="flex items-center gap-2">
                           {order.whatsapp_sent ? (
-                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                              <MessageCircle className="h-3 w-3 mr-1" />
+                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 py-2 px-5">
+                              <img className='mr-2' width="24" height="20" src="https://img.icons8.com/color/48/whatsapp--v1.png" alt="whatsapp--v1" />
                               WhatsApp enviado
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
-                              <MessageCircle className="h-3 w-3 mr-1" />
+                            <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 py-2 px-5">
+                              <img className='mr-2' width="24" height="20" src="https://img.icons8.com/color/48/whatsapp--v1.png" alt="whatsapp--v1" />
                               WhatsApp não enviado
                             </Badge>
                           )}
                         </div>
                         <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm">
+                          <Button
+                            variant="outline"
+
+                            onClick={() => router.push(`/vendedor/pedidos/${order.id}`)}
+                          >
                             <Eye className="h-4 w-4 mr-1" />
                             Ver detalhes
                           </Button>
-                          <Button size="sm">
-                            <MessageCircle className="h-4 w-4 mr-1" />
-                            WhatsApp
-                          </Button>
+
                         </div>
                       </div>
                     </CardContent>

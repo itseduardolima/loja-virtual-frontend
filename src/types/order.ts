@@ -34,6 +34,12 @@ export interface Order {
   user_id: number | null
   items: OrderItem[]
   user: any | null
+  store?: {
+    id: number
+    name: string
+    whatsapp: string
+    instagram: string
+  }
 }
 
 export interface OrdersResponse {
