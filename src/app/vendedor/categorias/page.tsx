@@ -5,6 +5,7 @@ import { Button, Input, Label, Textarea, Card, Badge, LoadingSpinner, ErrorState
 import { Plus, Edit, Trash2, ArrowLeft, X, Tag } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCategoriesPage } from './useCategoriesPage'
+import LoadingPage from '@/components/LoadingPage'
 
 export default function CategoriesPage() {
   const { user, isLoading: authLoading } = useAuth()
@@ -14,31 +15,31 @@ export default function CategoriesPage() {
     isCreating,
     editingCategory,
     filters,
-        categories,
+    categories,
     isLoading,
     error,
     meta,
-    
+
     form,
     register,
     handleSubmit,
     errors,
     reset,
     setValue,
-    
+
     onSubmit,
     handleEdit,
     handleDelete,
     handleToggleStatus,
     cancelForm,
     setIsCreating,
-    
+
     handlePageChange,
     handleSearchChange,
     handleSortChange,
     setFilters,
     isSearching,
-    
+
     isCreatingCategory,
     isUpdating,
     isDeleting,
@@ -46,7 +47,7 @@ export default function CategoriesPage() {
   } = useCategoriesPage()
 
   if (authLoading) {
-    return <LoadingSpinner />
+    return <LoadingPage />
   }
 
   if (!user) {
@@ -54,7 +55,7 @@ export default function CategoriesPage() {
   }
 
   if (isLoading) {
-    return <LoadingSpinner />
+    return <LoadingPage />
   }
 
   if (error) {
@@ -63,38 +64,25 @@ export default function CategoriesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header Estilizado */}
-      <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            <div className="flex items-center gap-6">
-              <Button
-                variant="ghost"
-                className='flex gap-2'
-                onClick={() => router.back()}
-                
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Voltar
-              </Button>
-            </div>
-            <Button
-              onClick={() => setIsCreating(true)}
-              className="flex items-center gap-2  px-6 py-2 transition-all duration-200"
-            >
-              <Plus className="h-4 w-4" />
-              Nova Categoria
-            </Button>
-          </div>
-        </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto py-8">
         {/* Título */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Categorias</h1>
-          <p className="text-gray-600">Gerencie as categorias dos seus produtos</p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Categorias</h1>
+            <p className="text-gray-600">Gerencie as categorias dos seus produtos</p>
+          </div>
+
+          <Button
+            onClick={() => setIsCreating(true)}
+            className="flex items-center  gap-2  px-6 py-2 transition-all duration-200"
+          >
+            <Plus className="h-4 w-4" />
+            Nova Categoria
+          </Button>
         </div>
+
+
 
         {/* Filtros */}
         <div className="mb-8">
@@ -123,7 +111,7 @@ export default function CategoriesPage() {
                 </p>
               </div>
             </div>
-            
+
             <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-6">
               <div>
                 <Label htmlFor="name" className="text-sm font-semibold text-gray-700 mb-2 block">
@@ -184,86 +172,88 @@ export default function CategoriesPage() {
         )}
 
         {/* Lista de Categorias em Tabela */}
-        <Card className="overflow-hidden bg-white border-gray-200 shadow-sm">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[300px]">Nome</TableHead>
-                <TableHead className="w-[400px]">Descrição</TableHead>
-                <TableHead className="w-[100px]">Status</TableHead>
-                <TableHead className="w-[100px]">Produtos</TableHead>
-                <TableHead className="w-[150px]">Criado em</TableHead>
-                <TableHead className="w-[100px] text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {Array.isArray(categories) && categories.map((category) => (
-                <TableRow key={category.id}>
-                  <TableCell className="font-medium">
-                    <div className="text-sm font-semibold text-gray-900">
-                      {category.name}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm text-gray-900 max-w-xs">
-                      {category.description ? (
-                        <span className="line-clamp-2">{category.description}</span>
-                      ) : (
-                        <span className="text-gray-400 italic">Sem descrição</span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge 
-                      variant={category.status === 1 ? "default" : "secondary"}
-                      className={`text-xs ${category.status === 1 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}
-                    >
-                      {category.status === 1 ? 'Ativa' : 'Inativa'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm text-gray-900">
-                    {category._count?.products || 0}
-                  </TableCell>
-                  <TableCell className="text-sm text-gray-500">
-                    {new Date(category.created_at).toLocaleDateString('pt-BR')}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-3">
-                      <div className="flex items-center gap-2">
-                       
-                        <Switch
-                          checked={category.status === 1}
-                          onCheckedChange={() => handleToggleStatus(category.id, category.status)}
-                          disabled={isUpdatingStatus}
-                          className="data-[state=checked]:bg-green-500"
-                        />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(category)}
-                          className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(category.id)}
-                          disabled={isDeleting}
-                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </TableCell>
+        {Array.isArray(categories) && categories.length > 0 && (
+          <Card className="overflow-hidden bg-white border-gray-200 shadow-sm">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[300px]">Nome</TableHead>
+                  <TableHead className="w-[400px]">Descrição</TableHead>
+                  <TableHead className="w-[100px]">Status</TableHead>
+                  <TableHead className="w-[100px]">Produtos</TableHead>
+                  <TableHead className="w-[150px]">Criado em</TableHead>
+                  <TableHead className="w-[100px] text-right">Ações</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Card>
+              </TableHeader>
+              <TableBody>
+                {Array.isArray(categories) && categories.map((category) => (
+                  <TableRow key={category.id}>
+                    <TableCell className="font-medium">
+                      <div className="text-sm font-semibold text-gray-900">
+                        {category.name}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm text-gray-900 max-w-xs">
+                        {category.description ? (
+                          <span className="line-clamp-2">{category.description}</span>
+                        ) : (
+                          <span className="text-gray-400 italic">Sem descrição</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={category.status === 1 ? "default" : "secondary"}
+                        className={`text-xs ${category.status === 1 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}
+                      >
+                        {category.status === 1 ? 'Ativa' : 'Inativa'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-900">
+                      {category._count?.products || 0}
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-500">
+                      {new Date(category.created_at).toLocaleDateString('pt-BR')}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-3">
+                        <div className="flex items-center gap-2">
+
+                          <Switch
+                            checked={category.status === 1}
+                            onCheckedChange={() => handleToggleStatus(category.id, category.status)}
+                            disabled={isUpdatingStatus}
+                            className="data-[state=checked]:bg-green-500"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(category)}
+                            className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(category.id)}
+                            disabled={isDeleting}
+                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        )}
 
         {/* Estado Vazio */}
         {(!Array.isArray(categories) || categories.length === 0) && !isLoading && (
@@ -278,7 +268,7 @@ export default function CategoriesPage() {
               {filters.search ? 'Tente ajustar os filtros de busca' : 'Comece criando sua primeira categoria para organizar seus produtos'}
             </p>
             {!filters.search && (
-              <Button 
+              <Button
                 onClick={() => setIsCreating(true)}
                 className="px-6 py-3"
               >
@@ -296,13 +286,13 @@ export default function CategoriesPage() {
               <PaginationContent>
                 {meta.prev && (
                   <PaginationItem>
-                    <PaginationPrevious 
+                    <PaginationPrevious
                       onClick={() => handlePageChange(meta.currentPage - 1)}
                       className="cursor-pointer"
                     />
                   </PaginationItem>
                 )}
-                
+
                 {Array.from({ length: meta.lastPage }, (_, i) => i + 1).map((page) => (
                   <PaginationItem key={page}>
                     <PaginationLink
@@ -314,10 +304,10 @@ export default function CategoriesPage() {
                     </PaginationLink>
                   </PaginationItem>
                 ))}
-                
+
                 {meta.next && (
                   <PaginationItem>
-                    <PaginationNext 
+                    <PaginationNext
                       onClick={() => handlePageChange(meta.currentPage + 1)}
                       className="cursor-pointer"
                     />
@@ -328,6 +318,7 @@ export default function CategoriesPage() {
           </div>
         )}
       </div>
+      
     </div>
   )
 }

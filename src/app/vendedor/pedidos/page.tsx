@@ -10,7 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Search,
   Filter,
-  Download,
   Eye,
   Calendar,
   User,
@@ -20,16 +19,16 @@ import {
 import { useOrders } from '@/hooks/useOrders'
 import { useDebounce } from '@/hooks/useDebounce'
 import { ORDER_STATUS, SORT_OPTIONS, type Order, type OrdersFilters } from '@/types/order'
-import { formatPrice } from '@/lib/utils'
+import { formatDate, formatPrice } from '@/lib/utils'
 import { buildImageUrl } from '@/lib/imageUtils'
 import { ErrorState } from '@/components/ErrorState'
 import { useAuth } from '@/contexts/AuthContext'
 import { useEffect } from 'react'
-import LoadingSpinner from '@/components/LoadingSpinner'
+import LoadingPage from '@/components/LoadingPage'
 
 export default function OrdersPage() {
   const router = useRouter()
-  const { isAuthenticated, user } = useAuth()
+  const { isAuthenticated, user, isLoading: authLoading } = useAuth()
   const [filters, setFilters] = useState<OrdersFilters>({
     page: 1,
     limit: 10,
@@ -44,14 +43,15 @@ export default function OrdersPage() {
   })
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login')
-    } else if (user?.profile !== 'Vendedor') {
-      router.push('/')
+    if (!authLoading) {
+      if (!isAuthenticated) {
+        router.push('/login')
+      } else if (user?.profile !== 'Vendedor') {
+        router.push('/')
+      }
     }
-  }, [isAuthenticated, user, router])
+  }, [isAuthenticated, user, router, authLoading])
 
-  // Reset página quando termo de busca mudar
   useEffect(() => {
     setFilters(prev => ({ ...prev, page: 1 }))
   }, [debouncedSearchTerm])
@@ -72,14 +72,15 @@ export default function OrdersPage() {
     return ORDER_STATUS[status as keyof typeof ORDER_STATUS] || ORDER_STATUS[1]
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
+  
+
+  // Mostra loading enquanto a autenticação está sendo verificada
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingPage />
+      </div>
+    )
   }
 
   if (!isAuthenticated || user?.profile !== 'Vendedor') {
@@ -89,7 +90,7 @@ export default function OrdersPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner />
+        <LoadingPage />
       </div>
     )
   }
@@ -110,27 +111,19 @@ export default function OrdersPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Pedidos</h1>
-              <p className="text-gray-600 mt-1">
-                Gerencie todos os pedidos da sua loja
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" className="flex items-center gap-2">
-                <Download className="h-5 w-5" />
-                Exportar
-              </Button>
+      <div className="max-w-7xl mx-auto py-8">
+        <div>
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Pedidos</h1>
+                <p className="text-gray-600 mb-4">
+                  Gerencie todos os pedidos da sua loja
+                </p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Filtros */}
         <Card className="mb-6">
           <CardHeader>
@@ -150,7 +143,7 @@ export default function OrdersPage() {
                     placeholder="Cliente ou código do pedido"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 text-sm"
                   />
                 </div>
               </div>
@@ -250,13 +243,13 @@ export default function OrdersPage() {
                             <Badge
                               variant="outline"
                               className={`py-2 px-4 text-sm ${getStatusInfo(order.status).color === 'yellow' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                                  getStatusInfo(order.status).color === 'blue' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                    getStatusInfo(order.status).color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                                      getStatusInfo(order.status).color === 'green' ? 'bg-green-50 text-green-700 border-green-200' :
-                                        'bg-red-50 text-red-700 border-red-200'
+                                getStatusInfo(order.status).color === 'blue' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                  getStatusInfo(order.status).color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                                    getStatusInfo(order.status).color === 'green' ? 'bg-green-50 text-green-700 border-green-200' :
+                                      'bg-red-50 text-red-700 border-red-200'
                                 }`}
                             >
-                              
+
                               <span>{getStatusInfo(order.status).label}</span>
                             </Badge>
                           </div>
@@ -337,7 +330,7 @@ export default function OrdersPage() {
 
                       {/* Ações */}
                       <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                       
+
                         <div className="flex items-center gap-2">
                           <Button
                             variant="outline"

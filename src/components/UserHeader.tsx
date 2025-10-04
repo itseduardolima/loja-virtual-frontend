@@ -58,7 +58,7 @@ export function UserHeader({ currentPath }: UserHeaderProps) {
   return (
     <>
       {/* Header com Avatar */}
-      <div className="flex justify-end items-center p-4 bg-white border-b border-gray-200">
+      <div className="flex justify-end items-center px-6 py-[14px] bg-white border-b border-gray-200">
         <button
           onClick={() => setIsDrawerOpen(true)}
           className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"

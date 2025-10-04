@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { PROFILE_ROUTES } from '@/types/auth'
 import { LoadingSpinner } from '@/components'
+import LoadingPage from '@/components/LoadingPage'
 
 export default function Home() {
   const { isAuthenticated, isLoading, user } = useAuth()
@@ -19,7 +20,7 @@ export default function Home() {
   }, [isAuthenticated, isLoading, user, router])
 
   if (isLoading) {
-    return <LoadingSpinner message="Carregando..." fullScreen={false} className="bg-gray-50" />
+    return <LoadingPage />
   }
 
   return (
