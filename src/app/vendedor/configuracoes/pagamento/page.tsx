@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useStore } from '@/hooks/useStore'
 import { useUpdateStore } from '@/hooks/useUpdateStore'
-import { Card, CardContent, CardHeader, CardTitle, Button, LoadingSpinner, Checkbox } from '@/components'
-import { CreditCard, Save, Check } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { Card, CardContent, Button, LoadingSpinner, Checkbox } from '@/components'
+import { CreditCard } from 'lucide-react'
+import LoadingPage from '@/components/LoadingPage'
 
 const PAYMENT_METHODS = [
   { id: 'pix', name: 'PIX', description: 'Pagamento instantâneo via PIX' },
@@ -17,13 +17,11 @@ const PAYMENT_METHODS = [
 ]
 
 export default function PagamentoPage() {
-  const router = useRouter()
   const { data: store, isLoading } = useStore()
   const { updateStore, isUpdating } = useUpdateStore()
   
   const [selectedMethods, setSelectedMethods] = useState<string[]>([])
 
-  // Atualizar métodos selecionados quando os dados da loja forem carregados
   useEffect(() => {
     if ((store as any)?.payment_methods) {
       setSelectedMethods((store as any).payment_methods)
@@ -31,7 +29,7 @@ export default function PagamentoPage() {
   }, [store])
 
   if (isLoading) {
-    return <LoadingSpinner message="Carregando informações da loja..." />
+    return <LoadingPage />
   }
 
   const handleMethodToggle = (methodId: string) => {

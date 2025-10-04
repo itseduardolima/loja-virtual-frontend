@@ -1,29 +1,41 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useStore } from '@/hooks/useStore'
 import { useUpdateStore } from '@/hooks/useUpdateStore'
 import { Card, CardContent, CardHeader, CardTitle, Input, Label, Button, LoadingSpinner } from '@/components'
-import { MapPin, Save } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import LoadingPage from '@/components/LoadingPage'
 
 export default function EnderecoPage() {
-  const router = useRouter()
   const { data: store, isLoading } = useStore()
   const { updateStore, isUpdating } = useUpdateStore()
   
   const [formData, setFormData] = useState({
-    address: (store as any)?.address || '',
-    city: (store as any)?.city || '',
-    state: (store as any)?.state || '',
-    zipcode: (store as any)?.zipcode || '',
-    neighborhood: (store as any)?.neighborhood || '',
-    number: (store as any)?.number || '',
-    complement: (store as any)?.complement || ''
+    address: '',
+    city: '',
+    state: '',
+    zipcode: '',
+    neighborhood: '',
+    number: '',
+    complement: ''
   })
 
+  useEffect(() => {
+    if (store) {
+      setFormData({
+        address: (store as any)?.address || '',
+        city: (store as any)?.city || '',
+        state: (store as any)?.state || '',
+        zipcode: (store as any)?.zipcode || '',
+        neighborhood: (store as any)?.neighborhood || '',
+        number: (store as any)?.number || '',
+        complement: (store as any)?.complement || ''
+      })
+    }
+  }, [store])
+
   if (isLoading) {
-    return <LoadingSpinner message="Carregando informações da loja..." />
+    return <LoadingPage />
   }
 
   const handleInputChange = (field: string, value: string) => {

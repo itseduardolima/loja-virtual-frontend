@@ -1,25 +1,33 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useStore } from '@/hooks/useStore'
 import { useUpdateStore } from '@/hooks/useUpdateStore'
-import { Card, CardContent, CardHeader, CardTitle, Input, Label, Button, LoadingSpinner } from '@/components'
-import { Truck, Save, Clock, DollarSign } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { Card, CardContent, Input, Label, Button, LoadingSpinner } from '@/components'
+import LoadingPage from '@/components/LoadingPage'
 
 export default function EntregaPage() {
-  const router = useRouter()
   const { data: store, isLoading } = useStore()
   const { updateStore, isUpdating } = useUpdateStore()
   
   const [formData, setFormData] = useState({
-    delivery_fee: (store as any)?.delivery_fee || '',
-    free_delivery_min: (store as any)?.free_delivery_min || '',
-    delivery_time: (store as any)?.delivery_time || ''
+    delivery_fee: '',
+    free_delivery_min: '',
+    delivery_time: ''
   })
 
+  useEffect(() => {
+    if (store) {
+      setFormData({
+        delivery_fee: (store as any)?.delivery_fee || '',
+        free_delivery_min: (store as any)?.free_delivery_min || '',
+        delivery_time: (store as any)?.delivery_time || ''
+      })
+    }
+  }, [store])
+
   if (isLoading) {
-    return <LoadingSpinner message="Carregando informações da loja..." />
+    return <LoadingPage />
   }
 
   const handleInputChange = (field: string, value: string | number) => {
@@ -32,7 +40,11 @@ export default function EntregaPage() {
     try {
       await updateStore({
         storeId: store.id,
-        data: formData
+        data: {
+          delivery_fee: formData.delivery_fee ? parseFloat(formData.delivery_fee) : 0,
+          free_delivery_min: formData.free_delivery_min ? parseFloat(formData.free_delivery_min) : 0,
+          delivery_time: formData.delivery_time
+        }
       })
     } catch (error) {
       console.error('Erro ao atualizar configurações de entrega:', error)
