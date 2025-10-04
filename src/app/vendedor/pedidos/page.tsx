@@ -22,10 +22,10 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { ORDER_STATUS, SORT_OPTIONS, type Order, type OrdersFilters } from '@/types/order'
 import { formatPrice } from '@/lib/utils'
 import { buildImageUrl } from '@/lib/imageUtils'
-import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorState } from '@/components/ErrorState'
 import { useAuth } from '@/contexts/AuthContext'
 import { useEffect } from 'react'
+import LoadingSpinner from '@/components/LoadingSpinner'
 
 export default function OrdersPage() {
   const router = useRouter()

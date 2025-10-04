@@ -24,11 +24,11 @@ import { useOrderDetail } from '@/hooks/useOrderDetail'
 import { ORDER_STATUS, type Order } from '@/types/order'
 import { formatPrice } from '@/lib/utils'
 import { buildImageUrl } from '@/lib/imageUtils'
-import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorState } from '@/components/ErrorState'
 import { UpdateOrderStatusModal } from '@/components/UpdateOrderStatusModal'
 import { useAuth } from '@/contexts/AuthContext'
 import { useEffect } from 'react'
+import LoadingSpinner from '@/components/LoadingSpinner'
 
 export default function OrderDetailPage() {
   const params = useParams()

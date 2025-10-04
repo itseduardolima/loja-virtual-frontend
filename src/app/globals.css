@@ -19,7 +19,7 @@
     --accent: 210 40% 96%;
     --accent-foreground: 222.2 84% 4.9%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 255 86 48;
     --border: 214.3 31.8% 91.4%;
     --border-primary: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
@@ -30,6 +30,7 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+    --text-gray: 208deg 13.16% 44.71%;
     --text-dark: 226.23deg 57.01% 20.98%;
   }
 
