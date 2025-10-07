@@ -1,37 +1,37 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent } from '@/components/ui/card'
-import { Eye, EyeOff, Mail, Lock, ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
-import Image from 'next/image'
-import { usePicsumImage } from '@/hooks/usePicsumImage'
-import { useLogin } from '@/hooks/useLogin'
-import { GoogleIcon } from '@/public/assets/icons/GoogleIcon'
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import { usePicsumImage } from "@/hooks/usePicsumImage";
+import { useLogin } from "@/hooks/useLogin";
+import { GoogleIcon } from "@/public/assets/icons/GoogleIcon";
 
 export default function LoginPage() {
-  const [login, setLogin] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const { currentImageUrl, isLoading: imageLoading } = usePicsumImage()
-  const { login: loginFunction, isLoading } = useLogin()
+  const [login, setLogin] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const { currentImageUrl, isLoading: imageLoading } = usePicsumImage();
+  const { login: loginFunction, isLoading } = useLogin();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (!login || !password) {
-      return
+      return;
     }
 
     try {
-      await loginFunction({login, password })
-    } catch (error) {
-      // Erro já tratado no hook useLogin
+      await loginFunction({ login, password });
+    } catch (error: any) {
+      console.error('Erro no login:', error);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex">
@@ -40,7 +40,10 @@ export default function LoginPage() {
         <div className="mx-auto w-full max-w-2xl lg:w-[32rem] border rounded-2xl p-10">
           {/* Botão Voltar */}
           <div className="mb-8">
-            <Link href="/" className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700">
+            <Link
+              href="/"
+              className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
+            >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar ao início
             </Link>
@@ -51,18 +54,18 @@ export default function LoginPage() {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               Bem-vindo de volta
             </h1>
-            <p className="text-gray-600">
-              Entre na sua conta para continuar
-            </p>
+            <p className="text-gray-600">Entre na sua conta para continuar</p>
           </div>
-
 
           {/* Formulário */}
           <Card className="border-0 shadow-none">
             <CardContent className="p-0">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="email"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Email
                   </Label>
                   <div className="relative">
@@ -80,14 +83,17 @@ export default function LoginPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="password"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Senha
                   </Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <Input
                       id="password"
-                      type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? "text" : "password"}
                       placeholder="Digite sua senha"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -105,10 +111,11 @@ export default function LoginPage() {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    
-                  </div>
-                  <Button variant="link" className="p-0 h-auto text-sm text-blue-600 hover:text-blue-500">
+                  <div className="flex items-center"></div>
+                  <Button
+                    variant="link"
+                    className="p-0 h-auto text-sm text-blue-600 hover:text-blue-500"
+                  >
                     Esqueceu a senha?
                   </Button>
                 </div>
@@ -118,7 +125,7 @@ export default function LoginPage() {
                   className="w-full h-12 text-base font-medium"
                   disabled={isLoading}
                 >
-                  {isLoading ? 'Entrando...' : 'Entrar'}
+                  {isLoading ? "Entrando..." : "Entrar"}
                 </Button>
               </form>
 
@@ -140,13 +147,15 @@ export default function LoginPage() {
                     <GoogleIcon />
                     Entrar com Google
                   </Button>
-                 
                 </div>
               </div>
 
               <p className="mt-8 text-center text-sm text-gray-600">
-                Não tem uma conta?{' '}
-                <Button variant="link" className="p-0 h-auto text-sm text-blue-600 hover:text-blue-500">
+                Não tem uma conta?{" "}
+                <Button
+                  variant="link"
+                  className="p-0 h-auto text-sm text-blue-600 hover:text-blue-500"
+                >
                   Cadastre-se
                 </Button>
               </p>
@@ -177,15 +186,14 @@ export default function LoginPage() {
                   priority
                   quality={100}
                   onError={(e) => {
-                    e.currentTarget.style.display = 'none'
+                    e.currentTarget.style.display = "none";
                   }}
                 />
               )}
             </>
           )}
         </div>
-        
       </div>
     </div>
-  )
+  );
 }

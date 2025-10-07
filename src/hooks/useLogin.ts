@@ -1,21 +1,22 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { LoginRequest, PROFILE_ROUTES } from '@/types/auth'
+import { LoginRequest } from '@/types/auth'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { toast } from 'react-hot-toast'
+import { useToastContext } from '@/contexts/ToastContext'
 import { useCheckout } from './useCheckout'
 
 export function useLogin() {
-  const { login, isLoading, user } = useAuth()
+  const { login, isLoading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const { getCheckoutData, clearCheckoutData } = useCheckout()
+  const { success: showSuccess, error: showError } = useToastContext()
 
   const handleLogin = async (credentials: LoginRequest) => {
     try {
       await login(credentials)
-      toast.success('Login realizado com sucesso!')
+      showSuccess('Login realizado com sucesso!')
       
       const checkoutData = getCheckoutData()
       if (checkoutData) {
@@ -43,8 +44,8 @@ export function useLogin() {
       router.push('/')
       
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Erro ao fazer login'
-      toast.error(errorMessage)
+      const errorMessage = error.response?.data?.message
+      showError(errorMessage, 'Erro')
       throw error
     }
   }
