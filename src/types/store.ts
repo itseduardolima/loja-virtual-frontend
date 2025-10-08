@@ -7,6 +7,10 @@ export interface StoreInfo {
   banner: string
   whatsapp?: string
   instagram?: string
+  facebook?: string
+  website?: string
+  email?: string
+  phone?: string
   created_at: string
   _count?: {
     products: number
