@@ -1,64 +1,60 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { Button, Input, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Card, Badge, LoadingSpinner, ErrorState, ImageUpload, ProductVariations, ProductPreview } from '@/components'
-import { ArrowLeft, Package, X, Star } from 'lucide-react'
+import { Input, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Card, ErrorState, ImageUpload, ProductPreview, DynamicFields, CreateCategoryModal, Button } from '@/components'
+import { Package, X, Star, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCreateProductPage } from './useCreateProductPage'
 import { useToastContext } from '@/contexts/ToastContext'
+import { useStore } from '@/hooks/useStore'
+import { useNiches } from '@/hooks/useNiches'
+import LoadingPage from '@/components/LoadingPage'
+import { useState } from 'react'
 
 export default function CreateProductPage() {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
   const { error: showError, success: showSuccess } = useToastContext()
+  const { data: storeData, isLoading: storeLoading } = useStore()
+  const { data: nichesData, isLoading: nichesLoading } = useNiches(storeData?.id || null)
+  const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] = useState(false)
 
   const {
     form,
     selectedImages,
-    selectedSizes,
-    selectedColors,
     categories,
+    selectedNicheId,
+    nicheFieldValues,
     isLoading,
     error,
     handleImageChange,
     removeImage,
-    toggleSize,
-    toggleColor,
+    handleNicheSelect,
+    handleFieldChange,
     onSubmit
   } = useCreateProductPage(user)
 
   const { register, handleSubmit, formState: { errors }, setValue, watch } = form
 
-  if (authLoading) {
-    return <LoadingSpinner />
+  const handleCategoryCreated = (categoryId: number) => {
+    setValue('category_id', categoryId)
+    setIsCreateCategoryModalOpen(false)
+  }
+
+  if (authLoading || storeLoading || nichesLoading) {
+    return <LoadingPage />
   }
 
   if (!user) {
     return <ErrorState message="Você precisa estar logado para criar produtos" />
   }
 
+  if (!storeData) {
+    return <ErrorState message="Erro ao carregar informações da loja" />
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header Estilizado */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            <div className="flex items-center gap-6">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => router.back()}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Voltar
-              </Button>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-8">
           {/* Layout em Duas Colunas */}
@@ -80,6 +76,31 @@ export default function CreateProductPage() {
                 </div>
 
                 <div className="space-y-6">
+                  {/* Nicho */}
+                  <div>
+                    <Label htmlFor="niche" className="text-sm font-semibold text-gray-700 mb-2 block">
+                      Tipo do Produto *
+                    </Label>
+                    <Select onValueChange={(value) => handleNicheSelect(parseInt(value))}>
+                      <SelectTrigger className={`h-12 ${!selectedNicheId ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}>
+                        <SelectValue placeholder="Selecione o tipo do produto" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {nichesData?.data?.map((niche) => (
+                          <SelectItem key={niche.id} value={niche.id.toString()}>
+                            {niche.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {!selectedNicheId && (
+                      <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                        <X className="h-3 w-3" />
+                        Selecione o tipo do produto
+                      </p>
+                    )}
+                  </div>
+
                   {/* Nome */}
                   <div>
                     <Label htmlFor="name" className="text-sm font-semibold text-gray-700 mb-2 block">
@@ -172,20 +193,39 @@ export default function CreateProductPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <Label htmlFor="category_id" className="text-sm font-semibold text-gray-700 mb-2 block">
-                        Categoria
+                        Categoria <span className="text-gray-400 font-normal">(opcional)</span>
                       </Label>
-                      <Select onValueChange={(value) => setValue('category_id', parseInt(value))}>
-                        <SelectTrigger className={`h-12 ${errors.category_id ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}>
-                          <SelectValue placeholder="Selecione uma categoria" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Array.isArray(categories) && categories.map((category: any) => (
-                            <SelectItem key={category.id} value={category.id.toString()}>
-                              {category.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      {Array.isArray(categories) && categories.length > 0 ? (
+                        <Select onValueChange={(value) => setValue('category_id', parseInt(value))}>
+                          <SelectTrigger className={`h-12 ${errors.category_id ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}>
+                            <SelectValue placeholder="Selecione uma categoria" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categories.map((category: any) => (
+                              <SelectItem key={category.id} value={category.id.toString()}>
+                                {category.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <div className="space-y-3">
+                          <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center">
+                            <p className="text-gray-500 text-sm mb-3">
+                              Nenhuma categoria criada ainda
+                            </p>
+                            <Button
+                              type="button"
+                              variant="default"
+                              onClick={() => setIsCreateCategoryModalOpen(true)}
+                              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors"
+                            >
+                              <Plus className="h-4 w-4" />
+                              Nova Categoria
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                       {errors.category_id && (
                         <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
                           <X className="h-3 w-3" />
@@ -212,6 +252,15 @@ export default function CreateProductPage() {
                 </div>
               </Card>
 
+              {/* Campos Dinâmicos do Nicho */}
+              {selectedNicheId && (
+                <DynamicFields
+                  nicheId={selectedNicheId}
+                  fieldValues={nicheFieldValues}
+                  onFieldChange={handleFieldChange}
+                />
+              )}
+
               {/* Upload de Imagens */}
               <ImageUpload
                 selectedImages={selectedImages}
@@ -219,13 +268,6 @@ export default function CreateProductPage() {
                 onRemoveImage={removeImage}
               />
 
-              {/* Tamanhos e Cores */}
-              <ProductVariations
-                selectedSizes={selectedSizes}
-                selectedColors={selectedColors}
-                onToggleSize={toggleSize}
-                onToggleColor={toggleColor}
-              />
             </div>
 
             {/* Sidebar - Preview e Ações */}
@@ -234,8 +276,6 @@ export default function CreateProductPage() {
               description={watch('description') || ''}
               price={watch('price') || 0}
               featured={watch('featured') || false}
-              selectedSizes={selectedSizes}
-              selectedColors={selectedColors}
               selectedImages={selectedImages}
               onSave={handleSubmit(onSubmit)}
               onCancel={() => router.back()}
@@ -244,6 +284,13 @@ export default function CreateProductPage() {
           </div>
 
         </form>
+
+        {/* Modal para criar categoria */}
+        <CreateCategoryModal
+          isOpen={isCreateCategoryModalOpen}
+          onClose={() => setIsCreateCategoryModalOpen(false)}
+          onCategoryCreated={handleCategoryCreated}
+        />
       </div>
     </div>
   )

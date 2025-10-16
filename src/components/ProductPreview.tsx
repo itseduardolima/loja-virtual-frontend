@@ -11,8 +11,6 @@ interface ProductPreviewProps {
   description: string
   price: number
   featured: boolean
-  selectedSizes: string[]
-  selectedColors: string[]
   selectedImages: File[]
   existingImages?: string[]
   removedExistingImages?: number[]
@@ -27,8 +25,6 @@ export function ProductPreview({
   description,
   price,
   featured,
-  selectedSizes,
-  selectedColors,
   selectedImages,
   existingImages = [],
   removedExistingImages = [],
@@ -103,50 +99,6 @@ export function ProductPreview({
               )}
             </div>
 
-            {/* Variações Preview */}
-            {(selectedSizes.length > 0 || selectedColors.length > 0) && (
-              <div className="space-y-2">
-                {selectedSizes.length > 0 && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Tamanhos:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {selectedSizes.slice(0, 3).map((size) => (
-                        <span key={size} className="text-xs bg-gray-100 px-2 py-1 rounded">
-                          {size}
-                        </span>
-                      ))}
-                      {selectedSizes.length > 3 && (
-                        <span className="text-xs text-gray-500">
-                          +{selectedSizes.length - 3} mais
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {selectedColors.length > 0 && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Cores:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {selectedColors.slice(0, 3).map((color) => (
-                        <div key={color} className="flex items-center gap-1">
-                          <div
-                            className="w-3 h-3 rounded-full border"
-                            style={{ backgroundColor: getColorHex(color) }}
-                          />
-                          <span className="text-xs">{color}</span>
-                        </div>
-                      ))}
-                      {selectedColors.length > 3 && (
-                        <span className="text-xs text-gray-500">
-                          +{selectedColors.length - 3} mais
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
       </Card>
