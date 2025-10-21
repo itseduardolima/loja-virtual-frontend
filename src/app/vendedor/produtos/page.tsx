@@ -182,31 +182,16 @@ export default function ProdutosPage() {
           ) : (
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {products.map((product) => (
-                <div key={product.id} className="relative group">
+                <div key={product.id} className="relative group h-full">
                   <ProductCard
                     product={product}
                     onAddToFavorites={() => { }} // Função vazia para vendedor
                     onViewDetails={() => router.push(`/vendedor/produtos/${product.id}`)}
                     showFavorites={false}
+                    showStatusSwitch={true}
+                    onStatusChange={handleToggleStatus}
+                    isUpdatingStatus={isUpdatingStatus}
                   />
-                  {/* Switch de status posicionado na parte inferior direita */}
-                  <div className="absolute bottom-2 right-2 z-10">
-
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-600 font-medium">
-                        {product.status === 1 ? 'Disponível' : 'Esgotado'}
-                      </span>
-                      <Switch
-                        checked={product.status === 1}
-                        onCheckedChange={(checked: boolean) => {
-                          handleToggleStatus(product.id, product.status)
-                        }}
-                        disabled={isUpdatingStatus}
-                        className="data-[state=checked]:bg-green-500"
-                      />
-                    </div>
-                  </div>
-
                 </div>
               ))}
             </div>

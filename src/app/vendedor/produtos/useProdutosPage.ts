@@ -37,19 +37,20 @@ export function useProdutosPage() {
   const products = productsData?.data || []
   const meta = productsData?.meta
 
+  // Extrair tamanhos e cores dos campos dinâmicos
   const availableSizes = Array.from(new Set(
     products.flatMap(p => 
-      p.sizes.flatMap(size => 
-        typeof size === 'string' ? size.split(',').map(s => s.trim()) : [size]
-      )
+      p.dynamic_fields
+        ?.filter(field => field.field_name.toLowerCase().includes('tamanho') || field.field_name.toLowerCase().includes('size'))
+        ?.map(field => field.value) || []
     )
   )).filter(Boolean).sort()
   
   const availableColors = Array.from(new Set(
     products.flatMap(p => 
-      p.colors.flatMap(color => 
-        typeof color === 'string' ? color.split(',').map(c => c.trim()) : [color]
-      )
+      p.dynamic_fields
+        ?.filter(field => field.field_name.toLowerCase().includes('cor') || field.field_name.toLowerCase().includes('color'))
+        ?.map(field => field.value) || []
     )
   )).filter(Boolean).sort()
 
@@ -57,7 +58,7 @@ export function useProdutosPage() {
     total: meta?.total || 0,
     active: products.filter(p => p.status === 1).length,
     inactive: products.filter(p => p.status === 0).length,
-    featured: products.filter(p => p.featured).length,
+    featured: products.filter(p => p.featured === 1).length,
     totalStock: products.reduce((sum, p) => sum + p.stock, 0),
     averagePrice: products.length > 0
       ? products.reduce((sum, p) => sum + parseFloat(p.price), 0) / products.length

@@ -240,7 +240,7 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
         </p>
       </div>
 
-      <div className="space-y-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {fields
           .sort((a, b) => a.sort_order - b.sort_order)
           .map(renderField)

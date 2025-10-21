@@ -1,7 +1,7 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { Button,  Badge, LoadingSpinner, ErrorState, ConfirmDialog } from '@/components'
+import { Button, Badge, LoadingSpinner, ErrorState, ConfirmDialog } from '@/components'
 import {
   Package,
   ArrowLeft,
@@ -14,19 +14,26 @@ import {
   Shield,
   RotateCcw,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  Info,
+  CreditCard,
+  Clock,
+  DollarSign
 } from 'lucide-react'
 import { useRouter, useParams } from 'next/navigation'
 import Image from 'next/image'
 import { useProductDetailPage } from './useProductDetailPage'
 import { buildImageUrl, formatPrice } from '@/lib/utils'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function ProductDetailPage() {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
   const params = useParams()
   const productId = params.id as string
+  const [showDetails, setShowDetails] = useState(false)
 
   const {
     product,
@@ -114,39 +121,10 @@ export default function ProductDetailPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => router.push('/vendedor/produtos')}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Voltar
-              </Button>
-            </div>
 
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => router.push('/vendedor')}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
-              >
-                <Package className="h-4 w-4" />
-                Dashboard
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Images */}
           <div className="space-y-4">
@@ -206,11 +184,10 @@ export default function ProductDetailPage() {
                     <button
                       key={index}
                       onClick={() => selectImage(index)}
-                      className={`relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${
-                        selectedImageIndex === index 
-                          ? 'border-primary' 
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                      className={`relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${selectedImageIndex === index
+                        ? 'border-primary'
+                        : 'border-gray-200 hover:border-gray-300'
+                        }`}
                     >
                       <Image
                         src={buildImageUrl(image)}
@@ -221,8 +198,8 @@ export default function ProductDetailPage() {
                     </button>
                   ))}
                 </div>
-                
-            
+
+
               </div>
             )}
           </div>
@@ -266,65 +243,196 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {/* Size Display */}
-            {product.sizes && product.sizes.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Ruler className="h-5 w-5 text-gray-400" />
-                  <span className="font-medium text-gray-900">Tamanhos Disponíveis:</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {processSizes(product.sizes).map((size, index) => (
-                    <span
-                      key={index}
-                      className="px-4 py-2 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-700"
-                    >
-                      {size}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Product Specifications */}
+            <div className="space-y-4">
+              {/* Dynamic Fields Display */}
+              {product.dynamic_fields && product.dynamic_fields.length > 0 && (
+                <div className="space-y-4">
+                  {/* Campos principais (Tamanho e Cor) */}
+                  {product.dynamic_fields
+                    .filter(field =>
+                      field.field_name.toLowerCase() === 'tamanho' ||
+                      field.field_name.toLowerCase() === 'cor'
+                    )
+                    .map((field, index) => (
+                      <div key={index} className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          {field.field_name.toLowerCase() === 'tamanho' ? (
+                            <Ruler className="h-4 w-4 text-gray-500" />
+                          ) : (
+                            <Palette className="h-4 w-4 text-gray-500" />
+                          )}
+                          <span className="font-medium text-gray-900">{field.field_name}:</span>
+                        </div>
 
-            {/* Color Display */}
-            {product.colors && product.colors.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Palette className="h-5 w-5 text-gray-400" />
-                  <span className="font-medium text-gray-900">Cores Disponíveis:</span>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  {processColors(product.colors).map((color, index) => {
-                    const colorValue = getColorValue(color)
-                    
-                    return (
-                      <div
-                        key={index}
-                        className="relative w-12 h-12 rounded-full border-2 border-gray-200"
-                        style={{ backgroundColor: colorValue }}
-                        title={color}
-                      >
-                        {/* Borda branca para cores claras */}
-                        {colorValue === '#FFFFFF' && (
-                          <div className="absolute inset-0 rounded-full border-2 border-gray-300"></div>
+                        {field.field_name.toLowerCase() === 'cor' ? (
+                          <div className="flex flex-wrap gap-2">
+                            {field.value.split(',').map((color, colorIndex) => {
+                              const trimmedColor = color.trim()
+                              const colorValue = getColorValue(trimmedColor)
+
+                              return (
+                                <div
+                                  key={colorIndex}
+                                  className="relative w-8 h-8 rounded-full border border-gray-300"
+                                  style={{ backgroundColor: colorValue }}
+                                  title={trimmedColor}
+                                >
+                                  {/* Borda branca para cores claras */}
+                                  {colorValue === '#FFFFFF' && (
+                                    <div className="absolute inset-0 rounded-full border border-gray-400"></div>
+                                  )}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            {field.value.split(',').map((size, sizeIndex) => (
+                              <span
+                                key={sizeIndex}
+                                className="px-2 py-1 rounded text-sm bg-gray-100 text-gray-700"
+                              >
+                                {size.trim()}
+                              </span>
+                            ))}
+                          </div>
                         )}
                       </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
+                    ))}
 
-            {/* Stock Information */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Package className="h-5 w-5 text-gray-400" />
-                <span className="font-medium text-gray-900">Estoque:</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-gray-900">{product.stock}</span>
-                <span className="text-gray-600">unidades disponíveis</span>
-              </div>
+                  {/* Stock Information */}
+                  <div className="flex items-center justify-between py-3 border-gray-200">
+                    <div className="flex items-center gap-2">
+                      <Package className="h-4 w-4 text-gray-500" />
+                      <span className="font-medium text-gray-900">Estoque</span>
+                    </div>
+                    <span className="text-lg font-bold text-gray-900">{product.stock} unidades</span>
+                  </div>
+
+
+                  {/* Botão para mostrar/ocultar detalhes */}
+                  {product.dynamic_fields.some(field =>
+                    field.field_name.toLowerCase() === 'gênero' ||
+                    field.field_name.toLowerCase() === 'material'
+                  ) && (
+                      <div className="border-gray-200 pt-4">
+                        <button
+                          onClick={() => setShowDetails(!showDetails)}
+                          className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors w-full justify-between p-2 rounded-lg hover:bg-gray-50"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Info className="h-4 w-4" />
+                            <span>Detalhes do produto</span>
+                          </div>
+                          {showDetails ? (
+                            <ChevronUp className="h-4 w-4" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4" />
+                          )}
+                        </button>
+
+                        {/* Campos de detalhes (Gênero e Material) */}
+                        {showDetails && (
+                          <div className="mt-4 space-y-3 pl-6">
+                            {product.dynamic_fields
+                              .filter(field =>
+                                field.field_name.toLowerCase() === 'gênero' ||
+                                field.field_name.toLowerCase() === 'material'
+                              )
+                              .map((field, index) => (
+                                <div key={index} className="flex items-center gap-3">
+                                  <span className="text-sm text-gray-500 w-20">{field.field_name}:</span>
+                                  <span className="text-sm text-gray-700">{field.value}</span>
+                                </div>
+                              ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                </div>
+              )}
+
+            </div>
+
+
+            {/* Additional Information */}
+            <div className="space-y-4">
+              {/* Delivery Information */}
+              {product.delivery_info && (
+                <div className="border-t border-gray-200 pt-4">
+                  <button
+                    onClick={() => setShowDetails(!showDetails)}
+                    className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors w-full justify-between p-2 rounded-lg hover:bg-gray-50"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Truck className="h-4 w-4" />
+                      <span>Informações de entrega</span>
+                    </div>
+                    {showDetails ? (
+                      <ChevronUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" />
+                    )}
+                  </button>
+
+                  {showDetails && (
+                    <div className="mt-4 space-y-3 pl-6">
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm text-gray-500 w-24">Taxa de entrega:</span>
+                        <span className="text-sm text-gray-700 font-medium">{formatPrice(product.delivery_info.delivery_fee)}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm text-gray-500 w-24">Frete grátis:</span>
+                        <span className="text-sm text-gray-700 font-medium">A partir de {formatPrice(product.delivery_info.free_delivery_min)}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm text-gray-500 w-24">Prazo:</span>
+                        <span className="text-sm text-gray-700 font-medium">{product.delivery_info.delivery_time}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Payment Methods */}
+              {product.payment_methods && product.payment_methods.length > 0 && (
+                <div className="border-t border-gray-200 pt-4">
+                  <button
+                    onClick={() => setShowDetails(!showDetails)}
+                    className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors w-full justify-between p-2 rounded-lg hover:bg-gray-50"
+                  >
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="h-4 w-4" />
+                      <span>Formas de pagamento</span>
+                    </div>
+                    {showDetails ? (
+                      <ChevronUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" />
+                    )}
+                  </button>
+
+                  {showDetails && (
+                    <div className="mt-4 pl-6">
+                      <div className="flex flex-wrap gap-2">
+                        {product.payment_methods.map((method, index) => (
+                          <span
+                            key={index}
+                            className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-700"
+                          >
+                            {method === 'pix' ? 'PIX' :
+                              method === 'credit_card' ? 'Cartão de Crédito' :
+                                method === 'debit_card' ? 'Cartão de Débito' :
+                                  method === 'boleto' ? 'Boleto' :
+                                    method}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Action Buttons */}
@@ -346,21 +454,7 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            {/* Shipping Info */}
-            <div className="border-t border-gray-200 pt-6 space-y-4">
-              <div className="flex items-center gap-3 text-sm text-gray-600">
-                <Truck className="h-5 w-5 text-green-500" />
-                <span>Frete grátis para pedidos acima de R$ 99</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-gray-600">
-                <Shield className="h-5 w-5 text-blue-500" />
-                <span>Garantia de 30 dias</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-gray-600">
-                <RotateCcw className="h-5 w-5 text-purple-500" />
-                <span>Troca e devolução gratuita</span>
-              </div>
-            </div>
+
           </div>
         </div>
       </div>

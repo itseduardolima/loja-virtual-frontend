@@ -5,7 +5,6 @@ import { Input, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigge
 import { Package, X, Star, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCreateProductPage } from './useCreateProductPage'
-import { useToastContext } from '@/contexts/ToastContext'
 import { useStore } from '@/hooks/useStore'
 import { useNiches } from '@/hooks/useNiches'
 import LoadingPage from '@/components/LoadingPage'
@@ -14,7 +13,6 @@ import { useState } from 'react'
 export default function CreateProductPage() {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
-  const { error: showError, success: showSuccess } = useToastContext()
   const { data: storeData, isLoading: storeLoading } = useStore()
   const { data: nichesData, isLoading: nichesLoading } = useNiches(storeData?.id || null)
   const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] = useState(false)
@@ -25,6 +23,7 @@ export default function CreateProductPage() {
     categories,
     selectedNicheId,
     nicheFieldValues,
+    nicheFields,
     isLoading,
     error,
     handleImageChange,
@@ -277,6 +276,15 @@ export default function CreateProductPage() {
               price={watch('price') || 0}
               featured={watch('featured') || false}
               selectedImages={selectedImages}
+              category={categories.find(cat => cat.id === watch('category_id'))}
+              stock={watch('stock') || 0}
+              dynamicFields={Object.values(nicheFieldValues).map(fieldValue => {
+                const field = nicheFields?.find(f => f.id === fieldValue.field_id)
+                return {
+                  field_name: field?.name || `Campo ${fieldValue.field_id}`,
+                  value: Array.isArray(fieldValue.value) ? fieldValue.value.join(', ') : fieldValue.value
+                }
+              })}
               onSave={handleSubmit(onSubmit)}
               onCancel={() => router.back()}
               isLoading={isLoading}

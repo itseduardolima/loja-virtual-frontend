@@ -1,3 +1,14 @@
+export interface DynamicField {
+  field_name: string
+  value: string
+}
+
+export interface DeliveryInfo {
+  delivery_fee: string
+  free_delivery_min: string
+  delivery_time: string
+}
+
 export interface Product {
   id: number
   name: string
@@ -5,14 +16,15 @@ export interface Product {
   price: string
   images: string[]
   stock: number
-  sizes: string[]
-  colors: string[]
   status: number
-  featured: boolean
+  featured: number
   created_at: string
   updated_at: string
   store_id: number
   category_id: number
+  dynamic_fields: DynamicField[]
+  delivery_info: DeliveryInfo
+  payment_methods: string[]
   category?: {
     id: number
     name: string
