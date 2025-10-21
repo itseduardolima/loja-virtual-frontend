@@ -69,21 +69,26 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
 
   const renderField = (field: NicheField) => {
     const fieldValue = fieldValues[field.id]?.value || ''
-    const isRequired = field.required === 1
+    const isRequired = true // Tornar todos os campos dinâmicos obrigatórios
+    
+    // Verificar se o campo está vazio para validação visual
+    const isEmpty = Array.isArray(fieldValue) 
+      ? fieldValue.length === 0 
+      : !fieldValue || fieldValue.toString().trim() === ''
 
     switch (field.field_type) {
       case 'text':
         return (
           <div key={field.id}>
             <Label htmlFor={`field-${field.id}`} className="text-sm font-semibold text-gray-700 mb-2 block">
-              {field.name} {isRequired && <span className="text-red-500">*</span>}
+              {field.name} <span className="text-red-500">*</span>
             </Label>
             <Input
               id={`field-${field.id}`}
               value={fieldValue as string}
               onChange={(e) => onFieldChange(field.id, e.target.value)}
               placeholder={`Digite ${field.name.toLowerCase()}`}
-              className="h-12"
+              className={`h-12 ${isEmpty ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
             />
           </div>
         )
@@ -92,7 +97,7 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
         return (
           <div key={field.id}>
             <Label htmlFor={`field-${field.id}`} className="text-sm font-semibold text-gray-700 mb-2 block">
-              {field.name} {isRequired && <span className="text-red-500">*</span>}
+              {field.name} <span className="text-red-500">*</span>
             </Label>
             <Input
               id={`field-${field.id}`}
@@ -100,7 +105,7 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
               value={fieldValue as string}
               onChange={(e) => onFieldChange(field.id, e.target.value)}
               placeholder={`Digite ${field.name.toLowerCase()}`}
-              className="h-12"
+              className={`h-12 ${isEmpty ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
             />
           </div>
         )
@@ -109,7 +114,7 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
         return (
           <div key={field.id}>
             <Label htmlFor={`field-${field.id}`} className="text-sm font-semibold text-gray-700 mb-2 block">
-              {field.name} {isRequired && <span className="text-red-500">*</span>}
+              {field.name} <span className="text-red-500">*</span>
             </Label>
             <Textarea
               id={`field-${field.id}`}
@@ -117,7 +122,7 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
               onChange={(e) => onFieldChange(field.id, e.target.value)}
               placeholder={`Descreva ${field.name.toLowerCase()}`}
               rows={3}
-              className="resize-none"
+              className={`resize-none ${isEmpty ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
             />
           </div>
         )
@@ -128,11 +133,11 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
         return (
           <div key={field.id}>
             <Label htmlFor={`field-${field.id}`} className="text-sm font-semibold text-gray-700 mb-2 block">
-              {field.name} {isRequired && <span className="text-red-500">*</span>}
+              {field.name} <span className="text-red-500">*</span>
             </Label>
             <div className="relative" ref={el => { dropdownRefs.current[field.id] = el }}>
               <div 
-                className="h-12 px-3 py-2 border border-gray-200 rounded-md bg-white flex items-center justify-between cursor-pointer hover:border-gray-300 transition-colors"
+                className={`h-12 px-3 py-2 border rounded-md bg-white flex items-center justify-between cursor-pointer hover:border-gray-300 transition-colors ${isEmpty ? 'border-red-500' : 'border-gray-200'}`}
                 onClick={() => setOpenDropdowns(prev => ({ ...prev, [field.id]: !prev[field.id] }))}
               >
                 <span className={selectedOptions.length > 0 ? 'text-gray-900' : 'text-gray-500'}>
@@ -190,9 +195,9 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
         return (
           <div key={field.id}>
             <Label htmlFor={`field-${field.id}`} className="text-sm font-semibold text-gray-700 mb-2 block">
-              {field.name} {isRequired && <span className="text-red-500">*</span>}
+              {field.name} <span className="text-red-500">*</span>
             </Label>
-            <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-2">
+            <div className={`grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-2 p-2  rounded-md`}>
               {field.options.map((color) => {
                 const isSelected = selectedColors.includes(color)
                 return (
