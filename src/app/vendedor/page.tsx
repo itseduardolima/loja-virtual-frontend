@@ -28,75 +28,9 @@ export default function VendedorPage() {
     return <LoadingPage />
   }
 
-  // Se não tem loja, mostrar tela de criação
+  // Se não tem loja, mostrar loading (o redirecionamento será feito pelo useEffect)
   if (!hookData.hasStore) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-10">
-            {/* Header */}
-            <div className="mb-8">
-              <h1 className="text-4xl font-bold">
-                Bem-vindo, {hookData.user?.name}
-              </h1>
-              <h2 className="text-gray-600 mt-2 text-xl">
-                Vamos criar sua loja!
-              </h2>
-            </div>
-
-            {/* Card de Criação de Loja */}
-            <Card className="border-2 border-dashed border-blue-300 bg-blue-50/50">
-              <CardContent className="p-12 text-center">
-                <div className="mb-8">
-                  <div className="mx-auto w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mb-6">
-                    <Store className="h-12 w-12 text-blue-600" />
-                  </div>
-                  <h3 className="text-3xl font-bold text-gray-900 mb-4">
-                    Crie sua primeira loja
-                  </h3>
-                  <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-                    Configure sua loja online em poucos passos. Comece com as informações essenciais 
-                    e complete os detalhes depois.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <div className="flex flex-col items-center p-4">
-                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
-                      <span className="text-green-600 font-bold">1</span>
-                    </div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Informações Básicas</h4>
-                    <p className="text-sm text-gray-600 text-center">Nome, descrição e nicho da loja</p>
-                  </div>
-                  <div className="flex flex-col items-center p-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
-                      <span className="text-blue-600 font-bold">2</span>
-                    </div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Contato</h4>
-                    <p className="text-sm text-gray-600 text-center">WhatsApp e redes sociais</p>
-                  </div>
-                  <div className="flex flex-col items-center p-4">
-                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-3">
-                      <span className="text-purple-600 font-bold">3</span>
-                    </div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Endereço</h4>
-                    <p className="text-sm text-gray-600 text-center">Localização e entrega</p>
-                  </div>
-                </div>
-
-                <Button
-                  onClick={() => {
-                    if (hookData.router) {
-                      hookData.router.push('/vendedor/criar-loja')
-                    }
-                  }}
-                  className="px-8 py-7  flex items-center gap-2 mx-auto"
-                >
-                  <Store className="h-5 w-5" />
-                  Criar Minha Loja
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-    )
+    return <LoadingPage />
   }
 
   return (

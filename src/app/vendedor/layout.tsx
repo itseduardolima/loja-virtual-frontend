@@ -9,6 +9,17 @@ export default function VendedorLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  
+  // Não mostrar sidebar na página de criar loja
+  const isCreateStorePage = pathname === '/vendedor/criar-loja'
+
+  if (isCreateStorePage) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {children}
+      </div>
+    )
+  }
 
   return (
     <div className="bg-gray-50 flex h-screen">

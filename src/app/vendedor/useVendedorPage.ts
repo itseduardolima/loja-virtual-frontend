@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useStore } from '@/hooks/useStore'
@@ -30,6 +30,18 @@ export function useVendedorPage() {
   // Refs para os inputs de arquivo
   const bannerInputRef = useRef<HTMLInputElement>(null)
   const logoInputRef = useRef<HTMLInputElement>(null)
+
+  // Redirecionamento automático baseado no status da loja
+  useEffect(() => {
+    // Só redireciona se não estiver carregando e o usuário for vendedor
+    if (!authLoading && !storeLoading && user?.profile === 'Vendedor') {
+      if (!store) {
+        // Se não tem loja, redireciona para criar loja
+        router.push('/vendedor/criar-loja')
+      }
+      // Se tem loja, fica na página atual (/vendedor)
+    }
+  }, [authLoading, storeLoading, user?.profile, store, router])
 
   // Função para lidar com upload do banner
   const handleBannerUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {

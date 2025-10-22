@@ -17,6 +17,18 @@ export function useNiches(storeId: number | null) {
   })
 }
 
+export function useAllNiches() {
+  return useQuery({
+    queryKey: ['all-niches'],
+    queryFn: async (): Promise<NicheResponse> => {
+      const response = await api.get('/niches')
+      return response.data
+    },
+    retry: false,
+    refetchOnWindowFocus: false
+  })
+}
+
 export function useNicheFields(nicheId: number | null) {
   return useQuery({
     queryKey: ['niche-fields', nicheId],

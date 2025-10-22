@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCreateStore, CreateStoreData } from '@/hooks/useCreateStore'
 import { useStore } from '@/hooks/useStore'
-import { useNiches } from '@/hooks/useNiches'
+import { useAllNiches } from '@/hooks/useNiches'
 import { useCountries } from '@/hooks/useCountries'
-import LoadingPage from '@/components/LoadingPage'
 
 const STEPS = [
   { id: 1, title: 'Informações Básicas', description: 'Nome, descrição e nicho' },
@@ -30,7 +29,7 @@ export function useCreateStorePage() {
   const router = useRouter()
   const { createStore, isCreating } = useCreateStore()
   const { data: store, isLoading: storeLoading } = useStore()
-  const { data: nichesData, isLoading: nichesLoading } = useNiches()
+  const { data: nichesData, isLoading: nichesLoading } = useAllNiches()
   const { data: countriesData, isLoading: countriesLoading } = useCountries()
   
   const [currentStep, setCurrentStep] = useState(1)
