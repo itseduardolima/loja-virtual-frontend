@@ -18,6 +18,16 @@ interface ProductDetail {
   featured: boolean
   created_at: string
   updated_at: string
+  dynamic_fields: Array<{
+    field_name: string
+    value: string
+  }>
+  delivery_info?: {
+    delivery_fee: string
+    free_delivery_min: string
+    delivery_time: string
+  }
+  payment_methods?: string[]
   category: {
     id: number
     name: string

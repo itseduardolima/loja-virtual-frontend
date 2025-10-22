@@ -58,33 +58,19 @@ export default function EnderecoPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-10">
       {/* Header */}
-      <div className="mb-12">
-        <div className="flex items-center gap-4 mb-6">
-          
-          <div>
-            <h1 className="text-4xl font-bold text-gray-900">Configurações de Endereço</h1>
-            <p className="text-xl text-gray-600 mt-2">
-              Configure o endereço e localização da sua loja
-            </p>
-          </div>
-        </div>
-      
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Configurações de Endereço</h1>
+        <p className="text-gray-600">
+          Configure o endereço e localização da sua loja
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Formulário Principal */}
-        <div className="lg:col-span-2">
-          <Card className="shadow-lg border-0">
-            <CardHeader className="">
-              <CardTitle className="flex items-center gap-3 text-xl">
-                Informações de Endereço
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-8">
-              <div className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="md:col-span-2">
-                <Label htmlFor="address" className="text-base font-semibold">
+      <Card className="shadow-sm">
+        <CardContent className="p-8">
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="md:col-span-2 lg:col-span-1 xl:col-span-2">
+                <Label htmlFor="address" className="text-sm font-medium text-gray-700">
                   Endereço Completo
                 </Label>
                 <Input
@@ -97,7 +83,7 @@ export default function EnderecoPage() {
               </div>
 
               <div>
-                <Label htmlFor="city" className="text-base font-semibold">
+                <Label htmlFor="city" className="text-sm font-medium text-gray-700">
                   Cidade
                 </Label>
                 <Input
@@ -110,7 +96,7 @@ export default function EnderecoPage() {
               </div>
 
               <div>
-                <Label htmlFor="state" className="text-base font-semibold">
+                <Label htmlFor="state" className="text-sm font-medium text-gray-700">
                   Estado (UF)
                 </Label>
                 <Input
@@ -123,7 +109,7 @@ export default function EnderecoPage() {
               </div>
 
               <div>
-                <Label htmlFor="zipcode" className="text-base font-semibold">
+                <Label htmlFor="zipcode" className="text-sm font-medium text-gray-700">
                   CEP
                 </Label>
                 <Input
@@ -136,7 +122,7 @@ export default function EnderecoPage() {
               </div>
 
               <div>
-                <Label htmlFor="neighborhood" className="text-base font-semibold">
+                <Label htmlFor="neighborhood" className="text-sm font-medium text-gray-700">
                   Bairro
                 </Label>
                 <Input
@@ -149,7 +135,7 @@ export default function EnderecoPage() {
               </div>
 
               <div>
-                <Label htmlFor="number" className="text-base font-semibold">
+                <Label htmlFor="number" className="text-sm font-medium text-gray-700">
                   Número
                 </Label>
                 <Input
@@ -162,7 +148,7 @@ export default function EnderecoPage() {
               </div>
 
               <div className="md:col-span-2">
-                <Label htmlFor="complement" className="text-base font-semibold">
+                <Label htmlFor="complement" className="text-sm font-medium text-gray-700">
                   Complemento
                 </Label>
                 <Input
@@ -175,69 +161,23 @@ export default function EnderecoPage() {
               </div>
             </div>
 
-                <div className="flex justify-end pt-8 border-t border-gray-200">
-                  <Button
-                    onClick={handleSave}
-                    disabled={isUpdating}
-                   
-                    className="flex items-center gap-3 px-8 py-3"
-                  >
-                    {isUpdating ? (
-                      <LoadingSpinner size="sm" />
-                    ) : (
-                     ""
-                    )}
-                    {isUpdating ? 'Salvando...' : 'Salvar Endereço'}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Sidebar com Dicas */}
-        <div className="space-y-6">
-        
-
-          <Card className="bg-white border-gray-200">
-            <CardContent className="p-6">
-              <h3 className="font-semibold text-gray-900 mb-3">Status do Endereço</h3>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-700">Endereço principal</span>
-                  <span className={`text-xs px-2 py-1 rounded ${
-                    formData.address 
-                      ? 'bg-green-200 text-green-800' 
-                      : 'bg-yellow-200 text-yellow-800'
-                  }`}>
-                    {formData.address ? 'Preenchido' : 'Pendente'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-700">CEP</span>
-                  <span className={`text-xs px-2 py-1 rounded ${
-                    formData.zipcode 
-                      ? 'bg-green-200 text-green-800' 
-                      : 'bg-yellow-200 text-yellow-800'
-                  }`}>
-                    {formData.zipcode ? 'Preenchido' : 'Pendente'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-700">Cidade/Estado</span>
-                  <span className={`text-xs px-2 py-1 rounded ${
-                    formData.city && formData.state 
-                      ? 'bg-green-200 text-green-800' 
-                      : 'bg-yellow-200 text-yellow-800'
-                  }`}>
-                    {formData.city && formData.state ? 'Preenchido' : 'Pendente'}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+            <div className="flex justify-end pt-6 border-t border-gray-200">
+              <Button
+                onClick={handleSave}
+                disabled={isUpdating}
+                className="flex items-center gap-2"
+              >
+                {isUpdating ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  ""
+                )}
+                {isUpdating ? 'Salvando...' : 'Salvar Endereço'}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

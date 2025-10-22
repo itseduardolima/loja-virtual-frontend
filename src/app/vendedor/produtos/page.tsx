@@ -1,7 +1,7 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { Button, LoadingSpinner, ErrorState, Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis, StoreSidebar, Switch, ProductCard } from '@/components'
+import { Button, LoadingSpinner, ErrorState, StorePagination, StoreSidebar, Switch, ProductCard } from '@/components'
 import { Input } from '@/components/ui/input'
 import {
   Package,
@@ -57,22 +57,19 @@ export default function ProdutosPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-7xl py-8">
-
+    <div className="min-h-screen bg-white">
+      <div className="max-w-7xl mx-auto py-8">
         {/* Page Title */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 Meus Produtos
               </h1>
-              <p className="text-lg text-gray-600">
+              <p className="text-gray-600">
                 {stats.total} produtos encontrados
               </p>
             </div>
-
-
 
             <div className="flex items-center gap-2 sm:gap-3">
               <Button
@@ -81,9 +78,7 @@ export default function ProdutosPage() {
                 <Plus className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">Novo Produto</span>
               </Button>
-
             </div>
-
           </div>
         </div>
 
@@ -159,27 +154,8 @@ export default function ProdutosPage() {
         </div>
 
         {/* Products */}
-        <div >
-          {products.length === 0 ? (
-            <div className="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-sm">
-              <div className="p-4 bg-gray-50 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
-                <Package className="h-12 w-12 text-gray-400" />
-              </div>
-              <h3 className="text-2xl font-semibold text-gray-900 mb-3">
-                {filters.search || filters.status || filters.featured ? 'Nenhum produto encontrado' : 'Nenhum produto cadastrado'}
-              </h3>
-              <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                {filters.search || filters.status || filters.featured ? 'Tente ajustar os filtros de busca para encontrar o que procura' : 'Comece criando seu primeiro produto para começar a vender'}
-              </p>
-              <Button
-
-                onClick={() => router.push('/vendedor/produtos/criar')}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Criar Produto
-              </Button>
-            </div>
-          ) : (
+        <div>
+          {products.length > 0 ? (
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {products.map((product) => (
                 <div key={product.id} className="relative group h-full">
@@ -195,76 +171,42 @@ export default function ProdutosPage() {
                 </div>
               ))}
             </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="text-gray-400 mb-4">
+                <Package className="w-16 h-16 mx-auto" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {filters.search || filters.status || filters.featured ? 'Nenhum produto encontrado' : 'Nenhum produto cadastrado'}
+              </h3>
+              <p className="text-gray-600 mb-4">
+                {filters.search || filters.status || filters.featured ? 'Tente ajustar os filtros de busca para encontrar o que procura' : 'Comece criando seu primeiro produto para começar a vender'}
+              </p>
+              <Button
+                onClick={() => router.push('/vendedor/produtos/criar')}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Criar Produto
+              </Button>
+            </div>
           )}
 
           {/* Pagination */}
           {meta && meta.lastPage > 1 && (
             <div className="mt-12">
-              {/* Pagination Navigation - Centered */}
-              <div className="flex justify-center">
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          if (meta.currentPage > 1) {
-                            handlePageChange(meta.currentPage - 1)
-                          }
-                        }}
-                        className={meta.currentPage <= 1 ? 'pointer-events-none opacity-50' : ''}
-                      />
-                    </PaginationItem>
-
-                    {Array.from({ length: meta.lastPage }, (_, i) => i + 1).map((page) => {
-                      if (
-                        page === 1 ||
-                        page === meta.lastPage ||
-                        (page >= meta.currentPage - 1 && page <= meta.currentPage + 1)
-                      ) {
-                        return (
-                          <PaginationItem key={page}>
-                            <PaginationLink
-                              href="#"
-                              onClick={(e) => {
-                                e.preventDefault()
-                                handlePageChange(page)
-                              }}
-                              isActive={page === meta.currentPage}
-                            >
-                              {page}
-                            </PaginationLink>
-                          </PaginationItem>
-                        )
-                      } else if (
-                        page === meta.currentPage - 2 ||
-                        page === meta.currentPage + 2
-                      ) {
-                        return (
-                          <PaginationItem key={page}>
-                            <PaginationEllipsis />
-                          </PaginationItem>
-                        )
-                      }
-                      return null
-                    })}
-
-                    <PaginationItem>
-                      <PaginationNext
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          if (meta.currentPage < meta.lastPage) {
-                            handlePageChange(meta.currentPage + 1)
-                          }
-                        }}
-                        className={meta.currentPage >= meta.lastPage ? 'pointer-events-none opacity-50' : ''}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              </div>
+              <StorePagination
+                currentPage={meta.currentPage}
+                totalPages={meta.lastPage}
+                totalItems={meta.total}
+                itemsPerPage={meta.perPage}
+                onPageChange={handlePageChange}
+                onItemsPerPageChange={(itemsPerPage) => {
+                  // Implementar mudança de itens por página se necessário
+                  console.log('Items per page changed:', itemsPerPage)
+                }}
+                hasNextPage={meta.next !== null}
+                hasPrevPage={meta.prev !== null}
+              />
             </div>
           )}
         </div>
