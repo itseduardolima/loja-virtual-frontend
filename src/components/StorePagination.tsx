@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
-import { StorePaginationProps } from '@/app/loja/[slug]/types'
+import { StorePaginationProps } from '@/app/loja/[slug]/produtos/types'
 
 export function StorePagination({
   currentPage,

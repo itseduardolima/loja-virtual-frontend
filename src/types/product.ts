@@ -25,6 +25,8 @@ export interface Product {
   dynamic_fields: DynamicField[]
   delivery_info: DeliveryInfo
   payment_methods: string[]
+  colors?: string[]
+  sizes?: string[]
   category?: {
     id: number
     name: string

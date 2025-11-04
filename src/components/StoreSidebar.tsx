@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { X, Filter } from 'lucide-react'
-import { StoreFiltersProps } from '@/app/loja/[slug]/types'
+import { StoreFiltersProps } from '@/app/loja/[slug]/produtos/types'
 
 interface StoreSidebarProps extends StoreFiltersProps {
   isOpen: boolean
