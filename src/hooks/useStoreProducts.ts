@@ -30,6 +30,13 @@ export function useStoreProducts(params: StoreProductsParams): UseStoreProductsR
       if (currentParams.min_price) queryParams.append('min_price', currentParams.min_price.toString())
       if (currentParams.category_id) queryParams.append('category_id', currentParams.category_id.toString())
       if (currentParams.search) queryParams.append('search', currentParams.search)
+      if (currentParams.dynamic_filters) {
+        // Enviar dynamic_filters como string JSON na query string
+        const filtersString = typeof currentParams.dynamic_filters === 'string' 
+          ? currentParams.dynamic_filters 
+          : JSON.stringify(currentParams.dynamic_filters)
+        queryParams.append('dynamic_filters', filtersString)
+      }
 
       const response = await api.get<ProductsResponse>(
         `/catalog/store/${currentParams.slug}/products?${queryParams.toString()}`

@@ -8,6 +8,7 @@ export interface StoreFilters {
   minPrice?: number
   maxPrice?: number
   categoryId?: number
+  dynamicFilters?: Record<string, string>
 }
 
 // Tipos para as categorias da loja

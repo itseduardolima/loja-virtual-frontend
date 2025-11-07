@@ -54,6 +54,7 @@ export function useStorePage({ slug }: UseStorePageProps): UseStorePageReturn {
     max_price: filters.maxPrice,
     min_price: filters.minPrice,
     category_id: filters.categoryId,
+    dynamic_filters: filters.dynamicFilters,
     search: debouncedSearch || undefined
   })
   const categories = useMemo(() => {
@@ -69,21 +70,65 @@ export function useStorePage({ slug }: UseStorePageProps): UseStorePageReturn {
   const availableColors = useMemo(() => {
     const colors = new Set<string>()
     products.forEach(product => {
+      // Primeiro tenta das propriedades diretas
       if (product.colors && Array.isArray(product.colors)) {
-        product.colors.forEach(color => colors.add(color))
+        product.colors.forEach(color => {
+          if (typeof color === 'string') {
+            // Se a cor contém vírgulas, separa
+            color.split(',').forEach(c => colors.add(c.trim()))
+          } else {
+            colors.add(color)
+          }
+        })
+      }
+      // Depois tenta dos dynamic_fields
+      if (product.dynamic_fields && Array.isArray(product.dynamic_fields)) {
+        product.dynamic_fields.forEach(field => {
+          const fieldName = field.field_name?.toLowerCase() || ''
+          if (fieldName.includes('cor') || fieldName.includes('color')) {
+            if (field.value) {
+              field.value.split(',').forEach(c => {
+                const trimmed = c.trim()
+                if (trimmed) colors.add(trimmed)
+              })
+            }
+          }
+        })
       }
     })
-    return Array.from(colors)
+    return Array.from(colors).filter(Boolean).sort()
   }, [products])
 
   const availableSizes = useMemo(() => {
     const sizes = new Set<string>()
     products.forEach(product => {
+      // Primeiro tenta das propriedades diretas
       if (product.sizes && Array.isArray(product.sizes)) {
-        product.sizes.forEach(size => sizes.add(size))
+        product.sizes.forEach(size => {
+          if (typeof size === 'string') {
+            // Se o tamanho contém vírgulas, separa
+            size.split(',').forEach(s => sizes.add(s.trim()))
+          } else {
+            sizes.add(size)
+          }
+        })
+      }
+      // Depois tenta dos dynamic_fields
+      if (product.dynamic_fields && Array.isArray(product.dynamic_fields)) {
+        product.dynamic_fields.forEach(field => {
+          const fieldName = field.field_name?.toLowerCase() || ''
+          if (fieldName.includes('tamanho') || fieldName.includes('size') || fieldName.includes('numeração')) {
+            if (field.value) {
+              field.value.split(',').forEach(s => {
+                const trimmed = s.trim()
+                if (trimmed) sizes.add(trimmed)
+              })
+            }
+          }
+        })
       }
     })
-    return Array.from(sizes)
+    return Array.from(sizes).filter(Boolean).sort()
   }, [products])
 
   const handleSearch = (searchTerm: string) => {
@@ -116,6 +161,7 @@ export function useStorePage({ slug }: UseStorePageProps): UseStorePageReturn {
       max_price: newFilters.maxPrice,
       min_price: newFilters.minPrice,
       category_id: newFilters.categoryId,
+      dynamic_filters: newFilters.dynamicFilters,
       page: 1
     })
   }
@@ -130,6 +176,7 @@ export function useStorePage({ slug }: UseStorePageProps): UseStorePageReturn {
       max_price: undefined,
       min_price: undefined,
       category_id: undefined,
+      dynamic_filters: undefined,
       search: undefined,
       page: 1
     })

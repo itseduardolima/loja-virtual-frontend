@@ -6,7 +6,9 @@ export function useNiches(storeId: number | null) {
   return useQuery({
     queryKey: ['niches', storeId],
     queryFn: async (): Promise<NicheResponse> => {
-      if (!storeId) throw new Error('Store ID é obrigatório')
+      if (!storeId) {
+        return { data: [], message: '' }
+      }
       
       const response = await api.get(`/niches/store/${storeId}`)
       return response.data
@@ -36,7 +38,9 @@ export function useNicheFields(nicheId: number | null) {
       if (!nicheId) throw new Error('Niche ID é obrigatório')
       
       const response = await api.get(`/niches/fields/niche/${nicheId}`)
-      return response.data
+      // Se a resposta vier com uma estrutura { data: [...] }, retorna data
+      // Caso contrário, retorna a resposta diretamente
+      return Array.isArray(response.data) ? response.data : (response.data?.data || [])
     },
     enabled: !!nicheId,
     retry: false,
