@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useParams } from 'next/navigation'
 import { ProductCard, StorePagination, StoreSidebar, LoadingSpinner, ErrorState, CartSidebar } from '@/components'
-import { ShoppingBag,  Star, Package, Search, User, LogIn, UserPlus } from 'lucide-react'
+import { ShoppingBag, Star, Package, Search, User, LogIn, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -91,36 +91,19 @@ export default function StorePage() {
   return (
     <div className="min-h-screen">
       {/* Header da Loja */}
-      <div className="border-b max-w-7xl 2xl:max-w-screen-2xl mx-auto">
-        <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto">
+        <div className="mx-auto py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              {/* Logo da Loja */}
-              {storeInfo?.logo && (
-                <div className="flex-shrink-0">
-                  <Image
-                    src={buildImageUrl(storeInfo.logo)}
-                    alt={`Logo ${storeInfo.name}`}
-                    width={60}
-                    height={60}
-                    className="rounded-lg object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement
-                      target.style.display = 'none'
-                    }}
-                  />
-                </div>
-              )}
-
               {/* Informações da Loja */}
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-3xl uppercase font-integral text-black">
                   {storeInfo?.name}
                 </h1>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center">
               {/* Campo de Busca */}
               <div className="relative w-[577px]">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -220,29 +203,28 @@ export default function StorePage() {
       <div className="flex gap-6 p-0">
         {/* Sidebar de Filtros */}
 
-
         {/* Conteúdo Principal */}
         <div className="flex-1">
           <div className="max-w-7xl 2xl:max-w-screen-2xl flex gap-10 mx-auto py-8">
 
-             <div className="w-72">
-               <StoreSidebar
-                 isOpen={isSidebarOpen}
-                 onClose={() => setIsSidebarOpen(false)}
-                 onSearch={handleSearch}
-                 onSortChange={handleSortChange}
-                 onFilterChange={handleFilterChange}
-                 onClearFilters={handleClearFilters}
-                 searchValue={search}
-                 sortValue={sort}
-                 sortFieldValue={sortField}
-                 activeFilters={filters}
-                 categories={categories}
-                 availableColors={availableColors}
-                 availableSizes={availableSizes}
-                 storeId={storeInfo?.id || null}
-               />
-             </div>
+            <div className="w-72">
+              <StoreSidebar
+                isOpen={isSidebarOpen}
+                onClose={() => setIsSidebarOpen(false)}
+                onSearch={handleSearch}
+                onSortChange={handleSortChange}
+                onFilterChange={handleFilterChange}
+                onClearFilters={handleClearFilters}
+                searchValue={search}
+                sortValue={sort}
+                sortFieldValue={sortField}
+                activeFilters={filters}
+                categories={categories}
+                availableColors={availableColors}
+                availableSizes={availableSizes}
+                storeId={storeInfo?.id || null}
+              />
+            </div>
 
             <div className="flex-1">
               {/* Título */}

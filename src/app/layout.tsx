@@ -15,6 +15,15 @@ const satoshi = localFont({
   weight: '100 900',
 })
 
+const integralCF = localFont({
+  src: '../../public/fonts/integralcf-bold.otf',
+  variable: '--font-integral',
+  fallback: ['var(--font-satoshi)', 'system-ui', '-apple-system', 'sans-serif'],
+  display: 'swap',
+  weight: '700',
+})
+
+
 export const metadata: Metadata = {
   title: 'Loja - Frontend',
   description: 'Sistema de loja online',
@@ -27,7 +36,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className={`${satoshi.variable} font-sans`}>
+      <body className={`${satoshi.variable} ${integralCF.variable} font-sans`}>
         <QueryProvider>
           <AuthProvider>
             <ToastProvider>

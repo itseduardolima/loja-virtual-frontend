@@ -10,6 +10,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: ['var(--font-satoshi)', 'system-ui', 'sans-serif'],
+        integral: ['var(--font-integral)', 'system-ui', 'sans-serif'],
       },
       colors: {
         background: 'hsl(var(--background))',
