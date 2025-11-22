@@ -1,18 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
+import { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { useCategories } from '@/hooks/useCategories'
-import { createCategorySchema, CreateCategoryFormData } from '@/schemas'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useToastContext } from '@/contexts/ToastContext'
 import { CategoryFilters } from '@/types/category'
+import { type Column } from '@/components/Table'
+import { Edit, Trash2 } from 'lucide-react'
 
 export function useCategoriesPage() {
+  const router = useRouter()
   const { success, error: showError } = useToastContext()
-  const [isCreating, setIsCreating] = useState(false)
-  const [editingCategory, setEditingCategory] = useState<number | null>(null)
   const [filters, setFilters] = useState<CategoryFilters>({
     page: 1,
     limit: 12,
@@ -32,51 +31,15 @@ export function useCategoriesPage() {
     categories,
     isLoading,
     error,
-    createCategory,
-    updateCategory,
     deleteCategory,
     updateCategoryStatus,
-    isCreating: isCreatingCategory,
-    isUpdating,
     isDeleting,
     isUpdatingStatus,
     meta
   } = useCategories(debouncedFilters)
 
-  const form = useForm<CreateCategoryFormData>({
-    resolver: yupResolver(createCategorySchema) as any,
-    defaultValues: {
-      name: '',
-      description: undefined
-    }
-  })
-
-  const { register, handleSubmit, formState: { errors }, reset, setValue } = form
-
-  const onSubmit = (data: CreateCategoryFormData) => {
-    if (editingCategory) {
-      updateCategory({
-        id: editingCategory,
-        name: data.name,
-        description: data.description
-      })
-    } else {
-      createCategory({
-        name: data.name,
-        description: data.description
-      })
-    }
-    
-    reset()
-    setIsCreating(false)
-    setEditingCategory(null)
-  }
-
   const handleEdit = (category: any) => {
-    setValue('name', category.name)
-    setValue('description', category.description || '')
-    setEditingCategory(category.id)
-    setIsCreating(true)
+    router.push(`/vendedor/categorias/editar/${category.id}`)
   }
 
   const handleDelete = (id: number) => {
@@ -98,11 +61,6 @@ export function useCategoriesPage() {
     }
   }
 
-  const cancelForm = () => {
-    reset()
-    setIsCreating(false)
-    setEditingCategory(null)
-  }
 
   const updateFilters = (newFilters: Partial<CategoryFilters>) => {
     setFilters(prev => ({
@@ -133,9 +91,86 @@ export function useCategoriesPage() {
 
   const isSearching = filters.search !== debouncedSearch
 
+  const columns: Column<any>[] = useMemo(() => [
+    {
+      key: 'name',
+      header: 'Nome',
+      accessor: 'name',
+      type: 'text' as const,
+    },
+    {
+      key: 'description',
+      header: 'Descrição',
+      accessor: (category: any) => category.description || null,
+      type: 'text' as const,
+      options: {
+        className: 'max-w-xs line-clamp-2',
+      },
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      accessor: (category: any) => ({
+        value: category.status,
+        label: category.status === 1 ? 'Ativa' : 'Inativa',
+        color: category.status === 1 ? 'active' : 'inactive',
+      }),
+      type: 'badge' as const,
+      options: {
+        badgeColors: {
+          active: { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-200' },
+          inactive: { bg: 'bg-gray-100', text: 'text-gray-600', border: 'border-gray-200' },
+        },
+      },
+    },
+    {
+      key: 'products',
+      header: 'Produtos',
+      accessor: (category: any) => category._count?.products || 0,
+      type: 'text' as const,
+    },
+    {
+      key: 'created_at',
+      header: 'Criado em',
+      accessor: (category: any) => new Date(category.created_at).toLocaleDateString('pt-BR'),
+      type: 'date' as const,
+    },
+    {
+      key: 'actions',
+      header: 'Ações',
+      accessor: 'id',
+      type: 'actions' as const,
+      options: {
+        align: 'right' as const,
+        actions: [
+          {
+            type: 'switch',
+            getChecked: (category: any) => category.status === 1,
+            onClick: (category: any) => handleToggleStatus(category.id, category.status),
+            getDisabled: () => isUpdatingStatus,
+            className: 'data-[state=checked]:bg-green-500',
+          },
+          {
+            type: 'button',
+            icon: Edit,
+            variant: 'ghost' as const,
+            onClick: (category: any) => handleEdit(category),
+            className: 'h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50',
+          },
+          {
+            type: 'button',
+            icon: Trash2,
+            variant: 'ghost' as const,
+            onClick: (category: any) => handleDelete(category.id),
+            getDisabled: () => isDeleting,
+            className: 'h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50',
+          },
+        ],
+      },
+    },
+  ], [handleToggleStatus, handleEdit, handleDelete, isUpdatingStatus, isDeleting])
+
   return {
-    isCreating,
-    editingCategory,
     filters,
     
     categories,
@@ -143,19 +178,9 @@ export function useCategoriesPage() {
     error,
     meta,
     
-    form,
-    register,
-    handleSubmit,
-    errors,
-    reset,
-    setValue,
-    
-    onSubmit,
     handleEdit,
     handleDelete,
     handleToggleStatus,
-    cancelForm,
-    setIsCreating,
     
     updateFilters,
     handlePageChange,
@@ -164,9 +189,10 @@ export function useCategoriesPage() {
     setFilters,
     isSearching,
     
-    isCreatingCategory,
-    isUpdating,
     isDeleting,
-    isUpdatingStatus
+    isUpdatingStatus,
+    
+    // Table
+    columns,
   }
 }

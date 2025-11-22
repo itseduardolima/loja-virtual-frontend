@@ -4,31 +4,27 @@ import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { 
-  ArrowLeft, 
-  Calendar, 
-  User, 
-  Phone, 
-  Mail, 
-  Package, 
-  DollarSign, 
-  Clock, 
-  CheckCircle, 
-  Truck, 
-  XCircle,
-  MessageCircle,
+import {
+  ArrowLeft,
+  Calendar,
+  User,
+  Phone,
+  Mail,
+  Package,
+  DollarSign,
   FileText,
   ShoppingBag
 } from 'lucide-react'
 import { useOrderDetail } from '@/hooks/useOrderDetail'
 import { ORDER_STATUS, type Order } from '@/types/order'
-import { formatPrice } from '@/lib/utils'
+import { formatDate, formatPrice } from '@/lib/utils'
 import { buildImageUrl } from '@/lib/imageUtils'
 import { ErrorState } from '@/components/ErrorState'
 import { UpdateOrderStatusModal } from '@/components/UpdateOrderStatusModal'
 import { useAuth } from '@/contexts/AuthContext'
 import { useEffect } from 'react'
-import LoadingSpinner from '@/components/LoadingSpinner'
+import LoadingPage from '@/components/LoadingPage'
+
 
 export default function OrderDetailPage() {
   const params = useParams()
@@ -51,26 +47,6 @@ export default function OrderDetailPage() {
     return ORDER_STATUS[status as keyof typeof ORDER_STATUS] || ORDER_STATUS[1]
   }
 
-  const getStatusIcon = (status: number) => {
-    const statusInfo = getStatusInfo(status)
-    switch (statusInfo.icon) {
-      case 'clock': return <Clock className="h-4 w-4" />
-      case 'check-circle': return <CheckCircle className="h-4 w-4" />
-      case 'truck': return <Truck className="h-4 w-4" />
-      case 'x-circle': return <XCircle className="h-4 w-4" />
-      default: return <Clock className="h-4 w-4" />
-    }
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
 
   const formatWhatsAppNumber = (phone: string) => {
     // Remove caracteres não numéricos
@@ -87,13 +63,13 @@ Seu pedido foi recebido com sucesso!
 *Valor Total:* ${formatPrice(parseFloat(order.total))}
 
 *Itens do Pedido:*
-${order.items.map(item => 
-  `• ${item.product.name} - Tamanho: ${item.size} - Cor: ${item.color} - Qtd: ${item.quantity} - ${formatPrice(parseFloat(item.price))}`
-).join('\n')}
+${order.items.map(item =>
+      `• ${item.product.name} - Tamanho: ${item.size} - Cor: ${item.color} - Qtd: ${item.quantity} - ${formatPrice(parseFloat(item.price))}`
+    ).join('\n')}
 
 
 Em breve entraremos em contato para confirmar o pedido! 🛍️`
-    
+
     return encodeURIComponent(message)
   }
 
@@ -104,7 +80,7 @@ Em breve entraremos em contato para confirmar o pedido! 🛍️`
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner />
+        <LoadingPage />
       </div>
     )
   }
@@ -112,7 +88,7 @@ Em breve entraremos em contato para confirmar o pedido! 🛍️`
   if (error || !order) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <ErrorState 
+        <ErrorState
           message="Erro ao carregar detalhes do pedido"
           onRetry={() => window.location.reload()}
         />
@@ -147,17 +123,16 @@ Em breve entraremos em contato para confirmar o pedido! 🛍️`
                 Código: {order.order_code}
               </p>
             </div>
-            <Badge 
-              variant="outline" 
-              className={`py-4 px-8 text-base ${
-                statusInfo.color === 'yellow' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                statusInfo.color === 'blue' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                statusInfo.color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                statusInfo.color === 'green' ? 'bg-green-50 text-green-700 border-green-200' :
-                'bg-red-50 text-red-700 border-red-200'
-              }`}
+            <Badge
+              variant="outline"
+              className={`py-4 px-8 text-base ${statusInfo.color === 'yellow' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                  statusInfo.color === 'blue' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                    statusInfo.color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                      statusInfo.color === 'green' ? 'bg-green-50 text-green-700 border-green-200' :
+                        'bg-red-50 text-red-700 border-red-200'
+                }`}
             >
-           
+
               <span>{statusInfo.label}</span>
             </Badge>
           </div>
@@ -310,7 +285,7 @@ Em breve entraremos em contato para confirmar o pedido! 🛍️`
               </CardHeader>
               <CardContent className="space-y-3">
                 {whatsappNumber && (
-                  <Button 
+                  <Button
                     className="w-full bg-green-600 hover:bg-green-70 text-white"
                     onClick={() => {
                       const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`
@@ -321,13 +296,13 @@ Em breve entraremos em contato para confirmar o pedido! 🛍️`
                     Chamar no WhatsApp
                   </Button>
                 )}
-                
+
                 <UpdateOrderStatusModal
                   orderId={order.id}
                   currentStatus={order.status}
                   orderNumber={order.order_number}
                 />
-                
+
                 <Button variant="outline" className="w-full">
                   <FileText className="h-4 w-4 mr-2" />
                   Imprimir Pedido

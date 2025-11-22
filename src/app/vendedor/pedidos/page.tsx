@@ -1,80 +1,40 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Search,
-  Filter,
-  Eye,
-  Calendar,
-  User,
-  Phone,
-  Package,
-} from 'lucide-react'
-import { useOrders } from '@/hooks/useOrders'
-import { useDebounce } from '@/hooks/useDebounce'
-import { ORDER_STATUS, SORT_OPTIONS, type Order, type OrdersFilters } from '@/types/order'
-import { formatDate, formatPrice } from '@/lib/utils'
-import { buildImageUrl } from '@/lib/imageUtils'
+import { Table } from '@/components/Table'
 import { ErrorState } from '@/components/ErrorState'
-import { useAuth } from '@/contexts/AuthContext'
-import { useEffect } from 'react'
 import LoadingPage from '@/components/LoadingPage'
+import { TableFilters } from '@/components/TableFilters'
+import { useOrdersPage } from './useOrdersPage'
 
 export default function OrdersPage() {
-  const router = useRouter()
-  const { isAuthenticated, user, isLoading: authLoading } = useAuth()
-  const [filters, setFilters] = useState<OrdersFilters>({
-    page: 1,
-    limit: 10,
-    sort: 'DATE_DESC'
-  })
-  const [searchTerm, setSearchTerm] = useState('')
-  const debouncedSearchTerm = useDebounce(searchTerm, 1000)
+  const {
+    authLoading,
+    isAuthenticated,
+    user,
+    filters,
+    searchTerm,
+    setSearchTerm,
+    handleFilterChange,
+    orders,
+    meta,
+    isLoading,
+    error,
+    handlePageChange,
+    columns,
+    hasFilters,
+    ORDER_STATUS,
+    SORT_OPTIONS,
+  } = useOrdersPage()
 
-  const { data, isLoading, error } = useOrders({
-    ...filters,
-    search: debouncedSearchTerm || undefined
-  })
+  const statusOptions = [
+    { value: 'all', label: 'Todos os status' },
+    ...Object.entries(ORDER_STATUS).map(([key, status]) => ({
+      value: parseInt(key),
+      label: status.label,
+    })),
+  ]
+  const isSearching = false 
 
-  useEffect(() => {
-    if (!authLoading) {
-      if (!isAuthenticated) {
-        router.push('/login')
-      } else if (user?.profile !== 'Vendedor') {
-        router.push('/')
-      }
-    }
-  }, [isAuthenticated, user, router, authLoading])
-
-  useEffect(() => {
-    setFilters(prev => ({ ...prev, page: 1 }))
-  }, [debouncedSearchTerm])
-
-  const handleFilterChange = (key: keyof OrdersFilters, value: any) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: value,
-      page: 1
-    }))
-  }
-
-  const handlePageChange = (page: number) => {
-    setFilters(prev => ({ ...prev, page }))
-  }
-
-  const getStatusInfo = (status: number) => {
-    return ORDER_STATUS[status as keyof typeof ORDER_STATUS] || ORDER_STATUS[1]
-  }
-
-  
-
-  // Mostra loading enquanto a autenticação está sendo verificada
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -106,9 +66,6 @@ export default function OrdersPage() {
     )
   }
 
-  const orders = data?.data || []
-  const meta = data?.meta
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto py-8">
@@ -125,258 +82,35 @@ export default function OrdersPage() {
           </div>
         </div>
         {/* Filtros */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
-              Filtros
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Busca */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Buscar</label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <Input
-                    placeholder="Cliente ou código do pedido"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 text-sm"
-                  />
-                </div>
-              </div>
-
-              {/* Status */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Status</label>
-                <Select
-                  value={filters.status?.toString() || 'all'}
-                  onValueChange={(value) => handleFilterChange('status', value === 'all' ? undefined : parseInt(value))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Todos os status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos os status</SelectItem>
-                    {Object.entries(ORDER_STATUS).map(([key, status]) => (
-                      <SelectItem key={key} value={key}>
-                        {status.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Ordenação */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Ordenar por</label>
-                <Select
-                  value={filters.sort || 'DATE_DESC'}
-                  onValueChange={(value) => handleFilterChange('sort', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(SORT_OPTIONS).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Itens por página */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Itens por página</label>
-                <Select
-                  value={filters.limit?.toString() || '10'}
-                  onValueChange={(value) => handleFilterChange('limit', parseInt(value))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="10">10</SelectItem>
-                    <SelectItem value="25">25</SelectItem>
-                    <SelectItem value="50">50</SelectItem>
-                    <SelectItem value="100">100</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="mb-6">
+          <TableFilters
+            filters={filters}
+            setFilters={(updater) => {
+              const newFilters = typeof updater === 'function' ? updater(filters) : updater
+              Object.entries(newFilters).forEach(([key, value]) => {
+                if (key !== 'search') {
+                  handleFilterChange(key as keyof typeof filters, value)
+                }
+              })
+            }}
+            onSearchChange={setSearchTerm}
+            isSearching={isSearching}
+            searchPlaceholder="Cliente ou código do pedido"
+            sortOptions={SORT_OPTIONS}
+            statusOptions={statusOptions}
+            showLimit={true}
+            defaultLimit={10}
+          />
+        </div>
 
         {/* Lista de Pedidos */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>
-                Pedidos ({meta?.total || 0})
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {orders.length === 0 ? (
-              <div className="text-center py-12">
-                <Package className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Nenhum pedido encontrado
-                </h3>
-                <p className="text-gray-600">
-                  Não há pedidos que correspondam aos filtros selecionados
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {orders.map((order) => (
-                  <Card key={order.id} className="border border-gray-200">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-
-                            <Badge
-                              variant="outline"
-                              className={`py-2 px-4 text-sm ${getStatusInfo(order.status).color === 'yellow' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                                getStatusInfo(order.status).color === 'blue' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                  getStatusInfo(order.status).color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                                    getStatusInfo(order.status).color === 'green' ? 'bg-green-50 text-green-700 border-green-200' :
-                                      'bg-red-50 text-red-700 border-red-200'
-                                }`}
-                            >
-
-                              <span>{getStatusInfo(order.status).label}</span>
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-gray-600 mb-1">
-                            Código: {order.order_code}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            <Calendar className="h-5 w-5 inline mr-1" />
-                            {formatDate(order.created_at)}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-2xl font-bold text-gray-900">
-                            {formatPrice(parseFloat(order.total))}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Informações do Cliente */}
-                      <div className="grid grid-cols-1 gap-4 mb-4 py-4 rounded-lg">
-                        <div className="flex items-center gap-2">
-                          <User className="h-5 w-5 text-gray-400" />
-                          <span className="text-sm font-medium text-gray-700">
-                            {order.customer_name}
-                          </span>
-                        </div>
-                        {order.customer_phone && (
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-5 w-5 text-gray-400" />
-                            <span className="text-sm text-gray-600">
-                              {order.customer_phone}
-                            </span>
-                          </div>
-                        )}
-
-                      </div>
-
-                      {/* Itens do Pedido */}
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">
-                          Itens ({order.items.length})
-                        </h4>
-                        <div className="space-y-2">
-                          {order.items.map((item) => (
-                            <div key={item.id} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-                              <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                                  {item.product.images && item.product.images.length > 0 ? (
-                                    <img
-                                      src={buildImageUrl(item.product.images[0])}
-                                      alt={item.product.name}
-                                      className="w-full h-full object-cover rounded-lg"
-                                    />
-                                  ) : (
-                                    <Package className="h-6 w-6 text-gray-400" />
-                                  )}
-                                </div>
-                                <div>
-                                  <p className="font-medium text-gray-900">{item.product.name}</p>
-                                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    {item.size && <span>Tamanho: {item.size}</span>}
-                                    {item.color && <span>Cor: {item.color}</span>}
-                                    <span>Qtd: {item.quantity}</span>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <p className="font-semibold text-gray-900">
-                                  {formatPrice(parseFloat(item.price))}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-
-
-                      {/* Ações */}
-                      <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-
-                            onClick={() => router.push(`/vendedor/pedidos/${order.id}`)}
-                          >
-                            <Eye className="h-5 w-5 mr-1" />
-                            Ver detalhes
-                          </Button>
-
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Paginação */}
-        {meta && meta.lastPage > 1 && (
-          <div className="mt-6 flex items-center justify-center">
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(meta.currentPage - 1)}
-                disabled={meta.currentPage === 1}
-              >
-                Anterior
-              </Button>
-              <span className="text-sm text-gray-600">
-                Página {meta.currentPage} de {meta.lastPage}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(meta.currentPage + 1)}
-                disabled={meta.currentPage === meta.lastPage}
-              >
-                Próxima
-              </Button>
-            </div>
-          </div>
-        )}
+        <Table
+          columns={columns}
+          data={orders}
+          hasFilters={hasFilters}
+          meta={meta}
+          onPageChange={handlePageChange}
+        />
       </div>
     </div>
   )
