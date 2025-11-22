@@ -8,7 +8,7 @@ import { useEditProductPage } from './useEditProductPage'
 import { useStore } from '@/hooks/useStore'
 import { useNiches } from '@/hooks/useNiches'
 import LoadingPage from '@/components/LoadingPage'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 export default function EditProductPage() {
   const { user, isLoading: authLoading } = useAuth()
@@ -56,6 +56,24 @@ export default function EditProductPage() {
     setIsCreateCategoryModalOpen(false)
   }
 
+  // Validar se todos os campos obrigatórios estão preenchidos
+  const nameValue = watch('name')
+  const priceValue = watch('price')
+  const isFormValid = useMemo(() => {
+    const existingImages = product?.images || []
+    const remainingImages = existingImages.filter((_: any, index: number) => !removedExistingImages?.includes(index))
+    const hasImages = selectedImages.length > 0 || remainingImages.length > 0
+
+    return !!(
+      nameValue &&
+      nameValue.trim().length >= 3 &&
+      priceValue &&
+      priceValue > 0 &&
+      selectedNicheId &&
+      hasImages
+    )
+  }, [nameValue, priceValue, selectedNicheId, selectedImages.length, product?.images, removedExistingImages])
+
   if (authLoading || storeLoading || nichesLoading) {
     return <LoadingPage />
   }
@@ -79,7 +97,7 @@ export default function EditProductPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto py-8">
         <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-8">
           {/* Layout em Duas Colunas */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -90,8 +108,8 @@ export default function EditProductPage() {
               {/* Informações Básicas */}
               <Card className="p-8 bg-white border-gray-200 shadow-sm">
                 <div className="flex items-center gap-3 mb-8">
-                  <div className="p-3 bg-blue-50 rounded-xl">
-                    <Package className="h-6 w-6 text-blue-500" />
+                  <div className="p-3 bg-gray-50 rounded-xl">
+                    <Package className="h-6 w-6 text-black" />
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-gray-900">Informações Básicas</h2>
@@ -154,11 +172,7 @@ export default function EditProductPage() {
                         </p>
                       )}
                     </div>
-
-
                   </div>
-
-
 
                   {/* Descrição */}
                   <div>
@@ -343,6 +357,7 @@ export default function EditProductPage() {
               onSave={handleSubmit(onSubmit)}
               onCancel={() => router.push('/vendedor/produtos')}
               isLoading={isLoading}
+              isDisabled={!isFormValid}
             />
           </div>
 

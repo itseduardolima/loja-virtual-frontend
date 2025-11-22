@@ -13,7 +13,8 @@ import {
   Package,
   DollarSign,
   FileText,
-  ShoppingBag
+  ShoppingBag,
+  ChevronLeft
 } from 'lucide-react'
 import { useOrderDetail } from '@/hooks/useOrderDetail'
 import { ORDER_STATUS, type Order } from '@/types/order'
@@ -102,39 +103,47 @@ Em breve entraremos em contato para confirmar o pedido! 🛍️`
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto py-8">
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <Button
               variant="ghost"
               onClick={() => router.push('/vendedor/pedidos')}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+              className="-ml-5"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ChevronLeft className="h-5 w-5 mr-2" />
               Voltar
             </Button>
           </div>
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                Pedido #{order.order_number}
+                Pedido
               </h1>
               <p className="text-gray-600 mt-1">
                 Código: {order.order_code}
               </p>
             </div>
-            <Badge
-              variant="outline"
-              className={`py-4 px-8 text-base ${statusInfo.color === 'yellow' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+
+            <div className="flex items-center gap-4">
+              <UpdateOrderStatusModal
+                orderId={order.id}
+                currentStatus={order.status}
+                orderNumber={order.order_number}
+              />
+              <Badge
+                variant="outline"
+                className={`py-2 px-6 text-base ${statusInfo.color === 'yellow' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
                   statusInfo.color === 'blue' ? 'bg-blue-50 text-blue-700 border-blue-200' :
                     statusInfo.color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-200' :
                       statusInfo.color === 'green' ? 'bg-green-50 text-green-700 border-green-200' :
                         'bg-red-50 text-red-700 border-red-200'
-                }`}
-            >
+                  }`}
+              >
 
-              <span>{statusInfo.label}</span>
-            </Badge>
+                <span>{statusInfo.label}</span>
+              </Badge>
+            </div>
           </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -274,39 +283,6 @@ Em breve entraremos em contato para confirmar o pedido! 🛍️`
                     </span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-
-
-            {/* Ações */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Ações</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {whatsappNumber && (
-                  <Button
-                    className="w-full bg-green-600 hover:bg-green-70 text-white"
-                    onClick={() => {
-                      const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`
-                      window.open(whatsappUrl, '_blank')
-                    }}
-                  >
-                    <img className='mr-2' width="24" height="20" src="https://img.icons8.com/color/48/whatsapp--v1.png" alt="whatsapp--v1" />
-                    Chamar no WhatsApp
-                  </Button>
-                )}
-
-                <UpdateOrderStatusModal
-                  orderId={order.id}
-                  currentStatus={order.status}
-                  orderNumber={order.order_number}
-                />
-
-                <Button variant="outline" className="w-full">
-                  <FileText className="h-4 w-4 mr-2" />
-                  Imprimir Pedido
-                </Button>
               </CardContent>
             </Card>
           </div>

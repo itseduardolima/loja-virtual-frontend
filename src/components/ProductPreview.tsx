@@ -22,6 +22,7 @@ interface ProductPreviewProps {
   onCancel?: () => void
   isLoading?: boolean
   showActions?: boolean
+  isDisabled?: boolean
 }
 
 export function ProductPreview({
@@ -38,7 +39,8 @@ export function ProductPreview({
   onSave,
   onCancel,
   isLoading = false,
-  showActions = true
+  showActions = true,
+  isDisabled = false
 }: ProductPreviewProps) {
   const getColorValue = (color: string): string => {
     const colorMap: { [key: string]: string } = {
@@ -71,8 +73,8 @@ export function ProductPreview({
       {/* Preview do Produto - Replicando o estilo do ProductCard */}
       <Card className="p-6 bg-white border-gray-200 shadow-none">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-blue-50 rounded-lg">
-            <Eye className="h-5 w-5 text-blue-500" />
+          <div className="p-2 bg-gray-50 rounded-lg">
+            <Eye className="h-5 w-5 text-black" />
           </div>
           <h3 className="text-lg font-bold text-gray-900">Preview</h3>
         </div>
@@ -246,8 +248,8 @@ export function ProductPreview({
       {showActions && (
         <Card className="p-6 bg-white border-gray-200">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <Save className="h-5 w-5 text-blue-500" />
+            <div className="p-2 bg-gray-50 rounded-lg">
+              <Save className="h-5 w-5 text-black" />
             </div>
             <h3 className="text-lg font-bold text-gray-900">Ações</h3>
           </div>
@@ -258,7 +260,7 @@ export function ProductPreview({
                 type="button"
                 onClick={onSave}
                 className="w-full h-12"
-                disabled={isLoading}
+                disabled={isLoading || isDisabled}
               >
                 {isLoading ? (
                   <>

@@ -8,7 +8,7 @@ import { useCreateProductPage } from './useCreateProductPage'
 import { useStore } from '@/hooks/useStore'
 import { useNiches } from '@/hooks/useNiches'
 import LoadingPage from '@/components/LoadingPage'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 
 export default function CreateProductPage() {
   const { user, isLoading: authLoading } = useAuth()
@@ -40,6 +40,22 @@ export default function CreateProductPage() {
     setIsCreateCategoryModalOpen(false)
   }
 
+  // Validar se todos os campos obrigatórios estão preenchidos
+  const nameValue = watch('name')
+  const priceValue = watch('price')
+  const isFormValid = useMemo(() => {
+    const hasImages = selectedImages.length > 0
+    
+    return !!(
+      nameValue &&
+      nameValue.trim().length >= 3 &&
+      priceValue &&
+      priceValue > 0 &&
+      selectedNicheId &&
+      hasImages
+    )
+  }, [nameValue, priceValue, selectedNicheId, selectedImages.length])
+
   if (authLoading || storeLoading || nichesLoading) {
     return <LoadingPage />
   }
@@ -54,7 +70,7 @@ export default function CreateProductPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto py-8">
         <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-8">
           {/* Layout em Duas Colunas */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -65,8 +81,8 @@ export default function CreateProductPage() {
               {/* Informações Básicas */}
               <Card className="p-8 bg-white border-gray-200 shadow-sm">
                 <div className="flex items-center gap-3 mb-8">
-                  <div className="p-3 bg-blue-50 rounded-xl">
-                    <Package className="h-6 w-6 text-blue-500" />
+                  <div className="p-3 bg-gray-50 rounded-xl">
+                    <Package className="h-6 w-6 text-black" />
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-gray-900">Informações Básicas</h2>
@@ -75,49 +91,53 @@ export default function CreateProductPage() {
                 </div>
 
                 <div className="space-y-6">
-                  {/* Nicho */}
-                  <div>
-                    <Label htmlFor="niche" className="text-sm font-semibold text-gray-700 mb-2 block">
-                      Tipo do Produto *
-                    </Label>
-                    <Select onValueChange={(value) => handleNicheSelect(parseInt(value))}>
-                      <SelectTrigger className={`h-12 ${!selectedNicheId ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}>
-                        <SelectValue placeholder="Selecione o tipo do produto" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {nichesData?.data?.map((niche) => (
-                          <SelectItem key={niche.id} value={niche.id.toString()}>
-                            {niche.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {!selectedNicheId && (
-                      <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                        <X className="h-3 w-3" />
-                        Selecione o tipo do produto
-                      </p>
-                    )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Nome */}
+                    <div>
+                      <Label htmlFor="name" className="text-sm font-semibold text-gray-700 mb-2 block">
+                        Nome do Produto *
+                      </Label>
+                      <Input
+                        id="name"
+                        {...register('name')}
+                        placeholder="Ex: Camiseta Básica Feminina"
+                        className={`h-12 ${errors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
+                      />
+                      {errors.name && (
+                        <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                          <X className="h-3 w-3" />
+                          {errors.name.message}
+                        </p>
+                      )}
+                    </div>
+                    {/* Nicho */}
+                    <div>
+                      <Label htmlFor="niche" className="text-sm font-semibold text-gray-700 mb-2 block">
+                        Tipo do Produto *
+                      </Label>
+                      <Select onValueChange={(value) => handleNicheSelect(parseInt(value))}>
+                        <SelectTrigger className={`h-12 ${!selectedNicheId ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}>
+                          <SelectValue placeholder="Selecione o tipo do produto" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {nichesData?.data?.map((niche) => (
+                            <SelectItem key={niche.id} value={niche.id.toString()}>
+                              {niche.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {!selectedNicheId && (
+                        <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                          <X className="h-3 w-3" />
+                          Selecione o tipo do produto
+                        </p>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Nome */}
-                  <div>
-                    <Label htmlFor="name" className="text-sm font-semibold text-gray-700 mb-2 block">
-                      Nome do Produto *
-                    </Label>
-                    <Input
-                      id="name"
-                      {...register('name')}
-                      placeholder="Ex: Camiseta Básica Feminina"
-                      className={`h-12 ${errors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
-                    />
-                    {errors.name && (
-                      <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                        <X className="h-3 w-3" />
-                        {errors.name.message}
-                      </p>
-                    )}
-                  </div>
+
 
                   {/* Descrição */}
                   <div>
@@ -288,6 +308,7 @@ export default function CreateProductPage() {
               onSave={handleSubmit(onSubmit)}
               onCancel={() => router.back()}
               isLoading={isLoading}
+              isDisabled={!isFormValid}
             />
           </div>
 

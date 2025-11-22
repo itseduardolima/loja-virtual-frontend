@@ -69,7 +69,6 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
 
   const renderField = (field: NicheField) => {
     const fieldValue = fieldValues[field.id]?.value || ''
-    const isRequired = true // Tornar todos os campos dinâmicos obrigatórios
     
     // Verificar se o campo está vazio para validação visual
     const isEmpty = Array.isArray(fieldValue) 
@@ -163,13 +162,13 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
                       }}
                       className={`
                         w-full px-3 py-2 text-left hover:bg-gray-50 transition-colors flex items-center gap-3
-                        ${isSelected ? 'bg-blue-50' : ''}
+                        ${isSelected ? 'bg-gray-50' : ''}
                       `}
                     >
                       <div className={`
                         w-4 h-4 rounded border-2 flex items-center justify-center
                         ${isSelected 
-                          ? 'border-blue-500 bg-blue-500' 
+                          ? 'border-black bg-black' 
                           : 'border-gray-300'
                         }
                       `}>
@@ -213,7 +212,7 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
                     className={`
                       w-10 h-10 rounded-full border-2 transition-all duration-200 shadow-sm
                       ${isSelected 
-                        ? 'border-blue-500 ring-2 ring-blue-200' 
+                        ? 'border-black' 
                         : 'border-gray-300 hover:border-gray-400'
                       }
                     `}

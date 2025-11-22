@@ -63,17 +63,14 @@ export function UpdateOrderStatusModal({ orderId, currentStatus, orderNumber }: 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full">
-          <Edit3 className="h-4 w-4 mr-2" />
+        <Button>
           Atualizar Status
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Atualizar Status do Pedido</DialogTitle>
-          <p className="text-sm text-gray-600">
-            Pedido #{orderNumber}
-          </p>
+
         </DialogHeader>
 
         <div className="space-y-4">
