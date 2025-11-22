@@ -13,9 +13,6 @@ import {
   X,
   BarChart3
 } from 'lucide-react'
-import { useStore } from '@/hooks/useStore'
-import Image from 'next/image'
-import { buildImageUrl } from '@/lib/utils'
 
 interface SidebarVendedorProps {
   currentPath?: string
@@ -24,7 +21,6 @@ interface SidebarVendedorProps {
 export function SidebarVendedor({ currentPath }: SidebarVendedorProps) {
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
-  const { data: store } = useStore()
 
   const navigationItems = [
     {
@@ -97,11 +93,11 @@ export function SidebarVendedor({ currentPath }: SidebarVendedorProps) {
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Store className="h-6 w-6 text-white" />
+              <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center">
+                <Store className="h-6 w-6 text-black" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-gray-900">Vendedor</h1>
+                <h1 className="text-lg font-bold text-gray-900 uppercase font-integral">Vendedor</h1>
                 <p className="text-sm text-gray-600">Painel de Controle</p>
               </div>
             </div>
@@ -126,7 +122,7 @@ export function SidebarVendedor({ currentPath }: SidebarVendedorProps) {
                   className={`
                     w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors
                     ${item.current 
-                      ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                      ? 'bg-black text-white border border-black' 
                       : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                     }
                   `}

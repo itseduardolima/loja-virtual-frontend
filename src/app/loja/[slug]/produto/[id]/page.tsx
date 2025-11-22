@@ -270,16 +270,12 @@ export default function ProductDetailPage() {
             )}
 
             {/* Main Image */}
-            <div className="flex-1 relative w-full h-auto rounded-2xl bg-red-300 overflow-hidden">
+            <div className="flex-1 relative w-full h-auto rounded-2xl overflow-hidden">
               {product.images && product.images.length > 0 ? (
                 <Image
                   src={buildImageUrls(product.images)[selectedImageIndex]}
                   alt={product.name}
                   fill
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement
-                    target.style.display = 'none'
-                  }}
                 />
               ) : (
                 <div className="flex items-center justify-center h-full">
