@@ -79,6 +79,7 @@ export function useEditProductPage(productId: string, user: any) {
       description: '',
       price: undefined,
       stock: undefined,
+      discount_price: undefined,
       category_id: undefined,
       featured: false
     }
@@ -91,6 +92,7 @@ export function useEditProductPage(productId: string, user: any) {
       form.setValue('description', product.description || '')
       form.setValue('price', product.price ? parseFloat(product.price) : 0)
       form.setValue('stock', product.stock || 0)
+      form.setValue('discount_price', product.discount_price ? parseFloat(product.discount_price) : undefined)
       form.setValue('category_id', product.category_id || undefined)
       form.setValue('featured', product.featured === 1)
 
@@ -171,6 +173,13 @@ export function useEditProductPage(productId: string, user: any) {
     }
     formData.append('price', (data.price || 0).toString())
     formData.append('stock', (data.stock || 0).toString())
+    // Sempre enviar discount_price para permitir remover desconto ao editar
+    if (data.discount_price !== undefined && data.discount_price !== null && data.discount_price > 0) {
+      formData.append('discount_price', data.discount_price.toString())
+    } else {
+      // Enviar null explicitamente para remover desconto
+      formData.append('discount_price', '')
+    }
     if (data.category_id && data.category_id > 0) {
       formData.append('category_id', data.category_id.toString())
     }

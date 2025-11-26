@@ -208,6 +208,35 @@ export default function CreateProductPage() {
                     </div>
                   </div>
 
+                  {/* Preço com Desconto */}
+                  <div>
+                    <Label htmlFor="discount_price" className="text-sm font-semibold text-gray-700 mb-2 block">
+                      Valor de Desconto <span className="text-gray-400 font-normal">(opcional)</span>
+                    </Label>
+                    <p className="text-xs text-gray-500 mb-2">
+                      Valor que será descontado do preço original do produto
+                    </p>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R$</span>
+                      <Input
+                        id="discount_price"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        {...register('discount_price', { valueAsNumber: true })}
+                        placeholder="0,00"
+                        value={watch('discount_price') || ''}
+                        className={`h-12 pl-8 text-lg [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${errors.discount_price ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
+                      />
+                    </div>
+                    {errors.discount_price && (
+                      <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                        <X className="h-3 w-3" />
+                        {errors.discount_price.message}
+                      </p>
+                    )}
+                  </div>
+
                   {/* Categoria e Destaque */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>

@@ -30,6 +30,7 @@ export function useCreateProductPage(user: any) {
       description: '',
       price: undefined,
       stock: undefined,
+      discount_price: undefined,
       featured: false,
       sizes: [],
       colors: [],
@@ -73,6 +74,9 @@ export function useCreateProductPage(user: any) {
       }
       formData.append('price', (data.price || 0).toString())
       formData.append('stock', (data.stock || 0).toString())
+      if (data.discount_price !== undefined && data.discount_price !== null && data.discount_price > 0) {
+        formData.append('discount_price', data.discount_price.toString())
+      }
       if (data.category_id && data.category_id > 0) {
         formData.append('category_id', data.category_id.toString())
       }

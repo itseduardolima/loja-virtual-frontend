@@ -22,6 +22,12 @@ export const createProductSchema = yup.object({
     .optional()
     .min(0, 'Estoque não pode ser negativo')
     .typeError('Estoque deve ser um número válido'),
+  discount_price: yup
+    .number()
+    .optional()
+    .nullable()
+    .min(0, 'Preço com desconto não pode ser negativo')
+    .typeError('Preço com desconto deve ser um número válido'),
   category_id: yup.number().optional().typeError('Categoria deve ser um número válido'),
   featured: yup.boolean().optional()
 })
@@ -44,6 +50,12 @@ export const updateProductSchema = yup.object({
     .number()
     .min(0, 'Estoque não pode ser negativo')
     .typeError('Estoque deve ser um número válido'),
+  discount_price: yup
+    .number()
+    .optional()
+    .nullable()
+    .min(0, 'Preço com desconto não pode ser negativo')
+    .typeError('Preço com desconto deve ser um número válido'),
   category_id: yup.number().typeError('Categoria deve ser um número válido'),
   featured: yup.boolean()
 })
