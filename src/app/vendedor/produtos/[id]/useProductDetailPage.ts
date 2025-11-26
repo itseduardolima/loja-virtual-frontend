@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useProduct, useDeleteProduct } from '@/hooks/useProducts'
 import { buildImageUrl } from '@/lib/utils'
+import { useToastContext } from '@/contexts/ToastContext'
 
 export function useProductDetailPage(productId: string) {
   const router = useRouter()
+  const { error: showErrorToast } = useToastContext()
   const { data: product, isLoading, error } = useProduct(productId)
   const deleteProductMutation = useDeleteProduct()
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
@@ -100,8 +102,17 @@ export function useProductDetailPage(productId: string) {
     
     try {
       await deleteProductMutation.mutateAsync(product.id)
+      setShowDeleteDialog(false)
       router.push('/vendedor/produtos')
-    } catch (error) {
+    } catch (error: any) {
+      const errorData = error.response?.data
+      let errorMessage = 'Erro ao deletar produto'
+      
+      if (errorData?.message) {
+        errorMessage = errorData.message
+      }
+      
+      showErrorToast(errorMessage, 'Erro!')
       console.error('Erro ao deletar produto:', error)
     }
   }
