@@ -36,6 +36,7 @@ export function useProdutosPage() {
   const { data: productsData, isLoading, error } = useProducts(debouncedFilters)
   const products = productsData?.data || []
   const meta = productsData?.meta
+  const apiStats = productsData?.stats
 
   // Extrair tamanhos e cores dos campos dinâmicos
   const availableSizes = Array.from(new Set(
@@ -55,11 +56,11 @@ export function useProdutosPage() {
   )).filter(Boolean).sort()
 
   const stats = {
-    total: meta?.total || 0,
-    active: products.filter(p => p.status === 1).length,
+    total: apiStats?.total,
+    active: apiStats?.total_active,
     inactive: products.filter(p => p.status === 0).length,
-    featured: products.filter(p => p.featured === 1).length,
-    totalStock: products.reduce((sum, p) => sum + p.stock, 0),
+    featured: apiStats?.total_featured,
+    totalStock: apiStats?.total_in_stock,
     averagePrice: products.length > 0
       ? products.reduce((sum, p) => sum + parseFloat(p.price), 0) / products.length
       : 0

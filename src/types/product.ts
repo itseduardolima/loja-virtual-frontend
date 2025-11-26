@@ -48,6 +48,12 @@ export interface ProductsResponse {
     prev: number | null
     next: number | null
   }
+  stats?: {
+    total: number
+    total_active: number
+    total_featured: number
+    total_in_stock: number
+  }
 }
 
 export interface ProductFilters {
