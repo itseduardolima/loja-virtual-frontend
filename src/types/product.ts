@@ -14,6 +14,9 @@ export interface Product {
   name: string
   description: string
   price: string
+  discount_price?: string | null
+  final_price?: number
+  discount_percentage?: number
   images: string[]
   stock: number
   status: number
@@ -68,4 +71,47 @@ export interface ProductFilters {
   color?: string
   status?: number
   featured?: boolean
+}
+
+export interface ProductDetail {
+  id: number
+  name: string
+  description: string
+  price: string
+  discount_price: string | null
+  final_price: number
+  discount_percentage: number
+  images: string[]
+  sizes: string[]
+  colors: string[]
+  stock: number
+  featured: boolean
+  created_at: string
+  updated_at: string
+  dynamic_fields: Array<{
+    field_name: string
+    value: string
+  }>
+  delivery_info?: {
+    delivery_fee: string
+    free_delivery_min: string
+    delivery_time: string
+  }
+  payment_methods?: string[]
+  category: {
+    id: number
+    name: string
+    description: string
+  }
+  store: {
+    id: number
+    name: string
+    slug: string
+    description: string
+    logo: string
+  }
+}
+
+export interface ProductDetailResponse {
+  data: ProductDetail
 }

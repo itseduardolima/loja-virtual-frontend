@@ -142,10 +142,21 @@ export function ProductCard({
           })()}
 
           {/* Preço */}
-          <div className="flex items-center justify-between">
-            <span className="text-lg font-bold text-text-dark">
-              {formatPrice(product.price)}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-lg font-bold text-black">
+              {formatPrice((product.final_price?.toString() || product.price))}
             </span>
+            {/* Se houver desconto, mostrar preço original riscado e badge */}
+            {product.discount_price !== null && product.discount_price !== undefined && product.discount_percentage && product.discount_percentage > 0 && (
+              <>
+                <span className="text-sm text-black/30 line-through font-bold">
+                  {formatPrice(product.price)}
+                </span>
+                <Badge className="bg-[#FF3333]/10 text-[#FF3333] px-2 py-0.5 text-xs">
+                  -{Math.floor(product.discount_percentage)}%
+                </Badge>
+              </>
+            )}
           </div>
 
 

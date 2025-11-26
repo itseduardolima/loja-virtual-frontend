@@ -5,46 +5,7 @@ import { api } from '@/lib/api'
 import { buildImageUrl } from '@/lib/utils'
 import { useToast } from '@/hooks/useToast'
 import { useCart } from '@/hooks/useCart'
-
-interface ProductDetail {
-  id: number
-  name: string
-  description: string
-  price: string
-  images: string[]
-  sizes: string[]
-  colors: string[]
-  stock: number
-  featured: boolean
-  created_at: string
-  updated_at: string
-  dynamic_fields: Array<{
-    field_name: string
-    value: string
-  }>
-  delivery_info?: {
-    delivery_fee: string
-    free_delivery_min: string
-    delivery_time: string
-  }
-  payment_methods?: string[]
-  category: {
-    id: number
-    name: string
-    description: string
-  }
-  store: {
-    id: number
-    name: string
-    slug: string
-    description: string
-    logo: string
-  }
-}
-
-interface ProductDetailResponse {
-  data: ProductDetail
-}
+import { ProductDetail, ProductDetailResponse } from '@/types/product'
 
 export function useProductDetailPage(slug: string, productId: string) {
   const router = useRouter()

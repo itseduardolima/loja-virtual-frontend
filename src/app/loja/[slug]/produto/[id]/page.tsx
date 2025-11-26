@@ -313,11 +313,19 @@ export default function ProductDetailPage() {
             {/* Price */}
             <div className="flex items-center gap-4">
               <span className="text-5xl font-bold text-black">
-                {formatPrice(product.price)}
+                {formatPrice(product.final_price?.toString() || product.price)}
               </span>
               {/* Se houver desconto, mostrar preço original riscado e badge */}
-              <span className="text-2xl text-black/30 line-through font-bold">$300</span>
-              <Badge className="bg-[#FF3333]/10 text-[#FF3333] px-2 py-1">-40%</Badge>
+              {product.discount_price !== null && product.discount_percentage > 0 && (
+                <>
+                  <span className="text-2xl text-black/30 line-through font-bold">
+                    {formatPrice(product.price)}
+                  </span>
+                  <Badge className="bg-[#FF3333]/10 text-[#FF3333] px-2 py-1">
+                    -{Math.floor(product.discount_percentage)}%
+                  </Badge>
+                </>
+              )}
             </div>
 
             {/* Description */}
