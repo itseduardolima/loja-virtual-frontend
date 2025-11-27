@@ -74,7 +74,7 @@ export function ProductPreview({
       <Card className="p-6 bg-white border-gray-200 shadow-none">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-gray-50 rounded-lg">
-            <Eye className="h-5 w-5 text-black" />
+            <Eye className="h-5 w-5 text-primary" />
           </div>
           <h3 className="text-lg font-bold text-gray-900">Preview</h3>
         </div>
@@ -249,7 +249,7 @@ export function ProductPreview({
         <Card className="p-6 bg-white border-gray-200">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-gray-50 rounded-lg">
-              <Save className="h-5 w-5 text-black" />
+              <Save className="h-5 w-5 text-primary" />
             </div>
             <h3 className="text-lg font-bold text-gray-900">Ações</h3>
           </div>

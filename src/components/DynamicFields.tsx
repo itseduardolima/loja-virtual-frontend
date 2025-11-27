@@ -168,7 +168,7 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
                       <div className={`
                         w-4 h-4 rounded border-2 flex items-center justify-center
                         ${isSelected 
-                          ? 'border-black bg-black' 
+                          ? 'border-primary bg-primary' 
                           : 'border-gray-300'
                         }
                       `}>
@@ -212,7 +212,7 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
                     className={`
                       w-10 h-10 rounded-full border-2 transition-all duration-200 shadow-sm
                       ${isSelected 
-                        ? 'border-black' 
+                        ? 'border-primary' 
                         : 'border-gray-300 hover:border-gray-400'
                       }
                     `}

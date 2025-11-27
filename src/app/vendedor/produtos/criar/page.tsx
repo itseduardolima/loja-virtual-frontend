@@ -82,10 +82,10 @@ export default function CreateProductPage() {
               <Card className="p-8 bg-white border-gray-200 shadow-sm">
                 <div className="flex items-center gap-3 mb-8">
                   <div className="p-3 bg-gray-50 rounded-xl">
-                    <Package className="h-6 w-6 text-black" />
+                    <Package className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">Informações Básicas</h2>
+                    <h2 className="text-xl font-bold text-primary">Informações Básicas</h2>
                     <p className="text-sm text-gray-500">Dados essenciais do produto</p>
                   </div>
                 </div>

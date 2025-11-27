@@ -131,7 +131,7 @@ export function UpdateOrderStatusModal({ orderId, currentStatus, orderNumber }: 
               disabled={isPending || selectedStatus === currentStatus}
               className="flex-1"
             >
-              {isPending ? 'Atualizando...' : 'Atualizar Status'}
+              {isPending ? 'Atualizando...' : 'Salvar'}
             </Button>
           </div>
         </div>

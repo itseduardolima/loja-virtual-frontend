@@ -97,7 +97,7 @@ export default function StorePage() {
             <div className="flex items-center gap-4">
               {/* Informações da Loja */}
               <div>
-                <h1 className="text-3xl uppercase font-integral text-black">
+                <h1 className="text-3xl uppercase font-integral text-primary">
                   {storeInfo?.name}
                 </h1>
               </div>

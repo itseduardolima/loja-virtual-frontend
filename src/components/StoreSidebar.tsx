@@ -213,7 +213,7 @@ export function StoreSidebar({
                         <div className={`
                           w-4 h-4 rounded border-2 flex items-center justify-center
                           ${isSelected 
-                            ? 'border-black bg-black' 
+                            ? 'border-primary bg-primary' 
                             : 'border-gray-300'
                           }
                         `}>
@@ -254,7 +254,7 @@ export function StoreSidebar({
                         })
                       }}
                       className={`relative w-10 h-10 rounded-full border-2 transition-all hover:scale-110 ${
-                        isSelected ? 'ring-2 ring-black border-black' : 'border-gray-300'
+                        isSelected ? 'ring-2 ring-primary border-primary' : 'border-gray-300'
                       }`}
                       style={{ backgroundColor: getColorValue(color) }}
                       title={color}
@@ -352,7 +352,7 @@ export function StoreSidebar({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Produtos em Destaque */}
           <div>
-            <Label className="text-sm font-bold text-black cursor-pointer mb-2 block">Produtos em Destaque</Label>
+            <Label className="text-sm font-bold text-primary cursor-pointer mb-2 block">Produtos em Destaque</Label>
             <div className="flex items-center space-x-2">
               <Switch
                 checked={filterProps.activeFilters.featured || false}
@@ -368,7 +368,7 @@ export function StoreSidebar({
           {/* Categoria */}
           {filterProps.categories.length > 0 && (
             <div>
-              <Label className="text-sm font-bold text-black cursor-pointer mb-2 block">Categoria</Label>
+              <Label className="text-sm font-bold text-primary cursor-pointer mb-2 block">Categoria</Label>
               <Select
                 value={filterProps.activeFilters.categoryId?.toString() || 'all'}
                 onValueChange={(value) => filterProps.onFilterChange({
@@ -394,7 +394,7 @@ export function StoreSidebar({
           {/* Cor */}
           {filterProps.availableColors.length > 0 && (
             <div>
-              <Label className="text-sm font-bold text-black cursor-pointer mb-2 block">Cor</Label>
+              <Label className="text-sm font-bold text-primary cursor-pointer mb-2 block">Cor</Label>
               <Select
                 value={filterProps.activeFilters.color || 'all'}
                 onValueChange={(value) => filterProps.onFilterChange({
@@ -420,7 +420,7 @@ export function StoreSidebar({
           {/* Tamanho */}
           {filterProps.availableSizes.length > 0 && (
             <div>
-              <Label className="text-sm font-bold text-black cursor-pointer mb-2 block">Tamanho</Label>
+              <Label className="text-sm font-bold text-primary cursor-pointer mb-2 block">Tamanho</Label>
               <Select
                 value={filterProps.activeFilters.size || 'all'}
                 onValueChange={(value) => filterProps.onFilterChange({
@@ -445,7 +445,7 @@ export function StoreSidebar({
 
           {/* Preço Mínimo */}
           <div>
-            <Label className="text-sm font-bold text-black cursor-pointer mb-2 block">Preço Mínimo</Label>
+            <Label className="text-sm font-bold text-primary cursor-pointer mb-2 block">Preço Mínimo</Label>
             <Input
               type="text"
               placeholder="R$ 0,00"
@@ -463,7 +463,7 @@ export function StoreSidebar({
 
           {/* Preço Máximo */}
           <div>
-            <Label className="text-sm font-bold text-black cursor-pointer mb-2 block">Preço Máximo</Label>
+            <Label className="text-sm font-bold text-primary cursor-pointer mb-2 block">Preço Máximo</Label>
             <Input
               type="text"
               placeholder="R$ 999,99"
@@ -517,7 +517,7 @@ export function StoreSidebar({
         <div className="space-y-6">
           {/* Ordenação */}
           <div>
-            <Label className="text-sm font-bold text-black cursor-pointer mb-2 block">Ordenar por</Label>
+            <Label className="text-sm font-bold text-primary cursor-pointer mb-2 block">Ordenar por</Label>
             <Select
               value={`${localSortField}-${localSort}`}
               onValueChange={(value) => {
@@ -540,7 +540,7 @@ export function StoreSidebar({
 
           {/* Produtos em Destaque */}
           <div>
-            <Label className="text-sm font-bold text-black cursor-pointer mb-2 block">Produtos em Destaque</Label>
+            <Label className="text-sm font-bold text-primary cursor-pointer mb-2 block">Produtos em Destaque</Label>
             <div className="flex items-center space-x-2">
               <Switch
                 checked={localFeatured}
@@ -553,7 +553,7 @@ export function StoreSidebar({
           {/* Categoria */}
           {filterProps.categories.length > 0 && (
             <div>
-              <Label className="text-sm font-bold text-black cursor-pointer mb-2 block">Categoria</Label>
+              <Label className="text-sm font-bold text-primary cursor-pointer mb-2 block">Categoria</Label>
               <Select
                 value={localCategoryId?.toString() || 'all'}
                 onValueChange={(value) => setLocalCategoryId(value === 'all' ? undefined : parseInt(value))}
@@ -579,7 +579,7 @@ export function StoreSidebar({
               onClick={() => setIsPriceCollapsed(!isPriceCollapsed)}
               className="w-full flex items-center justify-between"
             >
-              <Label className="text-sm font-bold text-black cursor-pointer">Preço</Label>
+              <Label className="text-sm font-bold text-primary cursor-pointer">Preço</Label>
               <ChevronUp className={`w-4 h-4 transition-transform ${isPriceCollapsed ? 'rotate-180' : ''}`} />
             </button>
             {!isPriceCollapsed && (
@@ -607,7 +607,7 @@ export function StoreSidebar({
                 onClick={() => setIsNichesCollapsed(!isNichesCollapsed)}
                 className="w-full flex items-center justify-between"
               >
-                <Label className="text-sm font-bold text-black cursor-pointer">Tipo de Produto</Label>
+                <Label className="text-sm font-bold text-primary cursor-pointer">Tipo de Produto</Label>
                 <ChevronUp className={`w-4 h-4 transition-transform ${isNichesCollapsed ? 'rotate-180' : ''}`} />
               </button>
               {!isNichesCollapsed && (
@@ -638,7 +638,7 @@ export function StoreSidebar({
                     <div className="space-y-4 pt-2 border-t border-gray-200">
                       {fields.map((field) => (
                         <div key={field.id} className="space-y-2">
-                          <Label className="text-sm font-bold text-black cursor-pointer">{field.name}</Label>
+                          <Label className="text-sm font-bold text-primary cursor-pointer">{field.name}</Label>
                           {renderDynamicField(field)}
                         </div>
                       ))}
@@ -653,7 +653,7 @@ export function StoreSidebar({
           <div className="pt-4 space-y-2">
             <Button
               onClick={handleApplyFilters}
-              className="w-full bg-black text-white hover:bg-gray-800"
+              className="w-full bg-primary text-white hover:bg-gray-800"
             >
               Aplicar Filtros
             </Button>

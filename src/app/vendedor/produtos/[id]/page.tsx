@@ -6,6 +6,7 @@ import {
   Package,
   Edit,
   Trash2,
+  Star,
 } from 'lucide-react'
 import { useRouter, useParams } from 'next/navigation'
 import Image from 'next/image'
@@ -105,6 +106,10 @@ export default function ProductDetailPage() {
     return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
   }
 
+  // Calcular rating (mockado por enquanto)
+  const rating = 4.5
+  const fullStars = Math.floor(rating)
+  const hasHalfStar = rating % 1 >= 0.5
 
   return (
     <div className="min-h-screen bg-white">
@@ -121,15 +126,16 @@ export default function ProductDetailPage() {
                     key={index}
                     onClick={() => selectImage(index)}
                     className={`relative rounded-2xl overflow-hidden border-2 transition-all ${selectedImageIndex === index
-                      ? 'border-black'
+                      ? 'border-primary'
                       : 'border-gray-200 hover:border-gray-300'
                       }`}
                   >
                     <Image
                       src={buildImageUrl(image)}
                       alt={`${product.name} ${index + 1}`}
-                      width={152}
-                      height={167}
+                      width={100}
+                      height={0}
+                      className="object-cover"
                     />
                   </button>
                 ))}
@@ -167,27 +173,62 @@ export default function ProductDetailPage() {
                   {getStatusInfo(product.status).text}
                 </Badge>
               </div>
-              <h1 className="text-4xl font-bold text-black mb-4 uppercase font-integral">
+              <h1 className="text-4xl font-bold text-primary mb-4 uppercase font-integral">
                 {removeAccents(product.name)}
               </h1>
+
+              {/* Rating */}
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center">
+                  {[...Array(fullStars)].map((_, i) => (
+                    <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                  ))}
+                  {hasHalfStar && (
+                    <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" style={{ clipPath: 'inset(0 50% 0 0)' }} />
+                  )}
+                  {[...Array(5 - fullStars - (hasHalfStar ? 1 : 0))].map((_, i) => (
+                    <Star key={i} className="h-5 w-5 text-gray-300" />
+                  ))}
+                </div>
+                <span className="text-sm text-primary/60">({rating}/5)</span>
+              </div>
             </div>
 
             {/* Price */}
             <div className="flex items-center gap-4">
-              <span className="text-5xl font-bold text-black">
-                {formatPrice(product.price)}
+              <span className="text-5xl font-bold text-primary">
+                {formatPrice(product.final_price?.toString() || product.price)}
+              </span>
+              {/* Se houver desconto, mostrar preço original riscado e badge */}
+              {product.discount_price !== null && product.discount_price !== undefined && product.discount_percentage && product.discount_percentage > 0 && (
+                <>
+                  <span className="text-2xl text-primary/30 line-through font-bold">
+                    {formatPrice(product.price)}
+                  </span>
+                  <Badge className="bg-[#FF3333]/10 text-[#FF3333] px-2 py-1">
+                    -{Math.floor(product.discount_percentage)}%
+                  </Badge>
+                </>
+              )}
+            </div>
+
+            {/* Stock */}
+            <div className="flex items-center gap-2 text-primary font-integral">
+              <span className="font-integral tracking-wide">Estoque:</span>
+              <span>
+                {product.stock > 0 ? `${product.stock} unidade${product.stock > 1 ? 's' : ''}` : 'Sem estoque'}
               </span>
             </div>
 
             {/* Description */}
-            <p className="text-black/60 text-base leading-relaxed">
+            <p className="text-primary/60 text-base leading-relaxed">
               {product.description}
             </p>
 
             {/* Select Colors */}
             {product.dynamic_fields?.find(f => f.field_name.toLowerCase() === 'cor') && (
               <div className="space-y-3">
-                <span className="text-sm font-medium text-black/60">Cores disponíveis:</span>
+                <span className="text-sm font-medium text-primary/60">Cores disponíveis:</span>
                 <div className="flex gap-3">
                   {product.dynamic_fields
                     .find(f => f.field_name.toLowerCase() === 'cor')
@@ -216,7 +257,7 @@ export default function ProductDetailPage() {
             {/* Choose Size */}
             {product.dynamic_fields?.find(f => f.field_name.toLowerCase() === 'tamanho') && (
               <div className="space-y-3">
-                <span className="text-sm font-medium text-black/60">Tamanhos disponíveis:</span>
+                <span className="text-sm font-medium text-primary/60">Tamanhos disponíveis:</span>
                 <div className="grid grid-cols-5 gap-2">
                   {product.dynamic_fields
                     .find(f => f.field_name.toLowerCase() === 'tamanho')
@@ -227,7 +268,7 @@ export default function ProductDetailPage() {
                       return (
                         <span
                           key={sizeIndex}
-                          className="px-8 py-2 rounded text-sm bg-[#F0F0F0] text-black/60 text-center"
+                          className="px-8 py-2 rounded text-sm bg-[#F0F0F0] text-primary/60 text-center"
                         >
                           {trimmedSize}
                         </span>

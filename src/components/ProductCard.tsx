@@ -48,7 +48,7 @@ export function ProductCard({
     >
       <CardContent className="p-0 flex flex-col h-full shadow-none  bg-transparent">
         {/* Container da Imagem */}
-        <div className="relative aspect-square overflow-hidden">
+        <div className="relative aspect-square overflow-hidden rounded-2xl">
           {product.images && product.images.length > 0 ? (
             <Image
               src={buildImageUrl(product.images[currentImageIndex])}
@@ -99,7 +99,7 @@ export function ProductCard({
         <div className="p-3 space-y-2 flex-1 flex flex-col justify-between">
           <div className="flex items-center justify-between">
             {/* Nome do Produto */}
-            <h3 className="font-bold text-lg text-black line-clamp-2 transition-colors">
+            <h3 className="font-bold text-lg text-primary line-clamp-2 transition-colors">
               {product.name}
             </h3>
 
@@ -143,13 +143,13 @@ export function ProductCard({
 
           {/* Preço */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-lg font-bold text-black">
+            <span className="text-lg font-bold text-primary">
               {formatPrice((product.final_price?.toString() || product.price))}
             </span>
             {/* Se houver desconto, mostrar preço original riscado e badge */}
             {product.discount_price !== null && product.discount_price !== undefined && product.discount_percentage && product.discount_percentage > 0 && (
               <>
-                <span className="text-sm text-black/30 line-through font-bold">
+                <span className="text-sm text-primary/30 line-through font-bold">
                   {formatPrice(product.price)}
                 </span>
                 <Badge className="bg-[#FF3333]/10 text-[#FF3333] px-2 py-0.5 text-xs">

@@ -67,7 +67,7 @@ export function ImageUpload({
     <Card className="p-8 bg-white border-gray-200 shadow-sm">
       <div className="flex items-center gap-3 mb-8">
         <div className="p-3 bg-gray-50 rounded-xl">
-          <ImageIcon className="h-6 w-6 text-black" />
+          <ImageIcon className="h-6 w-6 text-primary" />
         </div>
         <div>
           <h2 className="text-xl font-bold text-gray-900">{title}</h2>
@@ -80,8 +80,8 @@ export function ImageUpload({
         <div
           className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer ${
             isDragOver
-              ? 'border-black bg-gray-50'
-              : 'border-gray-300 hover:border-black'
+              ? 'border-primary bg-gray-50'
+              : 'border-gray-300 hover:border-primary'
           }`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -99,7 +99,7 @@ export function ImageUpload({
           
           <div className="flex flex-col items-center gap-4">
             <div className="p-4 bg-gray-50 rounded-full">
-              <ImageIcon className="h-12 w-12 text-black" />
+              <ImageIcon className="h-12 w-12 text-primary" />
             </div>
             
             <div className="space-y-2">

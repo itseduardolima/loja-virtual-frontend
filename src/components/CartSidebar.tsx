@@ -114,7 +114,7 @@ export function CartSidebar({ isOpen, onClose, storeId, storeSlug, currentPath }
       {/* Overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40"
+          className="fixed inset-0 bg-primary/50 z-40"
           onClick={onClose}
         />
       )}

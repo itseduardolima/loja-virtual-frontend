@@ -139,7 +139,7 @@ export default function ProductDetailPage() {
               <div>
                 <button
                   onClick={() => router.push(`/loja/${slug}/produtos`)}
-                  className="text-3xl uppercase font-integral text-black hover:opacity-80"
+                  className="text-3xl uppercase font-integral text-primary hover:opacity-80"
                 >
                   {storeInfo?.name}
                 </button>
@@ -202,7 +202,7 @@ export default function ProductDetailPage() {
                       {isAuthenticated && user ? (
                         <div className="p-2">
                           <div className="px-3 py-2 border-b border-gray-200">
-                            <p className="text-sm font-semibold text-black/60">{user.name}</p>
+                            <p className="text-sm font-semibold text-primary/60">{user.name}</p>
                             <p className="text-xs text-gray-500">{user.email}</p>
                           </div>
                         </div>
@@ -254,15 +254,16 @@ export default function ProductDetailPage() {
                     key={index}
                     onClick={() => selectImage(index)}
                     className={`relative rounded-2xl overflow-hidden border-2 transition-all ${selectedImageIndex === index
-                      ? 'border-black'
+                      ? 'border-primary'
                       : 'border-gray-200 hover:border-gray-300'
                       }`}
                   >
                     <Image
                       src={buildImageUrl(image)}
                       alt={`${product.name} ${index + 1}`}
-                      width={152}
-                      height={167}
+                      width={100}
+                      height={0}
+                      className="object-cover"
                     />
                   </button>
                 ))}
@@ -290,7 +291,7 @@ export default function ProductDetailPage() {
           <div className="space-y-6">
             {/* Product Title */}
             <div>
-              <h1 className="text-4xl font-bold text-black mb-4 uppercase font-integral">
+              <h1 className="text-4xl font-bold text-primary mb-4 uppercase font-integral">
                 {removeAccents(product.name)}
               </h1>
 
@@ -307,19 +308,19 @@ export default function ProductDetailPage() {
                     <Star key={i} className="h-5 w-5 text-gray-300" />
                   ))}
                 </div>
-                <span className="text-sm text-black/60">({rating}/5)</span>
+                <span className="text-sm text-primary/60">({rating}/5)</span>
               </div>
             </div>
 
             {/* Price */}
             <div className="flex items-center gap-4">
-              <span className="text-5xl font-bold text-black">
+              <span className="text-5xl font-bold text-primary">
                 {formatPrice(product.final_price?.toString() || product.price)}
               </span>
               {/* Se houver desconto, mostrar preço original riscado e badge */}
               {product.discount_price !== null && product.discount_percentage > 0 && (
                 <>
-                  <span className="text-2xl text-black/30 line-through font-bold">
+                  <span className="text-2xl text-primary/30 line-through font-bold">
                     {formatPrice(product.price)}
                   </span>
                   <Badge className="bg-[#FF3333]/10 text-[#FF3333] px-2 py-1">
@@ -338,14 +339,14 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Description */}
-            <p className="text-black/60 text-base leading-relaxed">
+            <p className="text-primary/60 text-base leading-relaxed">
               {product.description}
             </p>
 
             {/* Select Colors */}
             {product.dynamic_fields?.find(f => f.field_name.toLowerCase() === 'cor') && (
               <div className="space-y-3">
-                <span className="text-sm font-medium text-black/60">Cores disponíveis:</span>
+                <span className="text-sm font-medium text-primary/60">Cores disponíveis:</span>
                 <div className="flex gap-3">
                   {product.dynamic_fields
                     .find(f => f.field_name.toLowerCase() === 'cor')
@@ -367,7 +368,7 @@ export default function ProductDetailPage() {
                             <div className="absolute inset-0 flex items-center justify-center">
                               <Check
                                 className={`w-5 h-5 stroke-[3] ${colorValue === '#FFFFFF' || colorValue.toLowerCase() === '#ffffff' || colorValue.toLowerCase() === 'white'
-                                  ? 'text-black'
+                                  ? 'text-primary'
                                   : 'text-white'
                                   }`}
                               />
@@ -386,7 +387,7 @@ export default function ProductDetailPage() {
             {/* Choose Size */}
             {product.dynamic_fields?.find(f => f.field_name.toLowerCase() === 'tamanho') && (
               <div className="space-y-3">
-                <span className="text-sm font-medium text-black/60">Tamanhos disponíveis:</span>
+                <span className="text-sm font-medium text-primary/60">Tamanhos disponíveis:</span>
                 <div className="grid grid-cols-5 gap-2">
                   {product.dynamic_fields
                     .find(f => f.field_name.toLowerCase() === 'tamanho')
@@ -400,8 +401,8 @@ export default function ProductDetailPage() {
                           key={sizeIndex}
                           onClick={() => selectSize(trimmedSize)}
                           className={`px-8 ${isSelected
-                            ? 'border-black bg-black text-white'
-                            : ' bg-[#F0F0F0] text-black/60 hover:bg-[#c7c6c6]'
+                            ? 'border-primary bg-primary text-white'
+                            : ' bg-[#F0F0F0] text-primary/60 hover:bg-[#c7c6c6]'
                             }`}
                         >
                           {trimmedSize}
@@ -421,15 +422,15 @@ export default function ProductDetailPage() {
                   disabled={quantity <= 1}
                   className="p-3 disabled:opacity-50 disabled:cursor-not-allowed rounded-l-full"
                 >
-                  <Minus className="h-4 w-4 text-black ml-2" />
+                  <Minus className="h-4 w-4 text-primary ml-2" />
                 </button>
-                <span className="px-6 py-3 font-medium min-w-[3rem] text-center text-black">{quantity}</span>
+                <span className="px-6 py-3 font-medium min-w-[3rem] text-center text-primary">{quantity}</span>
                 <button
                   onClick={increaseQuantity}
                   disabled={quantity >= product.stock}
                   className="p-3 disabled:opacity-50 disabled:cursor-not-allowed rounded-r-full"
                 >
-                  <Plus className="h-4 w-4 text-black mr-2" />
+                  <Plus className="h-4 w-4 text-primary mr-2" />
                 </button>
               </div>
 

@@ -61,7 +61,7 @@ export default function VendedorPage() {
                 }}
               />
               {/* Overlay com botão de atualização */}
-              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+              <div className="absolute inset-0 bg-primary bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
                 <Button
                   onClick={() => hookData.bannerInputRef.current?.click()}
                   disabled={hookData.isUploadingBanner || hookData.isUpdating}

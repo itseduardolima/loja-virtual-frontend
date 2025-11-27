@@ -78,7 +78,7 @@ export function SidebarVendedor({ currentPath }: SidebarVendedorProps) {
       {/* Mobile overlay */}
       {isOpen && (
         <div 
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          className="lg:hidden fixed inset-0 bg-primary bg-opacity-50 z-40"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -94,7 +94,7 @@ export function SidebarVendedor({ currentPath }: SidebarVendedorProps) {
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center">
-                <Store className="h-6 w-6 text-black" />
+                <Store className="h-6 w-6 text-primary" />
               </div>
               <div>
                 <h1 className="text-lg font-bold text-gray-900 uppercase font-integral">Vendedor</h1>
@@ -122,7 +122,7 @@ export function SidebarVendedor({ currentPath }: SidebarVendedorProps) {
                   className={`
                     w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors
                     ${item.current 
-                      ? 'bg-black text-white border border-black' 
+                      ? 'bg-primary text-white border border-primary' 
                       : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                     }
                   `}
