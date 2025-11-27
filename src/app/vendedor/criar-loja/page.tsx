@@ -28,12 +28,20 @@ import {
   CreditCard,
   AlertCircle,
   ChevronDown,
+  LogOut,
 } from "lucide-react";
 import Image from "next/image";
 import LoadingPage from "@/components/LoadingPage";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function CriarLojaPage() {
   const hookData = useCreateStorePage();
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    hookData.router?.push("/login");
+  };
   if (hookData.loading) {
     return <LoadingPage />;
   }
@@ -119,7 +127,7 @@ export default function CriarLojaPage() {
               <div
                 key={niche.id}
                 onClick={() => hookData.handleNicheToggle(niche.id.toString())}
-                className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer"
+                className="flex items-center gap-3 p-3 rounded-lg border border-secondary hover:border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 <Checkbox
                   id={niche.id.toString()}
@@ -248,9 +256,8 @@ export default function CriarLojaPage() {
                 {hookData.getSelectedCountry()?.flagUrl ? (
                   <img
                     src={hookData.getSelectedCountry()?.flagUrl}
-                    alt={`Bandeira do ${
-                      hookData.getSelectedCountry()?.name.common
-                    }`}
+                    alt={`Bandeira do ${hookData.getSelectedCountry()?.name.common
+                      }`}
                     className="w-5 h-4 object-cover rounded-sm"
                     onError={(e) => {
                       const target = e.currentTarget as HTMLImageElement;
@@ -286,11 +293,10 @@ export default function CriarLojaPage() {
                         onClick={() =>
                           hookData.handleCountrySelect(country.cca2)
                         }
-                        className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-50 ${
-                          hookData.selectedCountry === country.cca2
+                        className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-50 ${hookData.selectedCountry === country.cca2
                             ? "bg-blue-50 text-blue-700"
                             : ""
-                        }`}
+                          }`}
                       >
                         <img
                           src={country.flagUrl}
@@ -409,9 +415,8 @@ export default function CriarLojaPage() {
                 {hookData.getSelectedCountry()?.flagUrl ? (
                   <img
                     src={hookData.getSelectedCountry()?.flagUrl}
-                    alt={`Bandeira do ${
-                      hookData.getSelectedCountry()?.name.common
-                    }`}
+                    alt={`Bandeira do ${hookData.getSelectedCountry()?.name.common
+                      }`}
                     className="w-5 h-4 object-cover rounded-sm"
                     onError={(e) => {
                       const target = e.currentTarget as HTMLImageElement;
@@ -660,7 +665,7 @@ export default function CriarLojaPage() {
             <div
               key={method}
               onClick={() => hookData.handlePaymentMethodToggle(method)}
-              className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer"
+              className="flex items-center gap-3 p-3 rounded-lg border border-secondary hover:border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer"
             >
               <Checkbox
                 id={method}
@@ -717,12 +722,27 @@ export default function CriarLojaPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-20 via-blue-20 to-indigo-20">
       <div className="max-w-7xl mx-auto px-4 py-10">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex flex-col gap-4 mb-8 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-bold">Criar Nova Loja</h1>
             <p className="text-gray-600 mt-1">
               Configure sua loja online em poucos passos
             </p>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <p className="font-semibold text-gray-900">
+                {hookData.user?.name || "Usuário"}
+              </p>
+              <p className="text-xs text-gray-500">
+                {hookData.user?.profile || "Perfil não informado"}
+              </p>
+            </div>
+            <Button className="flex items-center gap-2" variant="destructive" onClick={handleLogout}>
+              <LogOut className="h-4 w-4" />
+              Sair
+            </Button>
           </div>
         </div>
 
@@ -733,11 +753,10 @@ export default function CriarLojaPage() {
               <div key={step.id} className="flex items-center">
                 <div className="flex items-center">
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold ${
-                      hookData.currentStep >= step.id
-                        ? "border border-blue-400 bg-blue-100 text-blue-700 hover:bg-blue-200"
-                        : "bg-gray-200 text-gray-600"
-                    }`}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${hookData.currentStep >= step.id
+                        ? " bg-primary text-white  hover:bg-primary/80"
+                        : "bg-secondary text-primary"
+                      }`}
                   >
                     {hookData.currentStep > step.id ? (
                       <Check className="h-5 w-5" />
@@ -747,11 +766,10 @@ export default function CriarLojaPage() {
                   </div>
                   <div className="ml-3 hidden sm:block">
                     <p
-                      className={`text-sm font-semibold ${
-                        hookData.currentStep >= step.id
-                          ? "text-blue-600"
+                      className={`text-sm font-semibold ${hookData.currentStep >= step.id
+                          ? "text-primary"
                           : "text-gray-600"
-                      }`}
+                        }`}
                     >
                       {step.title}
                     </p>
@@ -760,11 +778,10 @@ export default function CriarLojaPage() {
                 </div>
                 {index < hookData.STEPS.length - 1 && (
                   <div
-                    className={`w-16 h-0.5 mx-4 ${
-                      hookData.currentStep > step.id
-                        ? "bg-blue-600"
-                        : "bg-gray-200"
-                    }`}
+                    className={`w-16 h-0.5 mx-4 ${hookData.currentStep > step.id
+                        ? "bg-primary"
+                        : "bg-secondary"
+                      }`}
                   />
                 )}
               </div>

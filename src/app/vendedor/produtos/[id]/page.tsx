@@ -120,7 +120,7 @@ export default function ProductDetailPage() {
                   <button
                     key={index}
                     onClick={() => selectImage(index)}
-                    className={`relative w-[152px] h-[167px] rounded-2xl overflow-hidden border-2 transition-all ${selectedImageIndex === index
+                    className={`relative rounded-2xl overflow-hidden border-2 transition-all ${selectedImageIndex === index
                       ? 'border-black'
                       : 'border-gray-200 hover:border-gray-300'
                       }`}
@@ -128,8 +128,8 @@ export default function ProductDetailPage() {
                     <Image
                       src={buildImageUrl(image)}
                       alt={`${product.name} ${index + 1}`}
-                      fill
-                      className="object-cover"
+                      width={152}
+                      height={167}
                     />
                   </button>
                 ))}
@@ -137,12 +137,13 @@ export default function ProductDetailPage() {
             )}
 
             {/* Main Image */}
-            <div className="flex-1 relative w-full h-auto rounded-2xl overflow-hidden">
+            <div className="flex-1 relative  rounded-2xl overflow-hidden">
               {product.images && product.images.length > 0 ? (
                 <Image
                   src={buildImageUrls(product.images)[selectedImageIndex]}
                   alt={product.name}
                   fill
+                  className="object-cover"
                 />
               ) : (
                 <div className="flex items-center justify-center h-full">

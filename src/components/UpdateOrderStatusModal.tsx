@@ -78,27 +78,22 @@ export function UpdateOrderStatusModal({ orderId, currentStatus, orderNumber }: 
             {statusOptions.map((option) => (
               <div
                 key={option.value}
-                className={`p-3 rounded-lg border cursor-pointer transition-colors ${selectedStatus === option.value
-                  ? 'border-blue-500 bg-blue-50'
+                className={`p-3 rounded-2xl border cursor-pointer transition-colors ${selectedStatus === option.value
+                  ? 'bg-primary'
                   : 'border-gray-200 hover:border-gray-300'
                   }`}
                 onClick={() => setSelectedStatus(option.value)}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-full ${selectedStatus === option.value ? 'bg-blue-100' : 'bg-gray-100'
-                    }`}>
+                  <div className={`p-2 rounded-full bg-gray-100`}>
                     {getStatusIcon(option.value)}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900">{option.label}</span>
-                      {selectedStatus === option.value && (
-                        <Badge variant="outline" className="text-blue-600 border-blue-200">
-                          Selecionado
-                        </Badge>
-                      )}
+                      <span className={`font-medium ${selectedStatus === option.value ? 'text-primary-foreground' : 'text-gray-900'}`}>{option.label}</span>
+                      
                     </div>
-                    <p className="text-sm text-gray-600">{option.description}</p>
+                    <p className={`text-sm ${selectedStatus === option.value ? 'text-primary-foreground' : 'text-gray-600'}`}>{option.description}</p>
                   </div>
                 </div>
               </div>

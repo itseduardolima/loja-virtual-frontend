@@ -253,7 +253,7 @@ export default function ProductDetailPage() {
                   <button
                     key={index}
                     onClick={() => selectImage(index)}
-                    className={`relative w-[152px] h-[167px] rounded-2xl overflow-hidden border-2 transition-all ${selectedImageIndex === index
+                    className={`relative rounded-2xl overflow-hidden border-2 transition-all ${selectedImageIndex === index
                       ? 'border-black'
                       : 'border-gray-200 hover:border-gray-300'
                       }`}
@@ -261,8 +261,8 @@ export default function ProductDetailPage() {
                     <Image
                       src={buildImageUrl(image)}
                       alt={`${product.name} ${index + 1}`}
-                      fill
-                      className="object-cover"
+                      width={152}
+                      height={167}
                     />
                   </button>
                 ))}
@@ -270,12 +270,13 @@ export default function ProductDetailPage() {
             )}
 
             {/* Main Image */}
-            <div className="flex-1 relative w-full h-auto rounded-2xl overflow-hidden">
+            <div className="flex-1 relative  rounded-2xl overflow-hidden">
               {product.images && product.images.length > 0 ? (
                 <Image
                   src={buildImageUrls(product.images)[selectedImageIndex]}
                   alt={product.name}
                   fill
+                  className="object-cover"
                 />
               ) : (
                 <div className="flex items-center justify-center h-full">
@@ -286,7 +287,7 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Product Info */}
-          <div className="space-y-6  w-[70%]">
+          <div className="space-y-6">
             {/* Product Title */}
             <div>
               <h1 className="text-4xl font-bold text-black mb-4 uppercase font-integral">
@@ -328,6 +329,14 @@ export default function ProductDetailPage() {
               )}
             </div>
 
+            {/* Stock */}
+            <div className="flex items-center gap-2 text-primary font-integral">
+              <span className=" font-integral tracking-wide">Estoque:</span>
+              <span>
+                {product.stock > 0 ? `${product.stock} unidade${product.stock > 1 ? 's' : ''}` : 'Sem estoque'}
+              </span>
+            </div>
+
             {/* Description */}
             <p className="text-black/60 text-base leading-relaxed">
               {product.description}
@@ -358,8 +367,8 @@ export default function ProductDetailPage() {
                             <div className="absolute inset-0 flex items-center justify-center">
                               <Check
                                 className={`w-5 h-5 stroke-[3] ${colorValue === '#FFFFFF' || colorValue.toLowerCase() === '#ffffff' || colorValue.toLowerCase() === 'white'
-                                    ? 'text-black'
-                                    : 'text-white'
+                                  ? 'text-black'
+                                  : 'text-white'
                                   }`}
                               />
                             </div>

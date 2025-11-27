@@ -1,5 +1,12 @@
 import * as yup from 'yup'
 
+const normalizeNumber = (value: any, originalValue: any) => {
+  if (originalValue === '' || originalValue === null || Number.isNaN(value)) {
+    return undefined
+  }
+  return value
+}
+
 export const createProductSchema = yup.object({
   name: yup
     .string()
@@ -12,6 +19,7 @@ export const createProductSchema = yup.object({
     .max(1000, 'Descrição deve ter no máximo 1000 caracteres'),
   price: yup
     .number()
+    .transform(normalizeNumber)
     .required('Preço é obrigatório')
     .min(0.01, 'Preço deve ser maior que zero')
     .typeError('Preço deve ser um número válido'),
@@ -19,16 +27,22 @@ export const createProductSchema = yup.object({
   colors: yup.array().of(yup.string()).optional(),
   stock: yup
     .number()
+    .transform(normalizeNumber)
     .optional()
     .min(0, 'Estoque não pode ser negativo')
     .typeError('Estoque deve ser um número válido'),
   discount_price: yup
     .number()
+    .transform(normalizeNumber)
     .optional()
     .nullable()
     .min(0, 'Preço com desconto não pode ser negativo')
     .typeError('Preço com desconto deve ser um número válido'),
-  category_id: yup.number().optional().typeError('Categoria deve ser um número válido'),
+  category_id: yup
+    .number()
+    .transform(normalizeNumber)
+    .optional()
+    .typeError('Categoria deve ser um número válido'),
   featured: yup.boolean().optional()
 })
 
@@ -42,21 +56,27 @@ export const updateProductSchema = yup.object({
     .max(1000, 'Descrição deve ter no máximo 1000 caracteres'),
   price: yup
     .number()
+    .transform(normalizeNumber)
     .min(0.01, 'Preço deve ser maior que zero')
     .typeError('Preço deve ser um número válido'),
   sizes: yup.array().of(yup.string()),
   colors: yup.array().of(yup.string()),
   stock: yup
     .number()
+    .transform(normalizeNumber)
     .min(0, 'Estoque não pode ser negativo')
     .typeError('Estoque deve ser um número válido'),
   discount_price: yup
     .number()
+    .transform(normalizeNumber)
     .optional()
     .nullable()
     .min(0, 'Preço com desconto não pode ser negativo')
     .typeError('Preço com desconto deve ser um número válido'),
-  category_id: yup.number().typeError('Categoria deve ser um número válido'),
+  category_id: yup
+    .number()
+    .transform(normalizeNumber)
+    .typeError('Categoria deve ser um número válido'),
   featured: yup.boolean()
 })
 
