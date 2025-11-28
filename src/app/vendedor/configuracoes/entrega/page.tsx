@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useStore } from '@/hooks/useStore'
 import { useUpdateStore } from '@/hooks/useUpdateStore'
 import { Card, CardContent, Input, Label, Button, LoadingSpinner } from '@/components'
-import LoadingPage from '@/components/LoadingPage'
+import LoadingPage from '@/components/Layout/LoadingPage'
 
 export default function EntregaPage() {
   const { data: store, isLoading } = useStore()

@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useProdutosPage } from './useProdutosPage'
-import LoadingPage from '@/components/LoadingPage'
+import LoadingPage from '@/components/Layout/LoadingPage'
 
 export default function ProdutosPage() {
   const { user, isLoading: authLoading } = useAuth()

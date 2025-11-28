@@ -8,8 +8,7 @@ import {
   ShoppingCart, 
   X, 
   Plus, 
-  Minus, 
-  Trash2, 
+  Minus,
   ShoppingBag,
   CreditCard,
 } from 'lucide-react'
@@ -18,7 +17,7 @@ import { useCart } from '@/hooks/useCart'
 import { useCheckout } from '@/hooks/useCheckout'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
-import { CheckoutModal } from './CheckoutModal'
+import { CheckoutModal } from '@/components/Checkout/CheckoutModal'
 import { buildImageUrl } from '@/lib/utils'
 import { formatPrice } from '@/lib/utils'
 

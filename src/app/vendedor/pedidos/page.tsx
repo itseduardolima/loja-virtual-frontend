@@ -1,9 +1,9 @@
 'use client'
 
-import { Table } from '@/components/Table'
-import { ErrorState } from '@/components/ErrorState'
-import LoadingPage from '@/components/LoadingPage'
-import { TableFilters } from '@/components/TableFilters'
+import { Table } from '@/components/Table/Table'
+import { ErrorState } from '@/components/Layout/ErrorState'
+import LoadingPage from '@/components/Layout/LoadingPage'
+import { TableFilters } from '@/components/Table/TableFilters'
 import { useOrdersPage } from './useOrdersPage'
 
 export default function OrdersPage() {

@@ -5,7 +5,7 @@ import { useStore } from '@/hooks/useStore'
 import { useUpdateStore } from '@/hooks/useUpdateStore'
 import { Card, CardContent, Button, LoadingSpinner, Checkbox } from '@/components'
 import { CreditCard } from 'lucide-react'
-import LoadingPage from '@/components/LoadingPage'
+import LoadingPage from '@/components/Layout/LoadingPage'
 
 const PAYMENT_METHODS = [
   { id: 'pix', name: 'PIX', description: 'Pagamento instantâneo via PIX' },

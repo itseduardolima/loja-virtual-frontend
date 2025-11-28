@@ -6,7 +6,7 @@ import { useCategories } from '@/hooks/useCategories'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useToastContext } from '@/contexts/ToastContext'
 import { CategoryFilters } from '@/types/category'
-import { type Column } from '@/components/Table'
+import { type Column } from '@/components/Table/Table'
 import { Edit, Trash2 } from 'lucide-react'
 
 export function useCategoriesPage() {

@@ -23,7 +23,7 @@ import { useCart } from '@/hooks/useCart'
 import { useStoreInfo } from '@/hooks/useStoreInfo'
 import { useAuth } from '@/contexts/AuthContext'
 import { useState, useEffect } from 'react'
-import LoadingPage from '@/components/LoadingPage'
+import LoadingPage from '@/components/Layout/LoadingPage'
 import { Input } from '@/components/ui/input'
 
 export default function ProductDetailPage() {

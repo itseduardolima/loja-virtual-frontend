@@ -7,7 +7,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { useEditProductPage } from './useEditProductPage'
 import { useStore } from '@/hooks/useStore'
 import { useNiches } from '@/hooks/useNiches'
-import LoadingPage from '@/components/LoadingPage'
+import LoadingPage from '@/components/Layout/LoadingPage'
 import { useState, useEffect, useMemo } from 'react'
 
 export default function EditProductPage() {

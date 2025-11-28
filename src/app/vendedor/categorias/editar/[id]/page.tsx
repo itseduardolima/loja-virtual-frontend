@@ -2,7 +2,7 @@
 
 import { Button, Input, Label, Textarea, Card, LoadingSpinner, ErrorState } from '@/components'
 import { X, Tag, ChevronLeft } from 'lucide-react'
-import LoadingPage from '@/components/LoadingPage'
+import LoadingPage from '@/components/Layout/LoadingPage'
 import { useEditCategoryPage } from './useEditCategoryPage'
 
 export default function EditCategoryPage() {

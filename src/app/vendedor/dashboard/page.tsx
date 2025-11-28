@@ -14,7 +14,7 @@ import {
   AlertTriangle,
   Clock,
 } from 'lucide-react'
-import LoadingPage from '@/components/LoadingPage'
+import LoadingPage from '@/components/Layout/LoadingPage'
 
 export default function DashboardPage() {
   const { summary, recentOrders, topProducts, revenue, isLoading, isError } = useDashboard('month')

@@ -5,7 +5,7 @@ import '../styles/toast.css'
 import { QueryProvider } from '@/providers/QueryProvider'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ToastProvider } from '@/contexts/ToastContext'
-import { ToastContainer } from '@/components/ToastContainer'
+import { ToastContainer } from '@/components/Toast/ToastContainer'
 
 const satoshi = localFont({
   src: '../../public/fonts/Satoshi-Variable.ttf',

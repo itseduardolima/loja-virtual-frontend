@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useCreateProductPage } from './useCreateProductPage'
 import { useStore } from '@/hooks/useStore'
 import { useNiches } from '@/hooks/useNiches'
-import LoadingPage from '@/components/LoadingPage'
+import LoadingPage from '@/components/Layout/LoadingPage'
 import { useState, useMemo } from 'react'
 
 export default function CreateProductPage() {

@@ -7,32 +7,57 @@ export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 export { Textarea } from '@/components/ui/textarea'
 export { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination'
 export { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-export { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption } from '@/components/ui/table'
+export { Table as TableUI, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption } from '@/components/ui/table'
 export { Toast, ToastClose, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from '@/components/ui/toast'
 export { Switch } from '@/components/ui/switch'
 export { Checkbox } from '@/components/ui/checkbox'
-export { LoadingSpinner } from './LoadingSpinner'
-export { ErrorState } from './ErrorState'
-export { ProductFilters } from './ProductFilters'
-export { ConfirmDialog } from './ConfirmDialog'
-export { ImageUpload } from './ImageUpload'
-export { ProductVariations } from './ProductVariations'
-export { ProductPreview } from './ProductPreview'
-export { TableFilters } from './TableFilters'
-export { ToastContainer } from './ToastContainer'
-export { ProductCard } from './ProductCard'
-export { StorePagination } from './StorePagination'
-export { StoreSidebar } from './StoreSidebar'
-export { CategorySection } from './CategorySection'
-export { CartSidebar } from './CartSidebar'
-export { CheckoutModal } from './CheckoutModal'
-export { UpdateOrderStatusModal } from './UpdateOrderStatusModal'
-export { StorePendingFields } from './StorePendingFields'
-export { SidebarVendedor } from './SidebarVendedor'
-export { UserHeader } from './UserHeader'
-export { DynamicFields } from './DynamicFields'
-export { CreateCategoryModal } from './CreateCategoryModal'
-export type { Column, TableProps } from './Table'
+// Layout Components
+export { LoadingSpinner } from './Layout/LoadingSpinner'
+export { ErrorState } from './Layout/ErrorState'
+export { default as LoadingPage } from './Layout/LoadingPage'
+export { ProfileInfo } from './Layout/ProfileInfo'
+export { SidebarVendedor } from './Layout/SidebarVendedor'
+export { UserHeader } from './Layout/UserHeader'
+
+// Product Components
+export { ProductCard } from './Product/ProductCard'
+export { ProductFilters } from './Product/ProductFilters'
+export { ProductPreview } from './Product/ProductPreview'
+export { ProductVariations } from './Product/ProductVariations'
+
+// Table Components
+export { Table } from './Table/Table'
+export { TableFilters } from './Table/TableFilters'
+export { TablePagination } from './Table/TablePagination'
+export type { Column, TableProps } from './Table/Table'
+
+// Store Components
+export { StorePagination } from './Store/StorePagination'
+export { StoreSidebar } from './Store/StoreSidebar'
+export { StorePendingFields } from './Store/StorePendingFields'
+
+// Category Components
+export { CategorySection } from './Category/CategorySection'
+export { CreateCategoryModal } from './Category/CreateCategoryModal'
+
+// Cart Components
+export { CartSidebar } from './Cart/CartSidebar'
+
+// Checkout Components
+export { CheckoutModal } from './Checkout/CheckoutModal'
+
+// Order Components
+export { UpdateOrderStatusModal } from './Order/UpdateOrderStatusModal'
+
+// Form Components
+export { DynamicFields } from './Form/DynamicFields'
+export { ImageUpload } from './Form/ImageUpload'
+
+// Dialog Components
+export { ConfirmDialog } from './Dialog/ConfirmDialog'
+
+// Toast Components
+export { ToastContainer } from './Toast/ToastContainer'
 export { DashboardStatsCard } from './Dashboard/DashboardStatsCard'
 export { DashboardRevenueChart } from './Dashboard/DashboardRevenueChart'
 export { DashboardRecentOrders } from './Dashboard/DashboardRecentOrders'

@@ -8,7 +8,7 @@ import { ORDER_STATUS, SORT_OPTIONS, type OrdersFilters } from '@/types/order'
 import { useAuth } from '@/contexts/AuthContext'
 import { EyeIcon } from 'lucide-react'
 import { formatDate, formatPrice } from '@/lib/utils'
-import { type Column } from '@/components/Table'
+import { type Column } from '@/components/Table/Table'
 
 export function useOrdersPage() {
   const router = useRouter()

@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import { buildImageUrl } from '@/lib/utils'
-import LoadingPage from '@/components/LoadingPage'
+import LoadingPage from '@/components/Layout/LoadingPage'
 import { WhatsappIcon } from '@/assets/icons/WhatsappIcon'
 
 export default function VendedorPage() {

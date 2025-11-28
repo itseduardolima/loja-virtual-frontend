@@ -13,7 +13,7 @@ import Image from 'next/image'
 import { useProductDetailPage } from './useProductDetailPage'
 import { buildImageUrl, formatPrice } from '@/lib/utils'
 import { useEffect } from 'react'
-import LoadingPage from '@/components/LoadingPage'
+import LoadingPage from '@/components/Layout/LoadingPage'
 
 export default function ProductDetailPage() {
   const { user, isLoading: authLoading } = useAuth()

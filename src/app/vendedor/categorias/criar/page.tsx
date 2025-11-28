@@ -2,7 +2,7 @@
 
 import { Button, Input, Label, Textarea, Card, LoadingSpinner } from '@/components'
 import { Plus, X, Tag, ArrowLeft, ChevronLeft } from 'lucide-react'
-import LoadingPage from '@/components/LoadingPage'
+import LoadingPage from '@/components/Layout/LoadingPage'
 import { useNewCategoryPage } from './useNewCategoryPage'
 
 export default function NewCategoryPage() {

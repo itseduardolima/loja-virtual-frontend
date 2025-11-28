@@ -2,12 +2,12 @@
 
 import { useAuth } from '@/contexts/AuthContext'
 import { Button, ErrorState } from '@/components'
-import { TableFilters } from '@/components/TableFilters'
-import { Table } from '@/components/Table'
+import { TableFilters } from '@/components/Table/TableFilters'
+import { Table } from '@/components/Table/Table'
 import { Plus, Tag } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCategoriesPage } from './useCategoriesPage'
-import LoadingPage from '@/components/LoadingPage'
+import LoadingPage from '@/components/Layout/LoadingPage'
 
 export default function CategoriesPage() {
   const { user, isLoading: authLoading } = useAuth()

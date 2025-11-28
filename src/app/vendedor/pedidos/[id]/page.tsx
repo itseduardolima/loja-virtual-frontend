@@ -22,11 +22,11 @@ import { useOrderDetail } from '@/hooks/useOrderDetail'
 import { ORDER_STATUS, type Order } from '@/types/order'
 import { formatDate, formatPrice } from '@/lib/utils'
 import { buildImageUrl } from '@/lib/imageUtils'
-import { ErrorState } from '@/components/ErrorState'
-import { UpdateOrderStatusModal } from '@/components/UpdateOrderStatusModal'
+import { ErrorState } from '@/components/Layout/ErrorState'
+import { UpdateOrderStatusModal } from '@/components/Order/UpdateOrderStatusModal'
 import { useAuth } from '@/contexts/AuthContext'
 import { useEffect } from 'react'
-import LoadingPage from '@/components/LoadingPage'
+import LoadingPage from '@/components/Layout/LoadingPage'
 
 
 export default function OrderDetailPage() {
