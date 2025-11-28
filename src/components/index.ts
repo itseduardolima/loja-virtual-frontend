@@ -32,5 +32,15 @@ export { SidebarVendedor } from './SidebarVendedor'
 export { UserHeader } from './UserHeader'
 export { DynamicFields } from './DynamicFields'
 export { CreateCategoryModal } from './CreateCategoryModal'
-export { DataTable } from './Table'
-export type { Column, DataTableProps } from './Table'
+export type { Column, TableProps } from './Table'
+export { DashboardStatsCard } from './Dashboard/DashboardStatsCard'
+export { DashboardRevenueChart } from './Dashboard/DashboardRevenueChart'
+export { DashboardRecentOrders } from './Dashboard/DashboardRecentOrders'
+export { DashboardTopProducts } from './Dashboard/DashboardTopProducts'
+export {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
+} from './ui/chart'

@@ -11,7 +11,8 @@ import {
   TrendingUp, 
   Menu,
   X,
-  BarChart3
+  BarChart3,
+  Home
 } from 'lucide-react'
 
 interface SidebarVendedorProps {
@@ -24,10 +25,16 @@ export function SidebarVendedor({ currentPath }: SidebarVendedorProps) {
 
   const navigationItems = [
     {
-      name: 'Dashboard',
+      name: 'Home',
       href: '/vendedor',
-      icon: BarChart3,
+      icon: Home,
       current: currentPath === '/vendedor'
+    },
+    {
+      name: 'Dashboard',
+      href: '/vendedor/dashboard',
+      icon: BarChart3,
+      current: currentPath?.startsWith('/vendedor/dashboard')
     },
     {
       name: 'Produtos',

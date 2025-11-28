@@ -1,9 +1,8 @@
 'use client'
 
 import { useVendedorPage } from '@/app/vendedor/useVendedorPage'
-import { Button, Card, CardContent, Input, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components'
+import { Button, Card, CardContent, Input, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components'
 import { 
-  Store, 
   Phone, 
   Instagram,
   Image as ImageIcon,
