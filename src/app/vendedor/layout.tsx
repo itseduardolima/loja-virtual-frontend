@@ -22,11 +22,11 @@ export default function VendedorLayout({
   }
 
   return (
-    <div className="bg-gray-50 flex h-screen">
+    <div className="flex h-screen">
       <SidebarVendedor currentPath={pathname} />
       <div className="flex-1 lg:ml-0 flex flex-col overflow-hidden">
         <UserHeader currentPath={pathname} />
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto bg-[#FAFAFB] px-4 py-8">
           {children}
         </div>
       </div>

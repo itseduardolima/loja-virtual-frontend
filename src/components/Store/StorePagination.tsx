@@ -1,7 +1,6 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
 import { StorePaginationProps } from '@/app/loja/[slug]/produtos/types'
 
@@ -9,14 +8,11 @@ export function StorePagination({
   currentPage,
   totalPages,
   totalItems,
-  itemsPerPage,
   onPageChange,
-  onItemsPerPageChange,
   hasNextPage,
   hasPrevPage
 }: StorePaginationProps) {
-  const startItem = (currentPage - 1) * itemsPerPage + 1
-  const endItem = Math.min(currentPage * itemsPerPage, totalItems)
+ 
 
   const getVisiblePages = () => {
     const delta = 2
@@ -50,29 +46,12 @@ export function StorePagination({
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-6">
       {/* Informações */}
       <div className="text-sm text-gray-600">
-        Mostrando {startItem} a {endItem} de {totalItems} produtos
+        Mostrando {currentPage} de {totalPages} de {totalItems} produtos
       </div>
 
       {/* Controles de Paginação */}
       <div className="flex items-center gap-2">
-        {/* Itens por página */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">Itens por página:</span>
-          <Select
-            value={itemsPerPage.toString()}
-            onValueChange={(value) => onItemsPerPageChange(parseInt(value))}
-          >
-            <SelectTrigger className="w-20">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="20">20</SelectItem>
-              <SelectItem value="50">50</SelectItem>
-              <SelectItem value="100">100</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+
 
         {/* Navegação */}
         <div className="flex items-center gap-1">

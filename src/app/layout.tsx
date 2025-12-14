@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import localFont from 'next/font/local'
+import { Nunito } from 'next/font/google'
 import './globals.css'
 import '../styles/toast.css'
 import { QueryProvider } from '@/providers/QueryProvider'
@@ -23,6 +24,13 @@ const integralCF = localFont({
   weight: '700',
 })
 
+const nunito = Nunito({
+  subsets: ['latin'],
+  variable: '--font-nunito',
+  weight: ['400', '600', '700', '800', '900'],
+  display: 'swap',
+})
+
 
 export const metadata: Metadata = {
   title: 'Loja - Frontend',
@@ -36,7 +44,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className={`${satoshi.variable} ${integralCF.variable} font-sans`}>
+      <body className={`${satoshi.variable} ${integralCF.variable} ${nunito.variable} font-sans`}>
         <QueryProvider>
           <AuthProvider>
             <ToastProvider>

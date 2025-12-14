@@ -112,9 +112,9 @@ export default function ProductDetailPage() {
   const hasHalfStar = rating % 1 >= 0.5
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Main Content */}
-      <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto py-12">
+      <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto pt-4 pb-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           {/* Product Images */}
           <div className="flex gap-4">

@@ -5,7 +5,6 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { PROFILE_ROUTES } from '@/types/auth'
-import { LoadingSpinner } from '@/components'
 import LoadingPage from '@/components/Layout/LoadingPage'
 
 export default function Home() {

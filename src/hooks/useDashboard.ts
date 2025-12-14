@@ -5,6 +5,12 @@ export interface DashboardSummary {
   today: {
     orders: number
     revenue: number
+    products_sold: number
+    new_customers: number
+    revenue_growth: number
+    orders_growth: number
+    products_growth: number
+    customers_growth: number
   }
   week: {
     orders: number
@@ -62,19 +68,52 @@ export interface RevenueData {
   revenue: number
 }
 
+export interface ComparativeStats {
+  orders: {
+    current: number
+    previous: number
+    change: number
+    trend: 'up' | 'down'
+  }
+  revenue: {
+    current: number
+    previous: number
+    change: number
+    trend: 'up' | 'down'
+  }
+}
+
 export interface DashboardData {
   summary: DashboardSummary
   recentOrders: RecentOrder[]
   topProducts: TopProduct[]
   revenue: RevenueData[]
+  comparativeStats: ComparativeStats
 }
 
-export function useDashboard(period: 'day' | 'week' | 'month' = 'month') {
+export function useDashboard() {
   const summaryQuery = useQuery({
     queryKey: ['dashboard', 'summary'],
     queryFn: async (): Promise<DashboardSummary> => {
       const response = await api.get('/dashboard/summary')
-      return response.data.data
+      
+      // Verifica se a resposta tem a estrutura esperada
+      if (response.data?.data?.summary) {
+        return response.data.data.summary
+      }
+      
+      // Se não tiver summary dentro de data.data, tenta diretamente
+      if (response.data?.summary) {
+        return response.data.summary
+      }
+      
+      // Se não tiver data.data, tenta response.data diretamente
+      if (response.data?.today) {
+        return response.data as DashboardSummary
+      }
+      
+      // Retorna o que vier em data.data
+      return response.data.data || response.data
     },
     staleTime: 30000, // 30 segundos
   })
@@ -97,10 +136,10 @@ export function useDashboard(period: 'day' | 'week' | 'month' = 'month') {
     staleTime: 30000,
   })
 
-  const revenueQuery = useQuery({
-    queryKey: ['dashboard', 'revenue', period],
-    queryFn: async (): Promise<RevenueData[]> => {
-      const response = await api.get(`/dashboard/revenue?period=${period}`)
+  const comparativeStatsQuery = useQuery({
+    queryKey: ['dashboard', 'comparative-stats'],
+    queryFn: async (): Promise<ComparativeStats> => {
+      const response = await api.get('/dashboard/comparative-stats')
       return response.data.data
     },
     staleTime: 30000,
@@ -110,10 +149,10 @@ export function useDashboard(period: 'day' | 'week' | 'month' = 'month') {
     summary: summaryQuery.data,
     recentOrders: recentOrdersQuery.data || [],
     topProducts: topProductsQuery.data || [],
-    revenue: revenueQuery.data || [],
-    isLoading: summaryQuery.isLoading || recentOrdersQuery.isLoading || topProductsQuery.isLoading || revenueQuery.isLoading,
-    isError: summaryQuery.isError || recentOrdersQuery.isError || topProductsQuery.isError || revenueQuery.isError,
-    error: summaryQuery.error || recentOrdersQuery.error || topProductsQuery.error || revenueQuery.error,
+    comparativeStats: comparativeStatsQuery.data,
+    isLoading: summaryQuery.isLoading || recentOrdersQuery.isLoading || topProductsQuery.isLoading || comparativeStatsQuery.isLoading,
+    isError: summaryQuery.isError || recentOrdersQuery.isError || topProductsQuery.isError || comparativeStatsQuery.isError,
+    error: summaryQuery.error || recentOrdersQuery.error || topProductsQuery.error || comparativeStatsQuery.error,
   }
 }
 

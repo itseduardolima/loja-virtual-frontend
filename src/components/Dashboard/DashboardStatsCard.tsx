@@ -1,8 +1,6 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LucideIcon } from 'lucide-react'
-import { formatPrice } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 
 interface DashboardStatsCardProps {
@@ -14,7 +12,7 @@ interface DashboardStatsCardProps {
     value: number
     label: string
   }
-  variant?: 'default' | 'success' | 'warning' | 'danger'
+  variant?: 'pink' | 'orange' | 'green' | 'purple'
 }
 
 export function DashboardStatsCard({
@@ -23,43 +21,81 @@ export function DashboardStatsCard({
   subtitle,
   icon: Icon,
   trend,
-  variant = 'default',
+  variant = 'pink',
 }: DashboardStatsCardProps) {
   const variantStyles = {
-    default: 'border-gray-200',
-    success: 'border-green-200 bg-green-50/50',
-    warning: 'border-yellow-200 bg-yellow-50/50',
-    danger: 'border-red-200 bg-red-50/50',
+    pink: {
+      bg: 'bg-gradient-to-br from-pink-50 to-pink-100',
+      iconBg: 'bg-pink-500',
+      icon: 'text-white',
+      value: 'text-gray-900',
+      title: 'text-gray-600',
+      subtitle: 'text-gray-500',
+      trend: 'text-pink-600',
+    },
+    orange: {
+      bg: 'bg-gradient-to-br from-orange-50 to-orange-100',
+      iconBg: 'bg-orange-500',
+      icon: 'text-white',
+      value: 'text-gray-900',
+      title: 'text-gray-600',
+      subtitle: 'text-gray-500',
+      trend: 'text-orange-600',
+    },
+    green: {
+      bg: 'bg-gradient-to-br from-green-50 to-green-100',
+      iconBg: 'bg-green-500',
+      icon: 'text-white',
+      value: 'text-gray-900',
+      title: 'text-gray-600',
+      subtitle: 'text-gray-500',
+      trend: 'text-green-600',
+    },
+    purple: {
+      bg: 'bg-gradient-to-br from-purple-50 to-purple-100',
+      iconBg: 'bg-purple-500',
+      icon: 'text-white',
+      value: 'text-gray-900',
+      title: 'text-gray-600',
+      subtitle: 'text-gray-500',
+      trend: 'text-purple-600',
+    },
   }
 
-  const iconStyles = {
-    default: 'text-gray-600',
-    success: 'text-green-600',
-    warning: 'text-yellow-600',
-    danger: 'text-red-600',
-  }
+  const styles = variantStyles[variant]
 
   return (
-    <Card className={cn('border-0 shadow-sm hover:shadow-md transition-shadow', variantStyles[variant])}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-gray-600">{title}</CardTitle>
-        <Icon className={cn('h-4 w-4', iconStyles[variant])} />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold text-gray-900">{value}</div>
-        {subtitle && (
-          <p className="text-xs text-gray-500 mt-1">{subtitle}</p>
-        )}
-        {trend && (
-          <p className={cn(
-            'text-xs mt-2',
-            trend.value > 0 ? 'text-green-600' : trend.value < 0 ? 'text-red-600' : 'text-gray-500'
-          )}>
-            {trend.value > 0 ? '↑' : trend.value < 0 ? '↓' : '→'} {trend.label}
-          </p>
-        )}
-      </CardContent>
-    </Card>
+    <div className={cn(
+      'rounded-2xl p-6 border border-white/20',
+      styles.bg
+    )}>
+      <div className="flex items-start justify-between">
+        <div className="flex-1 pr-3">
+          <h3 className={cn('text-sm font-medium mb-2', styles.title)}>
+            {title}
+          </h3>
+          <div className={cn('text-3xl font-bold mb-3', styles.value)}>
+            {value}
+          </div>
+          {subtitle && (
+            <p className={cn('text-xs mb-2', styles.subtitle)}>
+              {subtitle}
+            </p>
+          )}
+          {trend && (
+            <div className={cn('text-xs font-semibold', styles.trend)}>
+              {trend.value > 0 ? '+' : ''}{trend.value}% {trend.label}
+            </div>
+          )}
+        </div>
+        <div className={cn(
+          'rounded-xl p-3 flex items-center justify-center flex-shrink-0',
+          styles.iconBg
+        )}>
+          <Icon className={cn('h-6 w-6', styles.icon)} />
+        </div>
+      </div>
+    </div>
   )
 }
 

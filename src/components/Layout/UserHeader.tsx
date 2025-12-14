@@ -76,7 +76,7 @@ export function UserHeader({ currentPath }: UserHeaderProps) {
       {/* Drawer Overlay */}
       {isDrawerOpen && (
         <div
-          className="fixed inset-0 bg-primary bg-opacity-50 z-50"
+          className="fixed inset-0 bg-black/10 z-50"
           onClick={() => setIsDrawerOpen(false)}
         />
       )}

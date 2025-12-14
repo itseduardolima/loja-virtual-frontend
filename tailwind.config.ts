@@ -9,8 +9,10 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['var(--font-satoshi)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-nunito)', 'system-ui', 'sans-serif'],
         integral: ['var(--font-integral)', 'system-ui', 'sans-serif'],
+        nunito: ['var(--font-nunito)', 'sans-serif'],
+        satoshi: ['var(--font-satoshi)', 'system-ui', 'sans-serif'],
       },
       colors: {
         background: 'hsl(var(--background))',
