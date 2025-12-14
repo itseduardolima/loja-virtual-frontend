@@ -1,8 +1,9 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { Button, LoadingSpinner, ErrorState, StorePagination, StoreSidebar, Switch, ProductCard } from '@/components'
+import { Button, ErrorState, StorePagination, StoreSidebar, Switch, ProductCard } from '@/components'
 import { Input } from '@/components/ui/input'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Package,
   Plus,
@@ -56,6 +57,41 @@ export default function ProdutosPage() {
     )
   }
 
+  const statsCards = [
+    {
+      value: stats.total,
+      label: ['Total de', 'Produtos'],
+      bgColor: 'bg-blue-50',
+      borderColor: 'border-blue-400',
+      textColor: 'text-blue-700',
+      icon: Package
+    },
+    {
+      value: stats.active,
+      label: ['Produtos', 'Ativos'],
+      bgColor: 'bg-green-50',
+      borderColor: 'border-green-400',
+      textColor: 'text-green-700',
+      icon: TrendingUp
+    },
+    {
+      value: stats.featured,
+      label: ['Em', 'Destaque'],
+      bgColor: 'bg-yellow-50',
+      borderColor: 'border-yellow-400',
+      textColor: 'text-yellow-700',
+      icon: Star
+    },
+    {
+      value: stats.totalStock,
+      label: ['Estoque', 'Total'],
+      bgColor: 'bg-purple-50',
+      borderColor: 'border-purple-400',
+      textColor: 'text-purple-700',
+      icon: BarChart3
+    }
+  ]
+
   return (
 
     <div className="max-w-7xl mx-auto py-8">
@@ -85,53 +121,34 @@ export default function ProdutosPage() {
       {/* Statistics Cards */}
       <div className="mb-6">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">Total de Produtos</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
-              </div>
-              <div className="p-3 bg-blue-50 rounded-lg">
-                <Package className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">Produtos Ativos</p>
-                <p className="text-3xl font-bold text-green-600">{stats.active}</p>
-              </div>
-              <div className="p-3 bg-green-50 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">Em Destaque</p>
-                <p className="text-3xl font-bold text-yellow-600">{stats.featured}</p>
-              </div>
-              <div className="p-3 bg-yellow-50 rounded-lg">
-                <Star className="h-6 w-6 text-yellow-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">Estoque Total</p>
-                <p className="text-3xl font-bold text-purple-600">{stats.totalStock}</p>
-              </div>
-              <div className="p-3 bg-purple-50 rounded-lg">
-                <BarChart3 className="h-6 w-6 text-purple-600" />
-              </div>
-            </div>
-          </div>
+          {statsCards.map((card, index) => {
+            const Icon = card.icon
+            return (
+              <Card 
+                key={index}
+                className={`${card.bgColor} ${card.borderColor} border-2 transition-shadow`}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <p className={`text-7xl font-bold ${card.textColor}`}>{card.value}</p>
+                      <div className="flex flex-col">
+                        {card.label.map((line, lineIndex) => (
+                          <p 
+                            key={lineIndex}
+                            className={`text-sm font-bold ${card.textColor}`}
+                          >
+                            {line}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                    <Icon className={`h-8 w-8 ${card.textColor}`} />
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
       </div>
 
