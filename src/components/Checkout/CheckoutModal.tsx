@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -23,12 +23,42 @@ export function CheckoutModal({ isOpen, onClose, sessionId, storeId, storeSlug, 
   const { checkout, isCheckoutLoading } = useCheckout()
   const { user } = useAuth()
   
+  // Buscar dados do usuário do contexto ou localStorage
+  const getUserData = () => {
+    if (user) return user
+    const userDataStr = localStorage.getItem('user-data')
+    if (userDataStr) {
+      try {
+        return JSON.parse(userDataStr)
+      } catch {
+        return null
+      }
+    }
+    return null
+  }
+
+  const userData = getUserData()
+  
   const [formData, setFormData] = useState({
-    customer_name: user?.name || '',
-    customer_email: user?.email || '',
+    customer_name: userData?.name || '',
+    customer_email: userData?.email || '',
     customer_phone: '',
     notes: ''
   })
+
+  // Atualizar dados quando o modal abrir ou o usuário mudar
+  useEffect(() => {
+    if (isOpen) {
+      const currentUserData = getUserData()
+      setFormData({
+        customer_name: currentUserData?.name || '',
+        customer_email: currentUserData?.email || '',
+        customer_phone: '',
+        notes: ''
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, user])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -40,7 +70,7 @@ export function CheckoutModal({ isOpen, onClose, sessionId, storeId, storeSlug, 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.customer_name.trim() || !formData.customer_email.trim()) {
+    if (!formData.customer_name.trim() || !formData.customer_email.trim() || !formData.customer_phone.trim()) {
       return
     }
 
@@ -55,9 +85,10 @@ export function CheckoutModal({ isOpen, onClose, sessionId, storeId, storeSlug, 
   }
 
   const handleClose = () => {
+    const currentUserData = getUserData()
     setFormData({
-      customer_name: user?.name || '',
-      customer_email: user?.email || '',
+      customer_name: currentUserData?.name || '',
+      customer_email: currentUserData?.email || '',
       customer_phone: '',
       notes: ''
     })
@@ -88,7 +119,8 @@ export function CheckoutModal({ isOpen, onClose, sessionId, storeId, storeSlug, 
               onChange={(e) => handleInputChange('customer_name', e.target.value)}
               placeholder="Digite seu nome completo"
               required
-              className="w-full"
+              disabled
+              className="w-full bg-gray-100"
             />
           </div>
 
@@ -105,7 +137,8 @@ export function CheckoutModal({ isOpen, onClose, sessionId, storeId, storeSlug, 
               onChange={(e) => handleInputChange('customer_email', e.target.value)}
               placeholder="Digite seu email"
               required
-              className="w-full"
+              disabled
+              className="w-full bg-gray-100"
             />
           </div>
 
@@ -113,7 +146,7 @@ export function CheckoutModal({ isOpen, onClose, sessionId, storeId, storeSlug, 
           <div className="space-y-2">
             <Label htmlFor="customer_phone" className="flex items-center gap-2">
               <Phone className="h-4 w-4" />
-              Telefone
+              Telefone *
             </Label>
             <Input
               id="customer_phone"
@@ -121,6 +154,7 @@ export function CheckoutModal({ isOpen, onClose, sessionId, storeId, storeSlug, 
               value={formData.customer_phone}
               onChange={(e) => handleInputChange('customer_phone', e.target.value)}
               placeholder="(11) 99999-9999"
+              required
               className="w-full"
             />
           </div>
@@ -167,7 +201,7 @@ export function CheckoutModal({ isOpen, onClose, sessionId, storeId, storeSlug, 
             <Button
               type="submit"
               className="flex-1"
-              disabled={isCheckoutLoading || !formData.customer_name.trim() || !formData.customer_email.trim()}
+              disabled={isCheckoutLoading || !formData.customer_name.trim() || !formData.customer_email.trim() || !formData.customer_phone.trim()}
             >
               {isCheckoutLoading ? 'Processando...' : 'Finalizar Pedido'}
             </Button>

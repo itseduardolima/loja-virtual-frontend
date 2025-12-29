@@ -2,27 +2,19 @@
 
 import { useState } from 'react'
 import { useParams } from 'next/navigation'
-import { ProductCard, StorePagination, StoreSidebar, LoadingSpinner, ErrorState, CartSidebar } from '@/components'
-import { ShoppingBag, Star, Package, Search, User, LogIn, UserPlus } from 'lucide-react'
+import { ProductCard, StorePagination, StoreSidebar, LoadingSpinner, ErrorState, CartSidebar, StoreHeader } from '@/components'
+import { Star, Package } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
 import { useStorePage } from './useStorePage'
 import { useStoreInfo } from '@/hooks/useStoreInfo'
 import { useCart } from '@/hooks/useCart'
-import { useAuth } from '@/contexts/AuthContext'
-import { useRouter } from 'next/navigation'
-import { buildImageUrl } from '@/lib/imageUtils'
-import Image from 'next/image'
 
 export default function StorePage() {
   const params = useParams()
   const slug = params.slug as string
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [isCartOpen, setIsCartOpen] = useState(false)
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
-  const { user, isAuthenticated } = useAuth()
-  const router = useRouter()
 
   const {
     // Estado
@@ -49,7 +41,6 @@ export default function StorePage() {
     handleFilterChange,
     handleClearFilters,
     handlePageChange,
-    handleItemsPerPageChange,
     handleAddToFavorites,
     handleViewDetails
   } = useStorePage({ slug })
@@ -91,114 +82,14 @@ export default function StorePage() {
   return (
     <div className="min-h-screen">
       {/* Header da Loja */}
-      <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto">
-        <div className="mx-auto py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              {/* Informações da Loja */}
-              <div>
-                <h1 className="text-3xl uppercase font-integral text-primary">
-                  {storeInfo?.name}
-                </h1>
-              </div>
-            </div>
-
-            <div className="flex items-center">
-              {/* Campo de Busca */}
-              <div className="relative w-[577px]">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <Input
-                  type="text"
-                  placeholder="Buscar produtos..."
-                  value={search}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSearchSubmit(search)
-                    }
-                  }}
-                  className="pl-10 pr-4 py-3 bg-[#F0F0F0]  rounded-full"
-                />
-              </div>
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setIsCartOpen(true)
-                }}
-                className="relative"
-              >
-                <ShoppingBag className="w-6 h-6" />
-                {totalItems > 0 && (
-                  <Badge
-                    className="absolute top-1 right-1 h-5 min-w-5 px-1.5 flex items-center justify-center bg-red-500 text-white text-xs  rounded-full border-0"
-                  >
-                    {totalItems}
-                  </Badge>
-                )}
-              </Button>
-
-              {/* Botão de Usuário */}
-              <div className="relative">
-                <Button
-                  variant="ghost"
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-2"
-                >
-                  <User className="w-6 h-6" />
-                  {isAuthenticated && user && (
-                    <span className="text-sm font-medium">{user.name}</span>
-                  )}
-                </Button>
-
-                {/* Dropdown Menu */}
-                {isUserMenuOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-10"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    />
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
-                      {isAuthenticated && user ? (
-                        <div className="p-2">
-                          <div className="px-3 py-2 border-b border-gray-200">
-                            <p className="text-sm font-semibold text-gray-900">{user.name}</p>
-                            <p className="text-xs text-gray-500">{user.email}</p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="p-2">
-                          <Button
-                            variant="ghost"
-                            className="w-full justify-start gap-2 rounded"
-                            onClick={() => {
-                              router.push('/login')
-                              setIsUserMenuOpen(false)
-                            }}
-                          >
-                            <LogIn className="w-4 h-4" />
-                            Fazer Login
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            className="w-full justify-start gap-2 rounded"
-                            onClick={() => {
-                              router.push('/register')
-                              setIsUserMenuOpen(false)
-                            }}
-                          >
-                            <UserPlus className="w-4 h-4" />
-                            Criar Conta
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <StoreHeader
+        storeInfo={storeInfo}
+        slug={slug}
+        searchValue={search}
+        onSearchChange={handleSearch}
+        onSearchSubmit={handleSearchSubmit}
+        onCartClick={() => setIsCartOpen(true)}
+      />
 
       <div className="flex gap-6 p-0">
         {/* Sidebar de Filtros */}
@@ -271,9 +162,7 @@ export default function StorePage() {
                       currentPage={meta.currentPage}
                       totalPages={meta.lastPage}
                       totalItems={meta.total}
-                      itemsPerPage={meta.perPage}
                       onPageChange={handlePageChange}
-                      onItemsPerPageChange={handleItemsPerPageChange}
                       hasNextPage={meta.next !== null}
                       hasPrevPage={meta.prev !== null}
                     />

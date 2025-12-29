@@ -1,30 +1,21 @@
 'use client'
 
 import { useParams, useRouter } from 'next/navigation'
-import { Button, Badge, LoadingSpinner, ErrorState, CartSidebar } from '@/components'
+import { Button, Badge, LoadingSpinner, ErrorState, CartSidebar, StoreHeader } from '@/components'
 import {
-  ShoppingBag,
   Star,
   Package,
   Plus,
   Minus,
-
-  Search,
-  User,
-  LogIn,
-  UserPlus,
   Check
 } from 'lucide-react'
 import Image from 'next/image'
 
 import { buildImageUrl, formatPrice } from '@/lib/utils'
 import { useProductDetailPage } from './useProductDetailPage'
-import { useCart } from '@/hooks/useCart'
 import { useStoreInfo } from '@/hooks/useStoreInfo'
-import { useAuth } from '@/contexts/AuthContext'
 import { useState, useEffect } from 'react'
 import LoadingPage from '@/components/Layout/LoadingPage'
-import { Input } from '@/components/ui/input'
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -32,8 +23,6 @@ export default function ProductDetailPage() {
   const slug = params.slug as string
   const productId = params.id as string
   const [isCartOpen, setIsCartOpen] = useState(false)
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
-  const { user, isAuthenticated } = useAuth()
 
   const { storeInfo } = useStoreInfo(slug)
 
@@ -58,8 +47,6 @@ export default function ProductDetailPage() {
     isAddingToCart,
   } = useProductDetailPage(slug, productId)
 
-  // Hook do carrinho para mostrar contador
-  const { totalItems } = useCart(product?.store?.id)
 
   const getColorValue = (colorName: string): string => {
     return colorMap[colorName] || '#6B7280'
@@ -131,115 +118,11 @@ export default function ProductDetailPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto">
-        <div className="mx-auto py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              {/* Informações da Loja */}
-              <div>
-                <button
-                  onClick={() => router.push(`/loja/${slug}/produtos`)}
-                  className="text-3xl uppercase font-integral text-primary hover:opacity-80"
-                >
-                  {storeInfo?.name}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center">
-              {/* Campo de Busca */}
-              <div className="relative w-[577px]">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <Input
-                  type="text"
-                  placeholder="Buscar produtos..."
-                  className="pl-10 pr-4 py-3 bg-[#F0F0F0] rounded-full"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      router.push(`/loja/${slug}/produtos?search=${(e.target as HTMLInputElement).value}`)
-                    }
-                  }}
-                />
-              </div>
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setIsCartOpen(true)
-                }}
-                className="relative"
-              >
-                <ShoppingBag className="w-6 h-6" />
-                {totalItems > 0 && (
-                  <Badge
-                    className="absolute top-1 right-1 h-5 min-w-5 px-1.5 flex items-center justify-center bg-red-500 text-white text-xs rounded-full border-0"
-                  >
-                    {totalItems}
-                  </Badge>
-                )}
-              </Button>
-
-              {/* Botão de Usuário */}
-              <div className="relative">
-                <Button
-                  variant="ghost"
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-2"
-                >
-                  <User className="w-6 h-6" />
-                  {isAuthenticated && user && (
-                    <span className="text-sm font-medium">{user.name}</span>
-                  )}
-                </Button>
-
-                {/* Dropdown Menu */}
-                {isUserMenuOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-10"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    />
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
-                      {isAuthenticated && user ? (
-                        <div className="p-2">
-                          <div className="px-3 py-2 border-b border-gray-200">
-                            <p className="text-sm font-semibold text-primary/60">{user.name}</p>
-                            <p className="text-xs text-gray-500">{user.email}</p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="p-2">
-                          <Button
-                            variant="ghost"
-                            className="w-full justify-start gap-2 rounded"
-                            onClick={() => {
-                              router.push('/login')
-                              setIsUserMenuOpen(false)
-                            }}
-                          >
-                            <LogIn className="w-4 h-4" />
-                            Fazer Login
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            className="w-full justify-start gap-2 rounded"
-                            onClick={() => {
-                              router.push('/register')
-                              setIsUserMenuOpen(false)
-                            }}
-                          >
-                            <UserPlus className="w-4 h-4" />
-                            Criar Conta
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <StoreHeader
+        storeInfo={storeInfo}
+        slug={slug}
+        onCartClick={() => setIsCartOpen(true)}
+      />
 
       {/* Main Content */}
       <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto py-12">

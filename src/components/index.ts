@@ -35,6 +35,7 @@ export type { Column, TableProps } from './Table/Table'
 export { StorePagination } from './Store/StorePagination'
 export { StoreSidebar } from './Store/StoreSidebar'
 export { StorePendingFields } from './Store/StorePendingFields'
+export { StoreHeader } from './Store/StoreHeader'
 
 // Category Components
 export { CategorySection } from './Category/CategorySection'

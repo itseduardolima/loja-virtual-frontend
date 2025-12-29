@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { 
-  ShoppingCart, 
   X, 
   Plus, 
   Minus,
@@ -48,7 +47,7 @@ export function CartSidebar({ isOpen, onClose, storeId, storeSlug, currentPath }
     isClearingCart
   } = useCart(storeId)
   
-  const { checkout, isCheckoutLoading } = useCheckout()
+  const {  isCheckoutLoading } = useCheckout()
   
   const hasItems = Array.isArray(cartItems) && cartItems.length > 0
 
@@ -68,7 +67,7 @@ export function CartSidebar({ isOpen, onClose, storeId, storeSlug, currentPath }
     clearCart()
   }
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!sessionId || !storeId) {
       return
     }
@@ -104,7 +103,7 @@ export function CartSidebar({ isOpen, onClose, storeId, storeSlug, currentPath }
       return
     }
     
-    // Se estiver logado, abrir o modal
+    // Se estiver logado, abrir o modal para preencher telefone e notas
     setIsCheckoutModalOpen(true)
   }
 
@@ -125,7 +124,6 @@ export function CartSidebar({ isOpen, onClose, storeId, storeSlug, currentPath }
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <div className="flex items-center gap-2">
-            <ShoppingCart className="h-5 w-5 text-gray-600" />
             <h2 className="text-lg font-semibold text-gray-900">
               Carrinho ({totalItems})
             </h2>

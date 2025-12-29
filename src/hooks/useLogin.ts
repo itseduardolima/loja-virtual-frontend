@@ -1,13 +1,13 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { LoginRequest } from '@/types/auth'
+import { LoginRequest, PROFILE_ROUTES } from '@/types/auth'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useToastContext } from '@/contexts/ToastContext'
 import { useCheckout } from './useCheckout'
 
 export function useLogin() {
-  const { login, isLoading } = useAuth()
+  const { login, isLoading, user } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const { getCheckoutData, clearCheckoutData } = useCheckout()
@@ -40,8 +40,17 @@ export function useLogin() {
         return
       }
       
-      // Se não há dados de checkout nem redirect, redirecionar para a página inicial
-      router.push('/')
+      // Se não há dados de checkout nem redirect, redirecionar de acordo com o perfil
+      // Nota: o user pode não estar atualizado imediatamente após login, então usamos um pequeno delay
+      setTimeout(() => {
+        const currentUser = user || JSON.parse(localStorage.getItem('user-data') || 'null')
+        if (currentUser && currentUser.profile) {
+          const profileRoute = PROFILE_ROUTES[currentUser.profile as keyof typeof PROFILE_ROUTES] || '/'
+          router.push(profileRoute)
+        } else {
+          router.push('/')
+        }
+      }, 100)
       
     } catch (error: any) {
       const errorMessage = error.response?.data?.message
