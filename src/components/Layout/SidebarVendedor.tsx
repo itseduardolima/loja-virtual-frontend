@@ -14,6 +14,7 @@ import {
   BarChart3,
   Home
 } from 'lucide-react'
+import { useStore } from '@/hooks/useStore'
 
 interface SidebarVendedorProps {
   currentPath?: string
@@ -22,6 +23,7 @@ interface SidebarVendedorProps {
 export function SidebarVendedor({ currentPath }: SidebarVendedorProps) {
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
+  const { data: store } = useStore()
 
   const navigationItems = [
     {
@@ -55,10 +57,10 @@ export function SidebarVendedor({ currentPath }: SidebarVendedorProps) {
       current: currentPath?.startsWith('/vendedor/pedidos')
     },
     {
-      name: 'Relatórios',
-      href: '/vendedor/relatorios',
-      icon: TrendingUp,
-      current: currentPath?.startsWith('/vendedor/relatorios')
+      name: 'Ver minha loja',
+      href: store?.slug ? `/loja/${store.slug}/produtos` : '#',
+      icon: Store,
+      current: currentPath?.startsWith(store?.slug ? `/loja/${store.slug}/produtos` : '#')
     }
   ]
 
