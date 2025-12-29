@@ -90,8 +90,8 @@ export function CreateCategoryModal({ isOpen, onClose, onCategoryCreated }: Crea
             <div className="text-sm">
               <p className="font-medium text-blue-900 mb-1">O que são categorias?</p>
               <p className="text-blue-700">
-                As categorias ajudam a organizar seus produtos. Por exemplo: "Roupas", "Eletrônicos", 
-                "Casa e Decoração". Isso facilita para os clientes encontrarem seus produtos.
+                As categorias ajudam a organizar seus produtos. Por exemplo: &quot;Roupas&quot;, &quot;Eletrônicos&quot;, 
+                &quot;Casa e Decoração&quot;. Isso facilita para os clientes encontrarem seus produtos.
               </p>
             </div>
           </div>

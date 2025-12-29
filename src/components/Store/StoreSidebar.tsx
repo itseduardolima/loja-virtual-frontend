@@ -49,11 +49,9 @@ export function StoreSidebar({
   storeId = null,
   ...filterProps
 }: StoreSidebarProps) {
-  if (!isOpen) return null
-
   const isInline = variant === 'inline'
   
-  // Hooks para nichos e campos
+  // Hooks para nichos e campos - DEVEM ser chamados antes de qualquer return condicional
   const { data: nichesData } = useNiches(storeId)
   const niches = nichesData?.data || []
   const [selectedNicheId, setSelectedNicheId] = useState<number | null>(null)
@@ -116,6 +114,9 @@ export function StoreSidebar({
     filterProps.sortValue,
     filterProps.sortFieldValue
   ])
+  
+  // Verificação condicional APÓS todos os hooks
+  if (!isOpen) return null
   
   const handlePriceChange = (values: number[]) => {
     setPriceRange(values)

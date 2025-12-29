@@ -12,6 +12,7 @@ import {
   Textarea,
   Checkbox,
   LoadingSpinner,
+  LoadingPage,
 } from "@/components";
 import {
   Store,
@@ -21,7 +22,6 @@ import {
   Phone,
   Instagram,
   Facebook,
-  Globe,
   Mail,
   MapPin,
   Clock,
@@ -31,7 +31,7 @@ import {
   LogOut,
 } from "lucide-react";
 import Image from "next/image";
-import LoadingPage from "@/components/LoadingPage";
+
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function CriarLojaPage() {
