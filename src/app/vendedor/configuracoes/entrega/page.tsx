@@ -77,7 +77,7 @@ export default function EntregaPage() {
                     type="text"
                     value={formData.delivery_fee}
                     onChange={(e) => handleInputChange('delivery_fee', e.target.value)}
-                    placeholder="5.50"
+                    placeholder="Digite o valor da taxa de entrega"
                     className="mt-2"
                   />
                   <p className="text-xs text-gray-500 mt-1">
@@ -94,7 +94,7 @@ export default function EntregaPage() {
                     type="text"
                     value={formData.free_delivery_min}
                     onChange={(e) => handleInputChange('free_delivery_min', e.target.value)}
-                    placeholder="50.00"
+                    placeholder="Digite o valor mínimo para entrega gratuita"
                     className="mt-2"
                   />
                   <p className="text-xs text-gray-500 mt-1">
@@ -115,7 +115,7 @@ export default function EntregaPage() {
                   id="delivery_time"
                   value={formData.delivery_time}
                   onChange={(e) => handleInputChange('delivery_time', e.target.value)}
-                  placeholder="2-3 dias úteis"
+                  placeholder="Digite o prazo de entrega"
                   className="mt-2"
                 />
                 <p className="text-xs text-gray-500 mt-1">
@@ -136,7 +136,7 @@ export default function EntregaPage() {
                 ) : (
                  ""
                 )}
-                {isUpdating ? 'Salvando...' : 'Salvar Configurações'}
+                {isUpdating ? 'Salvando...' : 'Salvar'}
               </Button>
             </div>
           </div>

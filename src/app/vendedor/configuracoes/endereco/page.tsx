@@ -77,7 +77,7 @@ export default function EnderecoPage() {
                   id="address"
                   value={formData.address}
                   onChange={(e) => handleInputChange('address', e.target.value)}
-                  placeholder="Rua das Flores, 123"
+                  placeholder="Digite o endereço completo"
                   className="mt-2"
                 />
               </div>
@@ -90,7 +90,7 @@ export default function EnderecoPage() {
                   id="city"
                   value={formData.city}
                   onChange={(e) => handleInputChange('city', e.target.value)}
-                  placeholder="São Paulo"
+                  placeholder="Digite a cidade"
                   className="mt-2"
                 />
               </div>
@@ -103,7 +103,7 @@ export default function EnderecoPage() {
                   id="state"
                   value={formData.state}
                   onChange={(e) => handleInputChange('state', e.target.value)}
-                  placeholder="SP"
+                  placeholder="Digite o estado"
                   className="mt-2"
                 />
               </div>
@@ -116,7 +116,7 @@ export default function EnderecoPage() {
                   id="zipcode"
                   value={formData.zipcode}
                   onChange={(e) => handleInputChange('zipcode', e.target.value)}
-                  placeholder="01234-567"
+                  placeholder="Digite o CEP"
                   className="mt-2"
                 />
               </div>
@@ -129,7 +129,7 @@ export default function EnderecoPage() {
                   id="neighborhood"
                   value={formData.neighborhood}
                   onChange={(e) => handleInputChange('neighborhood', e.target.value)}
-                  placeholder="Centro"
+                  placeholder="Digite o bairro"
                   className="mt-2"
                 />
               </div>
@@ -142,7 +142,7 @@ export default function EnderecoPage() {
                   id="number"
                   value={formData.number}
                   onChange={(e) => handleInputChange('number', e.target.value)}
-                  placeholder="123"
+                  placeholder="Digite o número"
                   className="mt-2"
                 />
               </div>
@@ -155,7 +155,7 @@ export default function EnderecoPage() {
                   id="complement"
                   value={formData.complement}
                   onChange={(e) => handleInputChange('complement', e.target.value)}
-                  placeholder="Apto 45, Bloco B"
+                  placeholder="Digite o complemento"
                   className="mt-2"
                 />
               </div>
@@ -172,7 +172,7 @@ export default function EnderecoPage() {
                 ) : (
                   ""
                 )}
-                {isUpdating ? 'Salvando...' : 'Salvar Endereço'}
+                {isUpdating ? 'Salvando...' : 'Salvar'}
               </Button>
             </div>
           </div>

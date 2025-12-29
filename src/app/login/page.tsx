@@ -5,21 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
-import { usePicsumImage } from "@/hooks/usePicsumImage";
 import { useLogin } from "@/hooks/useLogin";
 import { GoogleIcon } from "@/public/assets/icons/GoogleIcon";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const { currentImageUrl, isLoading: imageLoading } = usePicsumImage();
   const { login: loginFunction, isLoading } = useLogin();
   const { loginWithGoogle } = useAuth();
+
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,19 +40,18 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Lado Esquerdo - Formulário */}
-      <div className="flex-1 flex flex-col justify-center py-12">
-        <div className="mx-auto w-full max-w-2xl lg:w-[32rem] border rounded-2xl p-10">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="w-full max-w-xl border rounded-2xl p-10 bg-white shadow-sm">
           {/* Botão Voltar */}
           <div className="mb-8">
-            <Link
-              href="/"
-              className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
+            <Button
+              variant="ghost"
+              onClick={() => router.back()}
+              className="text-gray-500 hover:text-gray-700 flex items-center gap-2 hover:bg-transparent -ml-5"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar ao início
-            </Link>
+              <ChevronLeft className="w-6 h-6" />
+              Voltar
+            </Button>
           </div>
 
           {/* Logo/Título */}
@@ -173,38 +172,6 @@ export default function LoginPage() {
             </CardContent>
           </Card>
         </div>
-      </div>
-
-      {/* Lado Direito - Imagem */}
-      <div className="hidden lg:block lg:flex-1 relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-500 to-gray-700">
-          {imageLoading ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center text-white">
-                <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-lg">Carregando imagem...</p>
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* Imagem atual - sempre visível */}
-              {currentImageUrl && (
-                <Image
-                  src={currentImageUrl}
-                  alt="Imagem de fundo"
-                  fill
-                  className="object-cover"
-                  priority
-                  quality={100}
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                  }}
-                />
-              )}
-            </>
-          )}
-        </div>
-      </div>
     </div>
   );
 }

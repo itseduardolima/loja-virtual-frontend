@@ -60,11 +60,11 @@ export default function VendedorPage() {
                 }}
               />
               {/* Overlay com botão de atualização */}
-              <div className="absolute inset-0 bg-primary bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+              <div className="absolute inset-0 bg-primary  transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-50">
                 <Button
                   onClick={() => hookData.bannerInputRef.current?.click()}
                   disabled={hookData.isUploadingBanner || hookData.isUpdating}
-                  className="bg-white text-gray-900 hover:bg-gray-100"
+                  className="bg-white text-primary hover:bg-gray-100"
                   size="sm"
                 >
                   <Camera className="w-4 h-4 mr-2" />
@@ -167,8 +167,7 @@ export default function VendedorPage() {
                         <Button
                           onClick={hookData.startEditingContacts}
                           variant="outline"
-                          size="sm"
-                          className="flex items-center gap-2"
+                          className="flex items-center gap-2 rounded-xl"
                         >
                           <Edit className="w-4 h-4" />
                           Editar
