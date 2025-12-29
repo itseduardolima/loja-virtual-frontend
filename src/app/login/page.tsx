@@ -11,6 +11,7 @@ import Image from "next/image";
 import { usePicsumImage } from "@/hooks/usePicsumImage";
 import { useLogin } from "@/hooks/useLogin";
 import { GoogleIcon } from "@/public/assets/icons/GoogleIcon";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {
   const [login, setLogin] = useState("");
@@ -18,6 +19,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const { currentImageUrl, isLoading: imageLoading } = usePicsumImage();
   const { login: loginFunction, isLoading } = useLogin();
+  const { loginWithGoogle } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +33,10 @@ export default function LoginPage() {
     } catch (error: any) {
       console.error('Erro no login:', error);
     }
+  };
+
+  const handleGoogleLogin = () => {
+    loginWithGoogle();
   };
 
   return (
@@ -143,7 +149,12 @@ export default function LoginPage() {
                 </div>
 
                 <div className="mt-6">
-                  <Button variant="outline" className="w-full h-12">
+                  <Button 
+                    variant="outline" 
+                    className="w-full h-12"
+                    onClick={handleGoogleLogin}
+                    disabled={isLoading}
+                  >
                     <GoogleIcon />
                     Entrar com Google
                   </Button>

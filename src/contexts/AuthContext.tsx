@@ -14,7 +14,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient()
 
   useEffect(() => {
+    const processGoogleAuthCallback = () => {
+      // Verifica se há parâmetros de autenticação do Google na URL
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search)
+        const accessToken = urlParams.get('access_token')
+        const refreshToken = urlParams.get('refresh_token')
+        const userParam = urlParams.get('user')
+
+        if (accessToken && refreshToken && userParam) {
+          try {
+            // Decodifica o parâmetro user que está URL-encoded
+            const decodedUser = decodeURIComponent(userParam)
+            const userData = JSON.parse(decodedUser)
+
+            // Salva os dados
+            setToken(accessToken)
+            setUser(userData)
+            localStorage.setItem('auth-token', accessToken)
+            localStorage.setItem('refresh-token', refreshToken)
+            localStorage.setItem('user-data', decodedUser)
+
+            // Limpa os parâmetros da URL sem recarregar a página
+            const newUrl = window.location.pathname
+            window.history.replaceState({}, '', newUrl)
+
+            setIsLoading(false)
+            return true // Indica que processou o callback
+          } catch (error) {
+            console.error('Erro ao processar callback do Google:', error)
+            // Limpa a URL mesmo em caso de erro
+            const newUrl = window.location.pathname
+            window.history.replaceState({}, '', newUrl)
+          }
+        }
+      }
+      return false
+    }
+
     const loadAuthData = () => {
+      // Primeiro, tenta processar callback do Google
+      const processedCallback = processGoogleAuthCallback()
+      
+      // Se processou o callback, não precisa carregar do localStorage
+      if (processedCallback) {
+        return
+      }
+
       const savedToken = localStorage.getItem('auth-token')
       const savedUser = localStorage.getItem('user-data')
 
@@ -111,12 +157,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await refreshTokenMutation.mutateAsync()
   }
 
+  const loginWithGoogle = () => {
+    // Redireciona diretamente para o endpoint do Google OAuth
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL
+    if (!apiUrl) {
+      console.error('NEXT_PUBLIC_API_URL não está configurado')
+      return
+    }
+    window.location.href = `${apiUrl}/auth/google`
+  }
+
   const value: AuthContextType = {
     user,
     token,
     isAuthenticated: !!user && !!token,
     isLoading,
     login,
+    loginWithGoogle,
     logout,
     refreshToken,
   }

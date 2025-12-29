@@ -45,6 +45,7 @@ export interface AuthContextType {
   isAuthenticated: boolean
   isLoading: boolean
   login: (credentials: LoginRequest) => Promise<void>
+  loginWithGoogle: () => void
   logout: () => void
   refreshToken: () => Promise<void>
 }

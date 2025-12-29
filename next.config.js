@@ -1,4 +1,27 @@
 /** @type {import('next').NextConfig} */
+const apiUrl = process.env.NEXT_PUBLIC_API_URL
+
+// Extrai hostname, porta e protocolo da URL da API
+const parseApiUrl = (url) => {
+  try {
+    const urlObj = new URL(url)
+    return {
+      protocol: urlObj.protocol.replace(':', ''),
+      hostname: urlObj.hostname,
+      port: urlObj.port || '',
+    }
+  } catch (error) {
+    // Fallback para localhost:3000 se houver erro ao parsear
+    return {
+      protocol: 'http',
+      hostname: 'localhost',
+      port: '3000',
+    }
+  }
+}
+
+const apiConfig = parseApiUrl(apiUrl)
+
 const nextConfig = {
   images: {
     remotePatterns: [
@@ -9,9 +32,9 @@ const nextConfig = {
         pathname: '/**',
       },
       {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '3001',
+        protocol: apiConfig.protocol,
+        hostname: apiConfig.hostname,
+        port: apiConfig.port,
         pathname: '/**',
       },
     ],
