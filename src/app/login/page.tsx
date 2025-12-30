@@ -46,7 +46,7 @@ export default function LoginPage() {
         <div className="mb-8">
           <Button
             variant="ghost"
-            onClick={() => router.back()}
+            onClick={() => router.push('/')}
             className="text-gray-500 hover:text-gray-700 flex items-center gap-2 hover:bg-transparent -ml-5"
           >
             <ChevronLeft className="w-6 h-6" />
