@@ -37,6 +37,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             // Verifica se há URL de redirecionamento salva
             const savedRedirectUrl = localStorage.getItem('redirect-after-login')
+            console.log('Redirect salvo encontrado:', savedRedirectUrl)
+            console.log('Perfil do usuário:', userData.profile)
             
             // Limpa os parâmetros da URL
             const newUrl = window.location.pathname
@@ -44,20 +46,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             setIsLoading(false)
 
-            // Redireciona após um pequeno delay para garantir que o estado foi atualizado
-            setTimeout(() => {
-              if (savedRedirectUrl) {
-                // Remove a URL salva do localStorage
-                localStorage.removeItem('redirect-after-login')
-                // Redireciona para a URL salva
+            // Redireciona imediatamente se houver redirect salvo, senão espera um pouco
+            if (savedRedirectUrl) {
+              console.log('Redirecionando imediatamente para:', savedRedirectUrl)
+              // Remove a URL salva do localStorage
+              localStorage.removeItem('redirect-after-login')
+              // Redireciona para a URL salva
+              if (savedRedirectUrl.startsWith('http://') || savedRedirectUrl.startsWith('https://')) {
                 window.location.href = savedRedirectUrl
               } else {
-                // Se não houver URL salva, redireciona de acordo com o perfil
-                const userProfile = userData.profile as keyof typeof PROFILE_ROUTES
-                const profileRoute = PROFILE_ROUTES[userProfile] || '/'
-                window.location.href = profileRoute
+                // Se for um caminho relativo, constrói a URL completa
+                const baseUrl = window.location.origin
+                const finalUrl = `${baseUrl}${savedRedirectUrl.startsWith('/') ? savedRedirectUrl : '/' + savedRedirectUrl}`
+                console.log('URL final construída:', finalUrl)
+                window.location.href = finalUrl
               }
-            }, 100)
+            } else {
+              // Se não houver URL salva, redireciona de acordo com o perfil imediatamente
+              const userProfile = userData.profile as keyof typeof PROFILE_ROUTES
+              const profileRoute = PROFILE_ROUTES[userProfile] || '/'
+              console.log('Nenhum redirect salvo, redirecionando para perfil:', profileRoute)
+              if (profileRoute !== '/') {
+                // Marca que está redirecionando para evitar múltiplos redirecionamentos
+                sessionStorage.setItem('is-redirecting', 'true')
+                window.location.href = window.location.origin + profileRoute
+              }
+            }
 
             return true // Indica que processou o callback
           } catch (error) {
@@ -185,6 +199,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Se há parâmetro redirect na URL (vindo da página de login), salva ele
       if (redirectParam) {
+        console.log('Salvando redirect:', redirectParam)
         localStorage.setItem('redirect-after-login', redirectParam)
       } else if (!currentPath.startsWith('/login')) {
         // Se não estiver na página de login, salva a URL atual

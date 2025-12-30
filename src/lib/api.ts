@@ -23,7 +23,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // Só redireciona se estivermos em uma página que requer autenticação
       const currentPath = window.location.pathname
-      const protectedPaths = ['/vendedor', '/admin', '/cliente']
+      const protectedPaths = ['/vendedor', '/admin']
       
       if (protectedPaths.some(path => currentPath.startsWith(path))) {
         localStorage.removeItem('auth-token')

@@ -40,7 +40,7 @@ export function Navbar() {
               Entrar
             </Link>
             <Link
-              href="/login"
+              href="/assinatura"
               className="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition-colors font-medium text-sm sm:text-base hidden sm:block"
             >
               Começar Agora

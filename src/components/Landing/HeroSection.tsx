@@ -39,7 +39,7 @@ export function HeroSection() {
             transition={{ duration: 0.6, delay: 0.4, ease: 'easeOut' }}
             className="flex flex-col sm:flex-row gap-4 sm:gap-4 md:gap-6 justify-center items-stretch sm:items-center px-4"
           >
-            <CTAButton href="/login" variant="primary">
+            <CTAButton href="/assinatura" variant="primary">
               Começar Agora
             </CTAButton>
             <CTAButton href="#recursos" variant="secondary">

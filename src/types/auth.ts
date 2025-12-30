@@ -13,7 +13,7 @@ export interface User {
 export const PROFILE_ROUTES = {
   Administrador: '/admin',
   Vendedor: '/vendedor',
-  Cliente: '/cliente'
+  Cliente: '/'
 } as const
 
 export const PROFILE_TRANSACTIONS = {

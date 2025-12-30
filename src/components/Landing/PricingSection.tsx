@@ -25,7 +25,7 @@ export function PricingSection() {
             period="mês"
             features={planFeatures}
             ctaText="Começar Agora"
-            ctaHref="/login"
+            ctaHref="/assinatura"
           />
         </div>
       </div>

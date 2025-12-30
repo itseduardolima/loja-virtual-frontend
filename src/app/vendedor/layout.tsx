@@ -1,7 +1,10 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
 import { SidebarVendedor, UserHeader } from '@/components'
+import LoadingPage from '@/components/Layout/LoadingPage'
+import { useEffect, useState } from 'react'
 
 export default function VendedorLayout({
   children,
@@ -9,9 +12,34 @@ export default function VendedorLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const { isLoading: authLoading, isAuthenticated, user } = useAuth()
+  const [isReady, setIsReady] = useState(false)
   
   // Não mostrar sidebar na página de criar loja
   const isCreateStorePage = pathname === '/vendedor/criar-loja'
+
+  // Aguarda o carregamento completo e verifica se o usuário está autenticado
+  useEffect(() => {
+    if (authLoading) {
+      setIsReady(false)
+      return
+    }
+
+    if (isAuthenticated && user?.profile === 'Vendedor') {
+      // Pequeno delay para garantir que tudo está pronto e evitar flash do sidebar
+      const timer = setTimeout(() => {
+        setIsReady(true)
+      }, 200)
+      return () => clearTimeout(timer)
+    } else {
+      setIsReady(false)
+    }
+  }, [authLoading, isAuthenticated, user])
+
+  // Se está carregando ou não está pronto, mostra apenas loading
+  if (authLoading || !isReady) {
+    return <LoadingPage />
+  }
 
   if (isCreateStorePage) {
     return (

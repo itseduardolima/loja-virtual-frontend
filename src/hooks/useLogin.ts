@@ -41,16 +41,16 @@ export function useLogin() {
       }
       
       // Se não há dados de checkout nem redirect, redirecionar de acordo com o perfil
-      // Nota: o user pode não estar atualizado imediatamente após login, então usamos um pequeno delay
-      setTimeout(() => {
-        const currentUser = user || JSON.parse(localStorage.getItem('user-data') || 'null')
-        if (currentUser && currentUser.profile) {
-          const profileRoute = PROFILE_ROUTES[currentUser.profile as keyof typeof PROFILE_ROUTES] || '/'
-          router.push(profileRoute)
-        } else {
-          router.push('/')
-        }
-      }, 100)
+      // Busca o usuário do localStorage imediatamente após o login
+      const currentUser = JSON.parse(localStorage.getItem('user-data') || 'null')
+      if (currentUser && currentUser.profile) {
+        const profileRoute = PROFILE_ROUTES[currentUser.profile as keyof typeof PROFILE_ROUTES] || '/'
+        // Redireciona diretamente sem delay
+        router.push(profileRoute)
+      } else {
+        // Se não conseguir obter o perfil, vai para home (que mostrará loading)
+        router.push('/')
+      }
       
     } catch (error: any) {
       const errorMessage = error.response?.data?.message

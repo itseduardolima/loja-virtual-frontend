@@ -83,7 +83,10 @@ api.interceptors.response.use(
           localStorage.removeItem('auth-token')
           localStorage.removeItem('refresh-token')
           localStorage.removeItem('user-data')
-          window.location.href = '/login'
+          // Preserva a URL atual como redirect
+          const currentPath = window.location.pathname
+          const redirectUrl = currentPath !== '/login' ? `/login?redirect=${encodeURIComponent(currentPath)}` : '/login'
+          window.location.href = redirectUrl
           return Promise.reject(refreshError)
         } finally {
           isRefreshing = false
@@ -93,7 +96,10 @@ api.interceptors.response.use(
         localStorage.removeItem('auth-token')
         localStorage.removeItem('refresh-token')
         localStorage.removeItem('user-data')
-        window.location.href = '/login'
+        // Preserva a URL atual como redirect
+        const currentPath = window.location.pathname
+        const redirectUrl = currentPath !== '/login' ? `/login?redirect=${encodeURIComponent(currentPath)}` : '/login'
+        window.location.href = redirectUrl
         return Promise.reject(error)
       }
     }

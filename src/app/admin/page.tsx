@@ -18,7 +18,7 @@ export default function AdminPage() {
     } else if (!isLoading && isAuthenticated && user?.profile !== 'Administrador') {
       const routes = {
         'Vendedor': '/vendedor',
-        'Cliente': '/cliente'
+        'Cliente': '/'
       }
       router.push(user?.profile ? routes[user.profile] || '/login' : '/login')
     }
