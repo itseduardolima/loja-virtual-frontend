@@ -143,7 +143,7 @@ export default function ProductDetailPage() {
             )}
 
             {/* Main Image */}
-            <div className="flex-1 relative  rounded-2xl overflow-hidden">
+            <div className="flex-1 relative min-h-[800px]  rounded-2xl overflow-hidden">
               {product.images && product.images.length > 0 ? (
                 <Image
                   src={buildImageUrls(product.images)[selectedImageIndex]}
@@ -157,6 +157,7 @@ export default function ProductDetailPage() {
                 </div>
               )}
             </div>
+
           </div>
 
           {/* Product Info */}

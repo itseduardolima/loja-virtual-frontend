@@ -23,6 +23,7 @@ export default function ProductDetailPage() {
   const slug = params.slug as string
   const productId = params.id as string
   const [isCartOpen, setIsCartOpen] = useState(false)
+  const [searchValue, setSearchValue] = useState('')
 
   const { storeInfo } = useStoreInfo(slug)
 
@@ -115,12 +116,19 @@ export default function ProductDetailPage() {
   const fullStars = Math.floor(rating)
   const hasHalfStar = rating % 1 >= 0.5
 
+  const handleSearchSubmit = (value: string) => {
+    router.push(`/loja/${slug}/produtos?search=${encodeURIComponent(value)}`)
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
       <StoreHeader
         storeInfo={storeInfo}
         slug={slug}
+        searchValue={searchValue}
+        onSearchChange={setSearchValue}
+        onSearchSubmit={handleSearchSubmit}
         onCartClick={() => setIsCartOpen(true)}
       />
 
@@ -145,7 +153,7 @@ export default function ProductDetailPage() {
                       src={buildImageUrl(image)}
                       alt={`${product.name} ${index + 1}`}
                       width={100}
-                      height={0}
+                      height={100}
                       className="object-cover"
                     />
                   </button>
@@ -154,7 +162,7 @@ export default function ProductDetailPage() {
             )}
 
             {/* Main Image */}
-            <div className="flex-1 relative  rounded-2xl overflow-hidden">
+            <div className="flex-1 relative min-h-[800px]  rounded-2xl overflow-hidden">
               {product.images && product.images.length > 0 ? (
                 <Image
                   src={buildImageUrls(product.images)[selectedImageIndex]}

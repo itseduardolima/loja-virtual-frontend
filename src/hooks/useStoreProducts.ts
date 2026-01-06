@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { api } from '@/lib/api'
 import { Product, ProductsResponse } from '@/types/product'
 import { StoreProductsParams, UseStoreProductsReturn } from '@/types/store'
@@ -9,9 +9,21 @@ export function useStoreProducts(params: StoreProductsParams): UseStoreProductsR
   const [error, setError] = useState<string | null>(null)
   const [meta, setMeta] = useState<UseStoreProductsReturn['meta']>(null)
   const [currentParams, setCurrentParams] = useState(params)
+  const paramsRef = useRef(currentParams)
+
+  // Atualiza a ref quando os params mudam
+  useEffect(() => {
+    paramsRef.current = currentParams
+  }, [currentParams])
+
+  // Serializa os params para comparação
+  const paramsKey = useMemo(() => {
+    return JSON.stringify(currentParams)
+  }, [currentParams])
 
   const fetchProducts = async () => {
-    if (!currentParams.slug) return
+    const params = paramsRef.current
+    if (!params.slug) return
 
     setLoading(true)
     setError(null)
@@ -19,27 +31,29 @@ export function useStoreProducts(params: StoreProductsParams): UseStoreProductsR
     try {
       const queryParams = new URLSearchParams()
       
-      if (currentParams.page) queryParams.append('page', currentParams.page.toString())
-      if (currentParams.limit) queryParams.append('limit', currentParams.limit.toString())
-      if (currentParams.sort) queryParams.append('sort', currentParams.sort)
-      if (currentParams.sort_field) queryParams.append('sort_field', currentParams.sort_field)
-      if (currentParams.featured !== undefined) queryParams.append('featured', currentParams.featured.toString())
-      if (currentParams.color) queryParams.append('color', currentParams.color)
-      if (currentParams.size) queryParams.append('size', currentParams.size)
-      if (currentParams.max_price) queryParams.append('max_price', currentParams.max_price.toString())
-      if (currentParams.min_price) queryParams.append('min_price', currentParams.min_price.toString())
-      if (currentParams.category_id) queryParams.append('category_id', currentParams.category_id.toString())
-      if (currentParams.search) queryParams.append('search', currentParams.search)
-      if (currentParams.dynamic_filters) {
+      if (params.page) queryParams.append('page', params.page.toString())
+      if (params.limit) queryParams.append('limit', params.limit.toString())
+      if (params.sort) queryParams.append('sort', params.sort)
+      if (params.sort_field) queryParams.append('sort_field', params.sort_field)
+      if (params.featured !== undefined && params.featured) {
+        queryParams.append('featured', 'true')
+      }
+      if (params.color) queryParams.append('color', params.color)
+      if (params.size) queryParams.append('size', params.size)
+      if (params.max_price) queryParams.append('max_price', params.max_price.toString())
+      if (params.min_price) queryParams.append('min_price', params.min_price.toString())
+      if (params.category_id) queryParams.append('category_id', params.category_id.toString())
+      if (params.search) queryParams.append('search', params.search)
+      if (params.dynamic_filters) {
         // Enviar dynamic_filters como string JSON na query string
-        const filtersString = typeof currentParams.dynamic_filters === 'string' 
-          ? currentParams.dynamic_filters 
-          : JSON.stringify(currentParams.dynamic_filters)
+        const filtersString = typeof params.dynamic_filters === 'string' 
+          ? params.dynamic_filters 
+          : JSON.stringify(params.dynamic_filters)
         queryParams.append('dynamic_filters', filtersString)
       }
 
       const response = await api.get<ProductsResponse>(
-        `/catalog/store/${currentParams.slug}/products?${queryParams.toString()}`
+        `/catalog/store/${params.slug}/products?${queryParams.toString()}`
       )
 
       setProducts(response.data.data)
@@ -55,7 +69,8 @@ export function useStoreProducts(params: StoreProductsParams): UseStoreProductsR
 
   useEffect(() => {
     fetchProducts()
-  }, [currentParams])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paramsKey])
 
   const refetch = () => {
     fetchProducts()
