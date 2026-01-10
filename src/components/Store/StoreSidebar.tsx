@@ -506,12 +506,12 @@ export function StoreSidebar({
   if (!isOpen) return null
 
   return (
-    <div className={`w-full ${isInline ? '' : 'lg:max-w-sm'} ${isInline ? '' : 'rounded-lg '} ${className}`}>
+    <div className={`w-full ${isInline ? '' : 'lg:max-w-sm'} ${isInline ? '' : 'bg-white  rounded-lg shadow-sm'} ${className}`}>
       <div className={`${isInline ? 'p-0' : ''}`}>
         {/* Header - Apenas para desktop sidebar */}
         {!isInline && (
           <div className="hidden lg:flex items-center justify-between mb-4 sm:mb-6 px-4 sm:px-6 pt-4 sm:pt-6">
-            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
               <Filter className="w-5 h-5" />
               Filtros
             </h2>

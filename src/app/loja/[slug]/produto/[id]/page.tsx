@@ -7,7 +7,9 @@ import {
   Package,
   Plus,
   Minus,
-  Check
+  Check,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 import Image from 'next/image'
 
@@ -133,28 +135,29 @@ export default function ProductDetailPage() {
       />
 
       {/* Main Content */}
-      <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+      <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-16">
           {/* Product Images */}
-          <div className="flex gap-4">
-            {/* Thumbnail Images - Vertical */}
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            {/* Thumbnail Images - Horizontal em mobile, Vertical em desktop */}
             {product.images && product.images.length > 1 && (
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-row sm:flex-col gap-2 sm:gap-3 order-2 sm:order-1 overflow-x-auto sm:overflow-x-visible pb-2 sm:pb-0 -mx-4 sm:mx-0 px-4 sm:px-0">
                 {product.images.map((image: string, index: number) => (
                   <button
                     key={index}
                     onClick={() => selectImage(index)}
-                    className={`relative rounded-2xl overflow-hidden border-2 transition-all ${selectedImageIndex === index
+                    className={`relative rounded-lg sm:rounded-2xl overflow-hidden border-2 transition-all flex-shrink-0 ${selectedImageIndex === index
                       ? 'border-primary'
-                      : 'border-gray-200 hover:border-gray-300'
+                      : 'border-gray-200 hover:border-gray-300 active:border-primary'
                       }`}
                   >
                     <Image
                       src={buildImageUrl(image)}
                       alt={`${product.name} ${index + 1}`}
-                      width={100}
-                      height={100}
-                      className="object-cover"
+                      width={80}
+                      height={80}
+                      className="object-cover w-20 h-20 sm:w-24 sm:h-24 lg:w-[100px] lg:h-[100px]"
+                      sizes="(max-width: 640px) 80px, (max-width: 1024px) 96px, 100px"
                     />
                   </button>
                 ))}
@@ -162,59 +165,94 @@ export default function ProductDetailPage() {
             )}
 
             {/* Main Image */}
-            <div className="flex-1 relative min-h-[800px]  rounded-2xl overflow-hidden">
+            <div className="flex-1 relative aspect-[3/4] rounded-2xl overflow-hidden order-1 sm:order-2 bg-gray-50 flex items-center justify-center">
               {product.images && product.images.length > 0 ? (
-                <Image
-                  src={buildImageUrls(product.images)[selectedImageIndex]}
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                />
+                <>
+                  <Image
+                    src={buildImageUrls(product.images)[selectedImageIndex]}
+                    alt={product.name}
+                    fill
+                    className="object-contain"
+                    priority
+                  />
+                  {/* Navegação de imagens em mobile - setas */}
+                  {product.images.length > 1 && (
+                    <>
+                      <button
+                        onClick={previousImage}
+                        className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 sm:p-3 shadow-lg transition-all active:scale-95 lg:hidden z-10 touch-manipulation"
+                        aria-label="Imagem anterior"
+                      >
+                        <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                      </button>
+                      <button
+                        onClick={nextImage}
+                        className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 sm:p-3 shadow-lg transition-all active:scale-95 lg:hidden z-10 touch-manipulation"
+                        aria-label="Próxima imagem"
+                      >
+                        <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                      </button>
+                      {/* Indicador de imagem atual */}
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 lg:hidden z-10">
+                        {product.images.map((_, index) => (
+                          <div
+                            key={index}
+                            className={`h-2 rounded-full transition-all ${
+                              selectedImageIndex === index
+                                ? 'w-6 bg-primary'
+                                : 'w-2 bg-white/60'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </>
               ) : (
                 <div className="flex items-center justify-center h-full">
-                  <Package className="h-24 w-24 text-gray-300" />
+                  <Package className="h-16 w-16 sm:h-24 sm:w-24 text-gray-300" />
                 </div>
               )}
             </div>
           </div>
 
           {/* Product Info */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Product Title */}
             <div>
-              <h1 className="text-4xl font-bold text-primary mb-4 uppercase font-integral">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-3 sm:mb-4 uppercase font-integral leading-tight">
                 {removeAccents(product.name)}
               </h1>
 
               {/* Rating */}
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-3 sm:mb-4">
                 <div className="flex items-center">
                   {[...Array(fullStars)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                    <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 fill-yellow-400 text-yellow-400" />
                   ))}
                   {hasHalfStar && (
-                    <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" style={{ clipPath: 'inset(0 50% 0 0)' }} />
+                    <Star className="h-4 w-4 sm:h-5 sm:w-5 fill-yellow-400 text-yellow-400" style={{ clipPath: 'inset(0 50% 0 0)' }} />
                   )}
                   {[...Array(5 - fullStars - (hasHalfStar ? 1 : 0))].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 text-gray-300" />
+                    <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 text-gray-300" />
                   ))}
                 </div>
-                <span className="text-sm text-primary/60">({rating}/5)</span>
+                <span className="text-xs sm:text-sm text-primary/60">({rating}/5)</span>
               </div>
             </div>
 
             {/* Price */}
-            <div className="flex items-center gap-4">
-              <span className="text-5xl font-bold text-primary">
+            <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+              <span className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary">
                 {formatPrice(product.final_price?.toString() || product.price)}
               </span>
               {/* Se houver desconto, mostrar preço original riscado e badge */}
               {product.discount_price !== null && product.discount_percentage > 0 && (
                 <>
-                  <span className="text-2xl text-primary/30 line-through font-bold">
+                  <span className="text-lg sm:text-xl lg:text-2xl text-primary/30 line-through font-bold">
                     {formatPrice(product.price)}
                   </span>
-                  <Badge className="bg-[#FF3333]/10 text-[#FF3333] px-2 py-1">
+                  <Badge className="bg-[#FF3333]/10 text-[#FF3333] px-2 py-1 text-xs sm:text-sm">
                     -{Math.floor(product.discount_percentage)}%
                   </Badge>
                 </>
@@ -222,23 +260,23 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Stock */}
-            <div className="flex items-center gap-2 text-primary font-integral">
-              <span className=" font-integral tracking-wide">Estoque:</span>
+            <div className="flex items-center gap-2 text-primary font-integral text-sm sm:text-base">
+              <span className="font-integral tracking-wide">Estoque:</span>
               <span>
                 {product.stock > 0 ? `${product.stock} unidade${product.stock > 1 ? 's' : ''}` : 'Sem estoque'}
               </span>
             </div>
 
             {/* Description */}
-            <p className="text-primary/60 text-base leading-relaxed">
+            <p className="text-primary/60 text-sm sm:text-base leading-relaxed">
               {product.description}
             </p>
 
             {/* Select Colors */}
             {product.dynamic_fields?.find(f => f.field_name.toLowerCase() === 'cor') && (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <span className="text-sm font-medium text-primary/60">Cores disponíveis:</span>
-                <div className="flex gap-3">
+                <div className="flex gap-2 sm:gap-3 flex-wrap">
                   {product.dynamic_fields
                     .find(f => f.field_name.toLowerCase() === 'cor')
                     ?.value.split(',')
@@ -251,14 +289,15 @@ export default function ProductDetailPage() {
                         <Button
                           key={colorIndex}
                           onClick={() => selectColor(trimmedColor)}
-                          className={"relative w-10 h-10 rounded-full border-2 transition-all p-0"}
+                          className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 transition-all p-0 active:scale-95 touch-manipulation"
                           style={{ backgroundColor: colorValue }}
                           title={trimmedColor}
+                          aria-label={`Selecionar cor ${trimmedColor}`}
                         >
                           {isSelected && (
                             <div className="absolute inset-0 flex items-center justify-center">
                               <Check
-                                className={`w-5 h-5 stroke-[3] ${colorValue === '#FFFFFF' || colorValue.toLowerCase() === '#ffffff' || colorValue.toLowerCase() === 'white'
+                                className={`w-4 h-4 sm:w-5 sm:h-5 stroke-[3] ${colorValue === '#FFFFFF' || colorValue.toLowerCase() === '#ffffff' || colorValue.toLowerCase() === 'white'
                                   ? 'text-primary'
                                   : 'text-white'
                                   }`}
@@ -277,9 +316,9 @@ export default function ProductDetailPage() {
 
             {/* Choose Size */}
             {product.dynamic_fields?.find(f => f.field_name.toLowerCase() === 'tamanho') && (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <span className="text-sm font-medium text-primary/60">Tamanhos disponíveis:</span>
-                <div className="grid grid-cols-5 gap-2">
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 sm:gap-2">
                   {product.dynamic_fields
                     .find(f => f.field_name.toLowerCase() === 'tamanho')
                     ?.value.split(',')
@@ -291,9 +330,9 @@ export default function ProductDetailPage() {
                         <Button
                           key={sizeIndex}
                           onClick={() => selectSize(trimmedSize)}
-                          className={`px-8 ${isSelected
+                          className={`px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3 text-sm sm:text-base font-medium transition-all active:scale-95 touch-manipulation ${isSelected
                             ? 'border-primary bg-primary text-white'
-                            : ' bg-[#F0F0F0] text-primary/60 hover:bg-[#c7c6c6]'
+                            : 'bg-[#F0F0F0] text-primary/60 hover:bg-[#c7c6c6] active:bg-[#c7c6c6]'
                             }`}
                         >
                           {trimmedSize}
@@ -305,29 +344,31 @@ export default function ProductDetailPage() {
             )}
 
             {/* Quantity and Add to Cart */}
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2 sm:pt-0">
               {/* Quantity Selector */}
-              <div className="flex items-center bg-gray-100 rounded-full shadow-sm">
+              <div className="flex items-center bg-gray-100 rounded-full shadow-sm w-auto justify-center">
                 <button
                   onClick={decreaseQuantity}
                   disabled={quantity <= 1}
-                  className="p-3 disabled:opacity-50 disabled:cursor-not-allowed rounded-l-full"
+                  className="p-2 disabled:opacity-50 disabled:cursor-not-allowed rounded-l-full active:bg-gray-200 touch-manipulation flex items-center justify-center"
+                  aria-label="Diminuir quantidade"
                 >
-                  <Minus className="h-4 w-4 text-primary ml-2" />
+                  <Minus className="h-4 w-4 text-primary" />
                 </button>
-                <span className="px-6 py-3 font-medium min-w-[3rem] text-center text-primary">{quantity}</span>
+                <span className="px-3 sm:px-4 py-2 font-medium min-w-[2.5rem] text-center text-primary text-sm sm:text-base">{quantity}</span>
                 <button
                   onClick={increaseQuantity}
                   disabled={quantity >= product.stock}
-                  className="p-3 disabled:opacity-50 disabled:cursor-not-allowed rounded-r-full"
+                  className="p-2 disabled:opacity-50 disabled:cursor-not-allowed rounded-r-full active:bg-gray-200 touch-manipulation flex items-center justify-center"
+                  aria-label="Aumentar quantidade"
                 >
-                  <Plus className="h-4 w-4 text-primary mr-2" />
+                  <Plus className="h-4 w-4 text-primary" />
                 </button>
               </div>
 
               {/* Add to Cart Button */}
               <Button
-                className="flex-1 h-12 text-lg"
+                className="flex-1 sm:flex-1 h-12 sm:h-12 text-base sm:text-lg font-medium shadow-sm active:scale-[0.98] transition-transform touch-manipulation"
                 onClick={() => addToCart()}
                 disabled={!canAddToCart || isAddingToCart}
               >
@@ -342,7 +383,7 @@ export default function ProductDetailPage() {
             </div>
 
             {!canAddToCart && !isOutOfStock && (
-              <p className="text-sm text-gray-500 text-center mt-2">
+              <p className="text-xs sm:text-sm text-gray-500 text-center mt-1 sm:mt-2 px-2">
                 {!selectedSize && !selectedColor && 'Selecione o tamanho e a cor'}
                 {!selectedSize && selectedColor && 'Selecione o tamanho'}
                 {selectedSize && !selectedColor && 'Selecione a cor'}
