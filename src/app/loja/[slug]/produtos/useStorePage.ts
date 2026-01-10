@@ -21,23 +21,8 @@ export function useStorePage({ slug }: UseStorePageProps): UseStorePageReturn {
   
   const debouncedSearch = useDebounce(search, 1000)
 
-  useEffect(() => {
-    if (!isManualSearch) {
-      updateParams({ search: debouncedSearch || undefined, page: 1 })
-    }
-  }, [debouncedSearch, isManualSearch])
-
-  useEffect(() => {
-    if (isManualSearch) {
-      const timer = setTimeout(() => {
-        setIsManualSearch(false)
-      }, 1500)
-      return () => clearTimeout(timer)
-    }
-  }, [isManualSearch])
-
   const {
-    products,
+    products: productsData,
     loading,
     error,
     meta,
@@ -57,10 +42,30 @@ export function useStorePage({ slug }: UseStorePageProps): UseStorePageReturn {
     dynamic_filters: filters.dynamicFilters,
     search: debouncedSearch || undefined
   })
+
+  // Garantir que products seja sempre um array
+  const products = Array.isArray(productsData) ? productsData : []
+
+  useEffect(() => {
+    if (!isManualSearch) {
+      updateParams({ search: debouncedSearch || undefined, page: 1 })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch, isManualSearch])
+
+  useEffect(() => {
+    if (isManualSearch) {
+      const timer = setTimeout(() => {
+        setIsManualSearch(false)
+      }, 1500)
+      return () => clearTimeout(timer)
+    }
+  }, [isManualSearch])
   const categories = useMemo(() => {
     const uniqueCategories = new Map()
+    if (!Array.isArray(products)) return []
     products.forEach(product => {
-      if (product.category) {
+      if (product?.category) {
         uniqueCategories.set(product.category.id, product.category)
       }
     })
@@ -69,6 +74,7 @@ export function useStorePage({ slug }: UseStorePageProps): UseStorePageReturn {
 
   const availableColors = useMemo(() => {
     const colors = new Set<string>()
+    if (!Array.isArray(products)) return []
     products.forEach(product => {
       // Primeiro tenta das propriedades diretas
       if (product.colors && Array.isArray(product.colors)) {
@@ -101,6 +107,7 @@ export function useStorePage({ slug }: UseStorePageProps): UseStorePageReturn {
 
   const availableSizes = useMemo(() => {
     const sizes = new Set<string>()
+    if (!Array.isArray(products)) return []
     products.forEach(product => {
       // Primeiro tenta das propriedades diretas
       if (product.sizes && Array.isArray(product.sizes)) {

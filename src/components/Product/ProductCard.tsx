@@ -41,36 +41,37 @@ export function ProductCard({
 
   return (
     <Card
-      className="group relative overflow-hidden shadow-none bg-transparent transition-all duration-300 border-0 min-h-[400px] flex flex-col"
+      className="group relative overflow-hidden shadow-none bg-transparent transition-all duration-300 border-0 min-h-[280px] sm:min-h-[320px] md:min-h-[400px] flex flex-col cursor-pointer active:scale-[0.98] transition-transform"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => onViewDetails?.(product)}
     >
-      <CardContent className="p-0 flex flex-col h-full shadow-none  bg-transparent">
+      <CardContent className="p-0 flex flex-col h-full shadow-none bg-transparent">
         {/* Container da Imagem */}
-        <div className="relative aspect-square overflow-hidden rounded-2xl">
+        <div className="relative aspect-square overflow-hidden rounded-xl sm:rounded-2xl bg-gray-100">
           {product.images && product.images.length > 0 ? (
             <Image
               src={buildImageUrl(product.images[currentImageIndex])}
               alt={product.name}
               fill
-              className="object-cover rounded-2xl transition-transform duration-300 group-hover:scale-105"
+              className="object-cover rounded-xl sm:rounded-2xl transition-transform duration-300 group-hover:scale-105"
               onMouseEnter={handleImageHover}
               onMouseLeave={handleImageLeave}
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-100">
-              <span className="text-gray-400 text-sm">Sem imagem</span>
+            <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded-xl sm:rounded-2xl">
+              <span className="text-gray-400 text-xs sm:text-sm">Sem imagem</span>
             </div>
           )}
 
           {/* Badges */}
-          <div className="absolute top-2 left-2 flex flex-col gap-1">
+          <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
             {product.featured === 1 && (
-              <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+              <Star className="h-4 w-4 sm:h-5 sm:w-5 fill-yellow-400 text-yellow-400 drop-shadow-sm" />
             )}
             {isOutOfStock && (
-              <Badge variant="destructive" className="text-xs px-2 py-1">
+              <Badge variant="destructive" className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 font-medium">
                 Esgotado
               </Badge>
             )}
@@ -79,7 +80,7 @@ export function ProductCard({
           {/* Switch de Status - Superior direito */}
           {showStatusSwitch && (
             <div
-              className="absolute top-2 right-2 flex items-center gap-2"
+              className="absolute top-2 right-2 flex items-center gap-2 z-10"
               onClick={(e) => e.stopPropagation()}
             >
               <Switch
@@ -96,16 +97,18 @@ export function ProductCard({
         </div>
 
         {/* Informações do Produto */}
-        <div className="p-3 space-y-2 flex-1 flex flex-col justify-between">
-          <div className="flex items-center justify-between">
+        <div className="p-2 sm:p-3 space-y-1.5 sm:space-y-2 flex-1 flex flex-col justify-between">
+          <div className="flex items-start justify-between gap-2">
             {/* Nome do Produto */}
-            <h3 className="font-bold text-lg text-primary line-clamp-2 transition-colors">
+            <h3 className="font-bold text-sm sm:text-base md:text-lg text-gray-900 line-clamp-2 flex-1 leading-tight">
               {product.name}
             </h3>
 
-            <span className={`text-xs font-medium ${product.status === 1 ? 'text-green-500' : 'text-red-500'}`}>
-              {product.status === 1 ? 'Disponível' : 'Esgotado'}
-            </span>
+            {showStatusSwitch && (
+              <span className={`text-[10px] sm:text-xs font-medium whitespace-nowrap flex-shrink-0 ${product.status === 1 ? 'text-green-500' : 'text-red-500'}`}>
+                {product.status === 1 ? 'Disponível' : 'Esgotado'}
+              </span>
+            )}
           </div>
 
           {/* Cores */}
@@ -116,22 +119,22 @@ export function ProductCard({
 
             if (colorField) {
               return (
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-1">
-                    {colorField.value.split(',').slice(0, 6).map((color, colorIndex) => {
+                <div className="flex items-center gap-1.5">
+                  <div className="flex gap-0.5 sm:gap-1">
+                    {colorField.value.split(',').slice(0, 5).map((color, colorIndex) => {
                       const trimmedColor = color.trim()
                       return (
                         <div
                           key={colorIndex}
-                          className="w-3 h-3 rounded-full border border-gray-300"
+                          className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full border border-gray-300 flex-shrink-0"
                           style={{ backgroundColor: getColorValue(trimmedColor) }}
                           title={trimmedColor}
                         />
                       )
                     })}
-                    {colorField.value.split(',').length > 6 && (
-                      <span className="text-xs text-gray-400">
-                        +{colorField.value.split(',').length - 6}
+                    {colorField.value.split(',').length > 5 && (
+                      <span className="text-[10px] sm:text-xs text-gray-400 ml-0.5">
+                        +{colorField.value.split(',').length - 5}
                       </span>
                     )}
                   </div>
@@ -142,17 +145,17 @@ export function ProductCard({
           })()}
 
           {/* Preço */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-lg font-bold text-primary">
+          <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
+            <span className="text-base sm:text-lg md:text-xl font-bold text-primary">
               {formatPrice((product.final_price?.toString() || product.price))}
             </span>
             {/* Se houver desconto, mostrar preço original riscado e badge */}
             {product.discount_price !== null && product.discount_price !== undefined && product.discount_percentage && product.discount_percentage > 0 && (
               <>
-                <span className="text-sm text-primary/30 line-through font-bold">
+                <span className="text-xs sm:text-sm text-gray-400 line-through font-medium">
                   {formatPrice(product.price)}
                 </span>
-                <Badge className="bg-[#FF3333]/10 text-[#FF3333] px-2 py-0.5 text-xs">
+                <Badge className="bg-[#FF3333]/10 text-[#FF3333] px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-medium">
                   -{Math.floor(product.discount_percentage)}%
                 </Badge>
               </>

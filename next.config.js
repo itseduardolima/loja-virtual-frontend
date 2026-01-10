@@ -31,8 +31,10 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      // Configuração dinâmica para a API (funciona com localhost ou ngrok)
+      // O hostname será extraído automaticamente do NEXT_PUBLIC_API_URL
       {
-        protocol: apiConfig.protocol,
+        protocol: apiConfig.protocol === 'https' ? 'https' : 'http',
         hostname: apiConfig.hostname,
         port: apiConfig.port,
         pathname: '/**',

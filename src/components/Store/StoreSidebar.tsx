@@ -115,11 +115,18 @@ export function StoreSidebar({
     filterProps.sortFieldValue
   ])
   
-  // Verificação condicional APÓS todos os hooks
-  if (!isOpen) return null
-  
   const handlePriceChange = (values: number[]) => {
     setPriceRange(values)
+  }
+  
+  const handleApplyAndClose = () => {
+    handleApplyFilters()
+    // Pequeno delay para garantir que os filtros sejam aplicados antes de fechar
+    setTimeout(() => {
+      if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+        onClose()
+      }
+    }, 100)
   }
 
   const handleApplyFilters = () => {
@@ -495,30 +502,27 @@ export function StoreSidebar({
     )
   }
 
+  // Verificação condicional APÓS todos os hooks e funções
+  if (!isOpen) return null
+
   return (
-    <div className={`w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow-sm ${className}`}>
-      <div className="p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <Filter className="w-5 h-5" />
-            Filtros
-          </h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="lg:hidden"
-          >
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
+    <div className={`w-full ${isInline ? '' : 'lg:max-w-sm'} ${isInline ? '' : 'rounded-lg '} ${className}`}>
+      <div className={`${isInline ? 'p-0' : ''}`}>
+        {/* Header - Apenas para desktop sidebar */}
+        {!isInline && (
+          <div className="hidden lg:flex items-center justify-between mb-4 sm:mb-6 px-4 sm:px-6 pt-4 sm:pt-6">
+            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <Filter className="w-5 h-5" />
+              Filtros
+            </h2>
+          </div>
+        )}
 
         {/* Filters */}
-        <div className="space-y-6">
+        <div className={`space-y-4 sm:space-y-6 ${isInline ? '' : 'px-4 sm:px-6 pt-4 sm:pt-6 lg:pt-0'}`}>
           {/* Ordenação */}
           <div>
-            <Label className="text-sm font-bold text-primary cursor-pointer mb-2 block">Ordenar por</Label>
+            <Label className="text-sm font-bold text-gray-900 cursor-pointer mb-2 block">Ordenar por</Label>
             <Select
               value={`${localSortField}-${localSort}`}
               onValueChange={(value) => {
@@ -527,7 +531,7 @@ export function StoreSidebar({
                 setLocalSort(order)
               }}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full h-10 sm:h-11 text-sm">
                 <SelectValue placeholder="Selecione uma opção" />
               </SelectTrigger>
               <SelectContent>
@@ -541,25 +545,25 @@ export function StoreSidebar({
 
           {/* Produtos em Destaque */}
           <div>
-            <Label className="text-sm font-bold text-primary cursor-pointer mb-2 block">Produtos em Destaque</Label>
-            <div className="flex items-center space-x-2">
+            <Label className="text-sm font-bold text-gray-900 cursor-pointer mb-2 block">Produtos em Destaque</Label>
+            <div className="flex items-center space-x-3">
               <Switch
                 checked={localFeatured}
                 onCheckedChange={(checked) => setLocalFeatured(checked)}
               />
-              <Label className="text-sm text-gray-600">Mostrar apenas produtos em destaque</Label>
+              <Label className="text-sm text-gray-600 cursor-pointer">Mostrar apenas produtos em destaque</Label>
             </div>
           </div>
 
           {/* Categoria */}
           {filterProps.categories.length > 0 && (
             <div>
-              <Label className="text-sm font-bold text-primary cursor-pointer mb-2 block">Categoria</Label>
+              <Label className="text-sm font-bold text-gray-900 cursor-pointer mb-2 block">Categoria</Label>
               <Select
                 value={localCategoryId?.toString() || 'all'}
                 onValueChange={(value) => setLocalCategoryId(value === 'all' ? undefined : parseInt(value))}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full h-10 sm:h-11 text-sm">
                   <SelectValue placeholder="Selecione uma categoria" />
                 </SelectTrigger>
                 <SelectContent>
@@ -578,10 +582,10 @@ export function StoreSidebar({
           <div className="space-y-4">
             <button
               onClick={() => setIsPriceCollapsed(!isPriceCollapsed)}
-              className="w-full flex items-center justify-between"
+              className="w-full flex items-center justify-between hover:opacity-80 transition-opacity"
             >
-              <Label className="text-sm font-bold text-primary cursor-pointer">Preço</Label>
-              <ChevronUp className={`w-4 h-4 transition-transform ${isPriceCollapsed ? 'rotate-180' : ''}`} />
+              <Label className="text-sm font-bold text-gray-900 cursor-pointer">Preço</Label>
+              <ChevronUp className={`w-4 h-4 text-gray-600 transition-transform ${isPriceCollapsed ? 'rotate-180' : ''}`} />
             </button>
             {!isPriceCollapsed && (
               <div className="space-y-3">
@@ -606,10 +610,10 @@ export function StoreSidebar({
             <div className="space-y-4">
               <button
                 onClick={() => setIsNichesCollapsed(!isNichesCollapsed)}
-                className="w-full flex items-center justify-between"
+                className="w-full flex items-center justify-between hover:opacity-80 transition-opacity"
               >
-                <Label className="text-sm font-bold text-primary cursor-pointer">Tipo de Produto</Label>
-                <ChevronUp className={`w-4 h-4 transition-transform ${isNichesCollapsed ? 'rotate-180' : ''}`} />
+                <Label className="text-sm font-bold text-gray-900 cursor-pointer">Tipo de Produto</Label>
+                <ChevronUp className={`w-4 h-4 text-gray-600 transition-transform ${isNichesCollapsed ? 'rotate-180' : ''}`} />
               </button>
               {!isNichesCollapsed && (
                 <div className="space-y-3">
@@ -621,7 +625,7 @@ export function StoreSidebar({
                       setOpenDropdowns({}) // Fechar todos os dropdowns
                     }}
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full h-10 sm:h-11 text-sm">
                       <SelectValue placeholder="Selecione um nicho" />
                     </SelectTrigger>
                     <SelectContent>
@@ -639,7 +643,7 @@ export function StoreSidebar({
                     <div className="space-y-4 pt-2 border-t border-gray-200">
                       {fields.map((field) => (
                         <div key={field.id} className="space-y-2">
-                          <Label className="text-sm font-bold text-primary cursor-pointer">{field.name}</Label>
+                          <Label className="text-sm font-bold text-gray-900 cursor-pointer">{field.name}</Label>
                           {renderDynamicField(field)}
                         </div>
                       ))}
@@ -651,17 +655,24 @@ export function StoreSidebar({
           )}
 
           {/* Botões de Ação */}
-          <div className="pt-4 space-y-2">
+          <div className="pt-4 space-y-2 mt-4 border-t border-gray-200 lg:border-t-0 sticky bottom-0 bg-white pb-4 lg:pb-6 lg:static -mx-4 sm:-mx-6 px-4 sm:px-6 lg:mx-0 lg:px-0">
             <Button
-              onClick={handleApplyFilters}
-              className="w-full bg-primary text-white hover:bg-gray-800"
+              onClick={handleApplyAndClose}
+              className="w-full bg-primary text-white hover:bg-primary/90 h-10 sm:h-11 text-sm sm:text-base font-medium shadow-sm"
             >
               Aplicar Filtros
             </Button>
             <Button
               variant="outline"
-              onClick={handleClearFilters}
-              className="w-full"
+              onClick={() => {
+                handleClearFilters()
+                setTimeout(() => {
+                  if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+                    onClose()
+                  }
+                }, 100)
+              }}
+              className="w-full h-10 sm:h-11 text-sm sm:text-base font-medium"
             >
               Limpar Filtros
             </Button>

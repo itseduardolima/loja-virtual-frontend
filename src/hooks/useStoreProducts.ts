@@ -56,8 +56,8 @@ export function useStoreProducts(params: StoreProductsParams): UseStoreProductsR
         `/catalog/store/${params.slug}/products?${queryParams.toString()}`
       )
 
-      setProducts(response.data.data)
-      setMeta(response.data.meta)
+      setProducts(Array.isArray(response.data?.data) ? response.data.data : [])
+      setMeta(response.data?.meta || null)
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erro ao carregar produtos')
       setProducts([])
@@ -81,7 +81,7 @@ export function useStoreProducts(params: StoreProductsParams): UseStoreProductsR
   }
 
   return {
-    products,
+    products: Array.isArray(products) ? products : [],
     loading,
     error,
     meta,
