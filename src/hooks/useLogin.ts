@@ -1,7 +1,7 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { LoginRequest, PROFILE_ROUTES } from '@/types/auth'
+import { LoginRequest } from '@/types/auth'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useToastContext } from '@/contexts/ToastContext'
 import { useCheckout } from './useCheckout'
@@ -23,34 +23,26 @@ export function useLogin() {
         clearCheckoutData()
         
         // Se há dados de checkout, redirecionar para a URL específica onde estava
-        if (checkoutData.redirectUrl) {
+        // Validar que a URL não contenha 'null' ou seja inválida
+        if (checkoutData.redirectUrl && !checkoutData.redirectUrl.includes('/produto/null') && !checkoutData.redirectUrl.includes('/produto/undefined')) {
           router.push(checkoutData.redirectUrl)
           return
         } else if (checkoutData.storeSlug) {
-          // Fallback para a loja se não houver redirectUrl
-          router.push(`/loja/${checkoutData.storeSlug}`)
+          // Fallback para a loja se não houver redirectUrl válido
+          router.push(`/loja/${checkoutData.storeSlug}/produtos`)
           return
         }
       }
       
       // Verificar se há parâmetro de redirecionamento
       const redirect = searchParams.get('redirect')
-      if (redirect) {
+      if (redirect && !redirect.includes('/produto/null') && !redirect.includes('/produto/undefined')) {
         router.push(redirect)
         return
       }
       
-      // Se não há dados de checkout nem redirect, redirecionar de acordo com o perfil
-      // Busca o usuário do localStorage imediatamente após o login
-      const currentUser = JSON.parse(localStorage.getItem('user-data') || 'null')
-      if (currentUser && currentUser.profile) {
-        const profileRoute = PROFILE_ROUTES[currentUser.profile as keyof typeof PROFILE_ROUTES] || '/'
-        // Redireciona diretamente sem delay
-        router.push(profileRoute)
-      } else {
-        // Se não conseguir obter o perfil, vai para home (que mostrará loading)
-        router.push('/')
-      }
+      // Se não há dados de checkout nem redirect, sempre redireciona para a página inicial
+      router.push('/')
       
     } catch (error: any) {
       const errorMessage = error.response?.data?.message

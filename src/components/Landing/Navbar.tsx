@@ -18,6 +18,9 @@ export function Navbar() {
 
   const getProfileButton = () => {
     if (!isAuthenticated || !user) return null
+    
+    // Não mostrar botão de perfil para Cliente (usam drawer na página de loja)
+    if (user.profile === 'Cliente') return null
 
     const profileRoute = PROFILE_ROUTES[user.profile]
     const profileLabels = {
@@ -33,7 +36,7 @@ export function Navbar() {
       >
         <User className="w-4 h-4" />
         <span className="hidden sm:inline">{profileLabels[user.profile]}</span>
-        <span className="sm:hidden">{user.profile === 'Vendedor' ? 'Loja' : user.profile === 'Administrador' ? 'Admin' : 'Conta'}</span>
+        <span className="sm:hidden">{user.profile === 'Vendedor' ? 'Loja' : 'Admin'}</span>
       </Link>
     )
   }
@@ -83,7 +86,7 @@ export function Navbar() {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="bg-blue-50/50 backdrop-blur-md max-w-4xl mx-auto rounded-xl sm:rounded-2xl sticky top-2 sm:top-5 z-50 mx-2 sm:mx-auto"
+      className="bg-blue-50/50 backdrop-blur-md max-w-4xl rounded-xl sm:rounded-2xl sticky top-2 sm:top-5 z-50 mx-2 sm:mx-auto"
     >
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
         <div className="flex justify-between items-center h-14 sm:h-16">

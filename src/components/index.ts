@@ -18,6 +18,8 @@ export { default as LoadingPage } from './Layout/LoadingPage'
 export { ProfileInfo } from './Layout/ProfileInfo'
 export { SidebarVendedor } from './Layout/SidebarVendedor'
 export { UserHeader } from './Layout/UserHeader'
+export { SidebarCliente } from './Layout/SidebarCliente'
+export { UserHeaderCliente } from './Layout/UserHeaderCliente'
 
 // Product Components
 export { ProductCard } from './Product/ProductCard'
@@ -36,6 +38,7 @@ export { StorePagination } from './Store/StorePagination'
 export { StoreSidebar } from './Store/StoreSidebar'
 export { StorePendingFields } from './Store/StorePendingFields'
 export { StoreHeader } from './Store/StoreHeader'
+export { CustomerOrdersDrawer } from './Store/CustomerOrdersDrawer'
 
 // Category Components
 export { CategorySection } from './Category/CategorySection'

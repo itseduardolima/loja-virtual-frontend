@@ -14,6 +14,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { api } from '@/lib/api'
 import { Product, ProductsResponse } from '@/types/product'
 import { formatPrice, buildImageUrl } from '@/lib/utils'
+import { CustomerOrdersDrawer } from './CustomerOrdersDrawer'
 
 interface StoreHeaderProps {
   storeInfo: StoreInfo | null | undefined
@@ -38,6 +39,7 @@ export function StoreHeader({
   const [suggestions, setSuggestions] = useState<Product[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
+  const [isOrdersDrawerOpen, setIsOrdersDrawerOpen] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
   const { user, isAuthenticated, logout } = useAuth()
@@ -254,7 +256,13 @@ export function StoreHeader({
             <div className="relative">
               <Button
                 variant="ghost"
-                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                onClick={() => {
+                  if (isAuthenticated && user) {
+                    setIsOrdersDrawerOpen(true)
+                  } else {
+                    setIsUserMenuOpen(!isUserMenuOpen)
+                  }
+                }}
                 className="flex items-center gap-2 p-0 hover:bg-transparent"
               >
                 <User className="w-6 h-6" />
@@ -263,45 +271,38 @@ export function StoreHeader({
                 )}
               </Button>
 
-              {/* Dropdown Menu */}
-              {isUserMenuOpen && (
+              {/* Dropdown Menu - Apenas quando não estiver autenticado */}
+              {isUserMenuOpen && !isAuthenticated && (
                 <>
                   <div
                     className="fixed inset-0 z-10"
                     onClick={() => setIsUserMenuOpen(false)}
                   />
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
-                    {isAuthenticated && user ? (
-                      <div className="p-2">
-                        <div className="px-3 py-2 border-b border-gray-200">
-                          <p className="text-sm font-semibold text-gray-900">{user.name}</p>
-                          <p className="text-xs text-gray-500">{user.email}</p>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          className="w-full justify-start gap-2 mt-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                          onClick={handleLogoutClick}
-                        >
-                          <LogOut className="w-4 h-4" />
-                          Sair
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="p-2">
-                        <Button
-                          variant="ghost"
-                          className="w-full justify-start gap-2 rounded"
-                          onClick={handleLoginClick}
-                        >
-                          <LogIn className="w-4 h-4" />
-                          Fazer Login
-                        </Button>
-                      </div>
-                    )}
+                    <div className="p-2">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start gap-2 rounded"
+                        onClick={handleLoginClick}
+                      >
+                        <LogIn className="w-4 h-4" />
+                        Fazer Login
+                      </Button>
+                    </div>
                   </div>
                 </>
               )}
             </div>
+
+            {/* Drawer de Pedidos e Rastreio */}
+            {isAuthenticated && user && (
+              <CustomerOrdersDrawer
+                isOpen={isOrdersDrawerOpen}
+                onClose={() => {
+                  setIsOrdersDrawerOpen(false)
+                }}
+              />
+            )}
           </div>
         </div>
       </div>

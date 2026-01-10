@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { User, LoginRequest, AuthContextType, PROFILE_ROUTES } from '@/types/auth'
+import { User, LoginRequest, AuthContextType } from '@/types/auth'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             setIsLoading(false)
 
-            // Redireciona imediatamente se houver redirect salvo, senão espera um pouco
+            // Redireciona imediatamente se houver redirect salvo, senão vai para a página inicial
             if (savedRedirectUrl) {
               console.log('Redirecionando imediatamente para:', savedRedirectUrl)
               // Remove a URL salva do localStorage
@@ -62,15 +62,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 window.location.href = finalUrl
               }
             } else {
-              // Se não houver URL salva, redireciona de acordo com o perfil imediatamente
-              const userProfile = userData.profile as keyof typeof PROFILE_ROUTES
-              const profileRoute = PROFILE_ROUTES[userProfile] || '/'
-              console.log('Nenhum redirect salvo, redirecionando para perfil:', profileRoute)
-              if (profileRoute !== '/') {
-                // Marca que está redirecionando para evitar múltiplos redirecionamentos
-                sessionStorage.setItem('is-redirecting', 'true')
-                window.location.href = window.location.origin + profileRoute
-              }
+              // Se não houver URL salva, sempre redireciona para a página inicial
+              console.log('Nenhum redirect salvo, redirecionando para página inicial')
+              window.location.href = window.location.origin + '/'
             }
 
             return true // Indica que processou o callback
@@ -206,7 +200,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const currentUrl = currentPath + (window.location.search || '')
         localStorage.setItem('redirect-after-login', currentUrl)
       }
-      // Se estiver na página de login sem redirect, não salva nada (vai para rota do perfil)
+      // Se estiver na página de login sem redirect, não salva nada (vai para página inicial)
     }
     
     // Redireciona diretamente para o endpoint do Google OAuth
