@@ -60,7 +60,7 @@ export default function PagamentoPage() {
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           
-          <h1 className="text-2xl font-semibold text-gray-900">Métodos de Pagamento</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Métodos de Pagamento</h1>
         </div>
         <p className="text-gray-600">
           Configure as formas de pagamento aceitas pela sua loja

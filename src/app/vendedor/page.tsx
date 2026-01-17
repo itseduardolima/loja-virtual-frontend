@@ -1,16 +1,13 @@
 'use client'
 
 import { useVendedorPage } from '@/app/vendedor/useVendedorPage'
-import { Button, Card, CardContent, Input, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components'
+import { Button, Card, CardContent } from '@/components'
 import { 
   Phone, 
   Instagram,
   Image as ImageIcon,
   Camera,
   Upload,
-  Edit,
-  Save,
-  X,
   Facebook,
   Mail
 } from 'lucide-react'
@@ -161,18 +158,7 @@ export default function VendedorPage() {
 
                     {/* Contatos */}
                     <div className="space-y-4">
-                      {/* Botão de editar contatos */}
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-medium text-gray-900">Meios de Contato</h3>
-                        <Button
-                          onClick={hookData.startEditingContacts}
-                          variant="outline"
-                          className="flex items-center gap-2 rounded-xl"
-                        >
-                          <Edit className="w-4 h-4" />
-                          Editar
-                        </Button>
-                      </div>
+                      <h3 className="text-lg font-medium text-gray-900">Meios de Contato</h3>
 
                       {/* Lista de contatos */}
                       <div className="flex flex-wrap gap-4">
@@ -267,93 +253,6 @@ export default function VendedorPage() {
           </div>
         </div>
 
-        {/* Modal de Edição de Contatos */}
-        <Dialog open={hookData.isEditingContacts} onOpenChange={hookData.setIsEditingContacts}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Editar Meios de Contato</DialogTitle>
-            </DialogHeader>
-            
-            <div className="space-y-6 py-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* WhatsApp */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">WhatsApp</label>
-                  <Input
-                    type="text"
-                    placeholder="Ex: 11999999999"
-                    value={hookData.contactForm.whatsapp}
-                    onChange={(e) => hookData.setContactForm(prev => ({ ...prev, whatsapp: e.target.value }))}
-                  />
-                </div>
-
-                {/* Instagram */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Instagram</label>
-                  <Input
-                    type="text"
-                    placeholder="Ex: usuario_instagram"
-                    value={hookData.contactForm.instagram}
-                    onChange={(e) => hookData.setContactForm(prev => ({ ...prev, instagram: e.target.value }))}
-                  />
-                </div>
-
-                {/* Facebook */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Facebook</label>
-                  <Input
-                    type="text"
-                    placeholder="Ex: pagina_facebook"
-                    value={hookData.contactForm.facebook}
-                    onChange={(e) => hookData.setContactForm(prev => ({ ...prev, facebook: e.target.value }))}
-                  />
-                </div>
-
-                {/* Email */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Email</label>
-                  <Input
-                    type="email"
-                    placeholder="Ex: contato@loja.com"
-                    value={hookData.contactForm.email}
-                    onChange={(e) => hookData.setContactForm(prev => ({ ...prev, email: e.target.value }))}
-                  />
-                </div>
-
-                {/* Telefone */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Telefone</label>
-                  <Input
-                    type="tel"
-                    placeholder="Ex: (11) 99999-9999"
-                    value={hookData.contactForm.phone}
-                    onChange={(e) => hookData.setContactForm(prev => ({ ...prev, phone: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              {/* Botões de ação */}
-              <div className="flex justify-end gap-3 pt-4 border-t">
-                <Button
-                  onClick={hookData.cancelEditingContacts}
-                  variant="outline"
-                  disabled={hookData.isUpdating}
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={hookData.saveContacts}
-                  disabled={hookData.isUpdating}
-                  className="flex items-center gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  {hookData.isUpdating ? 'Salvando...' : 'Salvar'}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
 
       </div>
     </div>

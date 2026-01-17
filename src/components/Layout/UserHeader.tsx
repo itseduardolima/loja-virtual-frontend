@@ -10,7 +10,11 @@ import {
   Truck,
   ChevronRight,
   X,
-  LogOut
+  LogOut,
+  Store,
+  Phone,
+  FileText,
+  Clock
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -30,6 +34,24 @@ export function UserHeader({ currentPath }: UserHeaderProps) {
 
   const configItems = [
     {
+      name: 'Informações Básicas',
+      href: '/vendedor/configuracoes/informacoes-basicas',
+      icon: Store,
+      current: currentPath?.startsWith('/vendedor/configuracoes/informacoes-basicas')
+    },
+    {
+      name: 'Contatos',
+      href: '/vendedor/configuracoes/contatos',
+      icon: Phone,
+      current: currentPath?.startsWith('/vendedor/configuracoes/contatos')
+    },
+    {
+      name: 'Documentos',
+      href: '/vendedor/configuracoes/documentos',
+      icon: FileText,
+      current: currentPath?.startsWith('/vendedor/configuracoes/documentos')
+    },
+    {
       name: 'Endereço',
       href: '/vendedor/configuracoes/endereco',
       icon: MapPin,
@@ -46,6 +68,12 @@ export function UserHeader({ currentPath }: UserHeaderProps) {
       href: '/vendedor/configuracoes/entrega',
       icon: Truck,
       current: currentPath?.startsWith('/vendedor/configuracoes/entrega')
+    },
+    {
+      name: 'Horário',
+      href: '/vendedor/configuracoes/horario',
+      icon: Clock,
+      current: currentPath?.startsWith('/vendedor/configuracoes/horario')
     }
   ]
 
