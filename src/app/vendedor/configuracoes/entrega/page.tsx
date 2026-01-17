@@ -1,58 +1,24 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useStore } from '@/hooks/useStore'
-import { useUpdateStore } from '@/hooks/useUpdateStore'
+import { useEntrega } from './useEntrega'
 import { Card, CardContent, Input, Label, Button, LoadingSpinner } from '@/components'
 import LoadingPage from '@/components/Layout/LoadingPage'
 
 export default function EntregaPage() {
-  const { data: store, isLoading } = useStore()
-  const { updateStore, isUpdating } = useUpdateStore()
-  
-  const [formData, setFormData] = useState({
-    delivery_fee: '',
-    free_delivery_min: '',
-    delivery_time: ''
-  })
-
-  useEffect(() => {
-    if (store) {
-      setFormData({
-        delivery_fee: (store as any)?.delivery_fee || '',
-        free_delivery_min: (store as any)?.free_delivery_min || '',
-        delivery_time: (store as any)?.delivery_time || ''
-      })
-    }
-  }, [store])
+  const {
+    isLoading,
+    isUpdating,
+    formData,
+    handleInputChange,
+    handleSave
+  } = useEntrega()
 
   if (isLoading) {
     return <LoadingPage />
   }
 
-  const handleInputChange = (field: string, value: string | number) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
-
-  const handleSave = async () => {
-    if (!store?.id) return
-    
-    try {
-      await updateStore({
-        storeId: store.id,
-        data: {
-          delivery_fee: formData.delivery_fee ? parseFloat(formData.delivery_fee) : 0,
-          free_delivery_min: formData.free_delivery_min ? parseFloat(formData.free_delivery_min) : 0,
-          delivery_time: formData.delivery_time
-        }
-      })
-    } catch (error) {
-      console.error('Erro ao atualizar configurações de entrega:', error)
-    }
-  }
-
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10">
+    <div className="max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Configurações de Entrega</h1>

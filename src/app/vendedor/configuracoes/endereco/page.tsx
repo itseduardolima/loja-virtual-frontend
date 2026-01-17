@@ -1,62 +1,24 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useStore } from '@/hooks/useStore'
-import { useUpdateStore } from '@/hooks/useUpdateStore'
-import { Card, CardContent, CardHeader, CardTitle, Input, Label, Button, LoadingSpinner } from '@/components'
+import { useEndereco } from './useEndereco'
+import { Card, CardContent, Input, Label, Button, LoadingSpinner } from '@/components'
 import LoadingPage from '@/components/Layout/LoadingPage'
 
 export default function EnderecoPage() {
-  const { data: store, isLoading } = useStore()
-  const { updateStore, isUpdating } = useUpdateStore()
-  
-  const [formData, setFormData] = useState({
-    address: '',
-    city: '',
-    state: '',
-    zipcode: '',
-    neighborhood: '',
-    number: '',
-    complement: ''
-  })
-
-  useEffect(() => {
-    if (store) {
-      setFormData({
-        address: (store as any)?.address || '',
-        city: (store as any)?.city || '',
-        state: (store as any)?.state || '',
-        zipcode: (store as any)?.zipcode || '',
-        neighborhood: (store as any)?.neighborhood || '',
-        number: (store as any)?.number || '',
-        complement: (store as any)?.complement || ''
-      })
-    }
-  }, [store])
+  const {
+    isLoading,
+    isUpdating,
+    formData,
+    handleInputChange,
+    handleSave
+  } = useEndereco()
 
   if (isLoading) {
     return <LoadingPage />
   }
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
-
-  const handleSave = async () => {
-    if (!store?.id) return
-    
-    try {
-      await updateStore({
-        storeId: store.id,
-        data: formData
-      })
-    } catch (error) {
-      console.error('Erro ao atualizar endereço:', error)
-    }
-  }
-
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10">
+    <div className="max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Configurações de Endereço</h1>

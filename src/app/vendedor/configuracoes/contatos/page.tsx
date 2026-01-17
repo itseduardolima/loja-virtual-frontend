@@ -1,142 +1,35 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { useStore } from '@/hooks/useStore'
-import { useUpdateStore } from '@/hooks/useUpdateStore'
-import { useCountries } from '@/hooks/useCountries'
+import { useContatos } from './useContatos'
 import { Card, CardContent, Input, Label, Button, LoadingSpinner } from '@/components'
 import LoadingPage from '@/components/Layout/LoadingPage'
-import { Instagram, Facebook, Mail, MessageCircle, ChevronDown } from 'lucide-react'
+import { Instagram, Facebook, Mail, ChevronDown } from 'lucide-react'
 import { WhatsappIcon } from '@/assets/icons/WhatsappIcon'
 
 export default function ContatosPage() {
-  const { data: store, isLoading } = useStore()
-  const { updateStore, isUpdating } = useUpdateStore()
-  const { data: countriesData, isLoading: countriesLoading } = useCountries()
-  
-  const [formData, setFormData] = useState({
-    whatsapp: '',
-    instagram: '',
-    facebook: '',
-    email: ''
-  })
-
-  const [selectedCountry, setSelectedCountry] = useState('BR') // Brasil como padrão
-  const [showCountryDropdown, setShowCountryDropdown] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-
-  // Fechar dropdown quando clicar fora
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowCountryDropdown(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (store) {
-      const whatsapp = (store as any)?.whatsapp || ''
-      
-      // Extrair código do país do WhatsApp se existir
-      let whatsappNumber = whatsapp
-      let countryCode = 'BR'
-      
-      if (whatsapp.startsWith('+')) {
-        // Tentar encontrar o país pelo código
-        const foundCountry = countriesData?.find(country => {
-          const callingCode = country.callingCodes[0]
-          return whatsapp.startsWith(`+${callingCode}`)
-        })
-        
-        if (foundCountry) {
-          countryCode = foundCountry.cca2
-          whatsappNumber = whatsapp.replace(`+${foundCountry.callingCodes[0]}`, '')
-        } else if (whatsapp.startsWith('+55')) {
-          // Brasil por padrão
-          countryCode = 'BR'
-          whatsappNumber = whatsapp.replace('+55', '')
-        }
-      }
-
-      setSelectedCountry(countryCode)
-      setFormData({
-        whatsapp: whatsappNumber,
-        instagram: (store as any)?.instagram || '',
-        facebook: (store as any)?.facebook || '',
-        email: (store as any)?.email || ''
-      })
-    }
-  }, [store, countriesData])
+  const {
+    isLoading,
+    isUpdating,
+    formData,
+    selectedCountry,
+    showCountryDropdown,
+    dropdownRef,
+    countriesData,
+    countriesLoading,
+    handleInputChange,
+    getSelectedCountry,
+    getCountryCallingCode,
+    handleCountrySelect,
+    setShowCountryDropdown,
+    handleSave
+  } = useContatos()
 
   if (isLoading) {
     return <LoadingPage />
   }
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
-
-  const getSelectedCountry = () => {
-    return countriesData?.find(country => country.cca2 === selectedCountry)
-  }
-
-  const getCountryCallingCode = () => {
-    const country = getSelectedCountry()
-    const code = country?.callingCodes?.[0] || '55'
-    // Garantir que retorna apenas o número, sem "+"
-    return code.replace(/^\+/, '')
-  }
-
-  const handleCountrySelect = (countryCode: string) => {
-    setSelectedCountry(countryCode)
-    setShowCountryDropdown(false)
-  }
-
-  const handleSave = async () => {
-    if (!store?.id) return
-    
-    try {
-      const callingCode = getCountryCallingCode()
-      
-      // Remove qualquer "+" e código do país existente no número
-      let cleanWhatsapp = (formData.whatsapp || '').trim()
-      
-      // Remove todos os "+" do número
-      cleanWhatsapp = cleanWhatsapp.replace(/\+/g, '')
-      
-      // Remove o código do país se já estiver no início do número
-      if (cleanWhatsapp.startsWith(callingCode)) {
-        cleanWhatsapp = cleanWhatsapp.substring(callingCode.length)
-      }
-      
-      // Remove qualquer caractere não numérico
-      cleanWhatsapp = cleanWhatsapp.replace(/\D/g, '')
-      
-      // Só adiciona o código se houver número
-      const whatsappWithCode = cleanWhatsapp ? `+${callingCode}${cleanWhatsapp}` : ''
-      
-      await updateStore({
-        storeId: store.id,
-        data: {
-          whatsapp: whatsappWithCode,
-          instagram: formData.instagram,
-          facebook: formData.facebook,
-          email: formData.email
-        }
-      })
-    } catch (error) {
-      console.error('Erro ao atualizar contatos:', error)
-    }
-  }
-
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10">
+    <div className="max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Contatos e Redes Sociais</h1>
@@ -314,4 +207,3 @@ export default function ContatosPage() {
     </div>
   )
 }
-

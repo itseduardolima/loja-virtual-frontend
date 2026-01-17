@@ -1,21 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useStore } from '@/hooks/useStore'
-import { useUpdateStore } from '@/hooks/useUpdateStore'
-import { Card, CardContent, Input, Label, Button, LoadingSpinner, Checkbox, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components'
+import { useHorario } from './useHorario'
+import { Card, CardContent, Label, Button, LoadingSpinner, Checkbox, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components'
 import LoadingPage from '@/components/Layout/LoadingPage'
-import { Clock } from 'lucide-react'
-
-const DAYS_OF_WEEK = [
-  { id: 'segunda', label: 'Segunda-feira' },
-  { id: 'terca', label: 'Terça-feira' },
-  { id: 'quarta', label: 'Quarta-feira' },
-  { id: 'quinta', label: 'Quinta-feira' },
-  { id: 'sexta', label: 'Sexta-feira' },
-  { id: 'sabado', label: 'Sábado' },
-  { id: 'domingo', label: 'Domingo' }
-]
 
 // Componente de seleção de horário
 const TimeSelect = ({ value, onChange, id }: { value: string; onChange: (value: string) => void; id: string }) => {
@@ -64,124 +51,22 @@ const TimeSelect = ({ value, onChange, id }: { value: string; onChange: (value: 
 }
 
 export default function HorarioPage() {
-  const { data: store, isLoading } = useStore()
-  const { updateStore, isUpdating } = useUpdateStore()
-  
-  const [businessHours, setBusinessHours] = useState<Record<string, { enabled: boolean; open: string; close: string }>>({})
-
-  useEffect(() => {
-    if (store) {
-      const businessHoursRaw = (store as any)?.business_hours
-      
-      // O backend agora retorna business_hours já parseado como objeto
-      // Mas ainda pode vir como string em alguns casos (compatibilidade)
-      let hours: Record<string, string> = {}
-      
-      if (businessHoursRaw) {
-        if (typeof businessHoursRaw === 'object' && !Array.isArray(businessHoursRaw)) {
-          // Já é um objeto, usa diretamente
-          hours = businessHoursRaw
-        } else if (typeof businessHoursRaw === 'string') {
-          // Ainda é string, faz parse (fallback para compatibilidade)
-          try {
-            let parsed: any = businessHoursRaw.trim()
-            
-            // Remove aspas externas se houver
-            if (parsed.startsWith('"') && parsed.endsWith('"')) {
-              parsed = parsed.slice(1, -1)
-            }
-            
-            // Tenta fazer parse
-            try {
-              parsed = JSON.parse(parsed)
-              // Se ainda for string, tenta parse novamente
-              if (typeof parsed === 'string') {
-                parsed = JSON.parse(parsed)
-              }
-            } catch (e) {
-              parsed = {}
-            }
-            
-            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-              hours = parsed
-            }
-          } catch (error) {
-            console.error('Erro ao fazer parse do business_hours:', error)
-            hours = {}
-          }
-        }
-      }
-      
-      const formattedHours: Record<string, { enabled: boolean; open: string; close: string }> = {}
-      
-      DAYS_OF_WEEK.forEach(day => {
-        if (hours[day.id]) {
-          const [open, close] = hours[day.id].split('-')
-          formattedHours[day.id] = {
-            enabled: true,
-            open: open?.trim() || '09:00',
-            close: close?.trim() || '18:00'
-          }
-        } else {
-          formattedHours[day.id] = {
-            enabled: false,
-            open: '09:00',
-            close: '18:00'
-          }
-        }
-      })
-      
-      setBusinessHours(formattedHours)
-    }
-  }, [store])
+  const {
+    isLoading,
+    isUpdating,
+    businessHours,
+    DAYS_OF_WEEK,
+    handleDayToggle,
+    handleTimeChange,
+    handleSave
+  } = useHorario()
 
   if (isLoading) {
     return <LoadingPage />
   }
 
-  const handleDayToggle = (dayId: string) => {
-    setBusinessHours(prev => ({
-      ...prev,
-      [dayId]: {
-        ...prev[dayId],
-        enabled: !prev[dayId]?.enabled
-      }
-    }))
-  }
-
-  const handleTimeChange = (dayId: string, field: 'open' | 'close', value: string) => {
-    setBusinessHours(prev => ({
-      ...prev,
-      [dayId]: {
-        ...prev[dayId],
-        [field]: value
-      }
-    }))
-  }
-
-  const handleSave = async () => {
-    if (!store?.id) return
-    
-    try {
-      const formattedHours: Record<string, string> = {}
-      
-      Object.entries(businessHours).forEach(([dayId, hours]) => {
-        if (hours.enabled) {
-          formattedHours[dayId] = `${hours.open}-${hours.close}`
-        }
-      })
-
-      await updateStore({
-        storeId: store.id,
-        data: { business_hours: formattedHours }
-      })
-    } catch (error) {
-      console.error('Erro ao atualizar horário de funcionamento:', error)
-    }
-  }
-
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10">
+    <div className="max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
@@ -270,4 +155,3 @@ export default function HorarioPage() {
     </div>
   )
 }
-

@@ -1,86 +1,26 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useStore } from '@/hooks/useStore'
-import { useUpdateStore } from '@/hooks/useUpdateStore'
+import { useDocumentos } from './useDocumentos'
 import { Card, CardContent, Input, Label, Button, LoadingSpinner } from '@/components'
 import LoadingPage from '@/components/Layout/LoadingPage'
 import { FileText, Building2, User } from 'lucide-react'
 
 export default function DocumentosPage() {
-  const { data: store, isLoading } = useStore()
-  const { updateStore, isUpdating } = useUpdateStore()
-  
-  const [formData, setFormData] = useState({
-    cnpj: '',
-    cpf: ''
-  })
-
-  useEffect(() => {
-    if (store) {
-      setFormData({
-        cnpj: (store as any)?.cnpj || '',
-        cpf: (store as any)?.cpf || ''
-      })
-    }
-  }, [store])
+  const {
+    isLoading,
+    isUpdating,
+    formData,
+    handleCNPJChange,
+    handleCPFChange,
+    handleSave
+  } = useDocumentos()
 
   if (isLoading) {
     return <LoadingPage />
   }
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
-
-  const formatCNPJ = (value: string) => {
-    const numbers = value.replace(/\D/g, '')
-    if (numbers.length <= 14) {
-      return numbers
-        .replace(/^(\d{2})(\d)/, '$1.$2')
-        .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
-        .replace(/\.(\d{3})(\d)/, '.$1/$2')
-        .replace(/(\d{4})(\d)/, '$1-$2')
-    }
-    return value
-  }
-
-  const formatCPF = (value: string) => {
-    const numbers = value.replace(/\D/g, '')
-    if (numbers.length <= 11) {
-      return numbers
-        .replace(/(\d{3})(\d)/, '$1.$2')
-        .replace(/(\d{3})(\d)/, '$1.$2')
-        .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
-    }
-    return value
-  }
-
-  const handleCNPJChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatCNPJ(e.target.value)
-    handleInputChange('cnpj', formatted)
-  }
-
-  const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatCPF(e.target.value)
-    handleInputChange('cpf', formatted)
-  }
-
-  const handleSave = async () => {
-    if (!store?.id) return
-    
-    try {
-      await updateStore({
-        storeId: store.id,
-        data: formData
-      })
-    } catch (error) {
-      console.error('Erro ao atualizar documentos:', error)
-    }
-  }
-
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10">
+    <div className="max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Documentos</h1>
@@ -170,4 +110,3 @@ export default function DocumentosPage() {
     </div>
   )
 }
-

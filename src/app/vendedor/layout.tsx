@@ -36,6 +36,21 @@ export default function VendedorLayout({
     }
   }, [authLoading, isAuthenticated, user])
 
+  // Controla o overflow do body para evitar scroll duplo
+  useEffect(() => {
+    if (!isCreateStorePage && isReady) {
+      // Desabilita scroll no body quando o layout está ativo
+      document.body.style.overflow = 'hidden'
+      document.documentElement.style.overflow = 'hidden'
+      
+      return () => {
+        // Restaura o scroll quando o componente desmonta
+        document.body.style.overflow = ''
+        document.documentElement.style.overflow = ''
+      }
+    }
+  }, [isCreateStorePage, isReady])
+
   // Se está carregando ou não está pronto, mostra apenas loading
   if (authLoading || !isReady) {
     return <LoadingPage />
@@ -50,12 +65,14 @@ export default function VendedorLayout({
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen overflow-hidden">
       <SidebarVendedor currentPath={pathname} />
       <div className="flex-1 lg:ml-0 flex flex-col overflow-hidden">
         <UserHeader currentPath={pathname} />
-        <div className="flex-1 overflow-y-auto bg-[#FAFAFB] px-4 py-8">
-          {children}
+        <div className="flex-1 overflow-y-auto bg-[#FAFAFB]">
+          <div className="px-4 py-8">
+            {children}
+          </div>
         </div>
       </div>
     </div>
