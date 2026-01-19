@@ -12,7 +12,8 @@ import {
   Menu,
   X,
   BarChart3,
-  Home
+  Home,
+  CreditCard
 } from 'lucide-react'
 import { useStore } from '@/hooks/useStore'
 
@@ -55,6 +56,12 @@ export function SidebarVendedor({ currentPath }: SidebarVendedorProps) {
       href: '/vendedor/pedidos',
       icon: FileText,
       current: currentPath?.startsWith('/vendedor/pedidos')
+    },
+    {
+      name: 'Meu Plano',
+      href: '/vendedor/plano',
+      icon: CreditCard,
+      current: currentPath?.startsWith('/vendedor/plano')
     },
     {
       name: 'Ver minha loja',
