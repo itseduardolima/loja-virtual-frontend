@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Package, Truck, Clock, CheckCircle, XCircle, Search, ChevronRight } from 'lucide-react'
+import { X, Package, Truck, Clock, CheckCircle, XCircle, Search, ChevronRight, MapPin, Phone, Mail, Instagram, Facebook, Store, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { useCustomerOrders } from '@/hooks/useCustomerOrders'
 import { useCustomerOrder } from '@/hooks/useCustomerOrder'
+import { useStoreInfoById } from '@/hooks/useStoreInfoById'
 import { CustomerOrder, CUSTOMER_ORDER_STATUS } from '@/types/customer'
 import { formatDate, formatPrice, buildImageUrl } from '@/lib/utils'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -14,6 +15,7 @@ import Image from 'next/image'
 
 import { ErrorState } from '@/components/Layout/ErrorState'
 import { LoadingSpinner } from '../Layout/LoadingSpinner'
+import { WhatsappIcon } from '@/assets/icons/WhatsappIcon'
 
 interface CustomerOrdersDrawerProps {
   isOpen: boolean
@@ -35,6 +37,7 @@ export function CustomerOrdersDrawer({ isOpen, onClose }: CustomerOrdersDrawerPr
   })
 
   const { data: selectedOrder, isLoading: isLoadingOrder } = useCustomerOrder(selectedOrderId || 0)
+  const { data: storeInfo, isLoading: isLoadingStoreInfo } = useStoreInfoById(selectedOrder?.store?.id)
 
   const orders = ordersData?.data || []
   const meta = ordersData?.meta
@@ -87,15 +90,14 @@ export function CustomerOrdersDrawer({ isOpen, onClose }: CustomerOrdersDrawerPr
   return (
     <>
       {/* Overlay */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/50 z-40"
         onClick={onClose}
       />
 
       {/* Drawer */}
-      <div className={`fixed top-0 right-0 h-full w-full max-w-2xl bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
-        isOpen ? 'translate-x-0' : 'translate-x-full'
-      }`}>
+      <div className={`fixed top-0 right-0 h-full w-full max-w-2xl bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}>
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
@@ -142,13 +144,12 @@ export function CustomerOrdersDrawer({ isOpen, onClose }: CustomerOrdersDrawerPr
                         <p className="text-lg font-semibold">{selectedOrder.order_code}</p>
                       </div>
                       <Badge
-                        className={`${
-                          getStatusInfo(selectedOrder.status).color === 'yellow' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                          getStatusInfo(selectedOrder.status).color === 'blue' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                          getStatusInfo(selectedOrder.status).color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                          getStatusInfo(selectedOrder.status).color === 'green' ? 'bg-green-50 text-green-700 border-green-200' :
-                          'bg-red-50 text-red-700 border-red-200'
-                        }`}
+                        className={`${getStatusInfo(selectedOrder.status).color === 'yellow' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                            getStatusInfo(selectedOrder.status).color === 'blue' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                              getStatusInfo(selectedOrder.status).color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                                getStatusInfo(selectedOrder.status).color === 'green' ? 'bg-green-50 text-green-700 border-green-200' :
+                                  'bg-red-50 text-red-700 border-red-200'
+                          }`}
                       >
                         {getStatusInfo(selectedOrder.status).label}
                       </Badge>
@@ -172,9 +173,8 @@ export function CustomerOrdersDrawer({ isOpen, onClose }: CustomerOrdersDrawerPr
                     <div className="space-y-4">
                       {getStatusTimeline(selectedOrder).map((step, index) => (
                         <div key={step.id} className="flex items-start gap-4">
-                          <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                            step.completed ? 'bg-primary text-white' : 'bg-gray-200 text-gray-400'
-                          }`}>
+                          <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${step.completed ? 'bg-primary text-white' : 'bg-gray-200 text-gray-400'
+                            }`}>
                             {step.completed ? (
                               <CheckCircle className="w-5 h-5" />
                             ) : (
@@ -228,22 +228,171 @@ export function CustomerOrdersDrawer({ isOpen, onClose }: CustomerOrdersDrawerPr
 
                   {/* Informações da Loja */}
                   {selectedOrder.store && (
-                    <div className="border-t pt-6">
-                      <h3 className="font-semibold mb-4">Informações da Loja</h3>
-                      <div className="space-y-2 text-sm">
-                        <p className="font-medium">{selectedOrder.store.name}</p>
-                        {selectedOrder.store.whatsapp && (
-                          <a
-                            href={`https://wa.me/${formatWhatsAppNumber(selectedOrder.store.whatsapp)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-primary hover:underline"
-                          >
-                            <Truck className="w-4 h-4" />
-                            Entrar em contato com a loja
-                          </a>
-                        )}
+                    <div className="border-t pt-6 mt-6">
+                      <div className="flex items-center gap-2 mb-5">
+                        <Store className="w-5 h-5 text-primary" />
+                        <h3 className="font-semibold text-lg">Informações da Loja</h3>
                       </div>
+
+                      {isLoadingStoreInfo ? (
+                        <div className="flex items-center justify-center py-8">
+                          <LoadingSpinner />
+                        </div>
+                      ) : storeInfo?.data ? (
+                        <div className="space-y-5">
+                          {/* Header da Loja - Nome e Descrição */}
+                          <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                            <h4 className="font-semibold text-base text-gray-900 mb-1.5">
+                              {storeInfo.data.name}
+                            </h4>
+                            {storeInfo.data.description && (
+                              <p className="text-sm text-gray-600 leading-relaxed">
+                                {storeInfo.data.description}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Botão Principal - WhatsApp */}
+                          {storeInfo.data.whatsapp && (
+                            <Button
+                              asChild
+                              className="w-full bg-green-500 hover:bg-green-600 text-white h-12 text-base font-medium"
+                            >
+                              <a
+                                href={`https://wa.me/${formatWhatsAppNumber(storeInfo.data.whatsapp)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center gap-2"
+                              >
+                                <WhatsappIcon />
+                                Falar no WhatsApp
+
+                              </a>
+                            </Button>
+                          )}
+
+                          {/* Contatos - Email */}
+                          {storeInfo.data.email && (
+                            <div className="space-y-3">
+                              <h5 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                                Contato
+                              </h5>
+                              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100 transition-colors">
+                                <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                                  <Mail className="w-5 h-5 text-purple-600" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs text-gray-500 mb-0.5">E-mail</p>
+                                  <a
+                                    href={`mailto:${storeInfo.data.email}`}
+                                    className="text-sm font-medium text-gray-900 hover:text-primary transition-colors truncate block"
+                                  >
+                                    {storeInfo.data.email}
+                                  </a>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Redes Sociais */}
+                          {(storeInfo.data.instagram || storeInfo.data.facebook) && (
+                            <div className="space-y-3">
+                              <h5 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                                Redes Sociais
+                              </h5>
+                              <div className="flex flex-wrap gap-2">
+                                {storeInfo.data.instagram && (
+                                  <Button
+                                    asChild
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-10 px-4 border-pink-200 text-pink-600 hover:bg-pink-50 hover:border-pink-300"
+                                  >
+                                    <a
+                                      href={`https://instagram.com/${storeInfo.data.instagram.replace('@', '')}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-2"
+                                    >
+                                      <Instagram className="w-4 h-4" />
+                                      <span>Instagram</span>
+                                      <ExternalLink className="w-3 h-3" />
+                                    </a>
+                                  </Button>
+                                )}
+                                {storeInfo.data.facebook && (
+                                  <Button
+                                    asChild
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-10 px-4 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300"
+                                  >
+                                    <a
+                                      href={storeInfo.data.facebook}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-2"
+                                    >
+                                      <Facebook className="w-4 h-4" />
+                                      <span>Facebook</span>
+                                      <ExternalLink className="w-3 h-3" />
+                                    </a>
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Endereço */}
+                          {(storeInfo.data.address || storeInfo.data.city || storeInfo.data.state) && (
+                            <div className="space-y-3">
+                              <h5 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                                Endereço
+                              </h5>
+                              <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                                  <MapPin className="w-5 h-5 text-red-600" />
+                                </div>
+                                <div className="flex-1 min-w-0 text-sm text-gray-700">
+                                  {storeInfo.data.address && (
+                                    <p className="font-medium mb-1">{storeInfo.data.address}</p>
+                                  )}
+                                  {(storeInfo.data.city || storeInfo.data.state) && (
+                                    <p className="text-gray-600">
+                                      {storeInfo.data.city}
+                                      {storeInfo.data.city && storeInfo.data.state && ', '}
+                                      {storeInfo.data.state}
+                                      {storeInfo.data.zipcode && ` - ${storeInfo.data.zipcode}`}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                          <p className="font-medium text-gray-900 mb-3">{selectedOrder.store.name}</p>
+                          {selectedOrder.store.whatsapp && (
+                            <Button
+                              asChild
+                              variant="outline"
+                              className="w-full"
+                            >
+                              <a
+                                href={`https://wa.me/${formatWhatsAppNumber(selectedOrder.store.whatsapp)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center gap-2"
+                              >
+                                <Phone className="w-4 h-4" />
+                                Entrar em contato
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            </Button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -320,13 +469,12 @@ export function CustomerOrdersDrawer({ isOpen, onClose }: CustomerOrdersDrawerPr
                               <div className="flex items-center gap-2 mb-2">
                                 <p className="font-semibold">{order.order_code}</p>
                                 <Badge
-                                  className={`${
-                                    statusInfo.color === 'yellow' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                                    statusInfo.color === 'blue' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                    statusInfo.color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                                    statusInfo.color === 'green' ? 'bg-green-50 text-green-700 border-green-200' :
-                                    'bg-red-50 text-red-700 border-red-200'
-                                  }`}
+                                  className={`${statusInfo.color === 'yellow' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                                      statusInfo.color === 'blue' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                        statusInfo.color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                                          statusInfo.color === 'green' ? 'bg-green-50 text-green-700 border-green-200' :
+                                            'bg-red-50 text-red-700 border-red-200'
+                                    }`}
                                 >
                                   {statusInfo.label}
                                 </Badge>
