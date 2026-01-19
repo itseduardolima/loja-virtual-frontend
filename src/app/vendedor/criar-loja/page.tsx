@@ -38,6 +38,14 @@ export default function CriarLojaPage() {
   const hookData = useCreateStorePage();
   const { logout } = useAuth();
 
+  // Função auxiliar para acessar erros de forma segura
+  const getError = (step: 1 | 2 | 3 | 4, field: string): string | undefined => {
+    const errors: { [key: string]: string } | undefined = step === 1 ? hookData.step1Errors : 
+                   step === 2 ? hookData.step2Errors :
+                   step === 3 ? hookData.step3Errors : hookData.step4Errors;
+    return errors?.[field];
+  };
+
   const handleLogout = () => {
     logout();
     hookData.router?.push("/login");
@@ -92,8 +100,11 @@ export default function CriarLojaPage() {
           value={hookData.formData.name}
           onChange={(e) => hookData.handleInputChange("name", e.target.value)}
           placeholder="Ex: Minha Loja de Roupas"
-          className="mt-2"
+          className={`mt-2 ${getError(1, 'name') ? 'border-red-500 focus:ring-red-500' : ''}`}
         />
+        {getError(1, 'name') && (
+          <p className="mt-1 text-sm text-red-600">{getError(1, 'name')}</p>
+        )}
       </div>
 
       <div>
@@ -107,9 +118,12 @@ export default function CriarLojaPage() {
             hookData.handleInputChange("description", e.target.value)
           }
           placeholder="Descreva sua loja e o que você vende..."
-          className="mt-2"
+          className={`mt-2 ${getError(1, 'description') ? 'border-red-500 focus:ring-red-500' : ''}`}
           rows={3}
         />
+        {getError(1, 'description') && (
+          <p className="mt-1 text-sm text-red-600">{getError(1, 'description')}</p>
+        )}
       </div>
 
       <div>
@@ -156,6 +170,9 @@ export default function CriarLojaPage() {
               </div>
             ))}
           </div>
+        )}
+        {getError(1, 'niche_ids') && (
+          <p className="mt-2 text-sm text-red-600">{getError(1, 'niche_ids')}</p>
         )}
       </div>
 
@@ -332,9 +349,12 @@ export default function CriarLojaPage() {
                 hookData.handleInputChange("whatsapp", e.target.value)
               }
               placeholder="11999999999"
-              className="flex-1"
+              className={`flex-1 ${getError(2, 'whatsapp') ? 'border-red-500 focus:ring-red-500' : ''}`}
             />
           </div>
+          {getError(2, 'whatsapp') && (
+            <p className="mt-1 text-sm text-red-600">{getError(2, 'whatsapp')}</p>
+          )}
         </div>
 
         <div>
@@ -347,13 +367,17 @@ export default function CriarLojaPage() {
           </Label>
           <Input
             id="instagram"
+            type="url"
             value={hookData.formData.instagram}
             onChange={(e) =>
               hookData.handleInputChange("instagram", e.target.value)
             }
-            placeholder="@minhaloja"
-            className="mt-2"
+            placeholder="https://instagram.com/minhaloja"
+            className={`mt-2 ${getError(2, 'instagram') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
+          {getError(2, 'instagram') && (
+            <p className="mt-1 text-sm text-red-600">{getError(2, 'instagram')}</p>
+          )}
         </div>
 
         <div>
@@ -366,13 +390,17 @@ export default function CriarLojaPage() {
           </Label>
           <Input
             id="facebook"
+            type="url"
             value={hookData.formData.facebook}
             onChange={(e) =>
               hookData.handleInputChange("facebook", e.target.value)
             }
-            placeholder="minhaloja"
-            className="mt-2"
+            placeholder="https://facebook.com/minhaloja"
+            className={`mt-2 ${getError(2, 'facebook') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
+          {getError(2, 'facebook') && (
+            <p className="mt-1 text-sm text-red-600">{getError(2, 'facebook')}</p>
+          )}
         </div>
 
         <div>
@@ -391,61 +419,49 @@ export default function CriarLojaPage() {
               hookData.handleInputChange("email", e.target.value)
             }
             placeholder="contato@minhaloja.com.br"
-            className="mt-2"
+            className={`mt-2 ${getError(2, 'email') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
+          {getError(2, 'email') && (
+            <p className="mt-1 text-sm text-red-600">{getError(2, 'email')}</p>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        <div>
+          <Label htmlFor="cnpj" className="text-base font-semibold">
+            CNPJ
+          </Label>
+          <Input
+            id="cnpj"
+            value={hookData.formData.cnpj}
+            onChange={(e) =>
+              hookData.handleInputChange("cnpj", e.target.value)
+            }
+            placeholder="00.000.000/0000-00"
+            className={`mt-2 ${getError(2, 'cnpj') ? 'border-red-500 focus:ring-red-500' : ''}`}
+          />
+          {getError(2, 'cnpj') && (
+            <p className="mt-1 text-sm text-red-600">{getError(2, 'cnpj')}</p>
+          )}
         </div>
 
         <div>
-          <Label
-            htmlFor="phone"
-            className="text-base font-semibold flex items-center gap-2"
-          >
-            <Phone className="h-4 w-4" />
-            Telefone
+          <Label htmlFor="cpf" className="text-base font-semibold">
+            CPF
           </Label>
-          <div className="flex gap-2 mt-2">
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() =>
-                  hookData.setShowCountryDropdown(!hookData.showCountryDropdown)
-                }
-                className="flex items-center h-12  gap-2 px-3 py-2 border border-gray-300 rounded-xl bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {hookData.getSelectedCountry()?.flagUrl ? (
-                  <img
-                    src={hookData.getSelectedCountry()?.flagUrl}
-                    alt={`Bandeira do ${hookData.getSelectedCountry()?.name.common
-                      }`}
-                    className="w-5 h-4 object-cover rounded-sm"
-                    onError={(e) => {
-                      const target = e.currentTarget as HTMLImageElement;
-                      const nextElement =
-                        target.nextElementSibling as HTMLElement;
-                      target.style.display = "none";
-                      if (nextElement) nextElement.style.display = "inline";
-                    }}
-                  />
-                ) : null}
-                <span className="text-lg hidden">
-                  {hookData.getSelectedCountry()?.flag || "🇧🇷"}
-                </span>
-                <span className="text-sm font-medium">
-                  {hookData.getCountryCallingCode()}
-                </span>
-                <ChevronDown className="h-4 w-4" />
-              </button>
-            </div>
-            <Input
-              id="phone"
-              value={hookData.formData.phone}
-              onChange={(e) =>
-                hookData.handleInputChange("phone", e.target.value)
-              }
-              placeholder="11999999999"
-              className="flex-1"
-            />
-          </div>
+          <Input
+            id="cpf"
+            value={hookData.formData.cpf}
+            onChange={(e) =>
+              hookData.handleInputChange("cpf", e.target.value)
+            }
+            placeholder="000.000.000-00"
+            className={`mt-2 ${getError(2, 'cpf') ? 'border-red-500 focus:ring-red-500' : ''}`}
+          />
+          {getError(2, 'cpf') && (
+            <p className="mt-1 text-sm text-red-600">{getError(2, 'cpf')}</p>
+          )}
         </div>
       </div>
 
@@ -484,8 +500,11 @@ export default function CriarLojaPage() {
               hookData.handleInputChange("address", e.target.value)
             }
             placeholder="Rua das Flores, 123"
-            className="mt-2"
+            className={`mt-2 ${getError(3, 'address') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
+          {getError(3, 'address') && (
+            <p className="mt-1 text-sm text-red-600">{getError(3, 'address')}</p>
+          )}
         </div>
 
         <div>
@@ -497,8 +516,11 @@ export default function CriarLojaPage() {
             value={hookData.formData.city}
             onChange={(e) => hookData.handleInputChange("city", e.target.value)}
             placeholder="São Paulo"
-            className="mt-2"
+            className={`mt-2 ${getError(3, 'city') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
+          {getError(3, 'city') && (
+            <p className="mt-1 text-sm text-red-600">{getError(3, 'city')}</p>
+          )}
         </div>
 
         <div>
@@ -512,8 +534,11 @@ export default function CriarLojaPage() {
               hookData.handleInputChange("state", e.target.value)
             }
             placeholder="SP"
-            className="mt-2"
+            className={`mt-2 ${getError(3, 'state') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
+          {getError(3, 'state') && (
+            <p className="mt-1 text-sm text-red-600">{getError(3, 'state')}</p>
+          )}
         </div>
 
         <div>
@@ -527,8 +552,11 @@ export default function CriarLojaPage() {
               hookData.handleInputChange("zipcode", e.target.value)
             }
             placeholder="01234-567"
-            className="mt-2"
+            className={`mt-2 ${getError(3, 'zipcode') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
+          {getError(3, 'zipcode') && (
+            <p className="mt-1 text-sm text-red-600">{getError(3, 'zipcode')}</p>
+          )}
         </div>
 
         <div>
@@ -542,8 +570,11 @@ export default function CriarLojaPage() {
               hookData.handleInputChange("neighborhood", e.target.value)
             }
             placeholder="Centro"
-            className="mt-2"
+            className={`mt-2 ${getError(3, 'neighborhood') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
+          {getError(3, 'neighborhood') && (
+            <p className="mt-1 text-sm text-red-600">{getError(3, 'neighborhood')}</p>
+          )}
         </div>
 
         <div>
@@ -557,8 +588,11 @@ export default function CriarLojaPage() {
               hookData.handleInputChange("number", e.target.value)
             }
             placeholder="123"
-            className="mt-2"
+            className={`mt-2 ${getError(3, 'number') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
+          {getError(3, 'number') && (
+            <p className="mt-1 text-sm text-red-600">{getError(3, 'number')}</p>
+          )}
         </div>
 
         <div>
@@ -572,8 +606,11 @@ export default function CriarLojaPage() {
               hookData.handleInputChange("complement", e.target.value)
             }
             placeholder="Apto 45"
-            className="mt-2"
+            className={`mt-2 ${getError(3, 'complement') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
+          {getError(3, 'complement') && (
+            <p className="mt-1 text-sm text-red-600">{getError(3, 'complement')}</p>
+          )}
         </div>
       </div>
 
@@ -590,8 +627,11 @@ export default function CriarLojaPage() {
               hookData.handleInputChange("delivery_fee", e.target.value)
             }
             placeholder="5.50"
-            className="mt-2"
+            className={`mt-2 ${getError(3, 'delivery_fee') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
+          {getError(3, 'delivery_fee') && (
+            <p className="mt-1 text-sm text-red-600">{getError(3, 'delivery_fee')}</p>
+          )}
         </div>
 
         <div>
@@ -609,8 +649,11 @@ export default function CriarLojaPage() {
               hookData.handleInputChange("free_delivery_min", e.target.value)
             }
             placeholder="50.00"
-            className="mt-2"
+            className={`mt-2 ${getError(3, 'free_delivery_min') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
+          {getError(3, 'free_delivery_min') && (
+            <p className="mt-1 text-sm text-red-600">{getError(3, 'free_delivery_min')}</p>
+          )}
         </div>
 
         <div className="md:col-span-2">
@@ -628,8 +671,11 @@ export default function CriarLojaPage() {
               hookData.handleInputChange("delivery_time", e.target.value)
             }
             placeholder="2-3 dias úteis"
-            className="mt-2"
+            className={`mt-2 ${getError(3, 'delivery_time') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
+          {getError(3, 'delivery_time') && (
+            <p className="mt-1 text-sm text-red-600">{getError(3, 'delivery_time')}</p>
+          )}
         </div>
       </div>
 
@@ -684,6 +730,9 @@ export default function CriarLojaPage() {
             </div>
           ))}
         </div>
+        {getError(4, 'payment_methods') && (
+          <p className="mt-2 text-sm text-red-600">{getError(4, 'payment_methods')}</p>
+        )}
       </div>
 
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -814,7 +863,7 @@ export default function CriarLojaPage() {
           {hookData.currentStep < hookData.STEPS.length ? (
             <Button
               onClick={hookData.nextStep}
-              disabled={!hookData.isStepValid()}
+              disabled={!hookData.isStepValid}
               className="flex items-center gap-2"
             >
               Próximo
@@ -823,7 +872,7 @@ export default function CriarLojaPage() {
           ) : (
             <Button
               onClick={hookData.handleSubmit}
-              disabled={!hookData.isStepValid() || hookData.isCreating}
+              disabled={!hookData.isStepValid || hookData.isCreating}
               className="flex items-center gap-2"
             >
               {hookData.isCreating ? (

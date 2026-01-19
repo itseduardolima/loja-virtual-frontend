@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, Button } from '@/components'
-import { ShieldX, Home } from 'lucide-react'
+import { ShieldX, ArrowLeft } from 'lucide-react'
 
 interface AccessDeniedProps {
   title?: string
@@ -13,6 +13,7 @@ interface AccessDeniedProps {
 export default function AccessDenied({
   title = 'Acesso Não Permitido',
   message = 'Você não tem permissão para acessar esta página.',
+  showBackButton = true
 }: AccessDeniedProps) {
   const router = useRouter()
 
@@ -25,23 +26,28 @@ export default function AccessDenied({
               <ShieldX className="w-10 h-10 text-red-600" />
             </div>
           </div>
-          
+
           <h1 className="text-2xl font-bold text-gray-900 mb-3">
             {title}
           </h1>
-          
+
           <p className="text-gray-600 mb-6">
             {message}
           </p>
-          
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">      
-            <Button
-              onClick={() => router.push('/')}
-              className="flex items-center justify-center gap-2"
-            >
-              <Home className="w-4 h-4" />
-              Ir para Home
-            </Button>
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            {showBackButton && (
+              <Button
+
+                onClick={() => router.back()}
+                className="flex items-center justify-center gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Voltar
+              </Button>
+            )}
+
+
           </div>
         </CardContent>
       </Card>
