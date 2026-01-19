@@ -17,6 +17,8 @@ import { formatPrice, buildImageUrl } from '@/lib/utils'
 import { CustomerOrdersDrawer } from './CustomerOrdersDrawer'
 import { CustomerProfileMenuDrawer } from './CustomerProfileMenuDrawer'
 import { UpdateProfileDrawer } from './UpdateProfileDrawer'
+import { VendorSettingsDrawer } from './VendorSettingsDrawer'
+import { PROFILE_IDS } from '@/types/auth'
 
 interface StoreHeaderProps {
   storeInfo: StoreInfo | null | undefined
@@ -72,11 +74,6 @@ export function StoreHeader({
   const handleLoginClick = () => {
     const currentUrl = pathname + (window.location.search || '')
     router.push(`/login?redirect=${encodeURIComponent(currentUrl)}`)
-    setIsUserMenuOpen(false)
-  }
-
-  const handleLogoutClick = () => {
-    logout()
     setIsUserMenuOpen(false)
   }
 
@@ -304,31 +301,37 @@ export function StoreHeader({
               )}
             </div>
 
-            {/* Drawer de Menu do Perfil */}
-            {isAuthenticated && user && (
-              <CustomerProfileMenuDrawer
+            {/* Drawer de Menu do Perfil - Cliente */}
+            {isAuthenticated && user && user.profile_id === PROFILE_IDS.Cliente && (
+              <>
+                <CustomerProfileMenuDrawer
+                  isOpen={isProfileMenuOpen}
+                  onClose={() => setIsProfileMenuOpen(false)}
+                  onUpdateProfile={() => setIsUpdateProfileOpen(true)}
+                  onViewOrders={() => setIsOrdersDrawerOpen(true)}
+                />
+
+                {/* Drawer de Atualização de Perfil */}
+                <UpdateProfileDrawer
+                  isOpen={isUpdateProfileOpen}
+                  onClose={() => setIsUpdateProfileOpen(false)}
+                />
+
+                {/* Drawer de Pedidos e Rastreio */}
+                <CustomerOrdersDrawer
+                  isOpen={isOrdersDrawerOpen}
+                  onClose={() => {
+                    setIsOrdersDrawerOpen(false)
+                  }}
+                />
+              </>
+            )}
+
+            {/* Drawer de Configurações - Vendedor */}
+            {isAuthenticated && user && user.profile_id === PROFILE_IDS.Vendedor && (
+              <VendorSettingsDrawer
                 isOpen={isProfileMenuOpen}
                 onClose={() => setIsProfileMenuOpen(false)}
-                onUpdateProfile={() => setIsUpdateProfileOpen(true)}
-                onViewOrders={() => setIsOrdersDrawerOpen(true)}
-              />
-            )}
-
-            {/* Drawer de Atualização de Perfil */}
-            {isAuthenticated && user && (
-              <UpdateProfileDrawer
-                isOpen={isUpdateProfileOpen}
-                onClose={() => setIsUpdateProfileOpen(false)}
-              />
-            )}
-
-            {/* Drawer de Pedidos e Rastreio */}
-            {isAuthenticated && user && (
-              <CustomerOrdersDrawer
-                isOpen={isOrdersDrawerOpen}
-                onClose={() => {
-                  setIsOrdersDrawerOpen(false)
-                }}
               />
             )}
           </div>

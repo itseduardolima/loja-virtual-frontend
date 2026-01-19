@@ -95,8 +95,8 @@ export function CustomerProfileMenuDrawer({
               <div className="border-t border-gray-200 my-2" />
 
               <Button
-                variant="ghost"
-                className="w-full justify-start gap-3 h-12 text-left text-red-600 hover:text-red-700 hover:bg-red-50"
+                variant="destructive"
+                className="w-full justify-start gap-3 h-12 text-left"
                 onClick={handleLogout}
               >
                 <LogOut className="w-5 h-5" />
