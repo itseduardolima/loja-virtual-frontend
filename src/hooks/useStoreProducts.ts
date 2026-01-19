@@ -5,7 +5,7 @@ import { StoreProductsParams, UseStoreProductsReturn } from '@/types/store'
 
 export function useStoreProducts(params: StoreProductsParams): UseStoreProductsReturn {
   const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true) // Iniciar como true para mostrar loader na primeira renderização
   const [error, setError] = useState<string | null>(null)
   const [meta, setMeta] = useState<UseStoreProductsReturn['meta']>(null)
   const [currentParams, setCurrentParams] = useState(params)

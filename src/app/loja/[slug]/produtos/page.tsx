@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import { ProductCard, StorePagination, StoreSidebar, LoadingSpinner, ErrorState, CartSidebar, StoreHeader } from '@/components'
+import { ProductCard, StorePagination, StoreSidebar, ErrorState, CartSidebar, StoreHeader, LoadingPage } from '@/components'
 import { Star, Package, Filter, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -76,10 +76,10 @@ export default function StorePage() {
     return 'Todos os produtos'
   }
 
-  if (loading && (!products || products.length === 0)) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner />
+        <LoadingPage />
       </div>
     )
   }
@@ -217,99 +217,107 @@ export default function StorePage() {
         {/* Conteúdo Principal */}
         <main className="flex-1 min-w-0">
           <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-            {/* Título e Contadores */}
-            <div className="mb-4 sm:mb-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
-                <div>
-                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
-                    {getPageTitle()}
-                  </h1>
-                  <p className="text-sm sm:text-base text-gray-600">
-                    {meta?.total || products?.length || 0} {(meta?.total || products?.length || 0) === 1 ? 'produto encontrado' : 'produtos encontrados'}
-                  </p>
-                </div>
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <LoadingPage />
               </div>
-
-              {/* Badges de Filtros Ativos */}
-              <div className="flex flex-wrap items-center gap-2">
-                {filters.featured && (
-                  <Badge className="bg-pink-500 text-white text-xs">
-                    <Star className="w-3 h-3 mr-1" />
-                    Em destaque
-                  </Badge>
-                )}
-                {filters.categoryId && categories.find(c => c.id === filters.categoryId) && (
-                  <Badge variant="secondary" className="text-xs">
-                    {categories.find(c => c.id === filters.categoryId)?.name}
-                  </Badge>
-                )}
-                {filters.color && (
-                  <Badge variant="secondary" className="text-xs">
-                    Cor: {filters.color}
-                  </Badge>
-                )}
-                {filters.size && (
-                  <Badge variant="secondary" className="text-xs">
-                    Tamanho: {filters.size}
-                  </Badge>
-                )}
-                {(filters.categoryId || filters.color || filters.size || filters.featured || filters.minPrice || filters.maxPrice) && (
-                  <Button
-                    onClick={handleClearFilters}
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 text-xs text-gray-600 hover:text-gray-900"
-                  >
-                    Limpar filtros
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            {/* Grid de Produtos */}
-            {products && Array.isArray(products) && products.length > 0 ? (
-              <>
-                <div className="grid gap-4 sm:gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
-                  {products.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      onAddToFavorites={handleAddToFavorites}
-                      onViewDetails={handleViewDetails}
-                    />
-                  ))}
-                </div>
-
-                {/* Paginação */}
-                {meta && meta.lastPage > 1 && (
-                  <div className="mt-6 sm:mt-8">
-                    <StorePagination
-                      currentPage={meta.currentPage}
-                      totalPages={meta.lastPage}
-                      totalItems={meta.total}
-                      onPageChange={handlePageChange}
-                      hasNextPage={meta.next !== null}
-                      hasPrevPage={meta.prev !== null}
-                    />
-                  </div>
-                )}
-              </>
             ) : (
-              <div className="text-center py-8 sm:py-12 px-4">
-                <div className="text-gray-400 mb-4">
-                  <Package className="w-12 h-12 sm:w-16 sm:h-16 mx-auto" />
+              <>
+                {/* Título e Contadores */}
+                <div className="mb-4 sm:mb-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+                    <div>
+                      <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
+                        {getPageTitle()}
+                      </h1>
+                      <p className="text-sm sm:text-base text-gray-600">
+                        {meta?.total || products?.length || 0} {(meta?.total || products?.length || 0) === 1 ? 'produto encontrado' : 'produtos encontrados'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Badges de Filtros Ativos */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {filters.featured && (
+                      <Badge className="bg-pink-500 text-white text-xs">
+                        <Star className="w-3 h-3 mr-1" />
+                        Em destaque
+                      </Badge>
+                    )}
+                    {filters.categoryId && categories.find(c => c.id === filters.categoryId) && (
+                      <Badge variant="secondary" className="text-xs">
+                        {categories.find(c => c.id === filters.categoryId)?.name}
+                      </Badge>
+                    )}
+                    {filters.color && (
+                      <Badge variant="secondary" className="text-xs">
+                        Cor: {filters.color}
+                      </Badge>
+                    )}
+                    {filters.size && (
+                      <Badge variant="secondary" className="text-xs">
+                        Tamanho: {filters.size}
+                      </Badge>
+                    )}
+                    {(filters.categoryId || filters.color || filters.size || filters.featured || filters.minPrice || filters.maxPrice) && (
+                      <Button
+                        onClick={handleClearFilters}
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 text-xs text-gray-600 hover:text-gray-900"
+                      >
+                        Limpar filtros
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
-                  Nenhum produto encontrado
-                </h3>
-                <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
-                  Tente ajustar os filtros ou termo de busca
-                </p>
-                <Button onClick={handleClearFilters} variant="outline" className="w-full sm:w-auto">
-                  Limpar filtros
-                </Button>
-              </div>
-            )}
+
+                {/* Grid de Produtos */}
+                  {products && Array.isArray(products) && products.length > 0 ? (
+                    <>
+                      <div className="grid gap-4 sm:gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
+                        {products.map((product) => (
+                          <ProductCard
+                            key={product.id}
+                            product={product}
+                            onAddToFavorites={handleAddToFavorites}
+                            onViewDetails={handleViewDetails}
+                          />
+                        ))}
+                      </div>
+
+                      {/* Paginação */}
+                      {meta && meta.lastPage > 1 && (
+                        <div className="mt-6 sm:mt-8">
+                          <StorePagination
+                            currentPage={meta.currentPage}
+                            totalPages={meta.lastPage}
+                            totalItems={meta.total}
+                            onPageChange={handlePageChange}
+                            hasNextPage={meta.next !== null}
+                            hasPrevPage={meta.prev !== null}
+                          />
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-center py-8 sm:py-12 px-4">
+                      <div className="text-gray-400 mb-4">
+                        <Package className="w-12 h-12 sm:w-16 sm:h-16 mx-auto" />
+                      </div>
+                      <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
+                        Nenhum produto encontrado
+                      </h3>
+                      <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
+                        Tente ajustar os filtros ou termo de busca
+                      </p>
+                      <Button onClick={handleClearFilters} variant="outline" className="w-full sm:w-auto">
+                        Limpar filtros
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
           </div>
         </main>
       </div>
