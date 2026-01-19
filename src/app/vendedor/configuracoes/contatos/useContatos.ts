@@ -1,7 +1,9 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
+import * as yup from 'yup'
 import { useStore } from '@/hooks/useStore'
 import { useUpdateStore } from '@/hooks/useUpdateStore'
 import { useCountries } from '@/hooks/useCountries'
+import { updateContatosSchema } from '@/schemas'
 
 export function useContatos() {
   const { data: store, isLoading } = useStore()
@@ -14,6 +16,13 @@ export function useContatos() {
     facebook: '',
     email: ''
   })
+
+  const [errors, setErrors] = useState<{
+    whatsapp?: string
+    instagram?: string
+    facebook?: string
+    email?: string
+  }>({})
 
   const [selectedCountry, setSelectedCountry] = useState('BR')
   const [showCountryDropdown, setShowCountryDropdown] = useState(false)
@@ -65,8 +74,52 @@ export function useContatos() {
     }
   }, [store, countriesData])
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+  const handleInputChange = async (field: string, value: string) => {
+    // Atualizar o estado primeiro
+    setFormData(prev => {
+      const updatedData = { ...prev, [field]: value }
+      
+      // Validar em tempo real usando Yup com os dados atualizados
+      // Se for WhatsApp ou Email, valida o schema completo para capturar o erro de "pelo menos um contato"
+      const shouldValidateFull = field === 'whatsapp' || field === 'email'
+      
+      const validationPromise = shouldValidateFull
+        ? updateContatosSchema.validate(updatedData, { abortEarly: false })
+        : updateContatosSchema.validateAt(field, updatedData, { abortEarly: false })
+      
+      validationPromise
+        .then(() => {
+          // Se passar na validação, remove os erros
+          if (shouldValidateFull) {
+            // Limpa erros de WhatsApp e Email quando valida o schema completo
+            setErrors(prevErrors => ({
+              ...prevErrors,
+              whatsapp: undefined,
+              email: undefined
+            }))
+          } else {
+            setErrors(prevErrors => ({ ...prevErrors, [field]: undefined }))
+          }
+        })
+        .catch((error) => {
+          if (error instanceof yup.ValidationError) {
+            if (shouldValidateFull) {
+              // Mapeia todos os erros quando valida o schema completo
+              const validationErrors: { [key: string]: string } = {}
+              error.inner.forEach((err) => {
+                if (err.path) {
+                  validationErrors[err.path] = err.message
+                }
+              })
+              setErrors(prevErrors => ({ ...prevErrors, ...validationErrors }))
+            } else {
+              setErrors(prevErrors => ({ ...prevErrors, [field]: error.message }))
+            }
+          }
+        })
+      
+      return updatedData
+    })
   }
 
   const getSelectedCountry = () => {
@@ -84,10 +137,38 @@ export function useContatos() {
     setShowCountryDropdown(false)
   }
 
+  // Verificar se o formulário é válido (sem erros e campos obrigatórios preenchidos)
+  const isFormValid = useMemo(() => {
+    // Verifica se há algum erro no estado
+    const hasErrors = Object.values(errors).some(error => error !== undefined && error !== '')
+    if (hasErrors) return false
+
+    // Verifica se pelo menos um campo de contato obrigatório está preenchido
+    const whatsapp = formData.whatsapp?.trim() || ''
+    const email = formData.email?.trim() || ''
+    const hasRequiredContact = whatsapp !== '' || email !== ''
+    if (!hasRequiredContact) return false
+
+    // Valida todos os campos usando Yup de forma síncrona
+    try {
+      updateContatosSchema.validateSync(formData, { abortEarly: false })
+      return true
+    } catch (error) {
+      // Se houver erro de validação, o formulário não é válido
+      return false
+    }
+  }, [formData, errors])
+
   const handleSave = async () => {
     if (!store?.id) return
     
     try {
+      // Validar todos os campos usando Yup
+      await updateContatosSchema.validate(formData, { abortEarly: false })
+      
+      // Se passar na validação, limpa os erros
+      setErrors({})
+      
       const callingCode = getCountryCallingCode()
       
       let cleanWhatsapp = (formData.whatsapp || '').trim()
@@ -100,17 +181,47 @@ export function useContatos() {
       cleanWhatsapp = cleanWhatsapp.replace(/\D/g, '')
       const whatsappWithCode = cleanWhatsapp ? `+${callingCode}${cleanWhatsapp}` : ''
       
+      const updateData: {
+        whatsapp?: string
+        instagram?: string
+        facebook?: string
+        email?: string
+      } = {
+        whatsapp: whatsappWithCode || undefined
+      }
+
+      const instagramValue = formData.instagram.trim()
+      if (instagramValue) {
+        updateData.instagram = instagramValue
+      }
+
+      const facebookValue = formData.facebook.trim()
+      if (facebookValue) {
+        updateData.facebook = facebookValue
+      }
+
+      const emailValue = formData.email.trim()
+      if (emailValue) {
+        updateData.email = emailValue
+      }
+
       await updateStore({
         storeId: store.id,
-        data: {
-          whatsapp: whatsappWithCode,
-          instagram: formData.instagram,
-          facebook: formData.facebook,
-          email: formData.email
-        }
+        data: updateData
       })
     } catch (error) {
-      console.error('Erro ao atualizar contatos:', error)
+      if (error instanceof yup.ValidationError) {
+        // Mapear erros do Yup para o estado de erros
+        const validationErrors: { [key: string]: string } = {}
+        error.inner.forEach((err) => {
+          if (err.path) {
+            validationErrors[err.path] = err.message
+          }
+        })
+        setErrors(validationErrors)
+      } else {
+        console.error('Erro ao atualizar contatos:', error)
+      }
     }
   }
 
@@ -119,6 +230,8 @@ export function useContatos() {
     isLoading,
     isUpdating,
     formData,
+    errors,
+    isFormValid,
     selectedCountry,
     showCountryDropdown,
     dropdownRef,

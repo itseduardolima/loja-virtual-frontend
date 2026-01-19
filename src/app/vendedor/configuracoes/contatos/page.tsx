@@ -11,6 +11,8 @@ export default function ContatosPage() {
     isLoading,
     isUpdating,
     formData,
+    errors,
+    isFormValid,
     selectedCountry,
     showCountryDropdown,
     dropdownRef,
@@ -128,9 +130,12 @@ export default function ContatosPage() {
                     value={formData.whatsapp}
                     onChange={(e) => handleInputChange('whatsapp', e.target.value)}
                     placeholder="11999999999"
-                    className="flex-1"
+                    className={`flex-1 ${errors.whatsapp ? 'border-red-500 focus:ring-red-500' : ''}`}
                   />
                 </div>
+                {errors.whatsapp && (
+                  <p className="mt-1 text-sm text-red-600">{errors.whatsapp}</p>
+                )}
               </div>
 
               {/* Email */}
@@ -147,8 +152,11 @@ export default function ContatosPage() {
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   placeholder="contato@minhaloja.com.br"
-                  className="mt-2"
+                  className={`mt-2 ${errors.email ? 'border-red-500 focus:ring-red-500' : ''}`}
                 />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                )}
               </div>
 
               {/* Instagram */}
@@ -156,16 +164,20 @@ export default function ContatosPage() {
                 <div className="flex items-center gap-2 mb-2">
                   <Instagram className="h-5 w-5 text-pink-600" />
                   <Label htmlFor="instagram" className="text-sm font-medium text-gray-700">
-                    Instagram
+                    Link do Instagram
                   </Label>
                 </div>
                 <Input
                   id="instagram"
+                  type="url"
                   value={formData.instagram}
                   onChange={(e) => handleInputChange('instagram', e.target.value)}
-                  placeholder="minhaloja"
-                  className="mt-2"
+                  placeholder="https://instagram.com/minhaloja"
+                  className={`mt-2 ${errors.instagram ? 'border-red-500 focus:ring-red-500' : ''}`}
                 />
+                {errors.instagram && (
+                  <p className="mt-1 text-sm text-red-600">{errors.instagram}</p>
+                )}
               </div>
 
               {/* Facebook */}
@@ -173,16 +185,20 @@ export default function ContatosPage() {
                 <div className="flex items-center gap-2 mb-2">
                   <Facebook className="h-5 w-5 text-blue-600" />
                   <Label htmlFor="facebook" className="text-sm font-medium text-gray-700">
-                    Facebook
+                    Link do Facebook
                   </Label>
                 </div>
                 <Input
                   id="facebook"
+                  type="url"
                   value={formData.facebook}
                   onChange={(e) => handleInputChange('facebook', e.target.value)}
-                  placeholder="minhaloja"
-                  className="mt-2"
+                  placeholder="https://facebook.com/minhaloja"
+                  className={`mt-2 ${errors.facebook ? 'border-red-500 focus:ring-red-500' : ''}`}
                 />
+                {errors.facebook && (
+                  <p className="mt-1 text-sm text-red-600">{errors.facebook}</p>
+                )}
               </div>
             </div>
 
@@ -190,7 +206,7 @@ export default function ContatosPage() {
             <div className="flex justify-end pt-6 border-t border-gray-200">
               <Button
                 onClick={handleSave}
-                disabled={isUpdating}
+                disabled={isUpdating || !isFormValid}
                 className="flex items-center gap-2"
               >
                 {isUpdating ? (

@@ -309,7 +309,7 @@ export function CustomerOrdersDrawer({ isOpen, onClose }: CustomerOrdersDrawerPr
                                     className="h-10 px-4 border-pink-200 text-pink-600 hover:bg-pink-50 hover:border-pink-300"
                                   >
                                     <a
-                                      href={`https://instagram.com/${storeInfo.data.instagram.replace('@', '')}`}
+                                      href={storeInfo.data.instagram}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="flex items-center gap-2"
