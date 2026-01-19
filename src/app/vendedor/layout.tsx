@@ -6,6 +6,7 @@ import { SidebarVendedor, UserHeader } from '@/components'
 import LoadingPage from '@/components/Layout/LoadingPage'
 import AccessDenied from '@/components/Layout/AccessDenied'
 import { useEffect, useState } from 'react'
+import { useValidateToken } from '@/hooks/useValidateToken'
 
 export default function VendedorLayout({
   children,
@@ -14,16 +15,22 @@ export default function VendedorLayout({
 }) {
   const pathname = usePathname()
   const router = useRouter()
-  const { isLoading: authLoading, isAuthenticated, user } = useAuth()
+  const { isLoading: authLoading, isAuthenticated, user, logout } = useAuth()
   const [isReady, setIsReady] = useState(false)
   const [accessDenied, setAccessDenied] = useState(false)
+  const token = typeof window !== 'undefined' ? localStorage.getItem('auth-token') : null
+  
+  // Valida o token no backend
+  const { data: validatedUser, isLoading: isValidating, isError } = useValidateToken(
+    !authLoading && isAuthenticated && !!token
+  )
   
   // Não mostrar sidebar na página de criar loja
   const isCreateStorePage = pathname === '/vendedor/criar-loja'
 
   // Aguarda o carregamento completo e verifica se o usuário está autenticado
   useEffect(() => {
-    if (authLoading) {
+    if (authLoading || isValidating) {
       setIsReady(false)
       setAccessDenied(false)
       return
@@ -39,15 +46,22 @@ export default function VendedorLayout({
       return
     }
 
+    // Se a validação falhou (token inválido ou perfil incorreto)
+    if (isError) {
+      logout()
+      router.push('/login')
+      return
+    }
+
     // Se está autenticado mas não é vendedor, mostra acesso negado
-    if (isAuthenticated && user && user.profile !== 'Vendedor') {
+    if (validatedUser && validatedUser.profile !== 'Vendedor') {
       setAccessDenied(true)
       setIsReady(false)
       return
     }
 
     // Se é vendedor, permite acesso
-    if (isAuthenticated && user?.profile === 'Vendedor') {
+    if (validatedUser && validatedUser.profile === 'Vendedor') {
       setAccessDenied(false)
       // Pequeno delay para garantir que tudo está pronto e evitar flash do sidebar
       const timer = setTimeout(() => {
@@ -55,7 +69,7 @@ export default function VendedorLayout({
       }, 200)
       return () => clearTimeout(timer)
     }
-  }, [authLoading, isAuthenticated, user, router, pathname])
+  }, [authLoading, isValidating, isAuthenticated, user, router, pathname, validatedUser, isError, logout])
 
   // Controla o overflow do body para evitar scroll duplo
   useEffect(() => {
@@ -72,8 +86,8 @@ export default function VendedorLayout({
     }
   }, [isCreateStorePage, isReady])
 
-  // Se está carregando, mostra loading
-  if (authLoading) {
+  // Se está carregando ou validando, mostra loading
+  if (authLoading || isValidating) {
     return <LoadingPage />
   }
 

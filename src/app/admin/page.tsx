@@ -4,40 +4,10 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LogOut, User, Settings, BarChart3, Users, Package } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
 import { PROFILE_TRANSACTIONS } from '@/types/auth'
 
 export default function AdminPage() {
-  const { user, logout, isAuthenticated, isLoading } = useAuth()
-  const router = useRouter()
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/login')
-    } else if (!isLoading && isAuthenticated && user?.profile !== 'Administrador') {
-      const routes = {
-        'Vendedor': '/vendedor',
-        'Cliente': '/'
-      }
-      router.push(user?.profile ? routes[user.profile] || '/login' : '/login')
-    }
-  }, [isAuthenticated, isLoading, user, router])
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p>Carregando...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!isAuthenticated || user?.profile !== 'Administrador') {
-    return null
-  }
+  const { user, logout } = useAuth()
 
   const adminTransactions = PROFILE_TRANSACTIONS.Administrador
 
