@@ -15,6 +15,8 @@ import { api } from '@/lib/api'
 import { Product, ProductsResponse } from '@/types/product'
 import { formatPrice, buildImageUrl } from '@/lib/utils'
 import { CustomerOrdersDrawer } from './CustomerOrdersDrawer'
+import { CustomerProfileMenuDrawer } from './CustomerProfileMenuDrawer'
+import { UpdateProfileDrawer } from './UpdateProfileDrawer'
 
 interface StoreHeaderProps {
   storeInfo: StoreInfo | null | undefined
@@ -39,7 +41,9 @@ export function StoreHeader({
   const [suggestions, setSuggestions] = useState<Product[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const [isOrdersDrawerOpen, setIsOrdersDrawerOpen] = useState(false)
+  const [isUpdateProfileOpen, setIsUpdateProfileOpen] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
   const { user, isAuthenticated, logout } = useAuth()
@@ -261,13 +265,13 @@ export function StoreHeader({
                 variant="ghost"
                 onClick={() => {
                   if (isAuthenticated && user) {
-                    setIsOrdersDrawerOpen(true)
+                    setIsProfileMenuOpen(true)
                   } else {
                     setIsUserMenuOpen(!isUserMenuOpen)
                   }
                 }}
                 className="flex items-center gap-1.5 sm:gap-2 p-2 sm:p-0 hover:bg-transparent h-9 sm:h-auto"
-                aria-label={isAuthenticated ? 'Meus pedidos' : 'Login'}
+                aria-label={isAuthenticated ? 'Menu do perfil' : 'Login'}
               >
                 <User className="w-5 h-5 sm:w-6 sm:h-6" />
                 {isAuthenticated && user && (
@@ -299,6 +303,24 @@ export function StoreHeader({
                 </>
               )}
             </div>
+
+            {/* Drawer de Menu do Perfil */}
+            {isAuthenticated && user && (
+              <CustomerProfileMenuDrawer
+                isOpen={isProfileMenuOpen}
+                onClose={() => setIsProfileMenuOpen(false)}
+                onUpdateProfile={() => setIsUpdateProfileOpen(true)}
+                onViewOrders={() => setIsOrdersDrawerOpen(true)}
+              />
+            )}
+
+            {/* Drawer de Atualização de Perfil */}
+            {isAuthenticated && user && (
+              <UpdateProfileDrawer
+                isOpen={isUpdateProfileOpen}
+                onClose={() => setIsUpdateProfileOpen(false)}
+              />
+            )}
 
             {/* Drawer de Pedidos e Rastreio */}
             {isAuthenticated && user && (

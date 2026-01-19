@@ -48,6 +48,7 @@ export interface AuthContextType {
   loginWithGoogle: () => void
   logout: () => void
   refreshToken: () => Promise<void>
+  setUser: (user: User | null) => void
 }
 
 export interface ApiError {
