@@ -3,6 +3,7 @@
 import { useMySubscription } from '@/hooks/useMySubscription'
 import { useCancelSubscription } from '@/hooks/useCancelSubscription'
 import { Card, CardContent, CardHeader, CardTitle, Button, LoadingSpinner } from '@/components'
+import { RenewSubscriptionModal } from '@/components/Subscription/RenewSubscriptionModal'
 import { 
   CreditCard, 
   Calendar, 
@@ -12,7 +13,8 @@ import {
   Package,
   Store,
   TrendingUp,
-  X
+  X,
+  RefreshCw
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -20,6 +22,7 @@ export default function PlanoPage() {
   const { data: subscription, isLoading, error } = useMySubscription()
   const { mutate: cancelSubscription, isPending: isCanceling } = useCancelSubscription()
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [showRenewModal, setShowRenewModal] = useState(false)
 
   const handleCancel = () => {
     if (!subscription) return
@@ -217,11 +220,15 @@ export default function PlanoPage() {
                   <p className="text-sm text-gray-600 mb-1">Período Atual</p>
                   <p className="text-base font-semibold text-gray-900">
                     {subscription.current_period_start
-                      ? new Date(subscription.current_period_start).toLocaleDateString('pt-BR', {
-                          day: '2-digit',
-                          month: 'long',
-                          year: 'numeric'
-                        })
+                      ? (() => {
+                          const date = new Date(subscription.current_period_start);
+                          return date.toLocaleDateString('pt-BR', {
+                            day: '2-digit',
+                            month: 'long',
+                            year: 'numeric',
+                            timeZone: 'UTC'
+                          });
+                        })()
                       : 'N/A'}
                   </p>
                 </div>
@@ -229,11 +236,15 @@ export default function PlanoPage() {
                   <p className="text-sm text-gray-600 mb-1">Próxima Renovação</p>
                   <p className="text-base font-semibold text-gray-900">
                     {subscription.current_period_end
-                      ? new Date(subscription.current_period_end).toLocaleDateString('pt-BR', {
-                          day: '2-digit',
-                          month: 'long',
-                          year: 'numeric'
-                        })
+                      ? (() => {
+                          const date = new Date(subscription.current_period_end);
+                          return date.toLocaleDateString('pt-BR', {
+                            day: '2-digit',
+                            month: 'long',
+                            year: 'numeric',
+                            timeZone: 'UTC'
+                          });
+                        })()
                       : 'N/A'}
                   </p>
                 </div>
@@ -241,11 +252,15 @@ export default function PlanoPage() {
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Cancelado em</p>
                     <p className="text-base font-semibold text-gray-900">
-                      {new Date(subscription.canceled_at).toLocaleDateString('pt-BR', {
-                        day: '2-digit',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
+                      {(() => {
+                        const date = new Date(subscription.canceled_at);
+                        return date.toLocaleDateString('pt-BR', {
+                          day: '2-digit',
+                          month: 'long',
+                          year: 'numeric',
+                          timeZone: 'UTC'
+                        });
+                      })()}
                     </p>
                   </div>
                 )}
@@ -312,20 +327,36 @@ export default function PlanoPage() {
                 </>
               )}
 
-              {subscription.status === 'canceled' && (
-                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <p className="text-sm text-yellow-800">
-                    Sua assinatura foi cancelada. Você terá acesso até o final do período atual.
-                  </p>
-                </div>
-              )}
-
-              {subscription.status === 'expired' && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-800">
-                    Sua assinatura expirou. Renove para continuar usando o serviço.
-                  </p>
-                </div>
+              {(subscription.status === 'canceled' || subscription.status === 'expired') && (
+                <>
+                  <div className={`p-4 border rounded-lg ${
+                    subscription.status === 'canceled' 
+                      ? 'bg-yellow-50 border-yellow-200' 
+                      : 'bg-red-50 border-red-200'
+                  }`}>
+                    <p className={`text-sm font-semibold mb-2 ${
+                      subscription.status === 'canceled' ? 'text-yellow-900' : 'text-red-900'
+                    }`}>
+                      {subscription.status === 'canceled' 
+                        ? 'Assinatura Cancelada' 
+                        : 'Assinatura Expirada'}
+                    </p>
+                    <p className={`text-sm ${
+                      subscription.status === 'canceled' ? 'text-yellow-800' : 'text-red-800'
+                    }`}>
+                      {subscription.status === 'canceled'
+                        ? 'Sua assinatura foi cancelada. Renove para continuar usando o serviço.'
+                        : 'Sua assinatura expirou. Renove para continuar usando o serviço.'}
+                    </p>
+                  </div>
+                  <Button
+                    className="w-full"
+                    onClick={() => setShowRenewModal(true)}
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Renovar Assinatura
+                  </Button>
+                </>
               )}
 
               {subscription.status === 'pending' && (
@@ -349,9 +380,6 @@ export default function PlanoPage() {
                   • O cancelamento é imediato, mas você mantém acesso até o final do período pago.
                 </p>
                 <p>
-                  • Após o cancelamento, seu perfil será revertido para Cliente.
-                </p>
-                <p>
                   • Você pode reativar sua assinatura a qualquer momento.
                 </p>
               </div>
@@ -359,6 +387,15 @@ export default function PlanoPage() {
           </Card>
         </div>
       </div>
+
+      {/* Modal de Renovação */}
+      {plan && (
+        <RenewSubscriptionModal
+          open={showRenewModal}
+          onOpenChange={setShowRenewModal}
+          planPrice={typeof plan.price === 'string' ? parseFloat(plan.price) : (plan.price || 0)}
+        />
+      )}
     </div>
   )
 }
