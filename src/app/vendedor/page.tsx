@@ -176,18 +176,18 @@ export default function VendedorPage() {
                         )}
                         {hookData.store?.instagram && (
                           <a
-                            href={`https://instagram.com/${hookData.store.instagram}`}
+                            href={hookData.store?.instagram}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-700 rounded-lg hover:bg-pink-100 transition-colors"
                           >
                             <Instagram className="w-4 h-4" />
-                            <span className="text-sm font-medium">@{hookData.store.instagram}</span>
+                            <span className="text-sm font-medium">{hookData.store.instagram}</span>
                           </a>
                         )}
                         {(hookData.store as any)?.facebook && (
                           <a
-                            href={`https://facebook.com/${(hookData.store as any).facebook}`}
+                            href={(hookData.store as any).facebook}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
@@ -206,15 +206,7 @@ export default function VendedorPage() {
                             <span className="text-sm font-medium">{(hookData.store as any).email}</span>
                           </a>
                         )}
-                        {(hookData.store as any)?.phone && (
-                          <a
-                            href={`tel:${(hookData.store as any).phone}`}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors"
-                          >
-                            <Phone className="w-4 h-4" />
-                            <span className="text-sm font-medium">{(hookData.store as any).phone}</span>
-                          </a>
-                        )}
+                        
                       </div>
                     </div>
                   </div>
