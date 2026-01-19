@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import * as yup from 'yup'
 import { useStore } from '@/hooks/useStore'
 import { useUpdateStore } from '@/hooks/useUpdateStore'
 import { useAllNiches } from '@/hooks/useNiches'
+import { updateInformacoesBasicasSchema } from '@/schemas'
 
 export function useInformacoesBasicas() {
   const { data: store, isLoading } = useStore()
@@ -13,6 +15,12 @@ export function useInformacoesBasicas() {
     description: '',
     niche_ids: [] as string[]
   })
+
+  const [errors, setErrors] = useState<{
+    name?: string
+    description?: string
+    niche_ids?: string
+  }>({})
 
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [bannerFile, setBannerFile] = useState<File | null>(null)
@@ -41,8 +49,25 @@ export function useInformacoesBasicas() {
     }
   }, [store])
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+  const handleInputChange = async (field: string, value: string) => {
+    setFormData(prev => {
+      const updatedData = { ...prev, [field]: value }
+      
+      updateInformacoesBasicasSchema.validateAt(field, updatedData, { abortEarly: false })
+        .then(() => {
+          setErrors(prevErrors => ({ ...prevErrors, [field]: undefined }))
+        })
+        .catch((error) => {
+          if (error instanceof yup.ValidationError) {
+            // Pegar a mensagem específica do campo, não a genérica
+            const fieldError = error.inner.find(err => err.path === field)
+            const errorMessage = fieldError?.message || error.message
+            setErrors(prevErrors => ({ ...prevErrors, [field]: errorMessage }))
+          }
+        })
+      
+      return updatedData
+    })
   }
 
   const handleFileChange = (type: 'logo' | 'banner', file: File | null) => {
@@ -65,22 +90,52 @@ export function useInformacoesBasicas() {
     setFormData(prev => {
       const currentIds = prev.niche_ids || []
       const isSelected = currentIds.includes(nicheId)
+      const updatedIds = isSelected
+        ? currentIds.filter(id => id !== nicheId)
+        : [...currentIds, nicheId]
       
-      if (isSelected) {
-        return { ...prev, niche_ids: currentIds.filter(id => id !== nicheId) }
-      } else {
-        return { ...prev, niche_ids: [...currentIds, nicheId] }
-      }
+      const updatedData = { ...prev, niche_ids: updatedIds }
+      
+      updateInformacoesBasicasSchema.validateAt('niche_ids', updatedData, { abortEarly: false })
+        .then(() => {
+          setErrors(prevErrors => ({ ...prevErrors, niche_ids: undefined }))
+        })
+        .catch((error) => {
+          if (error instanceof yup.ValidationError) {
+            // Pegar a mensagem específica do campo, não a genérica
+            const fieldError = error.inner.find(err => err.path === 'niche_ids')
+            const errorMessage = fieldError?.message || error.message
+            setErrors(prevErrors => ({ ...prevErrors, niche_ids: errorMessage }))
+          }
+        })
+      
+      return updatedData
     })
   }
+
+  // Verificar se o formulário é válido
+  const isFormValid = useMemo(() => {
+    const hasErrors = Object.values(errors).some(error => error !== undefined && error !== '')
+    if (hasErrors) return false
+
+    try {
+      updateInformacoesBasicasSchema.validateSync(formData, { abortEarly: false })
+      return true
+    } catch {
+      return false
+    }
+  }, [formData, errors])
 
   const handleSave = async () => {
     if (!store?.id) return
     
     try {
+      await updateInformacoesBasicasSchema.validate(formData, { abortEarly: false })
+      setErrors({})
+      
       const updateData: any = {
         name: formData.name,
-        description: formData.description,
+        description: formData.description || undefined,
         niche_ids: formData.niche_ids
       }
 
@@ -96,7 +151,17 @@ export function useInformacoesBasicas() {
         data: updateData
       })
     } catch (error) {
-      console.error('Erro ao atualizar informações básicas:', error)
+      if (error instanceof yup.ValidationError) {
+        const validationErrors: { [key: string]: string } = {}
+        error.inner.forEach((err) => {
+          if (err.path) {
+            validationErrors[err.path] = err.message
+          }
+        })
+        setErrors(validationErrors)
+      } else {
+        console.error('Erro ao atualizar informações básicas:', error)
+      }
     }
   }
 
@@ -105,6 +170,8 @@ export function useInformacoesBasicas() {
     isLoading,
     isUpdating,
     formData,
+    errors,
+    isFormValid,
     logoFile,
     bannerFile,
     logoPreview,

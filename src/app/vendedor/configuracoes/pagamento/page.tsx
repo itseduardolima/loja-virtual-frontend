@@ -10,6 +10,8 @@ export default function PagamentoPage() {
     isLoading,
     isUpdating,
     selectedMethods,
+    errors,
+    isFormValid,
     handleMethodToggle,
     handleSave
   } = usePagamento()
@@ -67,10 +69,14 @@ export default function PagamentoPage() {
               </div>
             )}
 
+            {errors.payment_methods && (
+              <p className="text-sm text-red-600">{errors.payment_methods}</p>
+            )}
+
             <div className="flex justify-end pt-4 border-t border-gray-200">
               <Button
                 onClick={handleSave}
-                disabled={isUpdating || selectedMethods.length === 0}
+                disabled={isUpdating || !isFormValid}
                 className="flex items-center gap-2"
               >
                 {isUpdating ? (

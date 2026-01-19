@@ -9,6 +9,8 @@ export default function EntregaPage() {
     isLoading,
     isUpdating,
     formData,
+    errors,
+    isFormValid,
     handleInputChange,
     handleSave
   } = useEntrega()
@@ -44,11 +46,16 @@ export default function EntregaPage() {
                     value={formData.delivery_fee}
                     onChange={(e) => handleInputChange('delivery_fee', e.target.value)}
                     placeholder="Digite o valor da taxa de entrega"
-                    className="mt-2"
+                    className={`mt-2 ${errors.delivery_fee ? 'border-red-500 focus:ring-red-500' : ''}`}
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Valor cobrado pela entrega dos produtos
-                  </p>
+                  <div className="flex justify-between items-center mt-1">
+                    <p className="text-xs text-gray-500">
+                      Valor cobrado pela entrega dos produtos
+                    </p>
+                    {errors.delivery_fee && (
+                      <p className="text-sm text-red-600">{errors.delivery_fee}</p>
+                    )}
+                  </div>
                 </div>
 
                 <div>
@@ -61,11 +68,16 @@ export default function EntregaPage() {
                     value={formData.free_delivery_min}
                     onChange={(e) => handleInputChange('free_delivery_min', e.target.value)}
                     placeholder="Digite o valor mínimo para entrega gratuita"
-                    className="mt-2"
+                    className={`mt-2 ${errors.free_delivery_min ? 'border-red-500 focus:ring-red-500' : ''}`}
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Pedidos acima deste valor terão entrega gratuita
-                  </p>
+                  <div className="flex justify-between items-center mt-1">
+                    <p className="text-xs text-gray-500">
+                      Pedidos acima deste valor terão entrega gratuita
+                    </p>
+                    {errors.free_delivery_min && (
+                      <p className="text-sm text-red-600">{errors.free_delivery_min}</p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -82,11 +94,16 @@ export default function EntregaPage() {
                   value={formData.delivery_time}
                   onChange={(e) => handleInputChange('delivery_time', e.target.value)}
                   placeholder="Digite o prazo de entrega"
-                  className="mt-2"
+                  className={`mt-2 ${errors.delivery_time ? 'border-red-500 focus:ring-red-500' : ''}`}
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Tempo estimado para entrega dos produtos
-                </p>
+                <div className="flex justify-between items-center mt-1">
+                  <p className="text-xs text-gray-500">
+                    Tempo estimado para entrega dos produtos
+                  </p>
+                  {errors.delivery_time && (
+                    <p className="text-sm text-red-600">{errors.delivery_time}</p>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -94,7 +111,7 @@ export default function EntregaPage() {
             <div className="flex justify-end pt-6 border-t border-gray-200">
               <Button
                 onClick={handleSave}
-                disabled={isUpdating}
+                disabled={isUpdating || !isFormValid}
                 className="flex items-center gap-2"
               >
                 {isUpdating ? (

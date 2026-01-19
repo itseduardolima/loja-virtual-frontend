@@ -10,6 +10,8 @@ export default function DocumentosPage() {
     isLoading,
     isUpdating,
     formData,
+    errors,
+    isFormValid,
     handleCNPJChange,
     handleCPFChange,
     handleSave
@@ -46,11 +48,16 @@ export default function DocumentosPage() {
                 onChange={handleCNPJChange}
                 placeholder="12.345.678/0001-90"
                 maxLength={18}
-                className="mt-2"
+                className={`mt-2 ${errors.cnpj ? 'border-red-500 focus:ring-red-500' : ''}`}
               />
-              <p className="text-xs text-gray-500 mt-1">
-                CNPJ da empresa (formato: 12.345.678/0001-90)
-              </p>
+              <div className="flex justify-between items-center mt-1">
+                <p className="text-xs text-gray-500">
+                  CNPJ da empresa (formato: 12.345.678/0001-90)
+                </p>
+                {errors.cnpj && (
+                  <p className="text-sm text-red-600">{errors.cnpj}</p>
+                )}
+              </div>
             </div>
 
             {/* CPF */}
@@ -67,11 +74,16 @@ export default function DocumentosPage() {
                 onChange={handleCPFChange}
                 placeholder="123.456.789-00"
                 maxLength={14}
-                className="mt-2"
+                className={`mt-2 ${errors.cpf ? 'border-red-500 focus:ring-red-500' : ''}`}
               />
-              <p className="text-xs text-gray-500 mt-1">
-                CPF do vendedor (formato: 123.456.789-00)
-              </p>
+              <div className="flex justify-between items-center mt-1">
+                <p className="text-xs text-gray-500">
+                  CPF do vendedor (formato: 123.456.789-00)
+                </p>
+                {errors.cpf && (
+                  <p className="text-sm text-red-600">{errors.cpf}</p>
+                )}
+              </div>
             </div>
 
             {/* Informação */}
@@ -93,7 +105,7 @@ export default function DocumentosPage() {
             <div className="flex justify-end pt-6 border-t border-gray-200">
               <Button
                 onClick={handleSave}
-                disabled={isUpdating}
+                disabled={isUpdating || !isFormValid}
                 className="flex items-center gap-2"
               >
                 {isUpdating ? (

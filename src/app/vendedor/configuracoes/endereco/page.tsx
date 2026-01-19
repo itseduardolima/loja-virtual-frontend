@@ -9,6 +9,8 @@ export default function EnderecoPage() {
     isLoading,
     isUpdating,
     formData,
+    errors,
+    isFormValid,
     handleInputChange,
     handleSave
   } = useEndereco()
@@ -40,8 +42,11 @@ export default function EnderecoPage() {
                   value={formData.address}
                   onChange={(e) => handleInputChange('address', e.target.value)}
                   placeholder="Digite o endereço completo"
-                  className="mt-2"
+                  className={`mt-2 ${errors.address ? 'border-red-500 focus:ring-red-500' : ''}`}
                 />
+                {errors.address && (
+                  <p className="mt-1 text-sm text-red-600">{errors.address}</p>
+                )}
               </div>
 
               <div>
@@ -53,8 +58,11 @@ export default function EnderecoPage() {
                   value={formData.city}
                   onChange={(e) => handleInputChange('city', e.target.value)}
                   placeholder="Digite a cidade"
-                  className="mt-2"
+                  className={`mt-2 ${errors.city ? 'border-red-500 focus:ring-red-500' : ''}`}
                 />
+                {errors.city && (
+                  <p className="mt-1 text-sm text-red-600">{errors.city}</p>
+                )}
               </div>
 
               <div>
@@ -66,8 +74,11 @@ export default function EnderecoPage() {
                   value={formData.state}
                   onChange={(e) => handleInputChange('state', e.target.value)}
                   placeholder="Digite o estado"
-                  className="mt-2"
+                  className={`mt-2 ${errors.state ? 'border-red-500 focus:ring-red-500' : ''}`}
                 />
+                {errors.state && (
+                  <p className="mt-1 text-sm text-red-600">{errors.state}</p>
+                )}
               </div>
 
               <div>
@@ -79,8 +90,11 @@ export default function EnderecoPage() {
                   value={formData.zipcode}
                   onChange={(e) => handleInputChange('zipcode', e.target.value)}
                   placeholder="Digite o CEP"
-                  className="mt-2"
+                  className={`mt-2 ${errors.zipcode ? 'border-red-500 focus:ring-red-500' : ''}`}
                 />
+                {errors.zipcode && (
+                  <p className="mt-1 text-sm text-red-600">{errors.zipcode}</p>
+                )}
               </div>
 
               <div>
@@ -92,8 +106,11 @@ export default function EnderecoPage() {
                   value={formData.neighborhood}
                   onChange={(e) => handleInputChange('neighborhood', e.target.value)}
                   placeholder="Digite o bairro"
-                  className="mt-2"
+                  className={`mt-2 ${errors.neighborhood ? 'border-red-500 focus:ring-red-500' : ''}`}
                 />
+                {errors.neighborhood && (
+                  <p className="mt-1 text-sm text-red-600">{errors.neighborhood}</p>
+                )}
               </div>
 
               <div>
@@ -105,8 +122,11 @@ export default function EnderecoPage() {
                   value={formData.number}
                   onChange={(e) => handleInputChange('number', e.target.value)}
                   placeholder="Digite o número"
-                  className="mt-2"
+                  className={`mt-2 ${errors.number ? 'border-red-500 focus:ring-red-500' : ''}`}
                 />
+                {errors.number && (
+                  <p className="mt-1 text-sm text-red-600">{errors.number}</p>
+                )}
               </div>
 
               <div className="md:col-span-2">
@@ -118,15 +138,18 @@ export default function EnderecoPage() {
                   value={formData.complement}
                   onChange={(e) => handleInputChange('complement', e.target.value)}
                   placeholder="Digite o complemento"
-                  className="mt-2"
+                  className={`mt-2 ${errors.complement ? 'border-red-500 focus:ring-red-500' : ''}`}
                 />
+                {errors.complement && (
+                  <p className="mt-1 text-sm text-red-600">{errors.complement}</p>
+                )}
               </div>
             </div>
 
             <div className="flex justify-end pt-6 border-t border-gray-200">
               <Button
                 onClick={handleSave}
-                disabled={isUpdating}
+                disabled={isUpdating || !isFormValid}
                 className="flex items-center gap-2"
               >
                 {isUpdating ? (

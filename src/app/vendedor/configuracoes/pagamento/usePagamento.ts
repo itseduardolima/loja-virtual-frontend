@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import * as yup from 'yup'
 import { useStore } from '@/hooks/useStore'
 import { useUpdateStore } from '@/hooks/useUpdateStore'
+import { updatePagamentoSchema } from '@/schemas'
 
 export const PAYMENT_METHODS = [
   { id: 'pix', name: 'PIX', description: 'Pagamento instantâneo via PIX' },
@@ -16,6 +18,9 @@ export function usePagamento() {
   const { updateStore, isUpdating } = useUpdateStore()
   
   const [selectedMethods, setSelectedMethods] = useState<string[]>([])
+  const [errors, setErrors] = useState<{
+    payment_methods?: string
+  }>({})
 
   useEffect(() => {
     if ((store as any)?.payment_methods) {
@@ -26,22 +31,64 @@ export function usePagamento() {
   const handleMethodToggle = (methodId: string) => {
     setSelectedMethods(prev => {
       const currentMethods = Array.isArray(prev) ? prev : []
-      return currentMethods.includes(methodId)
+      const updatedMethods = currentMethods.includes(methodId)
         ? currentMethods.filter(id => id !== methodId)
         : [...currentMethods, methodId]
+      
+      const dataForValidation = { payment_methods: updatedMethods }
+      
+      updatePagamentoSchema.validate(dataForValidation, { abortEarly: false })
+        .then(() => {
+          setErrors(prevErrors => ({ ...prevErrors, payment_methods: undefined }))
+        })
+        .catch((error) => {
+          if (error instanceof yup.ValidationError) {
+            const fieldError = error.inner.find(err => err.path === 'payment_methods')
+            const errorMessage = fieldError?.message || error.message
+            setErrors(prevErrors => ({ ...prevErrors, payment_methods: errorMessage }))
+          }
+        })
+      
+      return updatedMethods
     })
   }
+
+  // Verificar se o formulário é válido
+  const isFormValid = useMemo(() => {
+    const hasErrors = Object.values(errors).some(error => error !== undefined && error !== '')
+    if (hasErrors) return false
+
+    try {
+      updatePagamentoSchema.validateSync({ payment_methods: selectedMethods }, { abortEarly: false })
+      return true
+    } catch {
+      return false
+    }
+  }, [selectedMethods, errors])
 
   const handleSave = async () => {
     if (!store?.id) return
     
     try {
+      await updatePagamentoSchema.validate({ payment_methods: selectedMethods }, { abortEarly: false })
+      setErrors({})
+      
       await updateStore({
         storeId: store.id,
         data: { payment_methods: selectedMethods }
       })
     } catch (error) {
-      console.error('Erro ao atualizar métodos de pagamento:', error)
+      if (error instanceof yup.ValidationError) {
+        const validationErrors: { [key: string]: string } = {}
+        error.inner.forEach((err) => {
+          if (err.path) {
+            validationErrors[err.path] = err.message
+          }
+        })
+        setErrors(validationErrors)
+      } else {
+        console.error('Erro ao atualizar métodos de pagamento:', error)
+      }
     }
   }
 
@@ -50,6 +97,8 @@ export function usePagamento() {
     isLoading,
     isUpdating,
     selectedMethods,
+    errors,
+    isFormValid,
     handleMethodToggle,
     handleSave
   }

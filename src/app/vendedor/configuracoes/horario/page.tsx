@@ -55,6 +55,8 @@ export default function HorarioPage() {
     isLoading,
     isUpdating,
     businessHours,
+    errors,
+    isFormValid,
     DAYS_OF_WEEK,
     handleDayToggle,
     handleTimeChange,
@@ -134,11 +136,15 @@ export default function HorarioPage() {
               )
             })}
 
+            {errors.business_hours && (
+              <p className="text-sm text-red-600">{errors.business_hours}</p>
+            )}
+
             {/* Botão Salvar */}
             <div className="flex justify-end pt-6 border-t border-gray-200">
               <Button
                 onClick={handleSave}
-                disabled={isUpdating}
+                disabled={isUpdating || !isFormValid}
                 className="flex items-center gap-2"
               >
                 {isUpdating ? (

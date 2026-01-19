@@ -8,10 +8,11 @@ import { Upload } from 'lucide-react'
 
 export default function InformacoesBasicasPage() {
   const {
-    store,
     isLoading,
     isUpdating,
     formData,
+    errors,
+    isFormValid,
     logoPreview,
     bannerPreview,
     nichesData,
@@ -49,11 +50,11 @@ export default function InformacoesBasicasPage() {
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
                 placeholder="Digite o nome da loja"
-                className="mt-2"
+                className={`mt-2 ${errors.name ? 'border-red-500 focus:ring-red-500' : ''}`}
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Nome que aparecerá na sua loja
-              </p>
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+              )}
             </div>
 
             {/* Descrição */}
@@ -66,12 +67,17 @@ export default function InformacoesBasicasPage() {
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 placeholder="Descreva sua loja..."
-                className="mt-2 min-h-[100px]"
+                className={`mt-2 min-h-[100px] ${errors.description ? 'border-red-500 focus:ring-red-500' : ''}`}
                 maxLength={500}
               />
-              <p className="text-xs text-gray-500 mt-1">
-                {formData.description.length}/500 caracteres
-              </p>
+              <div className="flex justify-between items-center mt-1">
+                <p className="text-xs text-gray-500">
+                  {formData.description.length}/500 caracteres
+                </p>
+                {errors.description && (
+                  <p className="text-sm text-red-600">{errors.description}</p>
+                )}
+              </div>
             </div>
 
             {/* Logo e Banner */}
@@ -158,36 +164,41 @@ export default function InformacoesBasicasPage() {
                   <LoadingSpinner size="sm" />
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {nichesData?.data?.map((niche: any) => (
-                    <div
-                      key={niche.id}
-                      onClick={() => handleNicheToggle(niche.id.toString())}
-                      className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer"
-                    >
-                      <Checkbox
-                        id={niche.id.toString()}
-                        checked={formData.niche_ids.includes(niche.id.toString())}
-                        onCheckedChange={() => handleNicheToggle(niche.id.toString())}
-                      />
-                      <div className="flex-1">
-                        <label
-                          htmlFor={niche.id.toString()}
-                          className="block cursor-pointer"
-                        >
-                          <span className="font-medium text-gray-900">
-                            {niche.name}
-                          </span>
-                          {niche.description && (
-                            <p className="text-xs text-gray-500 mt-1">
-                              {niche.description}
-                            </p>
-                          )}
-                        </label>
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {nichesData?.data?.map((niche: any) => (
+                      <div
+                        key={niche.id}
+                        onClick={() => handleNicheToggle(niche.id.toString())}
+                        className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer"
+                      >
+                        <Checkbox
+                          id={niche.id.toString()}
+                          checked={formData.niche_ids.includes(niche.id.toString())}
+                          onCheckedChange={() => handleNicheToggle(niche.id.toString())}
+                        />
+                        <div className="flex-1">
+                          <label
+                            htmlFor={niche.id.toString()}
+                            className="block cursor-pointer"
+                          >
+                            <span className="font-medium text-gray-900">
+                              {niche.name}
+                            </span>
+                            {niche.description && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                {niche.description}
+                              </p>
+                            )}
+                          </label>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                  {errors.niche_ids && (
+                    <p className="mt-2 text-sm text-red-600">{errors.niche_ids}</p>
+                  )}
+                </>
               )}
             </div>
 
@@ -195,7 +206,7 @@ export default function InformacoesBasicasPage() {
             <div className="flex justify-end pt-6 border-t border-gray-200">
               <Button
                 onClick={handleSave}
-                disabled={isUpdating || !formData.name || formData.niche_ids.length === 0}
+                disabled={isUpdating || !isFormValid}
                 className="flex items-center gap-2"
               >
                 {isUpdating ? (
