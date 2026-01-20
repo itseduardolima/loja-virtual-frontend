@@ -7,10 +7,10 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
-import { X, Filter, ChevronUp, Check } from 'lucide-react'
+import { Filter, ChevronUp, Check } from 'lucide-react'
 import { StoreFiltersProps } from '@/app/loja/[slug]/produtos/types'
 import { formatPrice } from '@/lib/utils'
-import { useNiches, useNicheFields } from '@/hooks/useNiches'
+import { useStoreFields } from '@/hooks/useNiches'
 import { NicheField } from '@/types/niche'
 
 interface StoreSidebarProps extends StoreFiltersProps {
@@ -51,12 +51,9 @@ export function StoreSidebar({
 }: StoreSidebarProps) {
   const isInline = variant === 'inline'
   
-  // Hooks para nichos e campos - DEVEM ser chamados antes de qualquer return condicional
-  const { data: nichesData } = useNiches(storeId)
-  const niches = nichesData?.data || []
-  const [selectedNicheId, setSelectedNicheId] = useState<number | null>(null)
-  const { data: nicheFields } = useNicheFields(selectedNicheId)
-  const fields = nicheFields || []
+  // Hook para buscar todos os campos de todos os nichos da loja
+  const { data: storeFields } = useStoreFields(storeId)
+  const fields = storeFields || []
   
   // Estados locais para os filtros (não aplicados até clicar no botão)
   const [priceRange, setPriceRange] = useState<number[]>([
@@ -69,19 +66,66 @@ export function StoreSidebar({
   const [localSize, setLocalSize] = useState<string | undefined>(filterProps.activeFilters.size)
   const [localSort, setLocalSort] = useState<string>(filterProps.sortValue)
   const [localSortField, setLocalSortField] = useState<string>(filterProps.sortFieldValue)
+  // Usar nome do campo como chave (não slug) para unificar campos com mesmo nome
   const [dynamicFieldValues, setDynamicFieldValues] = useState<Record<string, string | string[]>>({})
-  const [isPriceCollapsed, setIsPriceCollapsed] = useState(false)
-  const [isNichesCollapsed, setIsNichesCollapsed] = useState(false)
-  const [openDropdowns, setOpenDropdowns] = useState<Record<number, boolean>>({})
-  const dropdownRefs = useRef<Record<number, HTMLDivElement | null>>({})
+  const [isPriceCollapsed, setIsPriceCollapsed] = useState(false) // Expandido por padrão
+  const [isFieldsCollapsed, setIsFieldsCollapsed] = useState(false) // Expandido por padrão
+  const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({}) // Usar nome do campo como chave
+  const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({}) // Usar nome do campo como chave
+  
+  // Filtrar apenas campos com opções (select e color), excluindo text, textarea e number
+  const fieldsWithOptions = fields.filter(field => 
+    (field.field_type === 'select' || field.field_type === 'color') && 
+    field.options && 
+    Array.isArray(field.options) && 
+    field.options.length > 0
+  )
+  
+  // Agrupar campos por nome (unificar campos com mesmo nome de diferentes nichos)
+  const groupedFieldsByName = fieldsWithOptions.reduce((acc, field) => {
+    const fieldName = field.name
+    if (!acc[fieldName]) {
+      acc[fieldName] = {
+        fields: [],
+        allOptions: new Set<string>(),
+        fieldType: field.field_type,
+        // Usar o primeiro campo como referência para tipo e outras propriedades
+        referenceField: field
+      }
+    }
+    acc[fieldName].fields.push(field)
+    // Combinar todas as opções de todos os campos com mesmo nome
+    if (field.options && Array.isArray(field.options)) {
+      field.options.forEach(option => acc[fieldName].allOptions.add(option))
+    }
+    return acc
+  }, {} as Record<string, {
+    fields: NicheField[]
+    allOptions: Set<string>
+    fieldType: string
+    referenceField: NicheField
+  }>)
+  
+  // Converter para array de entradas (sem filtro de busca)
+  const filteredGroupedFields = Object.entries(groupedFieldsByName)
+  
+  // Contar filtros ativos
+  const activeFiltersCount = [
+    localFeatured,
+    localCategoryId,
+    localColor,
+    localSize,
+    priceRange[0] > 0 || priceRange[1] < 200,
+    Object.keys(dynamicFieldValues).length > 0
+  ].filter(Boolean).length
   
   // Fechar dropdowns ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      Object.keys(openDropdowns).forEach(fieldId => {
-        const dropdown = dropdownRefs.current[parseInt(fieldId)]
+      Object.keys(openDropdowns).forEach(fieldName => {
+        const dropdown = dropdownRefs.current[fieldName]
         if (dropdown && !dropdown.contains(event.target as Node)) {
-          setOpenDropdowns(prev => ({ ...prev, [parseInt(fieldId)]: false }))
+          setOpenDropdowns(prev => ({ ...prev, [fieldName]: false }))
         }
       })
     }
@@ -133,13 +177,13 @@ export function StoreSidebar({
 
     filterProps.onSortChange(localSort, localSortField)
     
+    // Usar nome do campo diretamente como chave (já está unificado)
     const dynamicFilters: Record<string, string> = {}
-    Object.entries(dynamicFieldValues).forEach(([slug, value]) => {
-      const field = fields.find(f => f.slug === slug)
-      if (field && value) {
+    Object.entries(dynamicFieldValues).forEach(([fieldName, value]) => {
+      if (value) {
         const valuesArray = Array.isArray(value) ? value : [value]
         if (valuesArray.length > 0) {
-          dynamicFilters[field.name] = valuesArray.join(', ')
+          dynamicFilters[fieldName] = valuesArray.join(', ')
         }
       }
     })
@@ -166,38 +210,44 @@ export function StoreSidebar({
     setLocalSort('DESC')
     setLocalSortField('created_at')
     setDynamicFieldValues({})
-    setSelectedNicheId(null)
     setOpenDropdowns({})
     filterProps.onClearFilters()
   }
   
-  // Função para renderizar campo dinâmico baseado no tipo
-  const renderDynamicField = (field: NicheField) => {
-    const fieldValue = dynamicFieldValues[field.slug] || ''
+  // Função para renderizar campo dinâmico unificado baseado no tipo
+  const renderUnifiedField = (fieldName: string, fieldGroup: {
+    fields: NicheField[]
+    allOptions: Set<string>
+    fieldType: string
+    referenceField: NicheField
+  }) => {
+    const fieldValue = dynamicFieldValues[fieldName] || ''
     const selectedOptions = Array.isArray(fieldValue) ? fieldValue : (fieldValue ? [fieldValue] : [])
+    const allOptionsArray = Array.from(fieldGroup.allOptions).sort()
+    const field = fieldGroup.referenceField
     
-    switch (field.field_type) {
+    switch (fieldGroup.fieldType) {
       case 'select':
         return (
-          <div className="relative" ref={el => { dropdownRefs.current[field.id] = el }}>
+          <div className="relative" ref={el => { dropdownRefs.current[fieldName] = el }}>
             <div 
               className="h-10 px-3 py-2 border border-gray-200 rounded-md bg-white flex items-center justify-between cursor-pointer hover:border-gray-300 transition-colors"
-              onClick={() => setOpenDropdowns(prev => ({ ...prev, [field.id]: !prev[field.id] }))}
+              onClick={() => setOpenDropdowns(prev => ({ ...prev, [fieldName]: !prev[fieldName] }))}
             >
               <span className={selectedOptions.length > 0 ? 'text-gray-900 text-sm' : 'text-gray-500 text-sm'}>
                 {selectedOptions.length > 0 
                   ? selectedOptions.length === 1 
                     ? selectedOptions[0]
                     : `${selectedOptions.length} selecionados`
-                  : `Selecione ${field.name.toLowerCase()}`
+                  : `Selecione ${fieldName.toLowerCase()}`
                 }
               </span>
-              <ChevronUp className={`w-4 h-4 text-gray-400 transition-transform ${openDropdowns[field.id] ? 'rotate-180' : ''}`} />
+              <ChevronUp className={`w-4 h-4 text-gray-400 transition-transform ${openDropdowns[fieldName] ? 'rotate-180' : ''}`} />
             </div>
-            {openDropdowns[field.id] && (
+            {openDropdowns[fieldName] && (
               <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                {field.options && field.options.length > 0 ? (
-                  field.options.map((option) => {
+                {allOptionsArray.length > 0 ? (
+                  allOptionsArray.map((option) => {
                     const isSelected = selectedOptions.includes(option)
                     return (
                       <button
@@ -210,7 +260,7 @@ export function StoreSidebar({
                             : [...selectedOptions, option]
                           setDynamicFieldValues({
                             ...dynamicFieldValues,
-                            [field.slug]: newSelection.length === 1 ? newSelection[0] : newSelection
+                            [fieldName]: newSelection.length === 1 ? newSelection[0] : newSelection
                           })
                         }}
                         className={`
@@ -245,8 +295,8 @@ export function StoreSidebar({
         return (
           <div className="space-y-2">
             <div className="grid grid-cols-5 gap-2">
-              {field.options && field.options.length > 0 ? (
-                field.options.map((color) => {
+              {allOptionsArray.length > 0 ? (
+                allOptionsArray.map((color) => {
                   const isSelected = selectedOptions.includes(color)
                   return (
                     <button
@@ -258,7 +308,7 @@ export function StoreSidebar({
                           : [...selectedOptions, color]
                         setDynamicFieldValues({
                           ...dynamicFieldValues,
-                          [field.slug]: newSelection.length === 1 ? newSelection[0] : newSelection
+                          [fieldName]: newSelection.length === 1 ? newSelection[0] : newSelection
                         })
                       }}
                       className={`relative w-10 h-10 rounded-full border-2 transition-all hover:scale-110 ${
@@ -289,12 +339,12 @@ export function StoreSidebar({
         return (
           <Input
             type="number"
-            placeholder={`Digite ${field.name}`}
+            placeholder={`Digite ${fieldName}`}
             value={fieldValue as string}
             onChange={(e) => {
               setDynamicFieldValues({
                 ...dynamicFieldValues,
-                [field.slug]: e.target.value
+                [fieldName]: e.target.value
               })
             }}
           />
@@ -306,12 +356,12 @@ export function StoreSidebar({
         return (
           <Input
             type="text"
-            placeholder={`Digite ${field.name}`}
+            placeholder={`Digite ${fieldName}`}
             value={fieldValue as string}
             onChange={(e) => {
               setDynamicFieldValues({
                 ...dynamicFieldValues,
-                [field.slug]: e.target.value
+                [fieldName]: e.target.value
               })
             }}
           />
@@ -514,6 +564,11 @@ export function StoreSidebar({
             <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
               <Filter className="w-5 h-5" />
               Filtros
+              {activeFiltersCount > 0 && (
+                <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-primary text-white rounded-full">
+                  {activeFiltersCount}
+                </span>
+              )}
             </h2>
           </div>
         )}
@@ -605,50 +660,44 @@ export function StoreSidebar({
             )}
           </div>
 
-          {/* Niches Filter */}
-          {niches.length > 0 && (
-            <div className="space-y-4">
+          {/* Campos Dinâmicos */}
+          {fieldsWithOptions.length > 0 && (
+            <div className="space-y-3">
               <button
-                onClick={() => setIsNichesCollapsed(!isNichesCollapsed)}
+                onClick={() => setIsFieldsCollapsed(!isFieldsCollapsed)}
                 className="w-full flex items-center justify-between hover:opacity-80 transition-opacity"
               >
-                <Label className="text-sm font-bold text-gray-900 cursor-pointer">Tipo de Produto</Label>
-                <ChevronUp className={`w-4 h-4 text-gray-600 transition-transform ${isNichesCollapsed ? 'rotate-180' : ''}`} />
-              </button>
-              {!isNichesCollapsed && (
-                <div className="space-y-3">
-                  <Select
-                    value={selectedNicheId?.toString() || 'none'}
-                    onValueChange={(value) => {
-                      setSelectedNicheId(value === 'none' ? null : parseInt(value))
-                      setDynamicFieldValues({}) // Limpar campos quando trocar de nicho
-                      setOpenDropdowns({}) // Fechar todos os dropdowns
-                    }}
-                  >
-                    <SelectTrigger className="w-full h-10 sm:h-11 text-sm">
-                      <SelectValue placeholder="Selecione um nicho" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Selecione um tipo de produto</SelectItem>
-                      {niches.map((niche) => (
-                        <SelectItem key={niche.id} value={niche.id.toString()}>
-                          {niche.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  
-                  {/* Campos dinâmicos do nicho selecionado */}
-                  {selectedNicheId && fields.length > 0 && (
-                    <div className="space-y-4 pt-2 border-t border-gray-200">
-                      {fields.map((field) => (
-                        <div key={field.id} className="space-y-2">
-                          <Label className="text-sm font-bold text-gray-900 cursor-pointer">{field.name}</Label>
-                          {renderDynamicField(field)}
-                        </div>
-                      ))}
-                    </div>
+                <Label className="text-sm font-bold text-gray-900 cursor-pointer">
+                  Filtros Personalizados
+                  {Object.keys(dynamicFieldValues).length > 0 && (
+                    <span className="ml-2 px-1.5 py-0.5 text-xs font-medium bg-primary/10 text-primary rounded">
+                      {Object.keys(dynamicFieldValues).length}
+                    </span>
                   )}
+                </Label>
+                <ChevronUp className={`w-4 h-4 text-gray-600 transition-transform ${isFieldsCollapsed ? 'rotate-180' : ''}`} />
+              </button>
+              {!isFieldsCollapsed && (
+                <div className="space-y-3 pt-2">
+                  {/* Campos unificados por nome */}
+                  <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+                    {filteredGroupedFields.length > 0 ? (
+                      filteredGroupedFields.map(([fieldName, fieldGroup]) => {
+                        return (
+                          <div key={fieldName} className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-gray-700 cursor-pointer">
+                              {fieldName}
+                            </Label>
+                            {renderUnifiedField(fieldName, fieldGroup)}
+                          </div>
+                        )
+                      })
+                    ) : (
+                      <div className="text-center py-4 text-sm text-gray-500">
+                        Nenhum filtro encontrado
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

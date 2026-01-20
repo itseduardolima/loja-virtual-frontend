@@ -47,3 +47,22 @@ export function useNicheFields(nicheId: number | null) {
     refetchOnWindowFocus: false
   })
 }
+
+export function useStoreFields(storeId: number | null) {
+  return useQuery({
+    queryKey: ['store-fields', storeId],
+    queryFn: async (): Promise<NicheField[]> => {
+      if (!storeId) {
+        return []
+      }
+      
+      const response = await api.get(`/niches/fields/store/${storeId}`)
+      // Se a resposta vier com uma estrutura { data: [...] }, retorna data
+      // Caso contrário, retorna a resposta diretamente
+      return Array.isArray(response.data) ? response.data : (response.data?.data || [])
+    },
+    enabled: !!storeId,
+    retry: false,
+    refetchOnWindowFocus: false
+  })
+}
