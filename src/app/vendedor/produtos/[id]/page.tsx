@@ -227,16 +227,6 @@ export default function ProductDetailPage() {
               {product.description}
             </p>
 
-            {/* Specifications */}
-            {product.specifications && (
-              <div className="space-y-2 pt-2">
-                <span className="text-sm font-semibold text-primary/80">Especificações:</span>
-                <p className="text-primary/60 text-base leading-relaxed whitespace-pre-line">
-                  {product.specifications}
-                </p>
-              </div>
-            )}
-
             {/* Select Colors */}
             {product.color ? (
               <div className="space-y-3">
@@ -328,6 +318,19 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Specifications (Bottom Section) */}
+      {product.specifications && (
+        <div className="border-t">
+          <div className="max-w-4xl px-4 py-10">
+            <h2 className="text-xl font-bold text-primary mb-3">Especificações</h2>
+            <div
+              className="text-primary/60 text-base leading-relaxed prose prose-sm max-w-none prose-headings:text-primary/80 prose-p:text-primary/60 prose-ul:text-primary/60 prose-ol:text-primary/60 prose-strong:text-primary/80"
+              dangerouslySetInnerHTML={{ __html: product.specifications }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Modal de Confirmação de Exclusão */}
       <ConfirmDialog

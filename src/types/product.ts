@@ -92,7 +92,12 @@ export interface ProductDetail {
   updated_at: string
   color?: string
   specifications?: string
+  niche?: {
+    id: number
+    name: string
+  }
   dynamic_fields: Array<{
+    field_id?: number
     field_name: string
     value: string
   }>

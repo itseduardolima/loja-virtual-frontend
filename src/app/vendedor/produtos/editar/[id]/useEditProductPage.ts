@@ -9,6 +9,9 @@ import { api } from '@/lib/axios'
 import { createProductSchema, CreateProductFormData } from '@/schemas/productSchemas'
 import { useUpdateProduct } from '@/hooks/useProducts'
 import { useToastContext } from '@/contexts/ToastContext'
+import { useStore } from '@/hooks/useStore'
+import { useNiches } from '@/hooks/useNiches'
+import { NicheFieldValue } from '@/types'
 
 export function useEditProductPage(productId: string, user: any) {
   const router = useRouter()
@@ -17,6 +20,13 @@ export function useEditProductPage(productId: string, user: any) {
   const [selectedImages, setSelectedImages] = useState<File[]>([])
   const [removedExistingImages, setRemovedExistingImages] = useState<number[]>([])
   const [isInitialized, setIsInitialized] = useState(false)
+  const [selectedNicheId, setSelectedNicheId] = useState<number | null>(null)
+  const [dynamicFieldValues, setDynamicFieldValues] = useState<Record<string, NicheFieldValue>>({})
+
+  const { data: storeData } = useStore()
+  const storeId = storeData?.id || null
+  const { data: nichesData } = useNiches(storeId)
+  const niches = nichesData?.data || []
   
   const { data: product, isLoading: productLoading, error: productError } = useQuery({
     queryKey: ['product', productId],
@@ -49,13 +59,12 @@ export function useEditProductPage(productId: string, user: any) {
       discount_price: undefined,
       category_id: undefined,
       featured: false,
-      color: undefined,
       specifications: undefined
     }
   })
 
   useEffect(() => {
-    if (product) {
+    if (product && !isInitialized) {
       // Usar setValue para garantir reatividade
       form.setValue('name', product.name || '')
       
@@ -78,14 +87,46 @@ export function useEditProductPage(productId: string, user: any) {
       form.setValue('category_id', product.category_id || undefined)
       form.setValue('featured', product.featured === 1)
       
-      // Definir cor se disponível
-      if (product.color) {
-        form.setValue('color', product.color)
-      }
-      
       setIsInitialized(true)
     }
-  }, [product, form])
+  }, [product, form, isInitialized])
+
+  // Carregar nicho e campos dinâmicos em um useEffect separado
+  useEffect(() => {
+    if (product && product.dynamic_fields && product.dynamic_fields.length > 0) {
+      // Determinar o nicho baseado nos campos dinâmicos
+      if (product.niche && product.niche.id) {
+        const nicheId = typeof product.niche.id === 'number' 
+          ? product.niche.id 
+          : parseInt(String(product.niche.id), 10)
+        
+        if (!isNaN(nicheId) && nicheId > 0) {
+          setSelectedNicheId(nicheId)
+        }
+      }
+      
+      // Carregar campos dinâmicos
+      const dynamicFieldsMap: Record<string, NicheFieldValue> = {}
+      product.dynamic_fields.forEach((field: any) => {
+        if (field.field_id) {
+          const fieldId = typeof field.field_id === 'number' 
+            ? field.field_id 
+            : parseInt(String(field.field_id), 10)
+          
+          if (!isNaN(fieldId) && fieldId > 0) {
+            dynamicFieldsMap[fieldId.toString()] = {
+              field_id: fieldId,
+              value: field.value
+            }
+          }
+        }
+      })
+      
+      if (Object.keys(dynamicFieldsMap).length > 0) {
+        setDynamicFieldValues(dynamicFieldsMap)
+      }
+    }
+  }, [product])
 
   const updateProductMutation = useUpdateProduct()
 
@@ -132,12 +173,19 @@ export function useEditProductPage(productId: string, user: any) {
     }
     formData.append('featured', data.featured ? 'true' : 'false')
     
-    // Adicionar campos simples: color e specifications
-    if (data.color && data.color.trim()) {
-      formData.append('color', data.color.trim())
+    // Adicionar campo de specifications
+    // Sempre enviar specifications para permitir limpar o campo
+    if (data.specifications !== undefined) {
+      formData.append('specifications', data.specifications.trim() || '')
     }
-    if (data.specifications && data.specifications.trim()) {
-      formData.append('specifications', data.specifications.trim())
+
+    // Adicionar campos dinâmicos se houver nicho selecionado
+    if (selectedNicheId && Object.keys(dynamicFieldValues).length > 0) {
+      const dynamicFields = Object.values(dynamicFieldValues).map((fieldValue) => ({
+        field_id: fieldValue.field_id,
+        value: Array.isArray(fieldValue.value) ? fieldValue.value.join(', ') : fieldValue.value
+      }))
+      formData.append('dynamic_fields', JSON.stringify(dynamicFields))
     }
     
     selectedImages.forEach(image => {
@@ -166,11 +214,28 @@ export function useEditProductPage(productId: string, user: any) {
     )
   }
 
+  const handleNicheChange = (nicheId: number | null) => {
+    if (nicheId === null || (typeof nicheId === 'number' && !isNaN(nicheId) && nicheId > 0)) {
+      setSelectedNicheId(nicheId)
+      // Não limpar campos quando trocar de nicho na edição, para não perder dados
+    }
+  }
+
+  const handleDynamicFieldChange = (fieldId: number, value: string | string[]) => {
+    setDynamicFieldValues(prev => ({
+      ...prev,
+      [fieldId.toString()]: { field_id: fieldId, value }
+    }))
+  }
+
   return {
     form,
     product,
     selectedImages,
     categories,
+    niches,
+    selectedNicheId,
+    dynamicFieldValues,
     removedExistingImages,
     isInitialized,
     isLoading: productLoading || updateProductMutation.isPending,
@@ -178,6 +243,8 @@ export function useEditProductPage(productId: string, user: any) {
     handleImageChange,
     removeImage,
     removeExistingImage,
+    handleNicheChange,
+    handleDynamicFieldChange,
     onSubmit
   }
 }

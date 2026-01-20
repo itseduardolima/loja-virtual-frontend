@@ -2,8 +2,10 @@
 
 import { useAuth } from '@/contexts/AuthContext'
 import { Input, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Card, ErrorState, ImageUpload, ProductPreview, CreateCategoryModal, Button } from '@/components'
-import { Package, X, Star, Plus, Check } from 'lucide-react'
-import { COLOR_OPTIONS, getColorHex } from '@/schemas'
+import { RichTextEditor } from '@/components/ui/rich-text-editor'
+import { DynamicFields } from '@/components/Form/DynamicFields'
+import { Package, X, Star, Plus } from 'lucide-react'
+import { getColorHex } from '@/schemas'
 import { useRouter } from 'next/navigation'
 import { useCreateProductPage } from './useCreateProductPage'
 import { useStore } from '@/hooks/useStore'
@@ -20,10 +22,15 @@ export default function CreateProductPage() {
     form,
     selectedImages,
     categories,
+    niches,
+    selectedNicheId,
+    dynamicFieldValues,
     isLoading,
     error,
     handleImageChange,
     removeImage,
+    handleNicheChange,
+    handleDynamicFieldChange,
     onSubmit
   } = useCreateProductPage(user)
 
@@ -274,7 +281,58 @@ export default function CreateProductPage() {
                 onRemoveImage={removeImage}
               />
 
-              {/* Campos Simples: Cor e Especificações */}
+              {/* Seleção de Nicho e Campos Dinâmicos */}
+              {niches.length > 0 && (
+                <Card className="p-8 bg-white border-gray-200 shadow-sm">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-3 bg-gray-50 rounded-xl">
+                      <Package className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-primary">Tipo de Produto</h2>
+                      <p className="text-sm text-gray-500">Selecione o nicho para campos personalizados</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    {/* Seleção de Nicho */}
+                    <div>
+                      <Label htmlFor="niche" className="text-sm font-semibold text-gray-700 mb-2 block">
+                        Nicho <span className="text-gray-400 font-normal">(opcional)</span>
+                      </Label>
+                      <Select
+                        value={selectedNicheId?.toString() || 'none'}
+                        onValueChange={(value) => {
+                          handleNicheChange(value === 'none' ? null : parseInt(value))
+                        }}
+                      >
+                        <SelectTrigger className="h-12 border-gray-200">
+                          <SelectValue placeholder="Selecione um nicho" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Nenhum nicho selecionado</SelectItem>
+                          {niches.map((niche: any) => (
+                            <SelectItem key={niche.id} value={niche.id.toString()}>
+                              {niche.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Campos Dinâmicos */}
+                    {selectedNicheId && (
+                      <DynamicFields
+                        nicheId={selectedNicheId}
+                        fieldValues={dynamicFieldValues}
+                        onFieldChange={handleDynamicFieldChange}
+                      />
+                    )}
+                  </div>
+                </Card>
+              )}
+
+              {/* Especificações */}
               <Card className="p-8 bg-white border-gray-200 shadow-sm">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-3 bg-gray-50 rounded-xl">
@@ -287,52 +345,6 @@ export default function CreateProductPage() {
                 </div>
 
                 <div className="space-y-6">
-                  {/* Cor */}
-                  <div>
-                    <Label className="text-sm font-semibold text-gray-700 mb-3 block">
-                      Cor <span className="text-gray-400 font-normal">(opcional)</span>
-                    </Label>
-                    <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-3 max-h-96 overflow-y-auto p-2 border border-gray-200 rounded-lg">
-                      {COLOR_OPTIONS.map((color) => {
-                        const isSelected = watch('color') === color
-                        return (
-                          <button
-                            key={color}
-                            type="button"
-                            onClick={() => {
-                              setValue('color', isSelected ? '' : color)
-                            }}
-                            className={`
-                              relative w-12 h-12 rounded-full border-2 transition-all duration-200 shadow-sm
-                              hover:scale-110 hover:shadow-md
-                              ${isSelected 
-                                ? 'border-primary ring-2 ring-primary ring-offset-2' 
-                                : 'border-gray-300 hover:border-gray-400'
-                              }
-                            `}
-                            style={{ backgroundColor: getColorHex(color) }}
-                            title={color}
-                          >
-                            {isSelected && (
-                              <Check className="absolute inset-0 m-auto w-5 h-5 text-white stroke-2 drop-shadow-md" />
-                            )}
-                          </button>
-                        )
-                      })}
-                    </div>
-                    {watch('color') && (
-                      <p className="mt-3 text-sm text-gray-600">
-                        Cor selecionada: <span className="font-semibold text-gray-900">{watch('color')}</span>
-                      </p>
-                    )}
-                    {errors.color && (
-                      <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                        <X className="h-3 w-3" />
-                        {errors.color.message}
-                      </p>
-                    )}
-                  </div>
-
                   {/* Especificações */}
                   <div>
                     <Label htmlFor="specifications" className="text-sm font-semibold text-gray-700 mb-2 block">
@@ -341,12 +353,11 @@ export default function CreateProductPage() {
                     <p className="text-xs text-gray-500 mb-2">
                       Informações detalhadas sobre o produto (material, composição, cuidados, etc.)
                     </p>
-                    <Textarea
-                      id="specifications"
-                      {...register('specifications')}
+                    <RichTextEditor
+                      content={watch('specifications') || ''}
+                      onChange={(html) => setValue('specifications', html)}
                       placeholder="Ex: Material: 100% algodão. Lavagem: à mão. Composição detalhada..."
-                      rows={6}
-                      className={`${errors.specifications ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
+                      error={!!errors.specifications}
                     />
                     {errors.specifications && (
                       <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
@@ -369,10 +380,6 @@ export default function CreateProductPage() {
               selectedImages={selectedImages}
               category={categories.find(cat => cat.id === watch('category_id'))}
               stock={watch('stock') || 0}
-              dynamicFields={[
-                ...(watch('color') ? [{ field_name: 'Cor', value: watch('color') || '' }] : []),
-                ...(watch('specifications') ? [{ field_name: 'Especificações', value: watch('specifications') || '' }] : [])
-              ]}
               onSave={handleSubmit(onSubmit)}
               onCancel={() => router.back()}
               isLoading={isLoading}

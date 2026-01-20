@@ -9,12 +9,22 @@ import {
   CreateProductFormData
 } from '@/schemas'
 import { useToastContext } from '@/contexts/ToastContext'
+import { useStore } from '@/hooks/useStore'
+import { useNiches } from '@/hooks/useNiches'
+import { NicheFieldValue } from '@/types'
 
 export function useCreateProductPage(user: any) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const { error: showError, success: showSuccess } = useToastContext()
   const [selectedImages, setSelectedImages] = useState<File[]>([])
+  const [selectedNicheId, setSelectedNicheId] = useState<number | null>(null)
+  const [dynamicFieldValues, setDynamicFieldValues] = useState<Record<string, NicheFieldValue>>({})
+
+  const { data: storeData } = useStore()
+  const storeId = storeData?.id || null
+  const { data: nichesData } = useNiches(storeId)
+  const niches = nichesData?.data || []
 
   const form = useForm<CreateProductFormData>({
     resolver: yupResolver(createProductSchema) as any,
@@ -27,7 +37,6 @@ export function useCreateProductPage(user: any) {
       featured: false,
       sizes: [],
       colors: [],
-      color: '',
       specifications: '',
       category_id: undefined
     }
@@ -73,12 +82,18 @@ export function useCreateProductPage(user: any) {
       }
       formData.append('featured', data.featured ? 'true' : 'false')
       
-      // Adicionar campos simples: color e specifications
-      if (data.color && data.color.trim()) {
-        formData.append('color', data.color.trim())
-      }
+      // Adicionar campo de specifications
       if (data.specifications && data.specifications.trim()) {
         formData.append('specifications', data.specifications.trim())
+      }
+
+      // Adicionar campos dinâmicos se houver nicho selecionado
+      if (selectedNicheId && Object.keys(dynamicFieldValues).length > 0) {
+        const dynamicFields = Object.values(dynamicFieldValues).map((fieldValue) => ({
+          field_id: fieldValue.field_id,
+          value: Array.isArray(fieldValue.value) ? fieldValue.value.join(', ') : fieldValue.value
+        }))
+        formData.append('dynamic_fields', JSON.stringify(dynamicFields))
       }
       
       selectedImages.forEach(image => {
@@ -121,14 +136,31 @@ export function useCreateProductPage(user: any) {
     createProductMutation.mutate(data)
   }
 
+  const handleNicheChange = (nicheId: number | null) => {
+    setSelectedNicheId(nicheId)
+    setDynamicFieldValues({}) // Limpar campos quando trocar de nicho
+  }
+
+  const handleDynamicFieldChange = (fieldId: number, value: string | string[]) => {
+    setDynamicFieldValues(prev => ({
+      ...prev,
+      [fieldId.toString()]: { field_id: fieldId, value }
+    }))
+  }
+
   return {
     form,
     selectedImages,
     categories,
+    niches,
+    selectedNicheId,
+    dynamicFieldValues,
     isLoading: createProductMutation.isPending,
     error: createProductMutation.error,
     handleImageChange,
     removeImage,
+    handleNicheChange,
+    handleDynamicFieldChange,
     onSubmit
   }
 }

@@ -166,14 +166,14 @@ export default function ProductDetailPage() {
             )}
 
             {/* Main Image */}
-            <div className="flex-1 relative aspect-[3/4] rounded-2xl overflow-hidden order-1 sm:order-2 bg-gray-50 flex items-center justify-center">
+            <div className="flex-1 relative rounded-2xl overflow-hidden order-1 sm:order-2 flex items-center justify-center">
               {product.images && product.images.length > 0 ? (
                 <>
                   <Image
                     src={buildImageUrls(product.images)[selectedImageIndex]}
                     alt={product.name}
                     fill
-                    className="object-contain"
+                    className="object-cover"
                     priority
                   />
                   {/* Navegação de imagens em mobile - setas */}
@@ -272,16 +272,6 @@ export default function ProductDetailPage() {
             <p className="text-primary/60 text-sm sm:text-base leading-relaxed">
               {product.description}
             </p>
-
-            {/* Specifications */}
-            {product.specifications && (
-              <div className="space-y-2 sm:space-y-3 pt-2">
-                <span className="text-sm font-semibold text-primary/80">Especificações:</span>
-                <p className="text-primary/60 text-sm sm:text-base leading-relaxed whitespace-pre-line">
-                  {product.specifications}
-                </p>
-              </div>
-            )}
 
             {/* Select Colors */}
             {product.color ? (
@@ -432,6 +422,19 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Specifications (Bottom Section) */}
+      {product.specifications && (
+        <div className="border-t bg-white">
+          <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+            <h2 className="text-lg sm:text-xl font-bold text-primary mb-3">Especificações</h2>
+            <div
+              className="text-primary/60 text-sm sm:text-base leading-relaxed prose prose-sm max-w-none prose-headings:text-primary/80 prose-p:text-primary/60 prose-ul:text-primary/60 prose-ol:text-primary/60 prose-strong:text-primary/80"
+              dangerouslySetInnerHTML={{ __html: product.specifications }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Cart Sidebar */}
       <CartSidebar
