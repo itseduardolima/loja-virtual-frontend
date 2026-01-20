@@ -14,6 +14,7 @@ import { useProductDetailPage } from './useProductDetailPage'
 import { buildImageUrl, formatPrice } from '@/lib/utils'
 import { useEffect } from 'react'
 import LoadingPage from '@/components/Layout/LoadingPage'
+import { getColorHex } from '@/schemas'
 
 export default function ProductDetailPage() {
   const { user, isLoading: authLoading } = useAuth()
@@ -226,8 +227,34 @@ export default function ProductDetailPage() {
               {product.description}
             </p>
 
+            {/* Specifications */}
+            {product.specifications && (
+              <div className="space-y-2 pt-2">
+                <span className="text-sm font-semibold text-primary/80">Especificações:</span>
+                <p className="text-primary/60 text-base leading-relaxed whitespace-pre-line">
+                  {product.specifications}
+                </p>
+              </div>
+            )}
+
             {/* Select Colors */}
-            {product.dynamic_fields?.find(f => f.field_name.toLowerCase() === 'cor') && (
+            {product.color ? (
+              <div className="space-y-3">
+                <span className="text-sm font-medium text-primary/60">Cor disponível:</span>
+                <div className="flex gap-3 items-center">
+                  <div
+                    className="relative w-10 h-10 rounded-full border-2 transition-all"
+                    style={{ backgroundColor: getColorHex(product.color) }}
+                    title={product.color}
+                  >
+                    {getColorHex(product.color) === '#FFFFFF' && (
+                      <div className="absolute inset-0 rounded-full border border-gray-400"></div>
+                    )}
+                  </div>
+                  <span className="text-sm text-primary/60">{product.color}</span>
+                </div>
+              </div>
+            ) : product.dynamic_fields?.find(f => f.field_name.toLowerCase() === 'cor') && (
               <div className="space-y-3">
                 <span className="text-sm font-medium text-primary/60">Cores disponíveis:</span>
                 <div className="flex gap-3">

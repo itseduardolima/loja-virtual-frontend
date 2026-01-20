@@ -18,6 +18,7 @@ import { useProductDetailPage } from './useProductDetailPage'
 import { useStoreInfo } from '@/hooks/useStoreInfo'
 import { useState, useEffect } from 'react'
 import LoadingPage from '@/components/Layout/LoadingPage'
+import { getColorHex } from '@/schemas'
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -272,8 +273,46 @@ export default function ProductDetailPage() {
               {product.description}
             </p>
 
+            {/* Specifications */}
+            {product.specifications && (
+              <div className="space-y-2 sm:space-y-3 pt-2">
+                <span className="text-sm font-semibold text-primary/80">Especificações:</span>
+                <p className="text-primary/60 text-sm sm:text-base leading-relaxed whitespace-pre-line">
+                  {product.specifications}
+                </p>
+              </div>
+            )}
+
             {/* Select Colors */}
-            {product.dynamic_fields?.find(f => f.field_name.toLowerCase() === 'cor') && (
+            {product.color ? (
+              <div className="space-y-2 sm:space-y-3">
+                <span className="text-sm font-medium text-primary/60">Cor disponível:</span>
+                <div className="flex gap-2 sm:gap-3 items-center">
+                  <Button
+                    onClick={() => selectColor(product.color!)}
+                    className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 transition-all p-0 active:scale-95 touch-manipulation"
+                    style={{ backgroundColor: getColorHex(product.color) }}
+                    title={product.color}
+                    aria-label={`Selecionar cor ${product.color}`}
+                  >
+                    {selectedColor === product.color && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Check
+                          className={`w-4 h-4 sm:w-5 sm:h-5 stroke-[3] ${getColorHex(product.color) === '#FFFFFF' || getColorHex(product.color).toLowerCase() === '#ffffff'
+                            ? 'text-primary'
+                            : 'text-white'
+                            }`}
+                        />
+                      </div>
+                    )}
+                    {getColorHex(product.color) === '#FFFFFF' && (
+                      <div className="absolute inset-0 rounded-full border border-gray-400"></div>
+                    )}
+                  </Button>
+                  <span className="text-sm text-primary/60">{product.color}</span>
+                </div>
+              </div>
+            ) : product.dynamic_fields?.find(f => f.field_name.toLowerCase() === 'cor') && (
               <div className="space-y-2 sm:space-y-3">
                 <span className="text-sm font-medium text-primary/60">Cores disponíveis:</span>
                 <div className="flex gap-2 sm:gap-3 flex-wrap">

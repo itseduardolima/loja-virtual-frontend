@@ -4,11 +4,11 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Heart, Star } from 'lucide-react'
+import {  Star } from 'lucide-react'
 import { ProductCardProps } from '@/app/loja/[slug]/produtos/types'
 import { formatPrice, buildImageUrl } from '@/lib/utils'
 import { Switch } from '@/components/ui/switch'
+import { getColorHex } from '@/schemas'
 
 export function ProductCard({
   product,
@@ -112,7 +112,18 @@ export function ProductCard({
           </div>
 
           {/* Cores */}
-          {product.dynamic_fields && product.dynamic_fields.length > 0 && (() => {
+          {product.color ? (
+            <div className="flex items-center gap-1.5">
+              <div
+                className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full border border-gray-300 flex-shrink-0"
+                style={{ backgroundColor: getColorHex(product.color) }}
+                title={product.color}
+              />
+              <span className="text-[10px] sm:text-xs text-gray-500 truncate max-w-[100px]">
+                {product.color}
+              </span>
+            </div>
+          ) : product.dynamic_fields && product.dynamic_fields.length > 0 && (() => {
             const colorField = product.dynamic_fields.find(
               field => field.field_name.toLowerCase().includes('cor')
             )

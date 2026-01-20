@@ -30,6 +30,8 @@ export interface Product {
   payment_methods: string[]
   colors?: string[]
   sizes?: string[]
+  color?: string
+  specifications?: string
   category?: {
     id: number
     name: string
@@ -88,6 +90,8 @@ export interface ProductDetail {
   featured: boolean
   created_at: string
   updated_at: string
+  color?: string
+  specifications?: string
   dynamic_fields: Array<{
     field_name: string
     value: string
