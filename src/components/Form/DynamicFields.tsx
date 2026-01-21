@@ -22,7 +22,11 @@ interface DynamicFieldsProps {
 export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFieldsProps) {
   const { data: fields, isLoading, error } = useNicheFields(nicheId)
   const [openDropdowns, setOpenDropdowns] = useState<Record<number, boolean>>({})
+  const [expandedColorFields, setExpandedColorFields] = useState<Record<number, boolean>>({})
   const dropdownRefs = useRef<Record<number, HTMLDivElement | null>>({})
+  
+  // Número de cores a mostrar inicialmente
+  const INITIAL_COLORS_COUNT = 30
 
   // Fechar dropdowns ao clicar fora
   useEffect(() => {
@@ -192,18 +196,25 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
 
       case 'color':
         const selectedColors = Array.isArray(fieldValue) ? fieldValue : (fieldValue ? [fieldValue] : [])
-        // Usar COLOR_OPTIONS se o campo não tiver opções definidas, ou combinar ambas
-        const availableColors = field.options && field.options.length > 0 
-          ? field.options 
-          : COLOR_OPTIONS
+        // Sempre usar COLOR_OPTIONS completo, combinando com opções do campo se existirem
+        const fieldOptions = field.options && field.options.length > 0 ? field.options : []
+        // Combinar opções do campo com COLOR_OPTIONS, removendo duplicatas
+        const allColorsSet = new Set([...COLOR_OPTIONS, ...fieldOptions])
+        const availableColors = Array.from(allColorsSet)
+        
+        const isExpanded = expandedColorFields[field.id] || false
+        const colorsToShow = isExpanded 
+          ? availableColors 
+          : availableColors.slice(0, INITIAL_COLORS_COUNT)
+        const hasMoreColors = availableColors.length > INITIAL_COLORS_COUNT
         
         return (
-          <div key={field.id}>
-            <Label htmlFor={`field-${field.id}`} className="text-sm font-semibold text-gray-700 mb-2 block">
+          <div key={field.id} className="w-full sm:col-span-2">
+            <Label htmlFor={`field-${field.id}`} className="text-sm font-semibold text-gray-700 mb-3 block">
               {field.name} {isRequired && <span className="text-red-500">*</span>}
             </Label>
-            <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-3 max-h-96 overflow-y-auto p-2 border border-gray-200 rounded-lg">
-              {availableColors.map((color) => {
+            <div className="grid grid-cols-8 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-14 xl:grid-cols-16 gap-3 p-4 border border-gray-200 rounded-lg bg-gray-50/50 min-h-[120px]">
+              {colorsToShow.map((color) => {
                 const isSelected = selectedColors.includes(color)
                 return (
                   <button
@@ -233,6 +244,23 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
                 )
               })}
             </div>
+            {hasMoreColors && (
+              <button
+                type="button"
+                onClick={() => {
+                  setExpandedColorFields(prev => ({
+                    ...prev,
+                    [field.id]: !prev[field.id]
+                  }))
+                }}
+                className="mt-3 w-full py-2 px-4 text-sm font-medium text-primary hover:text-primary/80 hover:bg-primary/5 border border-primary/20 rounded-lg transition-colors"
+              >
+                {isExpanded 
+                  ? `Mostrar menos (${INITIAL_COLORS_COUNT} cores)` 
+                  : `Ver mais cores (${availableColors.length - INITIAL_COLORS_COUNT} cores adicionais)`
+                }
+              </button>
+            )}
             {selectedColors.length > 0 && (
               <div className="mt-3 text-sm text-gray-600">
                 Cor selecionada: <span className="font-semibold text-gray-900">{selectedColors.join(', ')}</span>

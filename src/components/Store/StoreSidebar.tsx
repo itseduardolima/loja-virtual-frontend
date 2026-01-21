@@ -12,6 +12,7 @@ import { StoreFiltersProps } from '@/app/loja/[slug]/produtos/types'
 import { formatPrice } from '@/lib/utils'
 import { useStoreFields } from '@/hooks/useNiches'
 import { NicheField } from '@/types/niche'
+import { COLOR_OPTIONS, getColorHex } from '@/schemas'
 
 interface StoreSidebarProps extends StoreFiltersProps {
   isOpen: boolean
@@ -22,23 +23,6 @@ interface StoreSidebarProps extends StoreFiltersProps {
   storeId?: number | null
 }
 
-function getColorValue(color: string): string {
-  const colorMap: { [key: string]: string } = {
-    'Preto': '#000000',
-    'Branco': '#FFFFFF',
-    'Azul': '#0000FF',
-    'Vermelho': '#FF0000',
-    'Verde': '#00FF00',
-    'Amarelo': '#FFFF00',
-    'Rosa': '#FFC0CB',
-    'Roxo': '#800080',
-    'Cinza': '#808080',
-    'Marrom': '#A52A2A',
-    'Laranja': '#FFA500',
-    'Ciano': '#00FFFF'
-  }
-  return colorMap[color] || '#E5E7EB'
-}
 
 export function StoreSidebar({
   isOpen,
@@ -71,6 +55,7 @@ export function StoreSidebar({
   const [isPriceCollapsed, setIsPriceCollapsed] = useState(false) // Expandido por padrão
   const [isFieldsCollapsed, setIsFieldsCollapsed] = useState(false) // Expandido por padrão
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({}) // Usar nome do campo como chave
+  const [expandedColorFields, setExpandedColorFields] = useState<Record<string, boolean>>({}) // Controlar expansão de cores
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({}) // Usar nome do campo como chave
   
   // Filtrar apenas campos com opções (select e color), excluindo text, textarea e number
@@ -292,11 +277,27 @@ export function StoreSidebar({
         )
       
       case 'color':
+        // Sempre usar COLOR_OPTIONS completo, combinando com opções do campo se existirem
+        const fieldOptions = fieldGroup.fields[0]?.options && fieldGroup.fields[0].options.length > 0 
+          ? fieldGroup.fields[0].options 
+          : []
+        // Combinar opções do campo com COLOR_OPTIONS, removendo duplicatas
+        const allColorsSet = new Set([...COLOR_OPTIONS, ...fieldOptions])
+        const allAvailableColors = Array.from(allColorsSet)
+        
+        // Mostrar mais cores inicialmente no filtro também
+        const INITIAL_COLORS_COUNT_FILTER = 30
+        const isColorExpanded = expandedColorFields[fieldName] || false
+        const colorsToShow = isColorExpanded 
+          ? allAvailableColors 
+          : allAvailableColors.slice(0, INITIAL_COLORS_COUNT_FILTER)
+        const hasMoreColors = allAvailableColors.length > INITIAL_COLORS_COUNT_FILTER
+        
         return (
-          <div className="space-y-2">
-            <div className="grid grid-cols-5 gap-2">
-              {allOptionsArray.length > 0 ? (
-                allOptionsArray.map((color) => {
+          <div className="space-y-2 overflow-x-hidden w-full">
+            <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-2 w-full" style={{ maxWidth: '100%' }}>
+              {colorsToShow.length > 0 ? (
+                colorsToShow.map((color) => {
                   const isSelected = selectedOptions.includes(color)
                   return (
                     <button
@@ -311,27 +312,40 @@ export function StoreSidebar({
                           [fieldName]: newSelection.length === 1 ? newSelection[0] : newSelection
                         })
                       }}
-                      className={`relative w-10 h-10 rounded-full border-2 transition-all hover:scale-110 ${
-                        isSelected ? 'ring-2 ring-primary border-primary' : 'border-gray-300'
+                      className={`relative w-8 h-8 rounded-full border-2 transition-all hover:scale-110 ${
+                        isSelected ? '' : 'border-gray-300'
                       }`}
-                      style={{ backgroundColor: getColorValue(color) }}
+                      style={{ backgroundColor: getColorHex(color) }}
                       title={color}
                     >
                       {isSelected && (
-                        <Check className="absolute inset-0 m-auto w-4 h-4 text-white stroke-2" />
+                        <Check className="absolute inset-0 m-auto w-3 h-3 text-white stroke-2" />
                       )}
                     </button>
                   )
                 })
               ) : (
-                <span className="text-xs text-gray-500 col-span-5">Nenhuma cor disponível</span>
+                <span className="text-xs text-gray-500 col-span-6">Nenhuma cor disponível</span>
               )}
             </div>
-            {selectedOptions.length > 0 && (
-              <div className="text-xs text-gray-600">
-                Selecionado: {selectedOptions.join(', ')}
-              </div>
+            {hasMoreColors && (
+              <button
+                type="button"
+                onClick={() => {
+                  setExpandedColorFields(prev => ({
+                    ...prev,
+                    [fieldName]: !prev[fieldName]
+                  }))
+                }}
+                className="w-full py-1.5 px-3 text-xs text-primary hover:text-primary/80 hover:bg-primary/5 border border-primary/20 rounded-xl transition-colors"
+              >
+                {isColorExpanded 
+                  ? `Mostrar menos (${INITIAL_COLORS_COUNT_FILTER} cores)` 
+                  : `Ver mais cores (${allAvailableColors.length - INITIAL_COLORS_COUNT_FILTER} cores adicionais)`
+                }
+              </button>
             )}
+            
           </div>
         )
       
@@ -556,8 +570,8 @@ export function StoreSidebar({
   if (!isOpen) return null
 
   return (
-    <div className={`w-full ${isInline ? '' : 'lg:max-w-sm'} ${isInline ? '' : 'bg-white  rounded-lg shadow-sm'} ${className}`}>
-      <div className={`${isInline ? 'p-0' : ''}`}>
+    <div className={`w-full ${isInline ? '' : 'lg:max-w-md'} ${isInline ? '' : 'bg-white  rounded-xl shadow-sm'} ${className}`} style={{ overflowX: 'hidden', maxWidth: '100%' }}>
+      <div style={{ overflowX: 'hidden', maxWidth: '100%', width: '100%' }}>
         {/* Header - Apenas para desktop sidebar */}
         {!isInline && (
           <div className="hidden lg:flex items-center justify-between mb-4 sm:mb-6 px-4 sm:px-6 pt-4 sm:pt-6">
@@ -574,7 +588,7 @@ export function StoreSidebar({
         )}
 
         {/* Filters */}
-        <div className={`space-y-4 sm:space-y-6 ${isInline ? '' : 'px-4 sm:px-6 pt-4 sm:pt-6 lg:pt-0'}`}>
+        <div className={`space-y-4 sm:space-y-6 ${isInline ? '' : 'px-4 sm:px-6 pt-4 sm:pt-6 lg:pt-0'} overflow-x-hidden`}>
           {/* Ordenação */}
           <div>
             <Label className="text-sm font-bold text-gray-900 cursor-pointer mb-2 block">Ordenar por</Label>
@@ -678,13 +692,13 @@ export function StoreSidebar({
                 <ChevronUp className={`w-4 h-4 text-gray-600 transition-transform ${isFieldsCollapsed ? 'rotate-180' : ''}`} />
               </button>
               {!isFieldsCollapsed && (
-                <div className="space-y-3 pt-2">
+                <div className="space-y-3 pt-2 overflow-x-hidden">
                   {/* Campos unificados por nome */}
-                  <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+                  <div className="space-y-3 max-h-[400px] overflow-y-auto overflow-x-hidden pr-2">
                     {filteredGroupedFields.length > 0 ? (
                       filteredGroupedFields.map(([fieldName, fieldGroup]) => {
                         return (
-                          <div key={fieldName} className="space-y-1.5">
+                          <div key={fieldName} className="space-y-1.5 overflow-x-hidden w-full">
                             <Label className="text-xs font-semibold text-gray-700 cursor-pointer">
                               {fieldName}
                             </Label>
@@ -704,7 +718,7 @@ export function StoreSidebar({
           )}
 
           {/* Botões de Ação */}
-          <div className="pt-4 space-y-2 mt-4 border-t border-gray-200 lg:border-t-0 sticky bottom-0 bg-white pb-4 lg:pb-6 lg:static -mx-4 sm:-mx-6 px-4 sm:px-6 lg:mx-0 lg:px-0">
+          <div className="pt-4 space-y-2 mt-4 border-t border-gray-200 lg:border-t-0 sticky bottom-0 bg-white pb-4 lg:pb-6 lg:static -mx-4 sm:-mx-6 px-4 sm:px-6 lg:mx-0 lg:px-0 overflow-x-hidden">
             <Button
               onClick={handleApplyAndClose}
               className="w-full bg-primary text-white hover:bg-primary/90 h-10 sm:h-11 text-sm sm:text-base font-medium shadow-sm"

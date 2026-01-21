@@ -192,7 +192,7 @@ export default function StorePage() {
           </>
         ) : (
           /* Desktop Sidebar */
-          <aside className="hidden lg:block w-full max-w-xs flex-shrink-0 pl-4 xl:pl-4">
+          <aside className="hidden lg:block w-full max-w-md flex-shrink-0 pl-4 xl:pl-4">
             <div className="relative top-8">
               <StoreSidebar
                 isOpen={isSidebarOpen}
