@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { useCustomerOrders } from '@/hooks/useCustomerOrders'
 import { useCustomerOrder } from '@/hooks/useCustomerOrder'
 import { useStoreInfoById } from '@/hooks/useStoreInfoById'
-import { CustomerOrder, CUSTOMER_ORDER_STATUS } from '@/types/customer'
+import { CUSTOMER_ORDER_STATUS } from '@/types/customer'
 import { formatDate, formatPrice, buildImageUrl } from '@/lib/utils'
 import { useDebounce } from '@/hooks/useDebounce'
 import Image from 'next/image'
@@ -16,6 +16,7 @@ import Image from 'next/image'
 import { ErrorState } from '@/components/Layout/ErrorState'
 import { LoadingSpinner } from '../Layout/LoadingSpinner'
 import { WhatsappIcon } from '@/assets/icons/WhatsappIcon'
+import { OrderTrackingTimeline } from '@/components/Order/OrderTrackingTimeline'
 
 interface CustomerOrdersDrawerProps {
   isOpen: boolean
@@ -76,14 +77,6 @@ export function CustomerOrdersDrawer({ isOpen, onClose }: CustomerOrdersDrawerPr
     }
   }
 
-  const getStatusTimeline = (order: CustomerOrder) => {
-    return [
-      { id: 1, title: 'Pedido recebido', completed: order.status >= 1, date: order.created_at },
-      { id: 2, title: 'Pagamento confirmado', completed: order.status >= 2 },
-      { id: 3, title: 'Pedido enviado', completed: order.status >= 3 },
-      { id: 4, title: 'Pedido entregue', completed: order.status >= 4 },
-    ]
-  }
 
   if (!isOpen) return null
 
@@ -169,29 +162,12 @@ export function CustomerOrdersDrawer({ isOpen, onClose }: CustomerOrdersDrawerPr
 
                   {/* Timeline de Rastreio */}
                   <div className="border-t pt-6">
-                    <h3 className="font-semibold mb-4">Rastreamento do Pedido</h3>
-                    <div className="space-y-4">
-                      {getStatusTimeline(selectedOrder).map((step, index) => (
-                        <div key={step.id} className="flex items-start gap-4">
-                          <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${step.completed ? 'bg-primary text-white' : 'bg-gray-200 text-gray-400'
-                            }`}>
-                            {step.completed ? (
-                              <CheckCircle className="w-5 h-5" />
-                            ) : (
-                              <Clock className="w-5 h-5" />
-                            )}
-                          </div>
-                          <div className="flex-1 pt-1">
-                            <p className={`font-medium ${step.completed ? 'text-gray-900' : 'text-gray-400'}`}>
-                              {step.title}
-                            </p>
-                            {step.date && (
-                              <p className="text-sm text-gray-500 mt-1">{formatDate(step.date)}</p>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                    <OrderTrackingTimeline 
+                      currentStatus={selectedOrder.status}
+                      orderId={selectedOrder.id}
+                      showTitle={true}
+                      isVendor={false}
+                    />
                   </div>
 
                   {/* Itens do Pedido */}
@@ -462,7 +438,7 @@ export function CustomerOrdersDrawer({ isOpen, onClose }: CustomerOrdersDrawerPr
                         <button
                           key={order.id}
                           onClick={() => handleOrderClick(order.id)}
-                          className="w-full text-left p-4 border border-gray-200 rounded-lg hover:border-primary hover:shadow-md transition-all"
+                          className="w-full text-left p-4 border border-gray-200 rounded-xl hover:border-primary hover:shadow-md transition-all"
                         >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1">

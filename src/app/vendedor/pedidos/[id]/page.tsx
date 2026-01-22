@@ -24,6 +24,7 @@ import { formatDate, formatPrice } from '@/lib/utils'
 import { buildImageUrl } from '@/lib/imageUtils'
 import { ErrorState } from '@/components/Layout/ErrorState'
 import { UpdateOrderStatusModal } from '@/components/Order/UpdateOrderStatusModal'
+import { OrderTrackingTimeline } from '@/components/Order/OrderTrackingTimeline'
 import { useAuth } from '@/contexts/AuthContext'
 import { useEffect } from 'react'
 import LoadingPage from '@/components/Layout/LoadingPage'
@@ -102,14 +103,6 @@ Em breve entraremos em contato para confirmar o pedido! 🛍️`
   const statusInfo = getStatusInfo(order.status)
   const whatsappNumber = order.customer_phone ? formatWhatsAppNumber(order.customer_phone) : null
   const whatsappMessage = generateWhatsAppMessage(order)
-  const statusTimeline = [
-    { id: 1, title: 'Pedido recebido', description: 'Estamos aguardando a confirmação do pedido.' },
-    { id: 2, title: 'Pagamento confirmado', description: 'O pagamento foi identificado e o pedido está em preparo.' },
-    { id: 3, title: 'Pedido enviado', description: 'O pedido saiu para entrega.' },
-    { id: 4, title: 'Pedido entregue', description: 'O pedido foi entregue ao cliente.' },
-    { id: 5, title: 'Pedido cancelado', description: 'O pedido foi cancelado.' }
-  ]
-  const currentStatusIndex = statusTimeline.findIndex(step => step.id === order.status)
   const totalItemsCount = order.items.reduce((total, item) => total + item.quantity, 0)
 
   const handleWhatsappContact = () => {
@@ -323,42 +316,12 @@ Em breve entraremos em contato para confirmar o pedido! 🛍️`
                 <CardTitle>Progresso do Pedido</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="relative">
-                  <div className="absolute left-3 top-0 bottom-0 w-px bg-gray-200" />
-                  <div className="space-y-5">
-                    {statusTimeline.map((step, index) => {
-                      const isCompleted = index < currentStatusIndex
-                      const isCurrent = step.id === order.status
-                      const isUpcoming = index > currentStatusIndex
-
-                      return (
-                        <div key={step.id} className="flex gap-4 relative">
-                          <div
-                            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mt-1 ${isCompleted || isCurrent
-                              ? 'bg-primary text-white border-primary'
-                              : 'bg-white text-gray-400 border-gray-200'
-                              }`}
-                          >
-                            <span className="text-[10px] font-semibold">{index + 1}</span>
-                          </div>
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <p className={`font-semibold ${isCompleted || isCurrent ? 'text-primary' : 'text-gray-400'}`}>
-                                {step.title}
-                              </p>
-                              {isCurrent && (
-                                <Badge className="text-xs bg-primary text-white">Status atual</Badge>
-                              )}
-                            </div>
-                            <p className={`text-sm ${isUpcoming ? 'text-gray-400' : 'text-gray-600'}`}>
-                              {step.description}
-                            </p>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
+                <OrderTrackingTimeline 
+                  currentStatus={order.status}
+                  orderId={order.id}
+                  showTitle={false}
+                  isVendor={true}
+                />
               </CardContent>
             </Card>
 
