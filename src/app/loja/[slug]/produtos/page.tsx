@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
 import { ProductCard, StorePagination, StoreSidebar, ErrorState, CartSidebar, StoreHeader, LoadingPage } from '@/components'
 import { Star, Package, Filter, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -109,7 +110,12 @@ export default function StorePage() {
 
       {/* Mobile Filter Button */}
       {isMobile && (
-        <div className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3 lg:hidden">
+        <motion.div
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3 lg:hidden"
+        >
           <div className="flex items-center justify-between gap-3">
             <Button
               onClick={() => setIsSidebarOpen(true)}
@@ -119,13 +125,22 @@ export default function StorePage() {
               <Filter className="w-4 h-4" />
               Filtros
             </Button>
-            {(filters.categoryId || filters.color || filters.size || filters.featured || filters.minPrice || filters.maxPrice) && (
-              <Badge variant="secondary" className="bg-primary/10 text-primary">
-                {Object.values(filters).filter(v => v !== undefined && v !== false).length} ativo(s)
-              </Badge>
-            )}
+            <AnimatePresence>
+              {(filters.categoryId || filters.color || filters.size || filters.featured || filters.minPrice || filters.maxPrice) && (
+                <motion.div
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Badge variant="secondary" className="bg-primary/10 text-primary">
+                    {Object.values(filters).filter(v => v !== undefined && v !== false).length} ativo(s)
+                  </Badge>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        </div>
+        </motion.div>
       )}
 
       <div className="flex gap-0 lg:gap-6">
@@ -133,19 +148,28 @@ export default function StorePage() {
         {isMobile ? (
           <>
             {/* Overlay para mobile */}
-            {isSidebarOpen && (
-              <div
-                className="fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity"
-                onClick={() => setIsSidebarOpen(false)}
-              />
-            )}
+            <AnimatePresence>
+              {isSidebarOpen && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                  onClick={() => setIsSidebarOpen(false)}
+                />
+              )}
+            </AnimatePresence>
             {/* Drawer para mobile */}
-            <div
-              className={`
-                fixed top-0 left-0 h-full w-full max-w-sm bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out lg:hidden flex flex-col
-                ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-              `}
-            >
+            <AnimatePresence>
+              {isSidebarOpen && (
+                <motion.div
+                  initial={{ x: '-100%' }}
+                  animate={{ x: 0 }}
+                  exit={{ x: '-100%' }}
+                  transition={{ type: 'tween', duration: 0.3, ease: 'easeInOut' }}
+                  className="fixed top-0 left-0 h-full w-full max-w-sm bg-white shadow-xl z-50 lg:hidden flex flex-col"
+                >
               {/* Header do Drawer */}
               <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between z-10 flex-shrink-0">
                 <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
@@ -188,7 +212,9 @@ export default function StorePage() {
                   storeId={storeInfo?.id || null}
                 />
               </div>
-            </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </>
         ) : (
           /* Desktop Sidebar */
@@ -224,71 +250,154 @@ export default function StorePage() {
             ) : (
               <>
                 {/* Título e Contadores */}
-                <div className="mb-4 sm:mb-6">
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="mb-4 sm:mb-6"
+                >
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
                     <div>
-                      <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
+                      <motion.h1
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.4, delay: 0.1 }}
+                        className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 sm:mb-2"
+                      >
                         {getPageTitle()}
-                      </h1>
-                      <p className="text-sm sm:text-base text-gray-600">
+                      </motion.h1>
+                      <motion.p
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.4, delay: 0.2 }}
+                        className="text-sm sm:text-base text-gray-600"
+                      >
                         {meta?.total || products?.length || 0} {(meta?.total || products?.length || 0) === 1 ? 'produto encontrado' : 'produtos encontrados'}
-                      </p>
+                      </motion.p>
                     </div>
                   </div>
 
                   {/* Badges de Filtros Ativos */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    {filters.featured && (
-                      <Badge className="bg-pink-500 text-white text-xs">
-                        <Star className="w-3 h-3 mr-1" />
-                        Em destaque
-                      </Badge>
-                    )}
-                    {filters.categoryId && categories.find(c => c.id === filters.categoryId) && (
-                      <Badge variant="secondary" className="text-xs">
-                        {categories.find(c => c.id === filters.categoryId)?.name}
-                      </Badge>
-                    )}
-                    {filters.color && (
-                      <Badge variant="secondary" className="text-xs">
-                        Cor: {filters.color}
-                      </Badge>
-                    )}
-                    {filters.size && (
-                      <Badge variant="secondary" className="text-xs">
-                        Tamanho: {filters.size}
-                      </Badge>
-                    )}
-                    {(filters.categoryId || filters.color || filters.size || filters.featured || filters.minPrice || filters.maxPrice) && (
-                      <Button
-                        onClick={handleClearFilters}
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 text-xs text-gray-600 hover:text-gray-900"
-                      >
-                        Limpar filtros
-                      </Button>
-                    )}
-                  </div>
-                </div>
+                  <motion.div
+                    layout
+                    className="flex flex-wrap items-center gap-2"
+                  >
+                    <AnimatePresence mode="popLayout">
+                      {filters.featured && (
+                        <motion.div
+                          key="featured"
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Badge className="bg-pink-500 text-white text-xs">
+                            <Star className="w-3 h-3 mr-1" />
+                            Em destaque
+                          </Badge>
+                        </motion.div>
+                      )}
+                      {filters.categoryId && categories.find(c => c.id === filters.categoryId) && (
+                        <motion.div
+                          key="category"
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Badge variant="secondary" className="text-xs">
+                            {categories.find(c => c.id === filters.categoryId)?.name}
+                          </Badge>
+                        </motion.div>
+                      )}
+                      {filters.color && (
+                        <motion.div
+                          key="color"
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Badge variant="secondary" className="text-xs">
+                            Cor: {filters.color}
+                          </Badge>
+                        </motion.div>
+                      )}
+                      {filters.size && (
+                        <motion.div
+                          key="size"
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Badge variant="secondary" className="text-xs">
+                            Tamanho: {filters.size}
+                          </Badge>
+                        </motion.div>
+                      )}
+                      {(filters.categoryId || filters.color || filters.size || filters.featured || filters.minPrice || filters.maxPrice) && (
+                        <motion.div
+                          key="clear"
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Button
+                            onClick={handleClearFilters}
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 text-xs text-gray-600 hover:text-gray-900"
+                          >
+                            Limpar filtros
+                          </Button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                </motion.div>
 
                 {/* Grid de Produtos */}
                   {products && Array.isArray(products) && products.length > 0 ? (
                     <>
-                      <div className="grid gap-4 sm:gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
-                        {products.map((product) => (
-                          <ProductCard
-                            key={product.id}
-                            product={product}
-                            onAddToFavorites={handleAddToFavorites}
-                            onViewDetails={handleViewDetails}
-                          />
-                        ))}
-                      </div>
+                      <motion.div
+                        layout
+                        className="grid gap-4 sm:gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4"
+                      >
+                        <AnimatePresence mode="popLayout">
+                          {products.map((product, index) => (
+                            <motion.div
+                              key={product.id}
+                              layout
+                              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.9, y: -20 }}
+                              transition={{
+                                duration: 0.3,
+                                delay: index * 0.05,
+                                ease: [0.22, 1, 0.36, 1]
+                              }}
+                              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                            >
+                              <ProductCard
+                                product={product}
+                                onAddToFavorites={handleAddToFavorites}
+                                onViewDetails={handleViewDetails}
+                              />
+                            </motion.div>
+                          ))}
+                        </AnimatePresence>
+                      </motion.div>
 
                       {/* Paginação */}
                       {meta && meta.lastPage > 1 && (
-                        <div className="mt-6 sm:mt-8">
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4, delay: 0.2 }}
+                          className="mt-6 sm:mt-8"
+                        >
                           <StorePagination
                             currentPage={meta.currentPage}
                             totalPages={meta.lastPage}
@@ -297,24 +406,52 @@ export default function StorePage() {
                             hasNextPage={meta.next !== null}
                             hasPrevPage={meta.prev !== null}
                           />
-                        </div>
+                        </motion.div>
                       )}
                     </>
                   ) : (
-                    <div className="text-center py-8 sm:py-12 px-4">
-                      <div className="text-gray-400 mb-4">
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.4 }}
+                      className="text-center py-8 sm:py-12 px-4"
+                    >
+                      <motion.div
+                        initial={{ scale: 0, rotate: -180 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{ duration: 0.5, type: 'spring', stiffness: 200 }}
+                        className="text-gray-400 mb-4"
+                      >
                         <Package className="w-12 h-12 sm:w-16 sm:h-16 mx-auto" />
-                      </div>
-                      <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
+                      </motion.div>
+                      <motion.h3
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.2 }}
+                        className="text-base sm:text-lg font-medium text-gray-900 mb-2"
+                      >
                         Nenhum produto encontrado
-                      </h3>
-                      <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
+                      </motion.h3>
+                      <motion.p
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.3 }}
+                        className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6"
+                      >
                         Tente ajustar os filtros ou termo de busca
-                      </p>
-                      <Button onClick={handleClearFilters} variant="outline" className="w-full sm:w-auto">
-                        Limpar filtros
-                      </Button>
-                    </div>
+                      </motion.p>
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.4 }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Button onClick={handleClearFilters} variant="outline" className="w-full sm:w-auto">
+                          Limpar filtros
+                        </Button>
+                      </motion.div>
+                    </motion.div>
                   )}
                 </>
               )}
