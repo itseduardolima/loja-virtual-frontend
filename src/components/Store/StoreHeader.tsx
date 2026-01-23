@@ -159,7 +159,7 @@ export function StoreHeader({
           </div>
 
           {/* Direita: Busca, Carrinho e Usuário */}
-          <div className="flex items-center gap-2 sm:gap-3 lg:gap-5 w-full sm:w-auto">
+          <div className="flex items-center sm:gap-3 lg:gap-5 w-full sm:w-auto">
             {/* Campo de Busca */}
             <div className="relative flex-1 sm:flex-initial sm:w-[280px] md:w-[350px] lg:w-[400px] xl:w-[577px]">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5 z-10" />
@@ -246,10 +246,10 @@ export function StoreHeader({
               className="relative p-2 sm:p-0 hover:bg-transparent h-9 w-9 sm:h-auto sm:w-auto flex-shrink-0"
               aria-label="Carrinho"
             >
-              <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6" />
+              <ShoppingBag className="w-6 h-6" />
               {totalItems > 0 && (
                 <Badge
-                  className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 h-4 sm:h-5 min-w-4 sm:min-w-5 px-1 sm:px-1.5 flex items-center justify-center bg-red-500 text-white text-[10px] sm:text-xs rounded-full border-0 font-medium"
+                  className="absolute bottom-4 right-0 sm:bottom-3 sm:left-3 h-4 sm:h-5 min-w-4 sm:min-w-5 px-1 sm:px-1.5 flex items-center justify-center bg-red-500 text-white text-[10px] sm:text-xs rounded-full border-0 font-medium"
                 >
                   {totalItems > 99 ? '99+' : totalItems}
                 </Badge>
@@ -270,7 +270,7 @@ export function StoreHeader({
                 className="flex items-center gap-1.5 sm:gap-2 p-2 sm:p-0 hover:bg-transparent h-9 sm:h-auto"
                 aria-label={isAuthenticated ? 'Menu do perfil' : 'Login'}
               >
-                <User className="w-5 h-5 sm:w-6 sm:h-6" />
+                <User className="w-6 h-6" />
                 {isAuthenticated && user && (
                   <span className="text-xs sm:text-sm font-medium hidden sm:inline max-w-[100px] lg:max-w-none truncate">
                     {user.name}

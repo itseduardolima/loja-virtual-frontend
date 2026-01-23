@@ -9,7 +9,6 @@ import {
   Plus, 
   Minus,
   ShoppingBag,
-  CreditCard,
 } from 'lucide-react'
 import Image from 'next/image'
 import { useCart } from '@/hooks/useCart'
@@ -151,7 +150,7 @@ export function CartSidebar({ isOpen, onClose, storeId, storeSlug, currentPath }
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
                 <ShoppingBag className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-bold text-gray-900 mb-2">
                   Carrinho vazio
                 </h3>
                 <p className="text-gray-600 mb-4">
@@ -199,7 +198,7 @@ export function CartSidebar({ isOpen, onClose, storeId, storeSlug, currentPath }
 
                         {/* Product Info - Left Side */}
                         <div className="flex-1 min-w-0 pr-8">
-                          <h3 className="font-medium text-gray-900 text-sm line-clamp-2 mb-2">
+                          <h3 className="font-bold text-gray-900 text-sm line-clamp-2 mb-2">
                             {item.product.name}
                           </h3>
                           
@@ -241,7 +240,7 @@ export function CartSidebar({ isOpen, onClose, storeId, storeSlug, currentPath }
                             >
                               <Minus className="h-3 w-3" />
                             </Button>
-                            <span className="px-3 py-1 text-sm font-medium min-w-[2rem] text-center">
+                            <span className="px-3 py-1 text-sm font-bold min-w-[2rem] text-center">
                               {item.quantity}
                             </span>
                             <Button
@@ -276,17 +275,16 @@ export function CartSidebar({ isOpen, onClose, storeId, storeSlug, currentPath }
                 {/* Actions */}
                 <div className="space-y-2">
                   <Button 
-                    className="w-full h-12 text-lg font-medium"
+                    className="w-full h-12 text-md"
                     onClick={handleCheckout}
                     disabled={isCheckoutLoading}
                   >
-                    <CreditCard className="h-5 w-5 mr-2" />
                     Finalizar Compra
                   </Button>
                   
                   <Button 
                     variant="outline" 
-                    className="w-full"
+                    className="w-full h-12 text-md"
                     onClick={handleClearCart}
                     disabled={isClearingCart}
                   >
