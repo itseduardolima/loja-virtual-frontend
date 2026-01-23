@@ -1,16 +1,23 @@
 'use client'
 
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatPrice, buildImageUrl } from '@/lib/utils'
 import { RecentOrder } from '@/hooks/useDashboard'
 import Image from 'next/image'
-import { Package } from 'lucide-react'
+import { Package, ChevronDown } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 interface DashboardRecentOrdersProps {
   orders: RecentOrder[]
 }
 
 export function DashboardRecentOrders({ orders }: DashboardRecentOrdersProps) {
+  const [showAllMobile, setShowAllMobile] = useState(false)
+  const initialMobileLimit = 4
+  const displayedOrdersMobile = showAllMobile ? orders : (orders || []).slice(0, initialMobileLimit)
+  const hasMoreOrders = (orders || []).length > initialMobileLimit
+
   if (!orders || orders.length === 0) {
     return (
       <Card className="border-0 shadow-sm rounded-2xl">
@@ -46,7 +53,7 @@ export function DashboardRecentOrders({ orders }: DashboardRecentOrdersProps) {
           }}
         >
           <div className="space-y-3">
-            {orders.map((order, index) => {
+            {displayedOrdersMobile.map((order, index) => {
               const firstItem = order.items && order.items.length > 0 ? order.items[0] : null
               const totalQuantity = order.items?.reduce((sum, item) => sum + item.quantity, 0) || 0
               
@@ -109,6 +116,18 @@ export function DashboardRecentOrders({ orders }: DashboardRecentOrdersProps) {
               )
             })}
           </div>
+          {hasMoreOrders && (
+            <div className="pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowAllMobile(!showAllMobile)}
+                className="w-full flex items-center justify-center gap-2 text-sm"
+              >
+                {showAllMobile ? 'Exibir menos' : 'Exibir mais'}
+                <ChevronDown className={`h-4 w-4 transition-transform ${showAllMobile ? 'rotate-180' : ''}`} />
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
