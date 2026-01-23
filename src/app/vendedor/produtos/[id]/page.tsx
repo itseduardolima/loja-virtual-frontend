@@ -7,6 +7,8 @@ import {
   Edit,
   Trash2,
   Star,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 import { useRouter, useParams } from 'next/navigation'
 import Image from 'next/image'
@@ -33,6 +35,8 @@ export default function ProductDetailPage() {
     getStatusInfo,
     selectColor,
     selectImage,
+    previousImage,
+    nextImage,
     openDeleteDialog,
     handleDeleteProduct,
     showDeleteDialog,
@@ -90,28 +94,29 @@ export default function ProductDetailPage() {
   return (
     <div className="min-h-screen">
       {/* Main Content */}
-      <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto pt-4 pb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+      <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto sm:px-6 lg:px-8 pt-4 pb-6 sm:pb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-16">
           {/* Product Images */}
-          <div className="flex gap-4">
-            {/* Thumbnail Images - Vertical */}
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            {/* Thumbnail Images - Horizontal em mobile, Vertical em desktop */}
             {currentImages && currentImages.length > 1 && (
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-row sm:flex-col gap-2 sm:gap-3 order-2 sm:order-1 overflow-x-auto sm:overflow-x-visible pb-2 sm:pb-0 -mx-4 sm:mx-0 px-4 sm:px-0">
                 {currentImages.map((image: string, index: number) => (
                   <button
                     key={index}
                     onClick={() => selectImage(index)}
-                    className={`relative rounded-2xl overflow-hidden border-2 transition-all ${selectedImageIndex === index
+                    className={`relative rounded-lg sm:rounded-2xl overflow-hidden border-2 transition-all flex-shrink-0 ${selectedImageIndex === index
                       ? 'border-primary'
-                      : 'border-gray-200 hover:border-gray-300'
+                      : 'border-gray-200 hover:border-gray-300 active:border-primary'
                       }`}
                   >
                     <Image
                       src={buildImageUrl(image)}
                       alt={`${product.name} ${index + 1}`}
-                      width={100}
-                      height={100}
-                      className="object-cover w-[100px] h-[100px]"
+                      width={80}
+                      height={80}
+                      className="object-cover w-20 h-20 sm:w-24 sm:h-24 lg:w-[100px] lg:h-[100px]"
+                      sizes="(max-width: 640px) 80px, (max-width: 1024px) 96px, 100px"
                     />
                   </button>
                 ))}
@@ -119,17 +124,53 @@ export default function ProductDetailPage() {
             )}
 
             {/* Main Image */}
-            <div className="flex-1 relative min-h-[800px] rounded-2xl overflow-hidden">
+            <div className="w-full sm:flex-1 relative rounded-2xl overflow-hidden order-1 sm:order-2 min-w-0 h-[60vh] sm:h-auto sm:min-h-[800px]">
               {currentImages && currentImages.length > 0 ? (
-                <Image
-                  src={buildImageUrls(currentImages)[selectedImageIndex]}
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                />
+                <>
+                  <Image
+                    src={buildImageUrls(currentImages)[selectedImageIndex]}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                    priority
+                    sizes="(max-width: 640px) 100vw, 50vw"
+                  />
+                  {/* Navegação de imagens em mobile - setas */}
+                  {currentImages.length > 1 && (
+                    <>
+                      <button
+                        onClick={previousImage}
+                        className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 sm:p-3 shadow-lg transition-all active:scale-95 lg:hidden z-10 touch-manipulation"
+                        aria-label="Imagem anterior"
+                      >
+                        <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                      </button>
+                      <button
+                        onClick={nextImage}
+                        className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 sm:p-3 shadow-lg transition-all active:scale-95 lg:hidden z-10 touch-manipulation"
+                        aria-label="Próxima imagem"
+                      >
+                        <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                      </button>
+                      {/* Indicador de imagem atual */}
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 lg:hidden z-10">
+                        {currentImages.map((_, index) => (
+                          <div
+                            key={index}
+                            className={`h-2 rounded-full transition-all ${
+                              selectedImageIndex === index
+                                ? 'w-6 bg-primary'
+                                : 'w-2 bg-white/60'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </>
               ) : (
                 <div className="flex items-center justify-center h-full">
-                  <Package className="h-24 w-24 text-gray-300" />
+                  <Package className="h-16 w-16 sm:h-24 sm:w-24 text-gray-300" />
                 </div>
               )}
             </div>
@@ -137,52 +178,52 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Product Info */}
-          <div className="space-y-6 w-[70%]">
+          <div className="space-y-4 sm:space-y-6">
             {/* Product Title */}
             <div>
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-3 sm:mb-4 flex-wrap">
                 {product.featured === 1 && (
-                  <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
+                  <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 text-xs sm:text-sm">
                     Destaque
                   </Badge>
                 )}
-                <Badge className={getStatusInfo(product.status).color}>
+                <Badge className={`${getStatusInfo(product.status).color} text-xs sm:text-sm`}>
                   {getStatusInfo(product.status).text}
                 </Badge>
               </div>
-              <h1 className="text-4xl font-bold text-primary mb-4">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-3 sm:mb-4">
                 {product.name}
               </h1>
 
               {/* Rating */}
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-3 sm:mb-4">
                 <div className="flex items-center">
                   {[...Array(fullStars)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                    <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 fill-yellow-400 text-yellow-400" />
                   ))}
                   {hasHalfStar && (
-                    <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" style={{ clipPath: 'inset(0 50% 0 0)' }} />
+                    <Star className="h-4 w-4 sm:h-5 sm:w-5 fill-yellow-400 text-yellow-400" style={{ clipPath: 'inset(0 50% 0 0)' }} />
                   )}
                   {[...Array(5 - fullStars - (hasHalfStar ? 1 : 0))].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 text-gray-300" />
+                    <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 text-gray-300" />
                   ))}
                 </div>
-                <span className="text-sm text-primary/60">({rating}/5)</span>
+                <span className="text-xs sm:text-sm text-primary/60">({rating}/5)</span>
               </div>
             </div>
 
             {/* Price */}
-            <div className="flex items-center gap-4">
-              <span className="text-5xl font-bold text-primary">
+            <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+              <span className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary">
                 {formatPrice(product.final_price?.toString() || product.price)}
               </span>
               {/* Se houver desconto, mostrar preço original riscado e badge */}
               {product.discount_price !== null && product.discount_price !== undefined && product.discount_percentage && product.discount_percentage > 0 && (
                 <>
-                  <span className="text-2xl text-primary/30 line-through font-bold">
+                  <span className="text-lg sm:text-xl lg:text-2xl text-primary/30 line-through font-bold">
                     {formatPrice(product.price)}
                   </span>
-                  <Badge className="bg-[#FF3333]/10 text-[#FF3333] px-2 py-1">
+                  <Badge className="bg-[#FF3333]/10 text-[#FF3333] px-2 py-1 text-xs sm:text-sm">
                     -{Math.floor(product.discount_percentage)}%
                   </Badge>
                 </>
@@ -190,23 +231,23 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Stock */}
-            <div className="flex items-center gap-2 text-primary font-integral">
+            <div className="flex items-center gap-2 text-primary font-integral text-sm sm:text-base">
               <span className="font-integral tracking-wide">Estoque:</span>
               <span>
                 {product.stock > 0 ? `${product.stock} unidade${product.stock > 1 ? 's' : ''}` : 'Sem estoque'}
               </span>
             </div>
 
-            {/* Description */}
-            <p className="text-primary/60 text-base leading-relaxed">
+            {/* Description - Desktop only */}
+            <p className="hidden sm:block text-primary/60 text-sm sm:text-base leading-relaxed">
               {product.description}
             </p>
 
             {/* Select Colors */}
             {Object.keys(imagesByColor).length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <span className="text-sm font-medium text-primary/60">Cores disponíveis:</span>
-                <div className="flex gap-3 flex-wrap">
+                <div className="flex gap-2 sm:gap-3 flex-wrap">
                   {Object.keys(imagesByColor).map((color) => {
                     const colorValue = getColorHex(color)
                     const isSelected = selectedColor === color
@@ -221,33 +262,33 @@ export default function ProductDetailPage() {
                             selectColor(color)
                           }
                         }}
-                        className={`relative w-10 h-10 rounded-full border-2 transition-all p-0 cursor-pointer ${
+                        className={`relative w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 transition-all p-0 cursor-pointer active:scale-95 touch-manipulation ${
                           isSelected ? 'ring-2 ring-primary ring-offset-2' : ''
                         } ${!hasImages ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'}`}
                         style={{ backgroundColor: colorValue }}
                         title={hasImages ? color : `${color} (sem imagens)`}
                         disabled={!hasImages}
+                        aria-label={`Selecionar cor ${color}`}
                       >
                         {colorValue === '#FFFFFF' && (
                           <div className="absolute inset-0 rounded-full border border-gray-400"></div>
                         )}
                         {isSelected && (
                           <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-3 h-3 bg-white rounded-full shadow-md"></div>
+                            <div className="w-3 h-3 sm:w-4 sm:h-4 bg-white rounded-full shadow-md"></div>
                           </div>
                         )}
                       </button>
                     )
                   })}
                 </div>
-                
               </div>
             ) : product.color ? (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <span className="text-sm font-medium text-primary/60">Cor disponível:</span>
-                <div className="flex gap-3 items-center">
+                <div className="flex gap-2 sm:gap-3 items-center">
                   <div
-                    className="relative w-10 h-10 rounded-full border-2 transition-all"
+                    className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 transition-all"
                     style={{ backgroundColor: getColorHex(product.color) }}
                     title={product.color}
                   >
@@ -259,9 +300,9 @@ export default function ProductDetailPage() {
                 </div>
               </div>
             ) : product.dynamic_fields?.find(f => f.field_name.toLowerCase() === 'cor') && (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <span className="text-sm font-medium text-primary/60">Cores disponíveis:</span>
-                <div className="flex gap-3 flex-wrap">
+                <div className="flex gap-2 sm:gap-3 flex-wrap">
                   {product.dynamic_fields
                     .find(f => f.field_name.toLowerCase() === 'cor')
                     ?.value.split(',')
@@ -272,7 +313,7 @@ export default function ProductDetailPage() {
                       return (
                         <div
                           key={colorIndex}
-                          className="relative w-10 h-10 rounded-full border-2 transition-all"
+                          className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 transition-all"
                           style={{ backgroundColor: colorValue }}
                           title={trimmedColor}
                         >
@@ -288,9 +329,9 @@ export default function ProductDetailPage() {
 
             {/* Choose Size */}
             {product.dynamic_fields?.find(f => f.field_name.toLowerCase() === 'tamanho') && (
-              <div className="space-y-3">
-                <span className="text-sm font-medium text-primary/60">Tamanhos disponíveis:</span>
-                <div className="grid grid-cols-5 gap-2">
+              <div className="space-y-2 sm:space-y-3">
+                <span className="text-sm  text-primary/60">Tamanhos disponíveis:</span>
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 sm:gap-2">
                   {product.dynamic_fields
                     .find(f => f.field_name.toLowerCase() === 'tamanho')
                     ?.value.split(',')
@@ -300,7 +341,7 @@ export default function ProductDetailPage() {
                       return (
                         <span
                           key={sizeIndex}
-                          className="px-8 py-2 rounded text-sm bg-[#F0F0F0] text-primary/60 text-center"
+                          className="px-4 sm:px-6 lg:px-8 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm bg-[#F0F0F0] text-primary/60 text-center"
                         >
                           {trimmedSize}
                         </span>
@@ -311,20 +352,20 @@ export default function ProductDetailPage() {
             )}
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-4 pt-6">
+            <div className="flex flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-4 sm:pt-6">
               <Button
-                className="flex-1 h-12 text-lg"
+                className="flex-1 h-12 sm:h-12 text-base sm:text-lg font-medium active:scale-[0.98] transition-transform touch-manipulation"
                 onClick={() => router.push(`/vendedor/produtos/editar/${productId}`)}
               >
-                <Edit className="h-5 w-5 mr-2" />
+                <Edit className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                 Editar Produto
               </Button>
               <Button
                 variant="destructive"
-                className="h-12 px-4"
+                className="h-12 sm:h-12 px-4 sm:px-4 active:scale-[0.98] transition-transform touch-manipulation"
                 onClick={openDeleteDialog}
               >
-                <Trash2 className="h-5 w-5" />
+                <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </div>
 
@@ -333,15 +374,32 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* Specifications (Bottom Section) */}
-      {product.specifications && (
+      {/* Description and Specifications (Bottom Section) */}
+      {(product.description || product.specifications) && (
         <div className="border-t">
-          <div className="max-w-4xl px-4 py-10">
-            <h2 className="text-xl font-bold text-primary mb-3">Especificações</h2>
-            <div
-              className="text-primary/60 text-base leading-relaxed prose prose-sm max-w-none prose-headings:text-primary/80 prose-p:text-primary/60 prose-ul:text-primary/60 prose-ol:text-primary/60 prose-strong:text-primary/80"
-              dangerouslySetInnerHTML={{ __html: product.specifications }}
-            />
+          <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+            {/* Description - Mobile only */}
+            {product.description && (
+              <div className="sm:hidden mb-6">
+                <h2 className="text-lg font-bold text-primary mb-3">Descrição</h2>
+                <p className="text-primary/60 text-sm leading-relaxed">
+                  {product.description}
+                </p>
+              </div>
+            )}
+            
+            {/* Specifications */}
+            {product.specifications && (
+              <>
+                <h2 className="text-lg sm:text-xl font-bold text-primary mb-3">
+                  Especificações
+                </h2>
+                <div
+                  className="text-primary/60 text-sm sm:text-base leading-relaxed prose prose-sm max-w-none prose-headings:text-primary/80 prose-p:text-primary/60 prose-ul:text-primary/60 prose-ol:text-primary/60 prose-strong:text-primary/80"
+                  dangerouslySetInnerHTML={{ __html: product.specifications }}
+                />
+              </>
+            )}
           </div>
         </div>
       )}
