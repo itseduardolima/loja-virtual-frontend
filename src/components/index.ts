@@ -61,6 +61,7 @@ export { OrderTrackingTimeline } from './Order/OrderTrackingTimeline'
 export { DynamicFields } from './Form/DynamicFields'
 export { ImageUpload } from './Form/ImageUpload'
 export { ImageUploadByColor } from './Form/ImageUploadByColor'
+export { ProductSteps } from './Form/ProductSteps'
 
 // Dialog Components
 export { ConfirmDialog } from './Dialog/ConfirmDialog'

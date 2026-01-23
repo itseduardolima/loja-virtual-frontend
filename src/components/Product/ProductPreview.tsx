@@ -11,7 +11,8 @@ interface ProductPreviewProps {
   description: string
   price: number
   featured: boolean
-  selectedImages: File[]
+  selectedImages?: File[]
+  imagesByColor?: Record<string, File[]>
   existingImages?: string[]
   removedExistingImages?: number[]
   category?: { id: number; name: string }
@@ -28,7 +29,8 @@ export function ProductPreview({
   description,
   price,
   featured,
-  selectedImages,
+  selectedImages = [],
+  imagesByColor = {},
   existingImages = [],
   removedExistingImages = [],
   category,
@@ -42,16 +44,23 @@ export function ProductPreview({
   // Filtrar imagens existentes que não foram removidas
   const remainingExistingImages = existingImages.filter((_, index) => !removedExistingImages.includes(index))
   
-  const previewImage = selectedImages.length > 0 
-    ? URL.createObjectURL(selectedImages[0])
-    : remainingExistingImages.length > 0 
-      ? `${process.env.NEXT_PUBLIC_API_URL}${remainingExistingImages[0]}`
-      : null
+  // Obter primeira imagem disponível (prioridade: imagens por cor > selectedImages > existingImages)
+  let previewImage: string | null = null
+  
+  // Verificar imagens por cor primeiro
+  const allImagesByColor = Object.values(imagesByColor).flat()
+  if (allImagesByColor.length > 0) {
+    previewImage = URL.createObjectURL(allImagesByColor[0])
+  } else if (selectedImages.length > 0) {
+    previewImage = URL.createObjectURL(selectedImages[0])
+  } else if (remainingExistingImages.length > 0) {
+    previewImage = `${process.env.NEXT_PUBLIC_API_URL}${remainingExistingImages[0]}`
+  }
 
   return (
     <div className="lg:col-span-1 space-y-6">
       {/* Preview do Produto - Replicando o estilo do ProductCard */}
-      <Card className="p-6 bg-white border-gray-200 shadow-none">
+      <Card className="p-6 bg-white border-0 shadow-none">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-gray-50 rounded-lg">
             <Eye className="h-5 w-5 text-primary" />
@@ -63,12 +72,12 @@ export function ProductPreview({
         <Card className="group relative overflow-hidden bg-white transition-all duration-300 border-0 shadow-none">
           <CardContent className="p-0">
             {/* Container da Imagem */}
-            <div className="relative aspect-square overflow-hidden bg-gray-50">
+            <div className="relative h-auto overflow-hidden bg-white flex items-center justify-center">
               {previewImage ? (
                 <img
                   src={previewImage}
                   alt={name || 'Preview'}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  className="object-cover rounded-2xl"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gray-100">

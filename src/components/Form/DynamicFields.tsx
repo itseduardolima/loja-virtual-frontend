@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { LoadingSpinner } from '@/components/Layout/LoadingSpinner'
 import { ErrorState } from '@/components/Layout/ErrorState'
@@ -26,7 +25,142 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
   const dropdownRefs = useRef<Record<number, HTMLDivElement | null>>({})
   
   // Número de cores a mostrar inicialmente
-  const INITIAL_COLORS_COUNT = 30
+  const INITIAL_COLORS_COUNT = 20
+
+  // Mapeamento preciso de cores para famílias
+  const colorFamilyMap: Record<string, string> = {
+    // Neutros
+    'preto': 'neutros', 'branco': 'neutros', 'cinza': 'neutros', 'bege': 'neutros',
+    'creme': 'neutros', 'off white': 'neutros', 'prata': 'neutros', 'platina': 'neutros',
+    // Marrons e Terrosos
+    'marrom': 'marrom', 'marrom claro': 'marrom', 'marrom escuro': 'marrom',
+    'caramelo': 'marrom', 'café': 'marrom', 'chocolate': 'marrom', 'cobre': 'marrom',
+    'terracota': 'marrom', 'bronze': 'marrom', 'camel': 'marrom', 'nude': 'marrom',
+    // Azuis
+    'azul': 'azul', 'azul marinho': 'azul', 'azul claro': 'azul', 'azul escuro': 'azul',
+    'azul turquesa': 'azul', 'azul céu': 'azul', 'azul royal': 'azul',
+    'turquesa': 'azul', 'ciano': 'azul', 'índigo': 'azul',
+    // Vermelhos
+    'vermelho': 'vermelho', 'vermelho escuro': 'vermelho', 'vermelho claro': 'vermelho',
+    'vinho': 'vermelho', 'bordeaux': 'vermelho', 'coral': 'vermelho', 'salmão': 'vermelho',
+    // Verdes
+    'verde': 'verde', 'verde escuro': 'verde', 'verde claro': 'verde',
+    'verde oliva': 'verde', 'verde lima': 'verde', 'verde menta': 'verde', 'verde esmeralda': 'verde',
+    // Amarelos e Laranjas
+    'amarelo': 'amarelo-laranja', 'amarelo claro': 'amarelo-laranja', 'amarelo ouro': 'amarelo-laranja',
+    'dourado': 'amarelo-laranja', 'laranja': 'amarelo-laranja', 'laranja queimado': 'amarelo-laranja',
+    'pêssego': 'amarelo-laranja', 'abricó': 'amarelo-laranja',
+    // Rosas
+    'rosa': 'rosa', 'rosa claro': 'rosa', 'rosa choque': 'rosa', 'rosa bebê': 'rosa',
+    // Roxos
+    'roxo': 'roxo', 'roxo escuro': 'roxo', 'lavanda': 'roxo', 'lilás': 'roxo',
+    'magenta': 'roxo', 'violeta': 'roxo', 'púrpura': 'roxo',
+  }
+
+  // Função para identificar a família da cor com precisão
+  const getColorFamily = (colorName: string): string => {
+    const name = colorName.toLowerCase().trim()
+    
+    // Verificar mapeamento direto primeiro
+    if (colorFamilyMap[name]) {
+      return colorFamilyMap[name]
+    }
+    
+    // Verificar por palavras-chave (fallback)
+    for (const [key, family] of Object.entries(colorFamilyMap)) {
+      if (name.includes(key)) {
+        return family
+      }
+    }
+    
+    return 'outros'
+  }
+
+  // Função para converter hex para RGB
+  const hexToRgb = (hex: string): [number, number, number] => {
+    const cleanHex = hex.replace('#', '')
+    const r = parseInt(cleanHex.substring(0, 2), 16)
+    const g = parseInt(cleanHex.substring(2, 4), 16)
+    const b = parseInt(cleanHex.substring(4, 6), 16)
+    return [r, g, b]
+  }
+
+  // Função para converter RGB para HSL
+  const rgbToHsl = (r: number, g: number, b: number): [number, number, number] => {
+    r /= 255
+    g /= 255
+    b /= 255
+    
+    const max = Math.max(r, g, b)
+    const min = Math.min(r, g, b)
+    let h = 0, s = 0
+    const l = (max + min) / 2
+    
+    if (max !== min) {
+      const d = max - min
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+      
+      switch (max) {
+        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break
+        case g: h = ((b - r) / d + 2) / 6; break
+        case b: h = ((r - g) / d + 4) / 6; break
+      }
+    }
+    
+    return [h * 360, s, l]
+  }
+
+  // Função para calcular a luminosidade de uma cor hex
+  const getLuminance = (hex: string): number => {
+    const [r, g, b] = hexToRgb(hex)
+    const rNorm = r / 255
+    const gNorm = g / 255
+    const bNorm = b / 255
+    
+    // Aplica a fórmula de luminosidade relativa (W3C)
+    const [rLinear, gLinear, bLinear] = [rNorm, gNorm, bNorm].map(val => {
+      return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4)
+    })
+    
+    return 0.2126 * rLinear + 0.7152 * gLinear + 0.0722 * bLinear
+  }
+
+  // Função para ordenar cores por família, luminosidade e matiz
+  const sortColors = (colors: string[]): string[] => {
+    const familyOrder = ['neutros', 'marrom', 'azul', 'vermelho', 'verde', 'amarelo-laranja', 'rosa', 'roxo', 'outros']
+    
+    return [...colors].sort((a, b) => {
+      const familyA = getColorFamily(a)
+      const familyB = getColorFamily(b)
+      
+      // Ordenar por família primeiro
+      const familyIndexA = familyOrder.indexOf(familyA)
+      const familyIndexB = familyOrder.indexOf(familyB)
+      
+      if (familyIndexA !== familyIndexB) {
+        return familyIndexA - familyIndexB
+      }
+      
+      // Se mesma família, ordenar por luminosidade (claro para escuro)
+      const hexA = getColorHex(a)
+      const hexB = getColorHex(b)
+      const luminanceA = getLuminance(hexA)
+      const luminanceB = getLuminance(hexB)
+      
+      // Se a diferença de luminosidade for significativa (> 0.05), usar apenas luminosidade
+      if (Math.abs(luminanceA - luminanceB) > 0.05) {
+        return luminanceB - luminanceA // Maior luminosidade primeiro (mais claro)
+      }
+      
+      // Se luminosidade similar, ordenar por matiz (hue) para manter tons relacionados juntos
+      const [rA, gA, bA] = hexToRgb(hexA)
+      const [rB, gB, bB] = hexToRgb(hexB)
+      const [hueA] = rgbToHsl(rA, gA, bA)
+      const [hueB] = rgbToHsl(rB, gB, bB)
+      
+      return hueA - hueB
+    })
+  }
 
   // Fechar dropdowns ao clicar fora
   useEffect(() => {
@@ -200,7 +334,8 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
         const fieldOptions = field.options && field.options.length > 0 ? field.options : []
         // Combinar opções do campo com COLOR_OPTIONS, removendo duplicatas
         const allColorsSet = new Set([...COLOR_OPTIONS, ...fieldOptions])
-        const availableColors = Array.from(allColorsSet)
+        // Ordenar cores por família e luminosidade
+        const availableColors = sortColors(Array.from(allColorsSet))
         
         const isExpanded = expandedColorFields[field.id] || false
         const colorsToShow = isExpanded 
@@ -275,7 +410,7 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
   }
 
   return (
-    <Card className="p-8 bg-white border-gray-200 shadow-sm">
+    <Card className="p-0">
       <div className="mb-6">
         <h2 className="text-xl font-bold text-gray-900 mb-2">Campos Personalizados</h2>
         <p className="text-sm text-gray-500">
@@ -285,7 +420,18 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {fields
-          .sort((a, b) => a.sort_order - b.sort_order)
+          .sort((a, b) => {
+            // Verificar se é campo de cor (por tipo ou nome)
+            const aIsColor = a.field_type === 'color' || a.name.toLowerCase() === 'cor'
+            const bIsColor = b.field_type === 'color' || b.name.toLowerCase() === 'cor'
+            
+            // Se um é cor e o outro não, o cor vem primeiro
+            if (aIsColor && !bIsColor) return -1
+            if (!aIsColor && bIsColor) return 1
+            
+            // Se ambos são cor ou nenhum é cor, ordenar por sort_order
+            return a.sort_order - b.sort_order
+          })
           .map(renderField)
         }
       </div>
