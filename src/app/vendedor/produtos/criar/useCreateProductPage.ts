@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -10,7 +10,7 @@ import {
 } from '@/schemas'
 import { useToastContext } from '@/contexts/ToastContext'
 import { useStore } from '@/hooks/useStore'
-import { useNiches } from '@/hooks/useNiches'
+import { useNiches, useNicheFields } from '@/hooks/useNiches'
 import { NicheFieldValue } from '@/types'
 
 export function useCreateProductPage(user: any) {
@@ -18,6 +18,7 @@ export function useCreateProductPage(user: any) {
   const queryClient = useQueryClient()
   const { error: showError, success: showSuccess } = useToastContext()
   const [selectedImages, setSelectedImages] = useState<File[]>([])
+  const [imagesByColor, setImagesByColor] = useState<Record<string, File[]>>({})
   const [selectedNicheId, setSelectedNicheId] = useState<number | null>(null)
   const [dynamicFieldValues, setDynamicFieldValues] = useState<Record<string, NicheFieldValue>>({})
 
@@ -25,6 +26,7 @@ export function useCreateProductPage(user: any) {
   const storeId = storeData?.id || null
   const { data: nichesData } = useNiches(storeId)
   const niches = nichesData?.data || []
+  const { data: nicheFields } = useNicheFields(selectedNicheId)
 
   const form = useForm<CreateProductFormData>({
     resolver: yupResolver(createProductSchema) as any,
@@ -62,7 +64,12 @@ export function useCreateProductPage(user: any) {
 
   const createProductMutation = useMutation({
     mutationFn: async (data: CreateProductFormData) => {
-      if (selectedImages.length === 0) {
+      // Verificar se há imagens (por cor ou simples)
+      const hasImagesByColor = Object.keys(imagesByColor).length > 0 && 
+        Object.values(imagesByColor).some(images => images.length > 0)
+      const hasSimpleImages = selectedImages.length > 0
+
+      if (!hasImagesByColor && !hasSimpleImages) {
         throw new Error('É necessário ter pelo menos uma imagem')
       }
 
@@ -96,10 +103,35 @@ export function useCreateProductPage(user: any) {
         formData.append('dynamic_fields', JSON.stringify(dynamicFields))
       }
       
-      selectedImages.forEach(image => {
-        formData.append('images', image)
-      })
-
+      // Processar imagens por cor se houver
+      if (hasImagesByColor) {
+        // Criar um mapeamento de índices para as imagens
+        const allImages: File[] = []
+        const imagesByColorWithIndices: Record<string, number[]> = {}
+        
+        Object.entries(imagesByColor).forEach(([color, images]) => {
+          const indices: number[] = []
+          images.forEach(image => {
+            const index = allImages.length
+            allImages.push(image)
+            indices.push(index)
+          })
+          imagesByColorWithIndices[color] = indices
+        })
+        
+        // Adicionar todas as imagens ao FormData
+        allImages.forEach(image => {
+          formData.append('images', image)
+        })
+        
+        // Adicionar o mapeamento de imagens por cor
+        formData.append('images_by_color', JSON.stringify(imagesByColorWithIndices))
+      } else {
+        // Formato antigo: array simples
+        selectedImages.forEach(image => {
+          formData.append('images', image)
+        })
+      }
 
       const response = await api.post('/products', formData, {
         headers: {
@@ -148,13 +180,38 @@ export function useCreateProductPage(user: any) {
     }))
   }
 
+  // Extrair cores dos campos dinâmicos
+  const availableColors = useMemo(() => {
+    if (!nicheFields || nicheFields.length === 0) return []
+    
+    // Encontrar o campo de cor
+    const colorField = nicheFields.find(f => f.name.toLowerCase() === 'cor')
+    if (!colorField) return []
+    
+    // Buscar o valor do campo de cor nos dynamicFieldValues
+    const colorFieldValue = dynamicFieldValues[colorField.id.toString()]
+    if (!colorFieldValue) return []
+    
+    const value = colorFieldValue.value
+    if (Array.isArray(value)) {
+      return value
+    }
+    if (typeof value === 'string') {
+      return value.split(',').map(c => c.trim()).filter(Boolean)
+    }
+    return []
+  }, [dynamicFieldValues, nicheFields])
+
   return {
     form,
     selectedImages,
+    imagesByColor,
+    setImagesByColor,
     categories,
     niches,
     selectedNicheId,
     dynamicFieldValues,
+    availableColors,
     isLoading: createProductMutation.isPending,
     error: createProductMutation.error,
     handleImageChange,

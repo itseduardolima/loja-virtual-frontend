@@ -60,6 +60,7 @@ export { OrderTrackingTimeline } from './Order/OrderTrackingTimeline'
 // Form Components
 export { DynamicFields } from './Form/DynamicFields'
 export { ImageUpload } from './Form/ImageUpload'
+export { ImageUploadByColor } from './Form/ImageUploadByColor'
 
 // Dialog Components
 export { ConfirmDialog } from './Dialog/ConfirmDialog'

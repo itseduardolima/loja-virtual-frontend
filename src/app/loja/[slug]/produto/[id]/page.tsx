@@ -39,6 +39,7 @@ export default function ProductDetailPage() {
     selectedColor,
     quantity,
     colorMap,
+    currentImages,
     buildImageUrls,
     selectImage,
     previousImage,
@@ -59,7 +60,7 @@ export default function ProductDetailPage() {
   // Suporte a navegação por teclado
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (product && product.images && product.images.length > 1) {
+      if (currentImages && currentImages.length > 1) {
         if (event.key === 'ArrowLeft') {
           event.preventDefault()
           previousImage()
@@ -72,7 +73,7 @@ export default function ProductDetailPage() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [product, previousImage, nextImage])
+  }, [currentImages, previousImage, nextImage])
 
   if (isLoading) {
     return (
@@ -141,9 +142,9 @@ export default function ProductDetailPage() {
           {/* Product Images */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             {/* Thumbnail Images - Horizontal em mobile, Vertical em desktop */}
-            {product.images && product.images.length > 1 && (
+            {currentImages && currentImages.length > 1 && (
               <div className="flex flex-row sm:flex-col gap-2 sm:gap-3 order-2 sm:order-1 overflow-x-auto sm:overflow-x-visible pb-2 sm:pb-0 -mx-4 sm:mx-0 px-4 sm:px-0">
-                {product.images.map((image: string, index: number) => (
+                {currentImages.map((image: string, index: number) => (
                   <button
                     key={index}
                     onClick={() => selectImage(index)}
@@ -167,10 +168,10 @@ export default function ProductDetailPage() {
 
             {/* Main Image */}
             <div className="w-full sm:flex-1 relative rounded-2xl overflow-hidden order-1 sm:order-2 min-w-0 h-[60vh] sm:h-auto">
-              {product.images && product.images.length > 0 ? (
+              {currentImages && currentImages.length > 0 ? (
                 <>
                   <Image
-                    src={buildImageUrls(product.images)[selectedImageIndex]}
+                    src={buildImageUrls(currentImages)[selectedImageIndex]}
                     alt={product.name}
                     fill
                     className="object-cover"
@@ -178,7 +179,7 @@ export default function ProductDetailPage() {
                     sizes="(max-width: 640px) 100vw, 50vw"
                   />
                   {/* Navegação de imagens em mobile - setas */}
-                  {product.images.length > 1 && (
+                  {currentImages.length > 1 && (
                     <>
                       <button
                         onClick={previousImage}
@@ -196,7 +197,7 @@ export default function ProductDetailPage() {
                       </button>
                       {/* Indicador de imagem atual */}
                       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 lg:hidden z-10">
-                        {product.images.map((_, index) => (
+                        {currentImages.map((_, index) => (
                           <div
                             key={index}
                             className={`h-2 rounded-full transition-all ${

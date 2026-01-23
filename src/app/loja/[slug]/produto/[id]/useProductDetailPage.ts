@@ -68,30 +68,48 @@ export function useProductDetailPage(slug: string, productId: string) {
     ).filter(Boolean)
   }
 
+  // Função para obter imagens baseado na cor selecionada
+  const getImagesForColor = (): string[] => {
+    if (!product) return []
+    
+    // Se houver images_by_color e uma cor selecionada, usar imagens daquela cor
+    if (product.images_by_color && selectedColor && product.images_by_color[selectedColor]) {
+      return product.images_by_color[selectedColor]
+    }
+    
+    // Caso contrário, usar todas as imagens (compatibilidade com formato antigo)
+    return product.images || []
+  }
+
   // Função para construir URLs de imagens
   const buildImageUrls = (images: string[]): string[] => {
     return images.map(image => buildImageUrl(image))
   }
 
+  // Obter imagens atuais baseado na cor selecionada
+  const currentImages = getImagesForColor()
+
   // Função para selecionar imagem
   const selectImage = (index: number) => {
-    setSelectedImageIndex(index)
+    if (index >= 0 && index < currentImages.length) {
+      setSelectedImageIndex(index)
+    }
   }
 
   // Função para navegar para a imagem anterior
   const previousImage = () => {
-    if (product && product.images && product.images.length > 0) {
+    if (currentImages.length > 0) {
       setSelectedImageIndex(prev => 
-        prev === 0 ? product.images.length - 1 : prev - 1
+        prev === 0 ? currentImages.length - 1 : prev - 1
       )
     }
   }
 
   // Função para navegar para a próxima imagem
   const nextImage = () => {
-    if (product && product.images && product.images.length > 0) {
+    if (currentImages.length > 0) {
       setSelectedImageIndex(prev => 
-        prev === product.images.length - 1 ? 0 : prev + 1
+        prev === currentImages.length - 1 ? 0 : prev + 1
       )
     }
   }
@@ -104,6 +122,8 @@ export function useProductDetailPage(slug: string, productId: string) {
   // Função para selecionar cor
   const selectColor = (color: string) => {
     setSelectedColor(color)
+    // Resetar índice da imagem quando trocar de cor
+    setSelectedImageIndex(0)
   }
 
   // Função para aumentar quantidade
@@ -215,6 +235,7 @@ export function useProductDetailPage(slug: string, productId: string) {
     colorMap,
     processColors,
     processSizes,
+    currentImages,
     buildImageUrls,
     selectImage,
     previousImage,

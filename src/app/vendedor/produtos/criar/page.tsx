@@ -1,7 +1,7 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { Input, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Card, ErrorState, ImageUpload, ProductPreview, CreateCategoryModal, Button } from '@/components'
+import { Input, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Card, ErrorState, ImageUpload, ImageUploadByColor, ProductPreview, CreateCategoryModal, Button } from '@/components'
 import { RichTextEditor } from '@/components/ui/rich-text-editor'
 import { DynamicFields } from '@/components/Form/DynamicFields'
 import { Package, X, Star, Plus } from 'lucide-react'
@@ -21,10 +21,13 @@ export default function CreateProductPage() {
   const {
     form,
     selectedImages,
+    imagesByColor,
+    setImagesByColor,
     categories,
     niches,
     selectedNicheId,
     dynamicFieldValues,
+    availableColors,
     isLoading,
     error,
     handleImageChange,
@@ -274,13 +277,6 @@ export default function CreateProductPage() {
                 </div>
               </Card>
 
-              {/* Upload de Imagens */}
-              <ImageUpload
-                selectedImages={selectedImages}
-                onImageChange={handleImageChange}
-                onRemoveImage={removeImage}
-              />
-
               {/* Seleção de Nicho e Campos Dinâmicos */}
               {niches.length > 0 && (
                 <Card className="p-8 bg-white border-gray-200 shadow-sm">
@@ -330,6 +326,21 @@ export default function CreateProductPage() {
                     )}
                   </div>
                 </Card>
+              )}
+
+              {/* Upload de Imagens por Cor */}
+              {availableColors.length > 0 ? (
+                <ImageUploadByColor
+                  imagesByColor={imagesByColor}
+                  onImagesByColorChange={setImagesByColor}
+                  availableColors={availableColors}
+                />
+              ) : (
+                <ImageUpload
+                  selectedImages={selectedImages}
+                  onImageChange={handleImageChange}
+                  onRemoveImage={removeImage}
+                />
               )}
 
               {/* Especificações */}

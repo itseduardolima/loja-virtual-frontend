@@ -18,6 +18,7 @@ export interface Product {
   final_price?: number
   discount_percentage?: number
   images: string[]
+  images_by_color?: Record<string, string[]>
   stock: number
   status: number
   featured: number
@@ -84,6 +85,7 @@ export interface ProductDetail {
   final_price: number
   discount_percentage: number
   images: string[]
+  images_by_color?: Record<string, string[]>
   sizes: string[]
   colors: string[]
   stock: number
