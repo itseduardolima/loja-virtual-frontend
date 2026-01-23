@@ -17,7 +17,7 @@ export interface Product {
   discount_price?: string | null
   final_price?: number
   discount_percentage?: number
-  images: string[]
+  images: string[] | Record<string, string[]>
   images_by_color?: Record<string, string[]>
   stock: number
   status: number
@@ -84,7 +84,7 @@ export interface ProductDetail {
   discount_price: string | null
   final_price: number
   discount_percentage: number
-  images: string[]
+  images: string[] | Record<string, string[]>
   images_by_color?: Record<string, string[]>
   sizes: string[]
   colors: string[]

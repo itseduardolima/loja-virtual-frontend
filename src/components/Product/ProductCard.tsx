@@ -27,8 +27,28 @@ export function ProductCard({
   const [isHovered, setIsHovered] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
+  // Obter imagens disponíveis (prioridade: images_by_color > images como objeto > images como array)
+  const getAvailableImages = (): string[] => {
+    // Se houver images_by_color, usar a primeira cor disponível
+    if (product.images_by_color && Object.keys(product.images_by_color).length > 0) {
+      const firstColor = Object.keys(product.images_by_color)[0]
+      return product.images_by_color[firstColor] || []
+    }
+    
+    // Se images for um objeto (formato novo), usar a primeira cor disponível
+    if (product.images && typeof product.images === 'object' && !Array.isArray(product.images)) {
+      const firstColor = Object.keys(product.images)[0]
+      return (product.images as Record<string, string[]>)[firstColor] || []
+    }
+    
+    // Fallback para formato antigo (array)
+    return Array.isArray(product.images) ? product.images : []
+  }
+
+  const availableImages = getAvailableImages()
+
   const handleImageHover = () => {
-    if (product.images && product.images.length > 1) {
+    if (availableImages.length > 1) {
       setCurrentImageIndex(1)
     }
   }
@@ -41,7 +61,7 @@ export function ProductCard({
 
   return (
     <Card
-      className="group relative overflow-hidden shadow-none bg-transparent transition-all duration-300 border-0 min-h-[280px] sm:min-h-[320px] md:min-h-[400px] flex flex-col cursor-pointer active:scale-[0.98] transition-transform"
+      className="group relative overflow-hidden shadow-none bg-transparent transition-all duration-300 border-0 min-h-[280px] sm:min-h-[320px] md:min-h-[400px] flex flex-col cursor-pointer active:scale-[0.98]"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => onViewDetails?.(product)}
@@ -49,9 +69,9 @@ export function ProductCard({
       <CardContent className="p-0 flex flex-col h-full shadow-none bg-transparent">
         {/* Container da Imagem */}
         <div className="relative aspect-square overflow-hidden rounded-xl sm:rounded-2xl bg-gray-100">
-          {product.images && product.images.length > 0 ? (
+          {availableImages.length > 0 ? (
             <Image
-              src={buildImageUrl(product.images[currentImageIndex])}
+              src={buildImageUrl(availableImages[currentImageIndex] || availableImages[0])}
               alt={product.name}
               fill
               className="object-cover rounded-xl sm:rounded-2xl transition-transform duration-300 group-hover:scale-105"

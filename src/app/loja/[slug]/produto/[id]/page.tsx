@@ -52,11 +52,6 @@ export default function ProductDetailPage() {
     isAddingToCart,
   } = useProductDetailPage(slug, productId)
 
-
-  const getColorValue = (colorName: string): string => {
-    return colorMap[colorName] || '#6B7280'
-  }
-
   // Suporte a navegação por teclado
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -223,8 +218,8 @@ export default function ProductDetailPage() {
           <div className="space-y-4 sm:space-y-6">
             {/* Product Title */}
             <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-3 sm:mb-4 uppercase font-integral leading-tight">
-                {removeAccents(product.name)}
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-3 sm:mb-4">
+                {product.name}
               </h1>
 
               {/* Rating */}
@@ -270,8 +265,8 @@ export default function ProductDetailPage() {
               </span>
             </div>
 
-            {/* Description */}
-            <p className="text-primary/60 text-sm sm:text-base leading-relaxed">
+            {/* Description - Desktop only */}
+            <p className="hidden sm:block text-primary/60 text-sm sm:text-base leading-relaxed">
               {product.description}
             </p>
 
@@ -312,7 +307,7 @@ export default function ProductDetailPage() {
                     ?.value.split(',')
                     .map((color, colorIndex) => {
                       const trimmedColor = color.trim()
-                      const colorValue = getColorValue(trimmedColor)
+                      const colorValue = getColorHex(trimmedColor)
                       const isSelected = selectedColor === trimmedColor
 
                       return (
@@ -424,15 +419,32 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* Specifications (Bottom Section) */}
-      {product.specifications && (
+      {/* Description and Specifications (Bottom Section) */}
+      {(product.description || product.specifications) && (
         <div className="border-t bg-white">
           <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
-            <h2 className="text-lg sm:text-xl font-bold text-primary mb-3">Especificações</h2>
-            <div
-              className="text-primary/60 text-sm sm:text-base leading-relaxed prose prose-sm max-w-none prose-headings:text-primary/80 prose-p:text-primary/60 prose-ul:text-primary/60 prose-ol:text-primary/60 prose-strong:text-primary/80"
-              dangerouslySetInnerHTML={{ __html: product.specifications }}
-            />
+            {/* Description - Mobile only */}
+            {product.description && (
+              <div className="sm:hidden mb-6">
+                <h2 className="text-lg font-bold text-primary mb-3">Descrição</h2>
+                <p className="text-primary/60 text-sm leading-relaxed">
+                  {product.description}
+                </p>
+              </div>
+            )}
+            
+            {/* Specifications */}
+            {product.specifications && (
+              <>
+                <h2 className="text-lg sm:text-xl font-bold text-primary mb-3">
+                  {product.description ? 'Especificações' : 'Especificações'}
+                </h2>
+                <div
+                  className="text-primary/60 text-sm sm:text-base leading-relaxed prose prose-sm max-w-none prose-headings:text-primary/80 prose-p:text-primary/60 prose-ul:text-primary/60 prose-ol:text-primary/60 prose-strong:text-primary/80"
+                  dangerouslySetInnerHTML={{ __html: product.specifications }}
+                />
+              </>
+            )}
           </div>
         </div>
       )}

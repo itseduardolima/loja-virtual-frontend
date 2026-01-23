@@ -48,9 +48,11 @@ export function ProductPreview({
   let previewImage: string | null = null
   
   // Verificar imagens por cor primeiro
-  const allImagesByColor = Object.values(imagesByColor).flat()
-  if (allImagesByColor.length > 0) {
-    previewImage = URL.createObjectURL(allImagesByColor[0])
+  if (imagesByColor && Object.keys(imagesByColor).length > 0) {
+    const allImagesByColor = Object.values(imagesByColor).flat()
+    if (allImagesByColor.length > 0) {
+      previewImage = URL.createObjectURL(allImagesByColor[0])
+    }
   } else if (selectedImages.length > 0) {
     previewImage = URL.createObjectURL(selectedImages[0])
   } else if (remainingExistingImages.length > 0) {

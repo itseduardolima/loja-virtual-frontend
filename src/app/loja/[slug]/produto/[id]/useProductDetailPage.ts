@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
@@ -29,6 +29,26 @@ export function useProductDetailPage(slug: string, productId: string) {
 
   // Hook do carrinho
   const { addToCart: addToCartHook, isAddingToCart } = useCart(product?.store?.id)
+
+  // Inicializar cor selecionada quando o produto carregar e tiver imagens por cor
+  useEffect(() => {
+    if (!product || selectedColor) return
+    
+    // Verificar se há images_by_color ou images como objeto
+    let imagesByColor: Record<string, string[]> | null = null
+    
+    if (product.images_by_color && Object.keys(product.images_by_color).length > 0) {
+      imagesByColor = product.images_by_color
+    } else if (product.images && typeof product.images === 'object' && !Array.isArray(product.images)) {
+      imagesByColor = product.images as Record<string, string[]>
+    }
+    
+    if (imagesByColor && Object.keys(imagesByColor).length > 0) {
+      // Selecionar a primeira cor disponível automaticamente
+      const firstColor = Object.keys(imagesByColor)[0]
+      setSelectedColor(firstColor)
+    }
+  }, [product, selectedColor])
 
   // Mapeamento de cores
   const colorMap: Record<string, string> = {
@@ -72,13 +92,28 @@ export function useProductDetailPage(slug: string, productId: string) {
   const getImagesForColor = (): string[] => {
     if (!product) return []
     
-    // Se houver images_by_color e uma cor selecionada, usar imagens daquela cor
-    if (product.images_by_color && selectedColor && product.images_by_color[selectedColor]) {
-      return product.images_by_color[selectedColor]
+    // Obter objeto de imagens por cor (pode vir em images_by_color ou images como objeto)
+    let imagesByColor: Record<string, string[]> | null = null
+    
+    if (product.images_by_color && Object.keys(product.images_by_color).length > 0) {
+      imagesByColor = product.images_by_color
+    } else if (product.images && typeof product.images === 'object' && !Array.isArray(product.images)) {
+      imagesByColor = product.images as Record<string, string[]>
     }
     
-    // Caso contrário, usar todas as imagens (compatibilidade com formato antigo)
-    return product.images || []
+    // Se houver imagens por cor
+    if (imagesByColor && Object.keys(imagesByColor).length > 0) {
+      // Se uma cor está selecionada e tem imagens, usar imagens daquela cor
+      if (selectedColor && imagesByColor[selectedColor]) {
+        return imagesByColor[selectedColor]
+      }
+      // Se não há cor selecionada, usar imagens da primeira cor disponível
+      const firstColor = Object.keys(imagesByColor)[0]
+      return imagesByColor[firstColor] || []
+    }
+    
+    // Caso contrário, usar todas as imagens (compatibilidade com formato antigo - array)
+    return Array.isArray(product.images) ? product.images : []
   }
 
   // Função para construir URLs de imagens
