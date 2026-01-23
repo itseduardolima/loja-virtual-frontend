@@ -114,7 +114,7 @@ export default function StorePage() {
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.3 }}
-          className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3 lg:hidden"
+          className="sticky top-0 z-30 px-4 lg:hidden"
         >
           <div className="flex items-center justify-between gap-3">
             <Button
