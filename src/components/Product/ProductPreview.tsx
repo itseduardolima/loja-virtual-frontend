@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Package, Star, Eye, Save } from 'lucide-react'
+import { EmptyImageState } from './EmptyImageState'
 import { formatPrice } from '@/lib/utils'
 
 interface ProductPreviewProps {
@@ -74,17 +75,15 @@ export function ProductPreview({
         <Card className="group relative overflow-hidden bg-white transition-all duration-300 border-0 shadow-none">
           <CardContent className="p-0">
             {/* Container da Imagem */}
-            <div className="relative h-auto overflow-hidden bg-white flex items-center justify-center">
+            <div className="relative aspect-square overflow-hidden bg-white flex items-center justify-center rounded-2xl">
               {previewImage ? (
                 <img
                   src={previewImage}
                   alt={name || 'Preview'}
-                  className="object-cover rounded-2xl"
+                  className="object-cover w-full h-full rounded-2xl"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                  <span className="text-gray-400 text-sm">Sem imagem</span>
-                </div>
+                <EmptyImageState className="w-full h-full" iconSize="lg" />
               )}
 
               {/* Badges */}

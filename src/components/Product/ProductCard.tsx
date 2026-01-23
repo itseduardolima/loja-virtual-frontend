@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {  Star } from 'lucide-react'
+import { EmptyImageState } from './EmptyImageState'
 import { ProductCardProps } from '@/app/loja/[slug]/produtos/types'
 import { formatPrice, buildImageUrl } from '@/lib/utils'
 import { Switch } from '@/components/ui/switch'
@@ -80,9 +81,7 @@ export function ProductCard({
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             />
           ) : (
-            <div className="flex items-center justify-center bg-gray-100 rounded-xl sm:rounded-2xl">
-              <span className="text-gray-400 text-xs sm:text-sm">Sem imagem</span>
-            </div>
+            <EmptyImageState className="rounded-xl sm:rounded-2xl" iconSize="sm" />
           )}
 
           {/* Badges */}
@@ -155,7 +154,7 @@ export function ProductCard({
                         <div
                           key={colorIndex}
                           className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full border border-gray-300 flex-shrink-0"
-                          style={{ backgroundColor: getColorValue(trimmedColor) }}
+                          style={{ backgroundColor: getColorHex(trimmedColor) }}
                           title={trimmedColor}
                         />
                       )
@@ -196,21 +195,4 @@ export function ProductCard({
       </CardContent>
     </Card>
   )
-}
-
-function getColorValue(color: string): string {
-  const colorMap: { [key: string]: string } = {
-    'Preto': '#000000',
-    'Branco': '#FFFFFF',
-    'Azul': '#0000FF',
-    'Vermelho': '#FF0000',
-    'Verde': '#00FF00',
-    'Amarelo': '#FFFF00',
-    'Rosa': '#FFC0CB',
-    'Roxo': '#800080',
-    'Cinza': '#808080',
-    'Marrom': '#A52A2A'
-  }
-
-  return colorMap[color] || '#E5E7EB'
 }

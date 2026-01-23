@@ -3,13 +3,13 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { Button, Badge, LoadingSpinner, ErrorState, ConfirmDialog } from '@/components'
 import {
-  Package,
   Edit,
   Trash2,
   Star,
   ChevronLeft,
-  ChevronRight,
+  ChevronRight
 } from 'lucide-react'
+import { EmptyImageState } from '@/components/Product/EmptyImageState'
 import { useRouter, useParams } from 'next/navigation'
 import Image from 'next/image'
 import { useProductDetailPage } from './useProductDetailPage'
@@ -124,7 +124,7 @@ export default function ProductDetailPage() {
             )}
 
             {/* Main Image */}
-            <div className="w-full sm:flex-1 relative rounded-2xl overflow-hidden order-1 sm:order-2 min-w-0 h-[60vh] sm:h-auto sm:min-h-[800px]">
+            <div className="w-full sm:flex-1 relative rounded-2xl overflow-hidden order-1 sm:order-2 min-w-0 h-[60vh] sm:h-auto">
               {currentImages && currentImages.length > 0 ? (
                 <>
                   <Image
@@ -169,9 +169,7 @@ export default function ProductDetailPage() {
                   )}
                 </>
               ) : (
-                <div className="flex items-center justify-center h-full">
-                  <Package className="h-16 w-16 sm:h-24 sm:w-24 text-gray-300" />
-                </div>
+                <EmptyImageState iconSize="md" />
               )}
             </div>
 

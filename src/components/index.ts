@@ -27,6 +27,7 @@ export { UserHeaderCliente } from './Layout/UserHeaderCliente'
 // Product Components
 export { ProductCard } from './Product/ProductCard'
 export { ProductFilters } from './Product/ProductFilters'
+export { EmptyImageState } from './Product/EmptyImageState'
 export { ProductPreview } from './Product/ProductPreview'
 export { ProductVariations } from './Product/ProductVariations'
 

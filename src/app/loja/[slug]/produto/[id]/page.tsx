@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react'
+import { EmptyImageState } from '@/components/Product/EmptyImageState'
 import Image from 'next/image'
 
 import { buildImageUrl, formatPrice } from '@/lib/utils'
@@ -104,11 +105,6 @@ export default function ProductDetailPage() {
 
   const isOutOfStock = product.stock === 0
   const canAddToCart = !isOutOfStock && selectedSize && selectedColor && quantity > 0
-
-  // Função para remover acentos
-  const removeAccents = (str: string) => {
-    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-  }
 
   // Calcular rating (mockado por enquanto)
   const rating = 4.5
@@ -207,9 +203,7 @@ export default function ProductDetailPage() {
                   )}
                 </>
               ) : (
-                <div className="flex items-center justify-center h-full">
-                  <Package className="h-16 w-16 sm:h-24 sm:w-24 text-gray-300" />
-                </div>
+                <EmptyImageState iconSize="md" />
               )}
             </div>
           </div>
