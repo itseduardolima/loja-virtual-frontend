@@ -166,7 +166,7 @@ export default function ProductDetailPage() {
             )}
 
             {/* Main Image */}
-            <div className="flex-1 relative rounded-2xl overflow-hidden order-1 sm:order-2 flex items-center justify-center">
+            <div className="w-full sm:flex-1 relative rounded-2xl overflow-hidden order-1 sm:order-2 min-w-0 h-[60vh] sm:h-auto">
               {product.images && product.images.length > 0 ? (
                 <>
                   <Image
@@ -175,6 +175,7 @@ export default function ProductDetailPage() {
                     fill
                     className="object-cover"
                     priority
+                    sizes="(max-width: 640px) 100vw, 50vw"
                   />
                   {/* Navegação de imagens em mobile - setas */}
                   {product.images.length > 1 && (
@@ -299,7 +300,6 @@ export default function ProductDetailPage() {
                       <div className="absolute inset-0 rounded-full border border-gray-400"></div>
                     )}
                   </Button>
-                  <span className="text-sm text-primary/60">{product.color}</span>
                 </div>
               </div>
             ) : product.dynamic_fields?.find(f => f.field_name.toLowerCase() === 'cor') && (

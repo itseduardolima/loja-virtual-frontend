@@ -119,9 +119,6 @@ export function ProductCard({
                 style={{ backgroundColor: getColorHex(product.color) }}
                 title={product.color}
               />
-              <span className="text-[10px] sm:text-xs text-gray-500 truncate max-w-[100px]">
-                {product.color}
-              </span>
             </div>
           ) : product.dynamic_fields && product.dynamic_fields.length > 0 && (() => {
             const colorField = product.dynamic_fields.find(
