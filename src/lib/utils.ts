@@ -86,3 +86,11 @@ export function formatNumber(value: string | number): string {
 export function removeFormatting(value: string): string {
   return value.replace(/\D/g, '')
 }
+
+export function formatBillingCycle(cycle: string): string {
+  const cycles: { [key: string]: string } = {
+    monthly: 'Mensal',
+    yearly: 'Anual'
+  }
+  return cycles[cycle] || cycle
+}

@@ -4,6 +4,7 @@ import { useMySubscription } from '@/hooks/useMySubscription'
 import { useCancelSubscription } from '@/hooks/useCancelSubscription'
 import { Card, CardContent, CardHeader, CardTitle, Button, LoadingSpinner } from '@/components'
 import { RenewSubscriptionModal } from '@/components/Subscription/RenewSubscriptionModal'
+import { formatPrice, formatBillingCycle } from '@/lib/utils'
 import { 
   CreditCard, 
   Calendar, 
@@ -12,7 +13,6 @@ import {
   AlertCircle,
   Package,
   Store,
-  TrendingUp,
   X,
   RefreshCw
 } from 'lucide-react'
@@ -71,22 +71,6 @@ export default function PlanoPage() {
         <span className="text-sm font-semibold">{config.label}</span>
       </div>
     )
-  }
-
-  const formatPrice = (price: string | number) => {
-    const numPrice = typeof price === 'string' ? parseFloat(price) : price
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(numPrice)
-  }
-
-  const formatBillingCycle = (cycle: string) => {
-    const cycles: { [key: string]: string } = {
-      monthly: 'Mensal',
-      yearly: 'Anual'
-    }
-    return cycles[cycle] || cycle
   }
 
   if (isLoading) {

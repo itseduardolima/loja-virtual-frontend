@@ -93,7 +93,7 @@ export default function ProdutosPage() {
   ]
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+    <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 sm:py-6 lg:py-8">
       {/* Page Title */}
       <div className="mb-4 sm:mb-6 lg:mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
@@ -110,11 +110,10 @@ export default function ProdutosPage() {
             <Button
               onClick={() => router.push('/vendedor/produtos/criar')}
               size="sm"
-              className="text-xs sm:text-sm"
+              className="text-sm w-full sm:w-auto"
             >
-              <Plus className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Novo Produto</span>
-              <span className="sm:hidden">Novo</span>
+              <Plus className="h-4 w-4 mr-2" />
+              <span>Novo Produto</span>
             </Button>
           </div>
         </div>
@@ -176,7 +175,7 @@ export default function ProdutosPage() {
       {/* Products */}
       <div>
         {products.length > 0 ? (
-          <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {products.map((product) => (
               <div key={product.id} className="relative group h-full">
                 <ProductCard
