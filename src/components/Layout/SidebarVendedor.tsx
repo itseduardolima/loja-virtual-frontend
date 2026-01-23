@@ -80,21 +80,21 @@ export function SidebarVendedor({ currentPath }: SidebarVendedorProps) {
   return (
     <>
       {/* Mobile menu button */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
+      <div className="lg:hidden fixed top-7 left-4 z-50">
         <Button
           variant="outline"
           size="sm"
           onClick={() => setIsOpen(!isOpen)}
-          className="bg-white shadow-lg"
+          className="rounded-lg"
         >
-          {isOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
       </div>
 
       {/* Mobile overlay */}
       {isOpen && (
         <div 
-          className="lg:hidden fixed inset-0 bg-primary bg-opacity-50 z-40"
+          className="lg:hidden fixed inset-0 bg-black/10 z-40"
           onClick={() => setIsOpen(false)}
         />
       )}

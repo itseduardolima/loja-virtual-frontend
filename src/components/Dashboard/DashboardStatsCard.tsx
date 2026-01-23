@@ -66,33 +66,33 @@ export function DashboardStatsCard({
 
   return (
     <div className={cn(
-      'rounded-2xl p-6 border border-white/20',
+      'rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 lg:p-6 border border-white/20',
       styles.bg
     )}>
-      <div className="flex items-start justify-between">
-        <div className="flex-1 pr-3">
-          <h3 className={cn('text-sm font-medium mb-2', styles.title)}>
+      <div className="flex items-start justify-between gap-2 sm:gap-3">
+        <div className="flex-1 min-w-0 pr-1 sm:pr-2 md:pr-3">
+          <h3 className={cn('text-[10px] sm:text-xs md:text-sm font-medium mb-0.5 sm:mb-1 md:mb-2 leading-tight', styles.title)}>
             {title}
           </h3>
-          <div className={cn('text-3xl font-bold mb-3', styles.value)}>
+          <div className={cn('text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 md:mb-3 leading-tight', styles.value)}>
             {value}
           </div>
           {subtitle && (
-            <p className={cn('text-xs mb-2', styles.subtitle)}>
+            <p className={cn('text-[10px] sm:text-xs mb-0.5 sm:mb-1 md:mb-2 leading-tight', styles.subtitle)}>
               {subtitle}
             </p>
           )}
           {trend && (
-            <div className={cn('text-xs font-semibold', styles.trend)}>
+            <div className={cn('text-[10px] sm:text-xs font-semibold leading-tight', styles.trend)}>
               {trend.value > 0 ? '+' : ''}{trend.value}% {trend.label}
             </div>
           )}
         </div>
         <div className={cn(
-          'rounded-xl p-3 flex items-center justify-center flex-shrink-0',
+          'rounded-lg sm:rounded-xl p-1.5 sm:p-2 md:p-2.5 lg:p-3 flex items-center justify-center flex-shrink-0',
           styles.iconBg
         )}>
-          <Icon className={cn('h-6 w-6', styles.icon)} />
+          <Icon className={cn('h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6', styles.icon)} />
         </div>
       </div>
     </div>

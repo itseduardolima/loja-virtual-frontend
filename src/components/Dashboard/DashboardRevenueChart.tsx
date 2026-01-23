@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/axios'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -56,29 +56,31 @@ export function DashboardRevenueChart({ data: initialData }: DashboardRevenueCha
 
   const data = revenueData.length > 0 ? revenueData : (initialData || [])
 
-  const formatPeriod = (period: string) => {
-    if (period.includes('-')) {
-      const [year, month] = period.split('-')
-      return `${month}/${year}`
+  const chartData = useMemo(() => {
+    const formatPeriod = (period: string) => {
+      if (period.includes('-')) {
+        const [year, month] = period.split('-')
+        return `${month}/${year}`
+      }
+      return period
     }
-    return period
-  }
 
-  const chartData = data.map(item => ({
-    period: formatPeriod(item.period),
-    receita: item.revenue,
-  }))
+    return data.map(item => ({
+      period: formatPeriod(item.period),
+      receita: item.revenue,
+    }))
+  }, [data])
 
   return (
-    <Card className="border-0 shadow-sm">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-lg font-semibold text-gray-900">
+    <Card className="border-0 shadow-sm rounded-2xl">
+      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 pb-3 sm:pb-4">
+        <CardTitle className="text-base sm:text-lg font-semibold text-gray-900">
           Receita por Período
         </CardTitle>
-        <div className="flex items-center gap-2">
-          <label className="text-sm text-gray-600">Período:</label>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <label className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">Período:</label>
           <Select value={period} onValueChange={(value) => setPeriod(value as 'day' | 'week' | 'month')}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-full sm:w-[140px] text-xs sm:text-sm">
               <SelectValue placeholder="Selecione o período" />
             </SelectTrigger>
             <SelectContent>
@@ -89,16 +91,16 @@ export function DashboardRevenueChart({ data: initialData }: DashboardRevenueCha
           </Select>
         </div>
       </CardHeader>
-      <CardContent className="pt-10">
+      <CardContent className="pt-4 sm:pt-6 md:pt-10">
         {isLoading ? (
-          <div className="h-[300px] flex items-center justify-center">
-            <p className="text-muted-foreground">Carregando dados...</p>
+          <div className="h-[250px] sm:h-[300px] flex items-center justify-center">
+            <p className="text-sm sm:text-base text-muted-foreground">Carregando dados...</p>
           </div>
         ) : (
-          <ChartContainer config={chartConfig} className="h-[300px] w-full">
+          <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px] w-full">
             <LineChart
               data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
@@ -106,12 +108,22 @@ export function DashboardRevenueChart({ data: initialData }: DashboardRevenueCha
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
+                tick={{ fontSize: 12 }}
+                angle={-45}
+                textAnchor="end"
+                height={60}
               />
               <YAxis 
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
-                tickFormatter={(value) => `R$ ${value.toFixed(0)}`}
+                tick={{ fontSize: 12 }}
+                tickFormatter={(value) => {
+                  if (value >= 1000000) return `R$ ${(value / 1000000).toFixed(1)}M`
+                  if (value >= 1000) return `R$ ${(value / 1000).toFixed(1)}k`
+                  return `R$ ${value.toFixed(0)}`
+                }}
+                width={60}
               />
               <ChartTooltip
                 cursor={false}

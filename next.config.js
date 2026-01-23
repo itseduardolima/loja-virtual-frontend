@@ -46,8 +46,14 @@ const nextConfig = {
     if (dev) {
       config.watchOptions = {
         poll: false,
-        aggregateTimeout: 300,
-        ignored: ['**/node_modules/**', '**/.git/**', '**/.next/**'],
+        aggregateTimeout: 500,
+        ignored: [
+          '**/node_modules/**',
+          '**/.git/**',
+          '**/.next/**',
+          '**/dist/**',
+          '**/build/**',
+        ],
       }
     }
     return config
