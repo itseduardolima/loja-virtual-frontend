@@ -12,7 +12,6 @@ import { useRouter, useParams } from 'next/navigation'
 import Image from 'next/image'
 import { useProductDetailPage } from './useProductDetailPage'
 import { buildImageUrl, formatPrice } from '@/lib/utils'
-import { useEffect } from 'react'
 import LoadingPage from '@/components/Layout/LoadingPage'
 import { getColorHex } from '@/schemas'
 
@@ -27,12 +26,13 @@ export default function ProductDetailPage() {
     isLoading,
     error,
     selectedImageIndex,
-    colorMap,
+    selectedColor,
+    currentImages,
+    imagesByColor,
     buildImageUrls,
     getStatusInfo,
+    selectColor,
     selectImage,
-    previousImage,
-    nextImage,
     openDeleteDialog,
     handleDeleteProduct,
     showDeleteDialog,
@@ -40,27 +40,6 @@ export default function ProductDetailPage() {
     isDeleting
   } = useProductDetailPage(productId)
 
-  const getColorValue = (colorName: string): string => {
-    return colorMap[colorName] || '#6B7280' // Cinza como fallback
-  }
-
-  // Suporte a navegação por teclado
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (product && product.images && product.images.length > 1) {
-        if (event.key === 'ArrowLeft') {
-          event.preventDefault()
-          previousImage()
-        } else if (event.key === 'ArrowRight') {
-          event.preventDefault()
-          nextImage()
-        }
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [product, previousImage, nextImage])
 
   if (authLoading) {
     return <LoadingSpinner />
@@ -103,10 +82,6 @@ export default function ProductDetailPage() {
     )
   }
 
-  const removeAccents = (str: string) => {
-    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-  }
-
   // Calcular rating (mockado por enquanto)
   const rating = 4.5
   const fullStars = Math.floor(rating)
@@ -120,9 +95,9 @@ export default function ProductDetailPage() {
           {/* Product Images */}
           <div className="flex gap-4">
             {/* Thumbnail Images - Vertical */}
-            {product.images && product.images.length > 1 && (
+            {currentImages && currentImages.length > 1 && (
               <div className="flex flex-col gap-3">
-                {product.images.map((image: string, index: number) => (
+                {currentImages.map((image: string, index: number) => (
                   <button
                     key={index}
                     onClick={() => selectImage(index)}
@@ -135,8 +110,8 @@ export default function ProductDetailPage() {
                       src={buildImageUrl(image)}
                       alt={`${product.name} ${index + 1}`}
                       width={100}
-                      height={0}
-                      className="object-cover"
+                      height={100}
+                      className="object-cover w-[100px] h-[100px]"
                     />
                   </button>
                 ))}
@@ -144,10 +119,10 @@ export default function ProductDetailPage() {
             )}
 
             {/* Main Image */}
-            <div className="flex-1 relative min-h-[800px]  rounded-2xl overflow-hidden">
-              {product.images && product.images.length > 0 ? (
+            <div className="flex-1 relative min-h-[800px] rounded-2xl overflow-hidden">
+              {currentImages && currentImages.length > 0 ? (
                 <Image
-                  src={buildImageUrls(product.images)[selectedImageIndex]}
+                  src={buildImageUrls(currentImages)[selectedImageIndex]}
                   alt={product.name}
                   fill
                   className="object-cover"
@@ -175,8 +150,8 @@ export default function ProductDetailPage() {
                   {getStatusInfo(product.status).text}
                 </Badge>
               </div>
-              <h1 className="text-4xl font-bold text-primary mb-4 uppercase font-integral">
-                {removeAccents(product.name)}
+              <h1 className="text-4xl font-bold text-primary mb-4">
+                {product.name}
               </h1>
 
               {/* Rating */}
@@ -228,7 +203,46 @@ export default function ProductDetailPage() {
             </p>
 
             {/* Select Colors */}
-            {product.color ? (
+            {Object.keys(imagesByColor).length > 0 ? (
+              <div className="space-y-3">
+                <span className="text-sm font-medium text-primary/60">Cores disponíveis:</span>
+                <div className="flex gap-3 flex-wrap">
+                  {Object.keys(imagesByColor).map((color) => {
+                    const colorValue = getColorHex(color)
+                    const isSelected = selectedColor === color
+                    const hasImages = imagesByColor[color] && imagesByColor[color].length > 0
+
+                    return (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => {
+                          if (hasImages) {
+                            selectColor(color)
+                          }
+                        }}
+                        className={`relative w-10 h-10 rounded-full border-2 transition-all p-0 cursor-pointer ${
+                          isSelected ? 'ring-2 ring-primary ring-offset-2' : ''
+                        } ${!hasImages ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'}`}
+                        style={{ backgroundColor: colorValue }}
+                        title={hasImages ? color : `${color} (sem imagens)`}
+                        disabled={!hasImages}
+                      >
+                        {colorValue === '#FFFFFF' && (
+                          <div className="absolute inset-0 rounded-full border border-gray-400"></div>
+                        )}
+                        {isSelected && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-3 h-3 bg-white rounded-full shadow-md"></div>
+                          </div>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+                
+              </div>
+            ) : product.color ? (
               <div className="space-y-3">
                 <span className="text-sm font-medium text-primary/60">Cor disponível:</span>
                 <div className="flex gap-3 items-center">
@@ -247,25 +261,25 @@ export default function ProductDetailPage() {
             ) : product.dynamic_fields?.find(f => f.field_name.toLowerCase() === 'cor') && (
               <div className="space-y-3">
                 <span className="text-sm font-medium text-primary/60">Cores disponíveis:</span>
-                <div className="flex gap-3">
+                <div className="flex gap-3 flex-wrap">
                   {product.dynamic_fields
                     .find(f => f.field_name.toLowerCase() === 'cor')
                     ?.value.split(',')
                     .map((color, colorIndex) => {
                       const trimmedColor = color.trim()
-                      const colorValue = getColorValue(trimmedColor)
+                      const colorValue = getColorHex(trimmedColor)
 
                       return (
-                        <Button
+                        <div
                           key={colorIndex}
-                          className="relative w-10 h-10 rounded-full border-2 transition-all p-0"
+                          className="relative w-10 h-10 rounded-full border-2 transition-all"
                           style={{ backgroundColor: colorValue }}
                           title={trimmedColor}
                         >
                           {colorValue === '#FFFFFF' && (
                             <div className="absolute inset-0 rounded-full border border-gray-400"></div>
                           )}
-                        </Button>
+                        </div>
                       )
                     })}
                 </div>

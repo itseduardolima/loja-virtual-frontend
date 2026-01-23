@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -10,7 +10,7 @@ import { createProductSchema, CreateProductFormData } from '@/schemas/productSch
 import { useUpdateProduct } from '@/hooks/useProducts'
 import { useToastContext } from '@/contexts/ToastContext'
 import { useStore } from '@/hooks/useStore'
-import { useNiches } from '@/hooks/useNiches'
+import { useNiches, useNicheFields } from '@/hooks/useNiches'
 import { NicheFieldValue } from '@/types'
 
 export function useEditProductPage(productId: string, user: any) {
@@ -18,7 +18,9 @@ export function useEditProductPage(productId: string, user: any) {
   const queryClient = useQueryClient()
   const { error: showError, success: showSuccess } = useToastContext()
   const [selectedImages, setSelectedImages] = useState<File[]>([])
+  const [imagesByColor, setImagesByColor] = useState<Record<string, File[]>>({})
   const [removedExistingImages, setRemovedExistingImages] = useState<number[]>([])
+  const [removedImagesByColor, setRemovedImagesByColor] = useState<Record<string, number[]>>({})
   const [isInitialized, setIsInitialized] = useState(false)
   const [selectedNicheId, setSelectedNicheId] = useState<number | null>(null)
   const [dynamicFieldValues, setDynamicFieldValues] = useState<Record<string, NicheFieldValue>>({})
@@ -27,6 +29,7 @@ export function useEditProductPage(productId: string, user: any) {
   const storeId = storeData?.id || null
   const { data: nichesData } = useNiches(storeId)
   const niches = nichesData?.data || []
+  const { data: nicheFields } = useNicheFields(selectedNicheId)
   
   const { data: product, isLoading: productLoading, error: productError } = useQuery({
     queryKey: ['product', productId],
@@ -87,6 +90,15 @@ export function useEditProductPage(productId: string, user: any) {
       form.setValue('category_id', product.category_id || undefined)
       form.setValue('featured', product.featured === 1)
       
+      // Inicializar imagens por cor se houver
+      if (product.images_by_color && typeof product.images_by_color === 'object' && !Array.isArray(product.images_by_color)) {
+        // Produto já tem imagens por cor - não precisamos fazer nada aqui
+        // As imagens existentes serão gerenciadas pelo componente ImageUploadByColor
+      } else if (product.images && typeof product.images === 'object' && !Array.isArray(product.images)) {
+        // Produto tem imagens como objeto (formato novo)
+        // Não precisamos fazer nada, o componente vai lidar com isso
+      }
+      
       setIsInitialized(true)
     }
   }, [product, form, isInitialized])
@@ -144,13 +156,33 @@ export function useEditProductPage(productId: string, user: any) {
   }
 
   const onSubmit = (data: CreateProductFormData) => {
+    // Verificar se há imagens (por cor ou simples)
+    const hasImagesByColor = Object.keys(imagesByColor).length > 0 && 
+      Object.values(imagesByColor).some(images => images.length > 0)
+    
     // Calcular imagens restantes (existentes - removidas + novas)
-    const remainingExistingImages = (product?.images || []).filter((_: any, index: number) => !removedExistingImages.includes(index))
+    const remainingExistingImages = Array.isArray(product?.images) 
+      ? (product?.images || []).filter((_: any, index: number) => !removedExistingImages.includes(index))
+      : []
+    
     const totalImages = selectedImages.length + remainingExistingImages.length
     
-    if (totalImages === 0) {
-      showError('É necessário ter pelo menos uma imagem', 'Validação')
-      return
+    // Se não há imagens por cor e não há imagens simples, verificar se há imagens existentes
+    if (!hasImagesByColor && totalImages === 0) {
+      // Verificar se há imagens por cor existentes que não foram todas removidas
+      const hasExistingImagesByColor = product?.images_by_color && 
+        typeof product.images_by_color === 'object' && 
+        !Array.isArray(product.images_by_color) &&
+        Object.keys(product.images_by_color).some(color => {
+          const colorImages = product.images_by_color[color] || []
+          const removedIndices = removedImagesByColor[color] || []
+          return colorImages.length > removedIndices.length
+        })
+      
+      if (!hasExistingImagesByColor) {
+        showError('É necessário ter pelo menos uma imagem', 'Validação')
+        return
+      }
     }
 
     const formData = new FormData()
@@ -161,13 +193,11 @@ export function useEditProductPage(productId: string, user: any) {
     }
     formData.append('price', (data.price || 0).toString())
     formData.append('stock', (data.stock || 0).toString())
-    // Sempre enviar discount_price para permitir remover desconto ao editar
+    // Só enviar discount_price se tiver valor válido
     if (data.discount_price !== undefined && data.discount_price !== null && data.discount_price > 0) {
       formData.append('discount_price', data.discount_price.toString())
-    } else {
-      // Enviar null explicitamente para remover desconto
-      formData.append('discount_price', '')
     }
+    // Se discount_price for 0, null ou undefined, não enviar o campo (permite remover desconto)
     if (data.category_id && data.category_id > 0) {
       formData.append('category_id', data.category_id.toString())
     }
@@ -188,14 +218,45 @@ export function useEditProductPage(productId: string, user: any) {
       formData.append('dynamic_fields', JSON.stringify(dynamicFields))
     }
     
-    selectedImages.forEach(image => {
-      formData.append('images', image)
-    })
+    // Processar imagens por cor se houver
+    if (hasImagesByColor) {
+      // Criar um mapeamento de índices para as imagens
+      const allImages: File[] = []
+      const imagesByColorWithIndices: Record<string, number[]> = {}
+      
+      Object.entries(imagesByColor).forEach(([color, images]) => {
+        const indices: number[] = []
+        images.forEach(image => {
+          const index = allImages.length
+          allImages.push(image)
+          indices.push(index)
+        })
+        imagesByColorWithIndices[color] = indices
+      })
+      
+      // Adicionar todas as imagens ao FormData
+      allImages.forEach(image => {
+        formData.append('images', image)
+      })
+      
+      // Adicionar o mapeamento de imagens por cor
+      formData.append('images_by_color', JSON.stringify(imagesByColorWithIndices))
+      
+      // Adicionar remoções de imagens por cor se houver
+      if (Object.keys(removedImagesByColor).length > 0) {
+        formData.append('remove_images_by_color', JSON.stringify(removedImagesByColor))
+      }
+    } else {
+      // Formato antigo: array simples
+      selectedImages.forEach(image => {
+        formData.append('images', image)
+      })
 
-    // Adicionar índices das imagens existentes que devem ser removidas
-    removedExistingImages.forEach(index => {
-      formData.append('remove_images[]', index.toString())
-    })
+      // Adicionar índices das imagens existentes que devem ser removidas
+      removedExistingImages.forEach(index => {
+        formData.append('remove_images[]', index.toString())
+      })
+    }
 
     updateProductMutation.mutate(
       { id: productId, data: formData },
@@ -228,15 +289,42 @@ export function useEditProductPage(productId: string, user: any) {
     }))
   }
 
+  // Extrair cores dos campos dinâmicos
+  const availableColors = useMemo(() => {
+    if (!nicheFields || nicheFields.length === 0) return []
+    
+    // Encontrar o campo de cor
+    const colorField = nicheFields.find(f => f.name.toLowerCase() === 'cor')
+    if (!colorField) return []
+    
+    // Buscar o valor do campo de cor nos dynamicFieldValues
+    const colorFieldValue = dynamicFieldValues[colorField.id.toString()]
+    if (!colorFieldValue) return []
+    
+    const value = colorFieldValue.value
+    if (Array.isArray(value)) {
+      return value
+    }
+    if (typeof value === 'string') {
+      return value.split(',').map(c => c.trim()).filter(Boolean)
+    }
+    return []
+  }, [dynamicFieldValues, nicheFields])
+
   return {
     form,
     product,
     selectedImages,
+    imagesByColor,
+    setImagesByColor,
     categories,
     niches,
     selectedNicheId,
     dynamicFieldValues,
+    availableColors,
     removedExistingImages,
+    removedImagesByColor,
+    setRemovedImagesByColor,
     isInitialized,
     isLoading: productLoading || updateProductMutation.isPending,
     error: productError || updateProductMutation.error,

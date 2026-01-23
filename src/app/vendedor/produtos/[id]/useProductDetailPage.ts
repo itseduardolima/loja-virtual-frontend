@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useProduct, useDeleteProduct } from '@/hooks/useProducts'
 import { buildImageUrl } from '@/lib/utils'
@@ -10,6 +10,7 @@ export function useProductDetailPage(productId: string) {
   const { data: product, isLoading, error } = useProduct(productId)
   const deleteProductMutation = useDeleteProduct()
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const [selectedColor, setSelectedColor] = useState<string | null>(null)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   const colorMap: Record<string, string> = {
@@ -49,6 +50,49 @@ export function useProductDetailPage(productId: string) {
     ).filter(Boolean)
   }
 
+  // Função para obter imagens por cor
+  const getImagesByColor = (): Record<string, string[]> => {
+    if (!product) return {}
+    
+    // Verificar se images é um objeto (formato novo)
+    if (product.images && typeof product.images === 'object' && !Array.isArray(product.images)) {
+      return product.images as Record<string, string[]>
+    }
+    
+    // Verificar se images_by_color existe
+    if (product.images_by_color && typeof product.images_by_color === 'object' && !Array.isArray(product.images_by_color)) {
+      return product.images_by_color
+    }
+    
+    return {}
+  }
+
+  // Obter imagens por cor
+  const imagesByColor = getImagesByColor()
+
+  // Função para obter imagens da cor selecionada
+  const getImagesForColor = (): string[] => {
+    if (!selectedColor || !imagesByColor[selectedColor]) {
+      // Se não há cor selecionada ou a cor não tem imagens, retornar primeira cor disponível
+      const firstColor = Object.keys(imagesByColor)[0]
+      return firstColor ? imagesByColor[firstColor] : []
+    }
+    return imagesByColor[selectedColor]
+  }
+
+  // Obter imagens atuais baseado na cor selecionada
+  const currentImages = getImagesForColor()
+
+  // Inicializar cor selecionada quando o produto carregar
+  useEffect(() => {
+    if (product && Object.keys(imagesByColor).length > 0 && !selectedColor) {
+      // Selecionar a primeira cor disponível
+      const firstColor = Object.keys(imagesByColor)[0]
+      setSelectedColor(firstColor)
+      setSelectedImageIndex(0)
+    }
+  }, [product, imagesByColor, selectedColor])
+
   // Função para construir URLs de imagens
   const buildImageUrls = (images: string[]): string[] => {
     return images.map(image => buildImageUrl(image))
@@ -68,25 +112,35 @@ export function useProductDetailPage(productId: string) {
       : { text: 'Normal', color: 'bg-gray-100 text-gray-800 border-gray-200' }
   }
 
+  // Função para selecionar cor
+  const selectColor = (color: string) => {
+    if (imagesByColor[color] && imagesByColor[color].length > 0) {
+      setSelectedColor(color)
+      setSelectedImageIndex(0) // Resetar índice ao trocar de cor
+    }
+  }
+
   // Função para selecionar imagem
   const selectImage = (index: number) => {
-    setSelectedImageIndex(index)
+    if (index >= 0 && index < currentImages.length) {
+      setSelectedImageIndex(index)
+    }
   }
 
   // Função para navegar para a imagem anterior
   const previousImage = () => {
-    if (product && product.images && product.images.length > 0) {
+    if (currentImages.length > 0) {
       setSelectedImageIndex(prev => 
-        prev === 0 ? product.images.length - 1 : prev - 1
+        prev === 0 ? currentImages.length - 1 : prev - 1
       )
     }
   }
 
   // Função para navegar para a próxima imagem
   const nextImage = () => {
-    if (product && product.images && product.images.length > 0) {
+    if (currentImages.length > 0) {
       setSelectedImageIndex(prev => 
-        prev === product.images.length - 1 ? 0 : prev + 1
+        prev === currentImages.length - 1 ? 0 : prev + 1
       )
     }
   }
@@ -122,12 +176,16 @@ export function useProductDetailPage(productId: string) {
     isLoading,
     error,
     selectedImageIndex,
+    selectedColor,
+    currentImages,
+    imagesByColor,
     colorMap,
     processColors,
     processSizes,
     buildImageUrls,
     getStatusInfo,
     getFeaturedInfo,
+    selectColor,
     selectImage,
     previousImage,
     nextImage,

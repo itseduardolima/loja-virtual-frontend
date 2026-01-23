@@ -2,10 +2,9 @@
 
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import Image from '@tiptap/extension-image'
 import Placeholder from '@tiptap/extension-placeholder'
 import { Button } from '@/components/ui/button'
-import { Bold, Italic, List, ListOrdered, Image as ImageIcon } from 'lucide-react'
+import { Bold, Italic, List, ListOrdered } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useEffect } from 'react'
 
@@ -32,10 +31,6 @@ export function RichTextEditor({
         heading: {
           levels: [1, 2, 3],
         },
-      }),
-      Image.configure({
-        inline: true,
-        allowBase64: true,
       }),
       Placeholder.configure({
         placeholder,
@@ -136,23 +131,6 @@ export function RichTextEditor({
             )}
           >
             <ListOrdered className="h-4 w-4" />
-          </Button>
-
-          <div className="w-px h-6 bg-gray-300 mx-1" />
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              const url = window.prompt('URL da imagem:')
-              if (url) {
-                editor.chain().focus().setImage({ src: url }).run()
-              }
-            }}
-            className="h-8 w-8 p-0"
-          >
-            <ImageIcon className="h-4 w-4" />
           </Button>
         </div>
       )}

@@ -80,7 +80,7 @@ export function ProductCard({
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded-xl sm:rounded-2xl">
+            <div className="flex items-center justify-center bg-gray-100 rounded-xl sm:rounded-2xl">
               <span className="text-gray-400 text-xs sm:text-sm">Sem imagem</span>
             </div>
           )}

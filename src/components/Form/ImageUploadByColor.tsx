@@ -125,7 +125,7 @@ export function ImageUploadByColor({
     fileInputRef.current?.click()
   }
 
-  const allColors = [...new Set([...availableColors, ...Object.keys(imagesByColor), ...Object.keys(existingImagesByColor)])]
+  const allColors = Array.from(new Set([...availableColors, ...Object.keys(imagesByColor), ...Object.keys(existingImagesByColor)]))
 
   return (
     <Card className="p-8 bg-white border-gray-200 shadow-sm">
@@ -243,7 +243,7 @@ export function ImageUploadByColor({
                     style={{ backgroundColor: getColorHex(color) }}
                   />
                   <span className="text-sm font-medium text-gray-700">{color}</span>
-                  <span className="text-xs text-gray-500">({images.length} imagem{images.length !== 1 ? 'ns' : ''})</span>
+                  
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {images.map((image, index) => (
@@ -251,7 +251,7 @@ export function ImageUploadByColor({
                       <img
                         src={URL.createObjectURL(image)}
                         alt={`${color} ${index + 1}`}
-                        className="w-full h-24 object-cover rounded-lg"
+                        className="w-full h-52 object-cover rounded-lg"
                       />
                       <button
                         type="button"
@@ -282,9 +282,7 @@ export function ImageUploadByColor({
                       style={{ backgroundColor: getColorHex(color) }}
                     />
                     <span className="text-sm font-medium text-gray-700">{color}</span>
-                    <span className="text-xs text-gray-500">
-                      ({imageUrls.length - removedIndices.length} de {imageUrls.length} imagem{imageUrls.length !== 1 ? 'ns' : ''})
-                    </span>
+                    
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {imageUrls.map((imageUrl, index) => {
@@ -294,7 +292,7 @@ export function ImageUploadByColor({
                           <img
                             src={`${process.env.NEXT_PUBLIC_API_URL}${imageUrl}`}
                             alt={`${color} ${index + 1}`}
-                            className={`w-full h-24 object-cover rounded-lg ${isMarkedForRemoval ? 'grayscale' : ''}`}
+                            className={`w-full h-52 object-cover rounded-lg ${isMarkedForRemoval ? 'grayscale' : ''}`}
                           />
                           {isMarkedForRemoval && (
                             <div className="absolute inset-0 bg-red-500 bg-opacity-75 rounded-lg flex items-center justify-center">
