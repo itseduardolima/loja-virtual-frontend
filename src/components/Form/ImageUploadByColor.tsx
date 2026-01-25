@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
@@ -37,6 +37,35 @@ export function ImageUploadByColor({
   const [selectedColor, setSelectedColor] = useState<string>('')
   const [isDragOver, setIsDragOver] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Selecionar automaticamente a primeira cor que tem imagens existentes
+  useEffect(() => {
+    if (!selectedColor && (Object.keys(existingImagesByColor).length > 0 || availableColors.length > 0)) {
+      const allColors = Array.from(new Set([...availableColors, ...Object.keys(imagesByColor), ...Object.keys(existingImagesByColor)]))
+      
+      // Primeiro, tentar selecionar uma cor que tem imagens existentes
+      const colorWithExistingImages = allColors.find(color => {
+        const existingImages = existingImagesByColor[color] || []
+        const removedIndices = removedExistingImages[color] || []
+        return existingImages.length > removedIndices.length
+      })
+      
+      if (colorWithExistingImages) {
+        setSelectedColor(colorWithExistingImages)
+        if (!imagesByColor[colorWithExistingImages]) {
+          onImagesByColorChange({ ...imagesByColor, [colorWithExistingImages]: [] })
+        }
+      } else if (allColors.length > 0) {
+        // Se não houver imagens existentes, selecionar a primeira cor disponível
+        const firstColor = allColors[0]
+        setSelectedColor(firstColor)
+        if (!imagesByColor[firstColor]) {
+          onImagesByColorChange({ ...imagesByColor, [firstColor]: [] })
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [existingImagesByColor, availableColors])
 
   const handleColorSelect = (color: string) => {
     setSelectedColor(color)
@@ -232,39 +261,41 @@ export function ImageUploadByColor({
         )}
 
         {/* Imagens por Cor - Novas */}
-        {Object.keys(imagesByColor).length > 0 && (
+        {Object.entries(imagesByColor).some(([_, images]) => images && images.length > 0) && (
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-gray-700">Novas Imagens por Cor</h3>
-            {Object.entries(imagesByColor).map(([color, images]) => (
-              <div key={color} className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-6 h-6 rounded-full border border-gray-300"
-                    style={{ backgroundColor: getColorHex(color) }}
-                  />
-                  <span className="text-sm font-medium text-gray-700">{color}</span>
-                  
+            {Object.entries(imagesByColor)
+              .filter(([_, images]) => images && images.length > 0)
+              .map(([color, images]) => (
+                <div key={color} className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-6 h-6 rounded-full border border-gray-300"
+                      style={{ backgroundColor: getColorHex(color) }}
+                    />
+                    <span className="text-sm font-medium text-gray-700">{color}</span>
+                    
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {images.map((image, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={URL.createObjectURL(image)}
+                          alt={`${color} ${index + 1}`}
+                          className="w-full h-52 object-cover rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(color, index)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {images.map((image, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={URL.createObjectURL(image)}
-                        alt={`${color} ${index + 1}`}
-                        className="w-full h-52 object-cover rounded-lg"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImage(color, index)}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
         )}
 

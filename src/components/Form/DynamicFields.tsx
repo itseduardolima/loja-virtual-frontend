@@ -162,6 +162,52 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
     })
   }
 
+  // Normalizar valores de cores quando os campos são carregados
+  useEffect(() => {
+    if (!fields || fields.length === 0) return
+    
+    fields.forEach(field => {
+      if (field.field_type === 'color') {
+        const fieldValue = fieldValues[field.id]?.value
+        if (!fieldValue) return
+        
+        // Se já é um array, não precisa normalizar
+        if (Array.isArray(fieldValue)) return
+        
+        // Processar o valor do campo
+        const valueStr = String(fieldValue).trim()
+        let selectedColors: string[] = []
+        if (valueStr.includes(',')) {
+          selectedColors = valueStr.split(',').map(c => c.trim()).filter(Boolean)
+        } else {
+          selectedColors = [valueStr]
+        }
+        
+        // Normalizar cores para corresponder às cores disponíveis
+        const fieldOptions = field.options && field.options.length > 0 ? field.options : []
+        const allColorsSet = new Set([...COLOR_OPTIONS, ...fieldOptions])
+        const availableColors = sortColors(Array.from(allColorsSet))
+        
+        const normalizeColorName = (color: string): string => color.toLowerCase().trim()
+        const findMatchingColor = (selectedColor: string, availableColors: string[]): string | null => {
+          const normalizedSelected = normalizeColorName(selectedColor)
+          return availableColors.find(c => normalizeColorName(c) === normalizedSelected) || null
+        }
+        
+        const normalizedSelectedColors = selectedColors
+          .map(selectedColor => findMatchingColor(selectedColor, availableColors))
+          .filter((color): color is string => color !== null)
+        
+        // Se as cores normalizadas são diferentes das originais, atualizar
+        if (normalizedSelectedColors.length > 0 && 
+            JSON.stringify(normalizedSelectedColors.sort()) !== JSON.stringify(selectedColors.sort())) {
+          onFieldChange(field.id, normalizedSelectedColors)
+        }
+      }
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fields, fieldValues])
+
   // Fechar dropdowns ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -329,13 +375,42 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
         )
 
       case 'color':
-        const selectedColors = Array.isArray(fieldValue) ? fieldValue : (fieldValue ? [fieldValue] : [])
+        // Processar o valor do campo - pode ser array, string única ou string com vírgulas
+        let selectedColors: string[] = []
+        if (Array.isArray(fieldValue)) {
+          selectedColors = fieldValue
+        } else if (fieldValue) {
+          const valueStr = String(fieldValue).trim()
+          // Se contém vírgula, fazer split e limpar espaços
+          if (valueStr.includes(',')) {
+            selectedColors = valueStr.split(',').map(c => c.trim()).filter(Boolean)
+          } else {
+            selectedColors = [valueStr]
+          }
+        }
+        
+        // Função helper para normalizar nomes de cores (case-insensitive)
+        const normalizeColorName = (color: string): string => {
+          return color.toLowerCase().trim()
+        }
+        
+        // Função helper para encontrar cor correspondente na lista disponível (case-insensitive)
+        const findMatchingColor = (selectedColor: string, availableColors: string[]): string | null => {
+          const normalizedSelected = normalizeColorName(selectedColor)
+          return availableColors.find(c => normalizeColorName(c) === normalizedSelected) || null
+        }
+        
         // Sempre usar COLOR_OPTIONS completo, combinando com opções do campo se existirem
         const fieldOptions = field.options && field.options.length > 0 ? field.options : []
         // Combinar opções do campo com COLOR_OPTIONS, removendo duplicatas
         const allColorsSet = new Set([...COLOR_OPTIONS, ...fieldOptions])
         // Ordenar cores por família e luminosidade
         const availableColors = sortColors(Array.from(allColorsSet))
+        
+        // Normalizar cores selecionadas para corresponder às cores disponíveis
+        const normalizedSelectedColors = selectedColors
+          .map(selectedColor => findMatchingColor(selectedColor, availableColors))
+          .filter((color): color is string => color !== null)
         
         const isExpanded = expandedColorFields[field.id] || false
         const colorsToShow = isExpanded 
@@ -350,15 +425,15 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
             </Label>
             <div className="grid grid-cols-8 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-14 xl:grid-cols-16 gap-3 p-4 border border-gray-200 rounded-lg bg-gray-50/50 min-h-[120px]">
               {colorsToShow.map((color) => {
-                const isSelected = selectedColors.includes(color)
+                const isSelected = normalizedSelectedColors.includes(color)
                 return (
                   <button
                     key={color}
                     type="button"
                     onClick={() => {
                       const newSelection = isSelected 
-                        ? selectedColors.filter(c => c !== color)
-                        : [...selectedColors, color]
+                        ? normalizedSelectedColors.filter(c => c !== color)
+                        : [...normalizedSelectedColors, color]
                       onFieldChange(field.id, newSelection)
                     }}
                     className={`
@@ -396,9 +471,9 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
                 }
               </button>
             )}
-            {selectedColors.length > 0 && (
+            {normalizedSelectedColors.length > 0 && (
               <div className="mt-3 text-sm text-gray-600">
-                Cor selecionada: <span className="font-semibold text-gray-900">{selectedColors.join(', ')}</span>
+                Cor selecionada: <span className="font-semibold text-gray-900">{normalizedSelectedColors.join(', ')}</span>
               </div>
             )}
           </div>

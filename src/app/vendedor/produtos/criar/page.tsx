@@ -64,10 +64,23 @@ export default function CreateProductPage() {
         // Etapa 2 é opcional (tipo de produto)
         return true
       case 3:
-        // Validar se há imagens
+        // Se há cores disponíveis, validar que cada cor tem pelo menos uma imagem
+        if (availableColors.length > 0) {
+          // Verificar se todas as cores têm imagens
+          const allColorsHaveImages = availableColors.every(color => {
+            // Verificar se há imagens novas para esta cor
+            const hasNewImages = imagesByColor[color] && imagesByColor[color].length > 0
+            return hasNewImages
+          })
+          
+          return allColorsHaveImages
+        }
+        
+        // Se não há cores disponíveis, validar se há imagens (simples ou por cor)
         const hasImagesByColor = Object.keys(imagesByColor).length > 0 && 
           Object.values(imagesByColor).some(images => images.length > 0)
         const hasSimpleImages = selectedImages.length > 0
+        
         return hasImagesByColor || hasSimpleImages
       case 4:
         // Etapa 4 é opcional (especificações)
@@ -110,9 +123,22 @@ export default function CreateProductPage() {
   const nameValue = watch('name')
   const priceValue = watch('price')
   const isFormValid = useMemo(() => {
-    const hasImages = selectedImages.length > 0 || 
-      (Object.keys(imagesByColor).length > 0 && 
-       Object.values(imagesByColor).some(images => images.length > 0))
+    // Se há cores disponíveis, validar que cada cor tem pelo menos uma imagem
+    let hasImages = false
+    
+    if (availableColors.length > 0) {
+      // Verificar se todas as cores têm imagens
+      hasImages = availableColors.every(color => {
+        // Verificar se há imagens novas para esta cor
+        const hasNewImages = imagesByColor[color] && imagesByColor[color].length > 0
+        return hasNewImages
+      })
+    } else {
+      // Se não há cores disponíveis, validar se há imagens simples
+      hasImages = selectedImages.length > 0 || 
+        (Object.keys(imagesByColor).length > 0 && 
+         Object.values(imagesByColor).some(images => images.length > 0))
+    }
     
     return !!(
       nameValue &&
@@ -121,7 +147,7 @@ export default function CreateProductPage() {
       priceValue > 0 &&
       hasImages
     )
-  }, [nameValue, priceValue, selectedImages.length, imagesByColor])
+  }, [nameValue, priceValue, selectedImages.length, imagesByColor, availableColors])
 
   if (authLoading || storeLoading) {
     return <LoadingPage />
@@ -386,7 +412,7 @@ export default function CreateProductPage() {
                 {/* Seleção de Nicho */}
                 <div className="w-1/3">
                   <Label htmlFor="niche" className="text-sm font-semibold text-gray-700 mb-2 block">
-                    Nicho <span className="text-gray-400 font-normal">(opcional)</span>
+                    Tipo de Produto<span className="text-gray-400 font-normal">(opcional)</span>
                   </Label>
                   <Select
                     value={selectedNicheId?.toString() || 'none'}
@@ -398,7 +424,7 @@ export default function CreateProductPage() {
                       <SelectValue placeholder="Selecione um nicho" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">Nenhum nicho selecionado</SelectItem>
+                      <SelectItem value="none">Nenhum tipo selecionado</SelectItem>
                       {niches.map((niche: any) => (
                         <SelectItem key={niche.id} value={niche.id.toString()}>
                           {niche.name}
@@ -407,7 +433,6 @@ export default function CreateProductPage() {
                     </SelectContent>
                   </Select>
                 </div>
-n
                 {/* Campos Dinâmicos */}
                 {selectedNicheId && (
                   <DynamicFields
@@ -431,14 +456,44 @@ n
         )
 
       case 3:
+        // Função helper para verificar quais cores estão sem imagens
+        const getColorsWithoutImages = () => {
+          if (availableColors.length === 0) return []
+          
+          return availableColors.filter(color => {
+            // Verificar se há imagens novas para esta cor
+            const hasNewImages = imagesByColor[color] && imagesByColor[color].length > 0
+            return !hasNewImages
+          })
+        }
+        
+        const colorsWithoutImages = getColorsWithoutImages()
+        
         return (
           <div className="space-y-6">
             {availableColors.length > 0 ? (
-              <ImageUploadByColor
-                imagesByColor={imagesByColor}
-                onImagesByColorChange={setImagesByColor}
-                availableColors={availableColors}
-              />
+              <>
+                <ImageUploadByColor
+                  imagesByColor={imagesByColor}
+                  onImagesByColorChange={setImagesByColor}
+                  availableColors={availableColors}
+                />
+                {colorsWithoutImages.length > 0 && (
+                  <Card className="p-4 bg-red-50 border-red-200 border-2">
+                    <div className="flex items-start gap-3">
+                      <X className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-red-900 mb-1">
+                          Adicione imagens para todas as cores selecionadas
+                        </p>
+                        <p className="text-sm text-red-700">
+                          As seguintes cores ainda precisam de imagens: <span className="font-semibold">{colorsWithoutImages.join(', ')}</span>
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+              </>
             ) : (
               <ImageUpload
                 selectedImages={selectedImages}
