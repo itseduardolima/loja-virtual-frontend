@@ -4,7 +4,6 @@ import { useParams, useRouter } from 'next/navigation'
 import { Button, Badge, LoadingSpinner, ErrorState, CartSidebar, StoreHeader } from '@/components'
 import {
   Star,
-  Package,
   Plus,
   Minus,
   Check,
@@ -20,6 +19,8 @@ import { useStoreInfo } from '@/hooks/useStoreInfo'
 import { useState, useEffect } from 'react'
 import LoadingPage from '@/components/Layout/LoadingPage'
 import { getColorHex } from '@/schemas'
+import { useAddToCartAnimation } from '@/hooks/useAddToCartAnimation'
+import { AddToCartAnimation } from '@/components/Animation/AddToCartAnimation'
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -30,6 +31,7 @@ export default function ProductDetailPage() {
   const [searchValue, setSearchValue] = useState('')
 
   const { storeInfo } = useStoreInfo(slug)
+  const { triggerAnimation, animationData, onAnimationComplete } = useAddToCartAnimation()
 
   const {
     product,
@@ -387,8 +389,15 @@ export default function ProductDetailPage() {
 
               {/* Add to Cart Button */}
               <Button
+                id="add-to-cart-button"
                 className="flex-1 sm:flex-1 h-12 sm:h-12 text-base sm:text-lg font-medium shadow-sm active:scale-[0.98] transition-transform touch-manipulation"
-                onClick={() => addToCart()}
+                onClick={() => {
+                  if (product && currentImages && currentImages.length > 0) {
+                    const productImage = currentImages[selectedImageIndex] || currentImages[0]
+                    triggerAnimation(productImage, 'add-to-cart-button')
+                  }
+                  addToCart()
+                }}
                 disabled={!canAddToCart || isAddingToCart}
               >
                 {isAddingToCart ? (
@@ -451,6 +460,16 @@ export default function ProductDetailPage() {
         storeSlug={slug}
         currentPath={`/loja/${slug}/produto/${productId}`}
       />
+
+      {/* Add to Cart Animation */}
+      {animationData && (
+        <AddToCartAnimation
+          imageUrl={animationData.imageUrl}
+          startElement={animationData.startElement}
+          endElement={animationData.endElement}
+          onComplete={onAnimationComplete}
+        />
+      )}
     </div>
   )
 }

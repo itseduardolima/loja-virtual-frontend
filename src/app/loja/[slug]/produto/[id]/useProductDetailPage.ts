@@ -194,12 +194,8 @@ export function useProductDetailPage(slug: string, productId: string) {
       
       return response.data
     },
-    onSuccess: (data) => {
-      toast({
-        title: 'Produto adicionado!',
-        description: data.message || `${product?.name} foi adicionado ao carrinho`,
-        variant: 'success'
-      })
+    onSuccess: () => {
+      // Toast removido - a animação visual substitui o toast
     },
     onError: (error: any) => {
       const errorMessage = error.response?.data?.message || 'Não foi possível adicionar o produto ao carrinho'

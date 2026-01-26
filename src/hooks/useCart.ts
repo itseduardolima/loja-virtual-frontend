@@ -90,13 +90,8 @@ export function useCart(storeId?: number) {
       
       return response.data
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart-items'] })
-      toast({
-        title: 'Produto adicionado!',
-        description: data.message,
-        variant: 'success'
-      })
     },
     onError: (error: any) => {
       const errorMessage = error.response?.data?.message || 'Erro ao adicionar produto ao carrinho'
@@ -123,11 +118,6 @@ export function useCart(storeId?: number) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart-items'] })
-      toast({
-        title: 'Item removido!',
-        description: 'Produto removido do carrinho',
-        variant: 'success'
-      })
     },
     onError: () => {
       toast({

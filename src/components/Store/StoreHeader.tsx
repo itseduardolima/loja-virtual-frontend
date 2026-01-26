@@ -264,6 +264,7 @@ export function StoreHeader({
             
             {/* Botão do Carrinho */}
             <Button
+              id="cart-icon-button"
               variant="ghost"
               onClick={onCartClick}
               className="relative p-2 sm:p-0 hover:bg-transparent h-9 w-9 sm:h-auto sm:w-auto flex-shrink-0"
