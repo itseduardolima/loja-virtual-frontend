@@ -65,9 +65,6 @@ export default function StorePage() {
   // Hook para buscar informações da loja
   const { storeInfo } = useStoreInfo(slug)
 
-  // Hook do carrinho
-  const { totalItems } = useCart(storeInfo?.id)
-
   // Função para determinar o título da página
   const getPageTitle = () => {
     if (filters.categoryId && categories.length > 0) {

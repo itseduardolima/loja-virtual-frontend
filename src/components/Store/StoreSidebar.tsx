@@ -230,7 +230,7 @@ export function StoreSidebar({
               <ChevronUp className={`w-4 h-4 text-gray-400 transition-transform ${openDropdowns[fieldName] ? 'rotate-180' : ''}`} />
             </div>
             {openDropdowns[fieldName] && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
                 {allOptionsArray.length > 0 ? (
                   allOptionsArray.map((option) => {
                     const isSelected = selectedOptions.includes(option)
@@ -294,7 +294,7 @@ export function StoreSidebar({
         const hasMoreColors = allAvailableColors.length > INITIAL_COLORS_COUNT_FILTER
         
         return (
-          <div className="space-y-2 overflow-x-hidden w-full">
+          <div className="space-y-2  w-full">
             <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-2 w-full" style={{ maxWidth: '100%' }}>
               {colorsToShow.length > 0 ? (
                 colorsToShow.map((color) => {
@@ -570,7 +570,7 @@ export function StoreSidebar({
   if (!isOpen) return null
 
   return (
-    <div className={`w-full ${isInline ? '' : 'lg:max-w-md'} ${isInline ? '' : 'bg-white  rounded-xl shadow-sm'} ${className}`} style={{ overflowX: 'hidden', maxWidth: '100%' }}>
+    <div className={`w-full ${isInline ? '' : 'lg:max-w-md'} ${isInline ? '' : 'bg-white  rounded-xl shadow-sm'} ${className}`} >
       <div style={{ overflowX: 'hidden', maxWidth: '100%', width: '100%' }}>
         {/* Header - Apenas para desktop sidebar */}
         {!isInline && (
@@ -588,7 +588,7 @@ export function StoreSidebar({
         )}
 
         {/* Filters */}
-        <div className={`space-y-4 sm:space-y-6 ${isInline ? '' : 'px-4 sm:px-6 pt-4 sm:pt-6 lg:pt-0'} overflow-x-hidden`}>
+        <div className={`space-y-4 sm:space-y-6 ${isInline ? '' : 'px-4 sm:px-6 pt-4 sm:pt-6 lg:pt-0'} `}>
           {/* Ordenação */}
           <div>
             <Label className="text-sm font-bold text-gray-900 cursor-pointer mb-2 block">Ordenar por</Label>
@@ -692,13 +692,13 @@ export function StoreSidebar({
                 <ChevronUp className={`w-4 h-4 text-gray-600 transition-transform ${isFieldsCollapsed ? 'rotate-180' : ''}`} />
               </button>
               {!isFieldsCollapsed && (
-                <div className="space-y-3 pt-2 overflow-x-hidden">
+                <div className="space-y-3 pt-2 ">
                   {/* Campos unificados por nome */}
-                  <div className="space-y-3 max-h-[400px] overflow-y-auto overflow-x-hidden pr-2">
+                  <div className="space-y-3 max-h-[400px] overflow-y-auto  pr-2">
                     {filteredGroupedFields.length > 0 ? (
                       filteredGroupedFields.map(([fieldName, fieldGroup]) => {
                         return (
-                          <div key={fieldName} className="space-y-1.5 overflow-x-hidden w-full">
+                          <div key={fieldName} className="space-y-1.5  w-full">
                             <Label className="text-xs font-semibold text-gray-700 cursor-pointer">
                               {fieldName}
                             </Label>
@@ -718,7 +718,7 @@ export function StoreSidebar({
           )}
 
           {/* Botões de Ação */}
-          <div className="pt-4 space-y-2 mt-4 border-t border-gray-200 lg:border-t-0 sticky bottom-0 bg-white pb-4 lg:pb-6 lg:static -mx-4 sm:-mx-6 px-4 sm:px-6 lg:mx-0 lg:px-0 overflow-x-hidden">
+          <div className="pt-4 space-y-2 mt-4 border-t border-gray-200 lg:border-t-0 sticky bottom-0 bg-white pb-4 lg:pb-6 lg:static -mx-4 sm:-mx-6 px-4 sm:px-6 lg:mx-0 lg:px-0 ">
             <Button
               onClick={handleApplyAndClose}
               className="w-full bg-primary text-white hover:bg-primary/90 h-10 sm:h-11 text-sm sm:text-base font-medium shadow-sm"
