@@ -182,18 +182,48 @@ export function CartSidebar({ isOpen, onClose, storeId, storeSlug, currentPath }
                       <div className="flex gap-4">
                         {/* Product Image */}
                         <div className="relative w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                          {item.product.images && item.product.images.length > 0 ? (
-                            <Image
-                              src={buildImageUrl(item.product.images[0])}
-                              alt={item.product.name}
-                              fill
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="flex items-center justify-center h-full">
-                              <ShoppingBag className="h-8 w-8 text-gray-400" />
-                            </div>
-                          )}
+                          {(() => {
+                            // Função helper para obter a primeira imagem disponível
+                            const getProductImage = (): string | null => {
+                              const images = item.product.images
+                              
+                              // Se images é um objeto (formato novo com cores)
+                              if (images && typeof images === 'object' && !Array.isArray(images)) {
+                                // Tentar pegar a imagem da cor selecionada
+                                if (item.color && images[item.color] && Array.isArray(images[item.color]) && images[item.color].length > 0) {
+                                  return images[item.color][0]
+                                }
+                                
+                                // Se não encontrar, pegar a primeira cor disponível
+                                const firstColor = Object.keys(images)[0]
+                                if (firstColor && Array.isArray(images[firstColor]) && images[firstColor].length > 0) {
+                                  return images[firstColor][0]
+                                }
+                              }
+                              
+                              // Se images é um array (formato antigo)
+                              if (Array.isArray(images) && images.length > 0) {
+                                return images[0]
+                              }
+                              
+                              return null
+                            }
+                            
+                            const imageUrl = getProductImage()
+                            
+                            return imageUrl ? (
+                              <Image
+                                src={buildImageUrl(imageUrl)}
+                                alt={item.product.name}
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              <div className="flex items-center justify-center h-full">
+                                <ShoppingBag className="h-8 w-8 text-gray-400" />
+                              </div>
+                            )
+                          })()}
                         </div>
 
                         {/* Product Info - Left Side */}

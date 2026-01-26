@@ -19,6 +19,25 @@ export function DashboardTopProducts({ products }: DashboardTopProductsProps) {
   const displayedProductsMobile = showAllMobile ? products : products.slice(0, initialMobileLimit)
   const hasMoreProducts = products.length > initialMobileLimit
 
+  // Função helper para obter a primeira imagem disponível
+  const getProductImage = (images: any): string | null => {
+    // Se images é um objeto (formato novo com cores)
+    if (images && typeof images === 'object' && !Array.isArray(images)) {
+      // Pegar a primeira cor disponível
+      const firstColor = Object.keys(images)[0]
+      if (firstColor && Array.isArray(images[firstColor]) && images[firstColor].length > 0) {
+        return images[firstColor][0]
+      }
+    }
+    
+    // Se images é um array (formato antigo)
+    if (Array.isArray(images) && images.length > 0) {
+      return images[0]
+    }
+    
+    return null
+  }
+
   if (products.length === 0) {
     return (
       <Card className="border-0 shadow-sm rounded-2xl">
@@ -63,20 +82,23 @@ export function DashboardTopProducts({ products }: DashboardTopProductsProps) {
                 <div className="rounded-xl p-3 sm:p-4 bg-white border border-gray-100">
                   {/* Produto */}
                   <div className="flex items-center gap-3 mb-3">
-                    {product.images && product.images.length > 0 ? (
-                      <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                        <Image
-                          src={buildImageUrl(product.images[0])}
-                          alt={product.product_name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-                        <Package className="h-5 w-5 sm:h-6 sm:w-6 text-gray-400" />
-                      </div>
-                    )}
+                    {(() => {
+                      const imageUrl = getProductImage(product.images)
+                      return imageUrl ? (
+                        <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                          <Image
+                            src={buildImageUrl(imageUrl)}
+                            alt={product.product_name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                          <Package className="h-5 w-5 sm:h-6 sm:w-6 text-gray-400" />
+                        </div>
+                      )
+                    })()}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm sm:text-base font-semibold text-primary truncate">
                         {product.product_name}
@@ -147,20 +169,23 @@ export function DashboardTopProducts({ products }: DashboardTopProductsProps) {
                 <div className="flex items-center gap-4 pb-4 border-b border-gray-200">
                   {/* Imagem do Produto */}
                   <div className="flex-shrink-0">
-                    {product.images && product.images.length > 0 ? (
-                      <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-white shadow-sm">
-                        <Image
-                          src={buildImageUrl(product.images[0])}
-                          alt={product.product_name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-20 h-20 rounded-lg bg-white shadow-sm flex items-center justify-center">
-                        <Package className="h-8 w-8 text-gray-400" />
-                      </div>
-                    )}
+                    {(() => {
+                      const imageUrl = getProductImage(product.images)
+                      return imageUrl ? (
+                        <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-white shadow-sm">
+                          <Image
+                            src={buildImageUrl(imageUrl)}
+                            alt={product.product_name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-20 h-20 rounded-lg bg-white shadow-sm flex items-center justify-center">
+                          <Package className="h-8 w-8 text-gray-400" />
+                        </div>
+                      )
+                    })()}
                   </div>
 
                   {/* Informações do Produto */}

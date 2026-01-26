@@ -174,31 +174,63 @@ export function CustomerOrdersDrawer({ isOpen, onClose }: CustomerOrdersDrawerPr
                   <div className="border-t pt-6">
                     <h3 className="font-semibold mb-4">Itens do Pedido</h3>
                     <div className="space-y-4">
-                      {selectedOrder.items.map((item) => (
-                        <div key={item.id} className="flex gap-4">
-                          {item.product.images && item.product.images.length > 0 && (
-                            <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200">
-                              <Image
-                                src={buildImageUrl(item.product.images[0])}
-                                alt={item.product.name}
-                                fill
-                                className="object-cover"
-                              />
+                      {selectedOrder.items.map((item) => {
+                        // Função helper para obter a primeira imagem disponível
+                        const getProductImage = (): string | null => {
+                          const images = item.product.images
+                          
+                          // Se images é um objeto (formato novo com cores)
+                          if (images && typeof images === 'object' && !Array.isArray(images)) {
+                            const imagesObj = images as Record<string, string[]>
+                            
+                            // Tentar pegar a imagem da cor selecionada
+                            if (item.color && imagesObj[item.color] && Array.isArray(imagesObj[item.color]) && imagesObj[item.color].length > 0) {
+                              return imagesObj[item.color][0]
+                            }
+                            
+                            // Se não encontrar, pegar a primeira cor disponível
+                            const firstColor = Object.keys(imagesObj)[0]
+                            if (firstColor && Array.isArray(imagesObj[firstColor]) && imagesObj[firstColor].length > 0) {
+                              return imagesObj[firstColor][0]
+                            }
+                          }
+                          
+                          // Se images é um array (formato antigo)
+                          if (Array.isArray(images) && images.length > 0) {
+                            return images[0]
+                          }
+                          
+                          return null
+                        }
+                        
+                        const imageUrl = getProductImage()
+                        
+                        return (
+                          <div key={item.id} className="flex gap-4">
+                            {imageUrl && (
+                              <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200">
+                                <Image
+                                  src={buildImageUrl(imageUrl)}
+                                  alt={item.product.name}
+                                  fill
+                                  className="object-cover"
+                                />
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <p className="font-medium">{item.product.name}</p>
+                              <div className="flex gap-4 text-sm text-gray-500 mt-1">
+                                <span>Qtd: {item.quantity}</span>
+                                {item.color && <span>Cor: {item.color}</span>}
+                                {item.size && <span>Tamanho: {item.size}</span>}
+                              </div>
+                              <p className="text-sm font-semibold mt-2">
+                                {formatPrice(parseFloat(item.price))}
+                              </p>
                             </div>
-                          )}
-                          <div className="flex-1">
-                            <p className="font-medium">{item.product.name}</p>
-                            <div className="flex gap-4 text-sm text-gray-500 mt-1">
-                              <span>Qtd: {item.quantity}</span>
-                              {item.color && <span>Cor: {item.color}</span>}
-                              {item.size && <span>Tamanho: {item.size}</span>}
-                            </div>
-                            <p className="text-sm font-semibold mt-2">
-                              {formatPrice(parseFloat(item.price))}
-                            </p>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   </div>
 

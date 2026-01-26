@@ -234,15 +234,45 @@ Em breve entraremos em contato para confirmar o pedido! 🛍️`
                     className="flex flex-col gap-4 rounded-2xl border border-border p-4 md:flex-row md:items-center"
                   >
                     <div className="w-20 h-20 bg-gray-50 rounded-xl flex items-center justify-center border border-dashed border-gray-200">
-                      {item.product.images && item.product.images.length > 0 ? (
-                        <img
-                          src={buildImageUrl(item.product.images[0])}
-                          alt={item.product.name}
-                          className="w-full h-full object-cover rounded-xl"
-                        />
-                      ) : (
-                        <Package className="h-8 w-8 text-gray-400" />
-                      )}
+                      {(() => {
+                        // Função helper para obter a primeira imagem disponível
+                        const getProductImage = (): string | null => {
+                          const images = item.product.images
+                          
+                          // Se images é um objeto (formato novo com cores)
+                          if (images && typeof images === 'object' && !Array.isArray(images)) {
+                            // Tentar pegar a imagem da cor selecionada
+                            if (item.color && images[item.color] && Array.isArray(images[item.color]) && images[item.color].length > 0) {
+                              return images[item.color][0]
+                            }
+                            
+                            // Se não encontrar, pegar a primeira cor disponível
+                            const firstColor = Object.keys(images)[0]
+                            if (firstColor && Array.isArray(images[firstColor]) && images[firstColor].length > 0) {
+                              return images[firstColor][0]
+                            }
+                          }
+                          
+                          // Se images é um array (formato antigo)
+                          if (Array.isArray(images) && images.length > 0) {
+                            return images[0]
+                          }
+                          
+                          return null
+                        }
+                        
+                        const imageUrl = getProductImage()
+                        
+                        return imageUrl ? (
+                          <img
+                            src={buildImageUrl(imageUrl)}
+                            alt={item.product.name}
+                            className="w-full h-full object-cover rounded-xl"
+                          />
+                        ) : (
+                          <Package className="h-8 w-8 text-gray-400" />
+                        )
+                      })()}
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-primary">{item.product.name}</h3>

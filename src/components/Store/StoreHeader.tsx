@@ -192,21 +192,44 @@ export function StoreHeader({
                           onClick={() => handleSuggestionClick(product)}
                           className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-left hover:bg-gray-50 active:bg-gray-100 transition-colors flex items-center gap-2 sm:gap-3"
                         >
-                          {product.images && product.images.length > 0 ? (
-                            <div className="relative w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
-                              <Image
-                                src={buildImageUrl(product.images[0])}
-                                alt={product.name}
-                                fill
-                                className="object-cover rounded"
-                                sizes="(max-width: 640px) 40px, 48px"
-                              />
-                            </div>
+                          {(() => {
+                            // Função helper para obter a primeira imagem disponível
+                            const getProductImage = (images: any): string | null => {
+                              // Se images é um objeto (formato novo com cores)
+                              if (images && typeof images === 'object' && !Array.isArray(images)) {
+                                // Pegar a primeira cor disponível
+                                const firstColor = Object.keys(images)[0]
+                                if (firstColor && Array.isArray(images[firstColor]) && images[firstColor].length > 0) {
+                                  return images[firstColor][0]
+                                }
+                              }
+                              
+                              // Se images é um array (formato antigo)
+                              if (Array.isArray(images) && images.length > 0) {
+                                return images[0]
+                              }
+                              
+                              return null
+                            }
+                            
+                            const imageUrl = getProductImage(product.images)
+                            
+                            return imageUrl ? (
+                              <div className="relative w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
+                                <Image
+                                  src={buildImageUrl(imageUrl)}
+                                  alt={product.name}
+                                  fill
+                                  className="object-cover rounded"
+                                  sizes="(max-width: 640px) 40px, 48px"
+                                />
+                              </div>
                           ) : (
                             <div className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 bg-gray-100 rounded flex items-center justify-center">
                               <Search className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                             </div>
-                          )}
+                          )
+                          })()}
                           <div className="flex-1 min-w-0">
                             <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
                               {product.name}
