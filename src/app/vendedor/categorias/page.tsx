@@ -1,10 +1,10 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { Button, ErrorState } from '@/components'
+import { Button, ErrorState, ConfirmDialog } from '@/components'
 import { TableFilters } from '@/components/Table/TableFilters'
 import { Table } from '@/components/Table/Table'
-import { Plus, Tag } from 'lucide-react'
+import { Plus, Tag, Download } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCategoriesPage } from './useCategoriesPage'
 import LoadingPage from '@/components/Layout/LoadingPage'
@@ -23,10 +23,17 @@ export default function CategoriesPage() {
     handlePageChange,
     handleSearchChange,
     handleSortChange,
+    handleInitializeDefaults,
     setFilters,
     isSearching,
+    isInitializingDefaults,
 
     columns,
+    deleteDialogOpen,
+    setDeleteDialogOpen,
+    categoryToDelete,
+    handleDeleteConfirm,
+    isDeleting,
   } = useCategoriesPage()
 
   if (authLoading) {
@@ -50,19 +57,30 @@ export default function CategoriesPage() {
 
       <div className="max-w-7xl mx-auto py-8">
         {/* Título */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Categorias</h1>
             <p className="text-gray-600">Gerencie as categorias dos seus produtos</p>
           </div>
 
-          <Button
-            onClick={() => router.push('/vendedor/categorias/criar')}
-            className="flex items-center  gap-2  px-6 py-2 transition-all duration-200"
-          >
-            <Plus className="h-4 w-4" />
-            Nova Categoria
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Button
+              onClick={handleInitializeDefaults}
+              disabled={isInitializingDefaults}
+              variant="outline"
+              className="flex items-center gap-2 px-6 py-2 transition-all duration-200"
+            >
+              <Download className="h-4 w-4" />
+              {isInitializingDefaults ? 'Criando...' : 'Criar Categorias Padrão'}
+            </Button>
+            <Button
+              onClick={() => router.push('/vendedor/categorias/criar')}
+              className="flex items-center gap-2 px-6 py-2 transition-all duration-200"
+            >
+              <Plus className="h-4 w-4" />
+              Nova Categoria
+            </Button>
+          </div>
         </div>
 
 
@@ -104,6 +122,18 @@ export default function CategoriesPage() {
         )}
       </div>
 
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Excluir Categoria"
+        description={`Tem certeza que deseja excluir a categoria "${categoryToDelete?.name}"? Esta ação não pode ser desfeita.`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        variant="destructive"
+        onConfirm={handleDeleteConfirm}
+        isLoading={isDeleting}
+      />
     </div>
   )
 }

@@ -71,14 +71,13 @@ export function ConfirmDialog({
             onClick={handleConfirm}
             disabled={isLoading}
             className={variant === 'destructive' 
-              ? 'bg-red-600 hover:bg-red-700 text-white' 
+              ? 'bg-red-600 hover:bg-red-700 text-white hover:text-white' 
               : 'bg-blue-600 hover:bg-blue-700 text-white'
             }
           >
             {isLoading ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Processando...
               </>
             ) : (
               confirmText

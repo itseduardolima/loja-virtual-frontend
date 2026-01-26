@@ -8,6 +8,7 @@ import { useToastContext } from '@/contexts/ToastContext'
 import { CategoryFilters } from '@/types/category'
 import { type Column } from '@/components/Table/Table'
 import { Edit, Trash2 } from 'lucide-react'
+import { ConfirmDialog } from '@/components/Dialog/ConfirmDialog'
 
 export function useCategoriesPage() {
   const router = useRouter()
@@ -19,6 +20,8 @@ export function useCategoriesPage() {
     status: undefined,
     sort: 'ASC'
   })
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [categoryToDelete, setCategoryToDelete] = useState<{ id: number; name: string } | null>(null)
 
   const debouncedSearch = useDebounce(filters.search, 2000)
 
@@ -33,8 +36,10 @@ export function useCategoriesPage() {
     error,
     deleteCategory,
     updateCategoryStatus,
+    initializeDefaultCategories,
     isDeleting,
     isUpdatingStatus,
+    isInitializingDefaults,
     meta
   } = useCategories(debouncedFilters)
 
@@ -42,9 +47,24 @@ export function useCategoriesPage() {
     router.push(`/vendedor/categorias/editar/${category.id}`)
   }
 
-  const handleDelete = (id: number) => {
-    if (confirm('Tem certeza que deseja deletar esta categoria?')) {
-      deleteCategory(id)
+  const handleDeleteClick = (category: any) => {
+    setCategoryToDelete({ id: category.id, name: category.name })
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteConfirm = () => {
+    if (categoryToDelete) {
+      deleteCategory(categoryToDelete.id, {
+        onSuccess: () => {
+          success('Categoria excluída com sucesso!', 'Sucesso')
+          setDeleteDialogOpen(false)
+          setCategoryToDelete(null)
+        },
+        onError: (error: any) => {
+          const errorMessage = error?.response?.data?.message || 'Erro ao excluir categoria'
+          showError(errorMessage, 'Erro')
+        }
+      })
     }
   }
 
@@ -58,6 +78,32 @@ export function useCategoriesPage() {
       )
     } catch (err) {
       showError('Erro ao atualizar status da categoria', 'Erro')
+    }
+  }
+
+  const handleInitializeDefaults = async () => {
+    if (!confirm('Deseja criar as categorias padrão baseadas nos nichos da sua loja? As categorias que já existem não serão duplicadas.')) {
+      return
+    }
+
+    try {
+      const result = await new Promise((resolve, reject) => {
+        initializeDefaultCategories(undefined, {
+          onSuccess: (data) => resolve(data),
+          onError: (error) => reject(error)
+        })
+      })
+      
+      const data = result as any
+      success(
+        data?.message || 'Categorias padrão criadas com sucesso!',
+        'Sucesso'
+      )
+    } catch (err: any) {
+      showError(
+        err?.response?.data?.message || 'Erro ao criar categorias padrão',
+        'Erro'
+      )
     }
   }
 
@@ -91,7 +137,7 @@ export function useCategoriesPage() {
 
   const isSearching = filters.search !== debouncedSearch
 
-  const columns: Column<any>[] = useMemo(() => [
+  const columns = useMemo<Column<any>[]>(() => [
     {
       key: 'name',
       header: 'Nome',
@@ -161,14 +207,14 @@ export function useCategoriesPage() {
             type: 'button',
             icon: Trash2,
             variant: 'ghost' as const,
-            onClick: (category: any) => handleDelete(category.id),
+            onClick: (category: any) => handleDeleteClick(category),
             getDisabled: () => isDeleting,
             className: 'h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50',
           },
         ],
       },
     },
-  ], [handleToggleStatus, handleEdit, handleDelete, isUpdatingStatus, isDeleting])
+  ], [handleToggleStatus, handleEdit, handleDeleteClick, isUpdatingStatus, isDeleting])
 
   return {
     filters,
@@ -179,8 +225,9 @@ export function useCategoriesPage() {
     meta,
     
     handleEdit,
-    handleDelete,
+    handleDeleteClick,
     handleToggleStatus,
+    handleInitializeDefaults,
     
     updateFilters,
     handlePageChange,
@@ -191,8 +238,15 @@ export function useCategoriesPage() {
     
     isDeleting,
     isUpdatingStatus,
+    isInitializingDefaults,
     
     // Table
     columns,
+    
+    // Dialog state
+    deleteDialogOpen,
+    setDeleteDialogOpen,
+    categoryToDelete,
+    handleDeleteConfirm,
   }
 }

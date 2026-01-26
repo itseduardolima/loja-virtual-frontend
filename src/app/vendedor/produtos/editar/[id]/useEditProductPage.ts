@@ -42,9 +42,15 @@ export function useEditProductPage(productId: string, user: any) {
   })
 
   const { data: categoriesData = [] } = useQuery({
-    queryKey: ['categories'],
+    queryKey: ['categories', selectedNicheId],
     queryFn: async () => {
-      const response = await api.get('/categories')
+      const params = new URLSearchParams()
+      params.append('status', '1')
+      params.append('limit', '1000') // Limite alto para buscar todas as categorias
+      if (selectedNicheId) {
+        params.append('niche_id', selectedNicheId.toString())
+      }
+      const response = await api.get(`/categories?${params.toString()}`)
       return response.data.data || []
     },
     enabled: !!user

@@ -17,6 +17,7 @@ export function useCategories(filters?: CategoryFilters) {
       if (filters?.search) params.append('search', filters.search)
       if (filters?.status !== undefined) params.append('status', filters.status.toString())
       if (filters?.sort) params.append('sort', filters.sort)
+      if (filters?.niche_id !== undefined) params.append('niche_id', filters.niche_id.toString())
 
       const response = await api.get(`/categories?${params.toString()}`)
       return response.data
@@ -76,10 +77,31 @@ export function useCategories(filters?: CategoryFilters) {
     }
   })
 
+  const deleteCategory = (id: number, options?: { onSuccess?: () => void; onError?: (error: any) => void }) => {
+    deleteCategoryMutation.mutate(id, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['categories'] })
+        options?.onSuccess?.()
+      },
+      onError: options?.onError
+    })
+  }
+
   // Atualizar status da categoria
   const updateCategoryStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number, status: number }) => {
       const response = await api.patch(`/categories/${id}/status`, { status })
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] })
+    }
+  })
+
+  // Inicializar categorias padrão
+  const initializeDefaultCategoriesMutation = useMutation({
+    mutationFn: async () => {
+      const response = await api.post('/categories/initialize-defaults')
       return response.data
     },
     onSuccess: () => {
@@ -94,11 +116,13 @@ export function useCategories(filters?: CategoryFilters) {
     error,
     createCategory: createCategoryMutation.mutate,
     updateCategory: updateCategoryMutation.mutate,
-    deleteCategory: deleteCategoryMutation.mutate,
+    deleteCategory,
     updateCategoryStatus: updateCategoryStatusMutation.mutate,
+    initializeDefaultCategories: initializeDefaultCategoriesMutation.mutate,
     isCreating: createCategoryMutation.isPending,
     isUpdating: updateCategoryMutation.isPending,
     isDeleting: deleteCategoryMutation.isPending,
-    isUpdatingStatus: updateCategoryStatusMutation.isPending
+    isUpdatingStatus: updateCategoryStatusMutation.isPending,
+    isInitializingDefaults: initializeDefaultCategoriesMutation.isPending
   }
 }

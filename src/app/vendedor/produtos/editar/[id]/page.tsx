@@ -392,67 +392,19 @@ export default function EditProductPage() {
                 </div>
               </div>
 
-              {/* Categoria e Destaque */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <Label htmlFor="category_id" className="text-sm font-semibold text-gray-700 mb-2 block">
-                    Categoria <span className="text-gray-400 font-normal">(opcional)</span>
+              {/* Destaque */}
+              <div className="flex items-center justify-center">
+                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <input
+                    type="checkbox"
+                    id="featured"
+                    {...register('featured')}
+                    className="h-5 w-5 text-yellow-600 focus:ring-yellow-500 border-yellow-300 rounded"
+                  />
+                  <Label htmlFor="featured" className="flex items-center gap-2 text-gray-800 font-medium cursor-pointer">
+                    <Star className="h-5 w-5 text-yellow-500" />
+                    Produto em Destaque
                   </Label>
-                  {Array.isArray(categories) && categories.length > 0 ? (
-                    <Select
-                      value={watch('category_id') ? watch('category_id')?.toString() : ''}
-                      onValueChange={(value) => setValue('category_id', parseInt(value))}
-                    >
-                      <SelectTrigger className={`h-12 ${errors.category_id ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}>
-                        <SelectValue placeholder="Selecione uma categoria" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((category: any) => (
-                          <SelectItem key={category.id} value={category.id.toString()}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <div className="space-y-3">
-                      <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center">
-                        <p className="text-gray-500 text-sm mb-3">
-                          Nenhuma categoria criada ainda
-                        </p>
-                        <Button
-                          type="button"
-                          variant="default"
-                          onClick={() => setIsCreateCategoryModalOpen(true)}
-                          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors"
-                        >
-                          <Plus className="h-4 w-4" />
-                          Nova Categoria
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                  {errors.category_id && (
-                    <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                      <X className="h-3 w-3" />
-                      {errors.category_id.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-center">
-                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
-                    <input
-                      type="checkbox"
-                      id="featured"
-                      {...register('featured')}
-                      className="h-5 w-5 text-yellow-600 focus:ring-yellow-500 border-yellow-300 rounded"
-                    />
-                    <Label htmlFor="featured" className="flex items-center gap-2 text-gray-800 font-medium cursor-pointer">
-                      <Star className="h-5 w-5 text-yellow-500" />
-                      Produto em Destaque
-                    </Label>
-                  </div>
                 </div>
               </div>
             </div>
@@ -493,6 +445,10 @@ export default function EditProductPage() {
                     }
                     onValueChange={(value) => {
                       handleNicheChange(value === 'none' ? null : parseInt(value))
+                      // Limpar categoria quando mudar o nicho
+                      if (value === 'none') {
+                        setValue('category_id', undefined)
+                      }
                     }}
                   >
                     <SelectTrigger className="h-12 border-gray-200">
@@ -508,6 +464,55 @@ export default function EditProductPage() {
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Categoria - Filtrada pelo Nicho */}
+                {selectedNicheId && (
+                  <div>
+                    <Label htmlFor="category_id" className="text-sm font-semibold text-gray-700 mb-2 block">
+                      Categoria <span className="text-gray-400 font-normal">(opcional)</span>
+                    </Label>
+                    {Array.isArray(categories) && categories.length > 0 ? (
+                      <Select
+                        value={watch('category_id') ? watch('category_id')?.toString() : ''}
+                        onValueChange={(value) => setValue('category_id', parseInt(value))}
+                      >
+                        <SelectTrigger className={`h-12 ${errors.category_id ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}>
+                          <SelectValue placeholder="Selecione uma categoria" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((category: any) => (
+                            <SelectItem key={category.id} value={category.id.toString()}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center">
+                          <p className="text-gray-500 text-sm mb-3">
+                            Nenhuma categoria disponível para este tipo de produto
+                          </p>
+                          <Button
+                            type="button"
+                            variant="default"
+                            onClick={() => setIsCreateCategoryModalOpen(true)}
+                            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors"
+                          >
+                            <Plus className="h-4 w-4" />
+                            Nova Categoria
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    {errors.category_id && (
+                      <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                        <X className="h-3 w-3" />
+                        {errors.category_id.message}
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 {/* Campos Dinâmicos */}
                 {selectedNicheId && (

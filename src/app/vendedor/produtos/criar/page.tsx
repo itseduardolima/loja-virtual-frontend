@@ -1,15 +1,15 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { Input, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Card, ErrorState, ImageUpload, ImageUploadByColor, ProductPreview, CreateCategoryModal, Button, ProductSteps } from '@/components'
+import { Input, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Card, ErrorState, ImageUpload, ImageUploadByColor, ProductPreview, CreateCategoryModal, Button, ProductSteps, ConfirmDialog } from '@/components'
 import { RichTextEditor } from '@/components/ui/rich-text-editor'
 import { DynamicFields } from '@/components/Form/DynamicFields'
 import { Package, X, Star, Plus, ChevronLeft, ChevronRight } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useCreateProductPage } from './useCreateProductPage'
 import { useStore } from '@/hooks/useStore'
 import LoadingPage from '@/components/Layout/LoadingPage'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 
 const STEPS = [
   { id: 1, title: 'Informações Básicas', description: 'Dados essenciais' },
@@ -21,10 +21,17 @@ const STEPS = [
 export default function CreateProductPage() {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
   const { data: storeData, isLoading: storeLoading } = useStore()
   const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [completedSteps, setCompletedSteps] = useState<number[]>([])
+  const [showCancelDialog, setShowCancelDialog] = useState(false)
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [shouldBlockNavigation, setShouldBlockNavigation] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [allowNavigation, setAllowNavigation] = useState(false)
 
   const {
     form,
@@ -119,9 +126,182 @@ export default function CreateProductPage() {
     setCurrentStep(step)
   }
 
-  // Validar se todos os campos obrigatórios estão preenchidos
+  // Valores do formulário para validação e detecção de mudanças
   const nameValue = watch('name')
   const priceValue = watch('price')
+  const descriptionValue = watch('description')
+  const hasImages = selectedImages.length > 0 || Object.keys(imagesByColor).length > 0
+
+  // Verificar se há mudanças não salvas
+  useEffect(() => {
+    const hasData = !!(nameValue || priceValue || descriptionValue || hasImages)
+    setHasUnsavedChanges(hasData)
+  }, [nameValue, priceValue, descriptionValue, hasImages])
+
+  // Permitir navegação quando o produto for criado com sucesso
+  useEffect(() => {
+    // Se estava carregando e parou, pode ser que o produto foi criado
+    // Nesse caso, permitir navegação
+    if (isSubmitting && !isLoading && allowNavigation) {
+      // Navegação já foi permitida, manter assim
+    }
+  }, [isLoading, isSubmitting, allowNavigation])
+
+  // Interceptar mudanças de rota via pathname
+  useEffect(() => {
+    if (hasUnsavedChanges && !showCancelDialog && shouldBlockNavigation) {
+      // Se o pathname mudou mas ainda estamos na mesma página, pode ser um problema
+      // Vamos apenas resetar o bloqueio se necessário
+      setShouldBlockNavigation(false)
+    }
+  }, [pathname, hasUnsavedChanges, showCancelDialog, shouldBlockNavigation])
+
+  // Bloquear navegação se houver mudanças não salvas
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault()
+        e.returnValue = ''
+        return ''
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [hasUnsavedChanges])
+
+  // Interceptar navegação do Next.js
+  useEffect(() => {
+    if (!hasUnsavedChanges) {
+      setShouldBlockNavigation(false)
+      return
+    }
+
+    // Interceptar cliques em links
+    const handleLinkClick = (e: MouseEvent) => {
+      // Não interceptar se estiver submetendo o formulário ou se a navegação foi permitida
+      if (isSubmitting || allowNavigation) return
+      
+      const target = e.target as HTMLElement
+      
+      // Não interceptar se for um botão de submit
+      const button = target.closest('button[type="submit"]')
+      if (button) {
+        return
+      }
+      
+      const link = target.closest('a')
+      if (link && hasUnsavedChanges && !showCancelDialog) {
+        const href = link.getAttribute('href')
+        if (href && href.startsWith('/') && href !== pathname) {
+          e.preventDefault()
+          e.stopPropagation()
+          setPendingNavigation(href)
+          setShowCancelDialog(true)
+          setShouldBlockNavigation(true)
+        }
+      }
+    }
+
+    // Interceptar navegação do router do Next.js
+    const originalPush = router.push.bind(router) as typeof router.push
+    const originalBack = router.back.bind(router) as typeof router.back
+    const originalReplace = router.replace.bind(router) as typeof router.replace
+
+    const handleRouterPush: typeof router.push = (url: any, options?: any) => {
+      // Não bloquear se estiver submetendo o formulário ou se a navegação foi permitida
+      if (hasUnsavedChanges && !showCancelDialog && !isLoading && !isSubmitting && !allowNavigation) {
+        let targetUrl = ''
+        if (typeof url === 'string') {
+          targetUrl = url
+        } else if (typeof url === 'object' && url !== null) {
+          targetUrl = url.pathname || url.href || ''
+        }
+        
+        const currentPath = window.location.pathname
+        if (targetUrl && targetUrl !== pathname && targetUrl !== currentPath) {
+          // Bloquear navegação
+          setPendingNavigation(targetUrl)
+          setShowCancelDialog(true)
+          setShouldBlockNavigation(true)
+          return Promise.resolve()
+        }
+      }
+      return originalPush(url, options)
+    }
+
+    const handleRouterBack: typeof router.back = () => {
+      if (hasUnsavedChanges && !showCancelDialog && !isSubmitting && !allowNavigation) {
+        setPendingNavigation(null)
+        setShowCancelDialog(true)
+        setShouldBlockNavigation(true)
+        return
+      }
+      return originalBack()
+    }
+
+    const handleRouterReplace: typeof router.replace = (url: any, options?: any) => {
+      if (hasUnsavedChanges && !showCancelDialog && !isSubmitting && !allowNavigation) {
+        let targetUrl = ''
+        if (typeof url === 'string') {
+          targetUrl = url
+        } else if (typeof url === 'object' && url !== null) {
+          targetUrl = url.pathname || url.href || ''
+        }
+        
+        const currentPath = window.location.pathname
+        if (targetUrl && targetUrl !== pathname && targetUrl !== currentPath) {
+          // Bloquear navegação
+          setPendingNavigation(targetUrl)
+          setShowCancelDialog(true)
+          setShouldBlockNavigation(true)
+          return Promise.resolve()
+        }
+      }
+      return originalReplace(url, options)
+    }
+
+    // Sobrescrever métodos do router
+    ;(router as any).push = handleRouterPush
+    ;(router as any).back = handleRouterBack
+    ;(router as any).replace = handleRouterReplace
+
+    document.addEventListener('click', handleLinkClick, true)
+
+    return () => {
+      document.removeEventListener('click', handleLinkClick, true)
+      ;(router as any).push = originalPush
+      ;(router as any).back = originalBack
+      ;(router as any).replace = originalReplace
+    }
+  }, [hasUnsavedChanges, showCancelDialog, pathname, router, isLoading, isSubmitting, allowNavigation])
+
+  const handleCancel = () => {
+    if (hasUnsavedChanges) {
+      setShowCancelDialog(true)
+    } else {
+      router.back()
+    }
+  }
+
+  const handleConfirmCancel = () => {
+    setShowCancelDialog(false)
+    setHasUnsavedChanges(false)
+    setShouldBlockNavigation(false)
+    if (pendingNavigation) {
+      router.push(pendingNavigation)
+      setPendingNavigation(null)
+    } else {
+      router.back()
+    }
+  }
+
+  const handleCancelDialogClose = () => {
+    setShowCancelDialog(false)
+    setPendingNavigation(null)
+  }
+
+  // Validar se todos os campos obrigatórios estão preenchidos
   const isFormValid = useMemo(() => {
     // Se há cores disponíveis, validar que cada cor tem pelo menos uma imagem
     let hasImages = false
@@ -185,13 +365,23 @@ export default function CreateProductPage() {
             <ChevronRight className="h-4 w-4" />
           </Button>
         ) : (
-          <Button
-            type="submit"
-            disabled={!isFormValid || isLoading}
-            className="flex items-center justify-center gap-2 flex-1 sm:flex-initial"
-          >
-            {isLoading ? 'Salvando...' : 'Criar Produto'}
-          </Button>
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCancel}
+              className="flex items-center justify-center gap-2 flex-1 sm:flex-initial"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              disabled={!isFormValid || isLoading}
+              className="flex items-center justify-center gap-2 flex-1 sm:flex-initial"
+            >
+              {isLoading ? 'Salvando...' : 'Criar Produto'}
+            </Button>
+          </>
         )}
       </div>
     </div>
@@ -328,64 +518,19 @@ export default function CreateProductPage() {
                 
               </div>
 
-              {/* Categoria e Destaque */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                <div>
-                  <Label htmlFor="category_id" className="text-sm font-semibold text-gray-700 mb-2 block">
-                    Categoria <span className="text-gray-400 font-normal">(opcional)</span>
+              {/* Destaque */}
+              <div className="flex items-center justify-start sm:justify-center">
+                <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-50 rounded-xl border border-gray-200 w-full sm:w-auto">
+                  <input
+                    type="checkbox"
+                    id="featured"
+                    {...register('featured')}
+                    className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600 focus:ring-yellow-500 border-yellow-300 rounded flex-shrink-0"
+                  />
+                  <Label htmlFor="featured" className="flex items-center gap-2 text-sm sm:text-base text-gray-800 font-medium cursor-pointer">
+                    <Star className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500 flex-shrink-0" />
+                    <span>Produto em Destaque</span>
                   </Label>
-                  {Array.isArray(categories) && categories.length > 0 ? (
-                    <Select onValueChange={(value) => setValue('category_id', parseInt(value))}>
-                      <SelectTrigger className={`h-11 sm:h-12 text-sm sm:text-base ${errors.category_id ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}>
-                        <SelectValue placeholder="Selecione uma categoria" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((category: any) => (
-                          <SelectItem key={category.id} value={category.id.toString()}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <div className="space-y-3">
-                      <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center">
-                        <p className="text-gray-500 text-sm mb-3">
-                          Nenhuma categoria criada ainda
-                        </p>
-                        <Button
-                          type="button"
-                          variant="default"
-                          onClick={() => setIsCreateCategoryModalOpen(true)}
-                          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors"
-                        >
-                          <Plus className="h-4 w-4" />
-                          Nova Categoria
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                  {errors.category_id && (
-                    <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                      <X className="h-3 w-3" />
-                      {errors.category_id.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-start sm:justify-center">
-                  <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-50 rounded-xl border border-gray-200 w-full sm:w-auto">
-                    <input
-                      type="checkbox"
-                      id="featured"
-                      {...register('featured')}
-                      className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600 focus:ring-yellow-500 border-yellow-300 rounded flex-shrink-0"
-                    />
-                    <Label htmlFor="featured" className="flex items-center gap-2 text-sm sm:text-base text-gray-800 font-medium cursor-pointer">
-                      <Star className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500 flex-shrink-0" />
-                      <span>Produto em Destaque</span>
-                    </Label>
-                  </div>
                 </div>
               </div>
             </div>
@@ -418,6 +563,10 @@ export default function CreateProductPage() {
                     value={selectedNicheId?.toString() || 'none'}
                     onValueChange={(value) => {
                       handleNicheChange(value === 'none' ? null : parseInt(value))
+                      // Limpar categoria quando mudar o nicho
+                      if (value === 'none') {
+                        setValue('category_id', undefined)
+                      }
                     }}
                   >
                     <SelectTrigger className="h-11 sm:h-12 text-sm sm:text-base border-gray-200">
@@ -433,6 +582,56 @@ export default function CreateProductPage() {
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Categoria - Filtrada pelo Nicho */}
+                {selectedNicheId && (
+                  <div>
+                    <Label htmlFor="category_id" className="text-sm font-semibold text-gray-700 mb-2 block">
+                      Categoria <span className="text-gray-400 font-normal">(opcional)</span>
+                    </Label>
+                    {Array.isArray(categories) && categories.length > 0 ? (
+                      <Select 
+                        value={watch('category_id')?.toString() || ''}
+                        onValueChange={(value) => setValue('category_id', parseInt(value))}
+                      >
+                        <SelectTrigger className={`h-11 sm:h-12 text-sm sm:text-base ${errors.category_id ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}>
+                          <SelectValue placeholder="Selecione uma categoria" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((category: any) => (
+                            <SelectItem key={category.id} value={category.id.toString()}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center">
+                          <p className="text-gray-500 text-sm mb-3">
+                            Nenhuma categoria disponível para este tipo de produto
+                          </p>
+                          <Button
+                            type="button"
+                            variant="default"
+                            onClick={() => setIsCreateCategoryModalOpen(true)}
+                            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors"
+                          >
+                            <Plus className="h-4 w-4" />
+                            Nova Categoria
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    {errors.category_id && (
+                      <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                        <X className="h-3 w-3" />
+                        {errors.category_id.message}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {/* Campos Dinâmicos */}
                 {selectedNicheId && (
                   <DynamicFields
@@ -555,7 +754,11 @@ export default function CreateProductPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto sm:px-6 lg:px-8 sm:py-6">
-        <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4 sm:space-y-6 lg:space-y-8">
+        <form onSubmit={(e) => {
+          setIsSubmitting(true)
+          setAllowNavigation(true) // Permitir navegação após submit
+          handleSubmit(onSubmit as any)(e)
+        }} className="space-y-4 sm:space-y-6 lg:space-y-8">
           {/* Header */}
           <div className="mb-4 sm:mb-6 lg:mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-primary mb-1 sm:mb-2">Criar Novo Produto</h1>
@@ -590,11 +793,9 @@ export default function CreateProductPage() {
                   imagesByColor={imagesByColor}
                   category={categories.find(cat => cat.id === watch('category_id'))}
                   stock={watch('stock') || 0}
-                  onSave={handleSubmit(onSubmit)}
-                  onCancel={() => router.back()}
                   isLoading={isLoading}
                   isDisabled={!isFormValid}
-                  showActions={currentStep === STEPS.length}
+                  showActions={false}
                 />
               </div>
             </div>
@@ -606,6 +807,19 @@ export default function CreateProductPage() {
           isOpen={isCreateCategoryModalOpen}
           onClose={() => setIsCreateCategoryModalOpen(false)}
           onCategoryCreated={handleCategoryCreated}
+        />
+
+        {/* Modal de confirmação de cancelamento */}
+        <ConfirmDialog
+          open={showCancelDialog}
+          onOpenChange={handleCancelDialogClose}
+          title="Descartar alterações?"
+          description="Você tem alterações não salvas. Tem certeza que deseja sair? Todas as informações preenchidas serão perdidas."
+          confirmText="Sim, descartar"
+          cancelText="Cancelar"
+          variant="destructive"
+          onConfirm={handleConfirmCancel}
+          isLoading={false}
         />
       </div>
     </div>
