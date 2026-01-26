@@ -228,24 +228,24 @@ export default function EditProductPage() {
   }
 
   const renderNavigationButtons = () => (
-    <div className="flex justify-between items-center pt-6 mt-8 border-t border-gray-200">
+    <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-0 pt-4 sm:pt-6 mt-6 sm:mt-8 border-t border-gray-200">
       <Button
         type="button"
         variant="outline"
         onClick={handlePrevious}
         disabled={currentStep === 1}
-        className="flex items-center gap-2"
+        className="flex items-center justify-center gap-2 w-full sm:w-auto"
       >
         <ChevronLeft className="h-4 w-4" />
         Anterior
       </Button>
 
-      <div className="flex gap-3">
+      <div className="flex gap-3 w-full sm:w-auto">
         {currentStep < STEPS.length ? (
           <Button
             type="button"
             onClick={handleNext}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-2 flex-1 sm:flex-initial"
           >
             Próximo
             <ChevronRight className="h-4 w-4" />
@@ -254,7 +254,7 @@ export default function EditProductPage() {
           <Button
             type="submit"
             disabled={!isFormValid || isLoading}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-2 flex-1 sm:flex-initial"
           >
             {isLoading ? 'Salvando...' : 'Salvar Alterações'}
           </Button>
@@ -267,18 +267,18 @@ export default function EditProductPage() {
     switch (currentStep) {
       case 1:
         return (
-          <Card className="p-8 bg-white border-gray-200 shadow-sm">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="p-3 bg-gray-50 rounded-xl">
-                <Package className="h-6 w-6 text-primary" />
+          <Card className="p-4 sm:p-6 lg:p-8 bg-white border-gray-200 shadow-sm">
+            <div className="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
+              <div className="p-2 sm:p-3 bg-gray-50 rounded-xl flex-shrink-0">
+                <Package className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-primary">Informações Básicas</h2>
-                <p className="text-sm text-gray-500">Dados essenciais do produto</p>
+                <h2 className="text-lg sm:text-xl font-bold text-primary">Informações Básicas</h2>
+                <p className="text-xs sm:text-sm text-gray-500">Dados essenciais do produto</p>
               </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Nome */}
               <div>
                 <Label htmlFor="name" className="text-sm font-semibold text-gray-700 mb-2 block">
@@ -288,7 +288,7 @@ export default function EditProductPage() {
                   id="name"
                   {...register('name')}
                   placeholder="Ex: Camiseta Básica Feminina"
-                  className={`h-12 ${errors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
+                  className={`h-11 sm:h-12 text-sm sm:text-base ${errors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
                 />
                 {errors.name && (
                   <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
@@ -307,8 +307,8 @@ export default function EditProductPage() {
                   id="description"
                   {...register('description')}
                   placeholder="Descreva as características, materiais e benefícios do produto..."
-                  rows={6}
-                  className={`${errors.description ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors resize-none`}
+                  rows={5}
+                  className={`text-sm sm:text-base ${errors.description ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors resize-none`}
                 />
                 {errors.description && (
                   <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
@@ -319,13 +319,13 @@ export default function EditProductPage() {
               </div>
 
               {/* Preço, Estoque e Desconto */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 <div>
                   <Label htmlFor="price" className="text-sm font-semibold text-gray-700 mb-2 block">
                     Preço de Venda *
                   </Label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R$</span>
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm sm:text-base">R$</span>
                     <Input
                       id="price"
                       type="number"
@@ -334,7 +334,7 @@ export default function EditProductPage() {
                       {...register('price', { valueAsNumber: true })}
                       placeholder="0,00"
                       value={watch('price') || ''}
-                      className={`h-12 pl-8 text-lg [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${errors.price ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
+                      className={`h-11 sm:h-12 pl-7 sm:pl-8 text-base sm:text-lg [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${errors.price ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
                     />
                   </div>
                   {errors.price && (
@@ -350,7 +350,7 @@ export default function EditProductPage() {
                     Valor de Desconto <span className="text-gray-400 font-normal">(opcional)</span>
                   </Label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R$</span>
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm sm:text-base">R$</span>
                     <Input
                       id="discount_price"
                       type="number"
@@ -359,7 +359,7 @@ export default function EditProductPage() {
                       {...register('discount_price', { valueAsNumber: true })}
                       placeholder="0,00"
                       value={watch('discount_price') || ''}
-                      className={`h-12 pl-8 text-lg [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${errors.discount_price ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
+                      className={`h-11 sm:h-12 pl-7 sm:pl-8 text-base sm:text-lg [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${errors.discount_price ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
                     />
                   </div>
                   {errors.discount_price && (
@@ -370,7 +370,7 @@ export default function EditProductPage() {
                   )}
                 </div>
 
-                <div>
+                <div className="sm:col-span-2 lg:col-span-1">
                   <Label htmlFor="stock" className="text-sm font-semibold text-gray-700 mb-2 block">
                     Quantidade em Estoque
                   </Label>
@@ -381,7 +381,7 @@ export default function EditProductPage() {
                     {...register('stock', { valueAsNumber: true })}
                     placeholder="0"
                     value={watch('stock') || ''}
-                    className={`h-12 text-lg [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${errors.stock ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
+                    className={`h-11 sm:h-12 text-base sm:text-lg [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${errors.stock ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
                   />
                   {errors.stock && (
                     <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
@@ -393,17 +393,17 @@ export default function EditProductPage() {
               </div>
 
               {/* Destaque */}
-              <div className="flex items-center justify-center">
-                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+              <div className="flex items-center justify-start sm:justify-center">
+                <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-50 rounded-xl border border-gray-200 w-full sm:w-auto">
                   <input
                     type="checkbox"
                     id="featured"
                     {...register('featured')}
-                    className="h-5 w-5 text-yellow-600 focus:ring-yellow-500 border-yellow-300 rounded"
+                    className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600 focus:ring-yellow-500 border-yellow-300 rounded flex-shrink-0"
                   />
-                  <Label htmlFor="featured" className="flex items-center gap-2 text-gray-800 font-medium cursor-pointer">
-                    <Star className="h-5 w-5 text-yellow-500" />
-                    Produto em Destaque
+                  <Label htmlFor="featured" className="flex items-center gap-2 text-sm sm:text-base text-gray-800 font-medium cursor-pointer">
+                    <Star className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500 flex-shrink-0" />
+                    <span>Produto em Destaque</span>
                   </Label>
                 </div>
               </div>
@@ -416,20 +416,20 @@ export default function EditProductPage() {
       case 2:
         return (
           niches.length > 0 ? (
-            <Card className="p-8 bg-white border-gray-200 shadow-sm">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 bg-gray-50 rounded-xl">
-                  <Package className="h-6 w-6 text-primary" />
+            <Card className="p-4 sm:p-6 lg:p-8 bg-white border-gray-200 shadow-sm">
+              <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                <div className="p-2 sm:p-3 bg-gray-50 rounded-xl flex-shrink-0">
+                  <Package className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-primary">Tipo de Produto</h2>
-                  <p className="text-sm text-gray-500">Selecione o nicho para campos personalizados</p>
+                  <h2 className="text-lg sm:text-xl font-bold text-primary">Tipo de Produto</h2>
+                  <p className="text-xs sm:text-sm text-gray-500">Selecione o nicho para campos personalizados</p>
                 </div>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Seleção de Nicho */}
-                <div className="w-1/3">
+                <div className="w-full sm:w-1/2 lg:w-1/3">
                   <Label htmlFor="niche" className="text-sm font-semibold text-gray-700 mb-2 block">
                     Nicho <span className="text-gray-400 font-normal">(opcional)</span>
                   </Label>
@@ -451,7 +451,7 @@ export default function EditProductPage() {
                       }
                     }}
                   >
-                    <SelectTrigger className="h-12 border-gray-200">
+                    <SelectTrigger className="h-11 sm:h-12 text-sm sm:text-base border-gray-200">
                       <SelectValue placeholder="Selecione um nicho" />
                     </SelectTrigger>
                     <SelectContent>
@@ -476,7 +476,7 @@ export default function EditProductPage() {
                         value={watch('category_id') ? watch('category_id')?.toString() : ''}
                         onValueChange={(value) => setValue('category_id', parseInt(value))}
                       >
-                        <SelectTrigger className={`h-12 ${errors.category_id ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}>
+                        <SelectTrigger className={`h-11 sm:h-12 text-sm sm:text-base ${errors.category_id ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}>
                           <SelectValue placeholder="Selecione uma categoria" />
                         </SelectTrigger>
                         <SelectContent>
@@ -527,9 +527,9 @@ export default function EditProductPage() {
               {renderNavigationButtons()}
             </Card>
           ) : (
-            <Card className="p-8 bg-white border-gray-200 shadow-sm">
-              <div className="text-center py-8">
-                <p className="text-gray-500">Nenhum nicho disponível. Esta etapa é opcional.</p>
+            <Card className="p-4 sm:p-6 lg:p-8 bg-white border-gray-200 shadow-sm">
+              <div className="text-center py-6 sm:py-8">
+                <p className="text-sm sm:text-base text-gray-500">Nenhum nicho disponível. Esta etapa é opcional.</p>
               </div>
               {renderNavigationButtons()}
             </Card>
@@ -561,7 +561,7 @@ export default function EditProductPage() {
         const colorsWithoutImages = getColorsWithoutImages()
         
         return (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {availableColors.length > 0 ? (
               <>
                 <ImageUploadByColor
@@ -603,7 +603,7 @@ export default function EditProductPage() {
                 removedExistingImages={removedExistingImages}
               />
             )}
-            <Card className="p-6 bg-white border-gray-200 shadow-sm">
+            <Card className="p-4 sm:p-6 bg-white border-gray-200 shadow-sm">
               {renderNavigationButtons()}
             </Card>
           </div>
@@ -611,18 +611,18 @@ export default function EditProductPage() {
 
       case 4:
         return (
-          <Card className="p-8 bg-white border-gray-200 shadow-sm">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-gray-50 rounded-xl">
-                <Package className="h-6 w-6 text-primary" />
+          <Card className="p-4 sm:p-6 lg:p-8 bg-white border-gray-200 shadow-sm">
+            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+              <div className="p-2 sm:p-3 bg-gray-50 rounded-xl flex-shrink-0">
+                <Package className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-primary">Especificações do Produto</h2>
-                <p className="text-sm text-gray-500">Informações adicionais sobre o produto</p>
+                <h2 className="text-lg sm:text-xl font-bold text-primary">Especificações do Produto</h2>
+                <p className="text-xs sm:text-sm text-gray-500">Informações adicionais sobre o produto</p>
               </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div>
                 <Label htmlFor="specifications" className="text-sm font-semibold text-gray-700 mb-2 block">
                   Especificações <span className="text-gray-400 font-normal">(opcional)</span>
@@ -656,30 +656,32 @@ export default function EditProductPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto px-8">
-        <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-8">
+      <div className="mx-auto sm:px-6 lg:px-8 sm:py-6">
+        <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4 sm:space-y-6 lg:space-y-8">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-primary mb-2">Editar Produto</h1>
-            <p className="text-gray-600">Atualize as informações do produto abaixo</p>
+          <div className="mb-4 sm:mb-6 lg:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-primary mb-1 sm:mb-2">Editar Produto</h1>
+            <p className="text-sm sm:text-base text-gray-600">Atualize as informações do produto abaixo</p>
           </div>
 
           {/* Steps Navigation */}
-          <ProductSteps
-            steps={STEPS}
-            currentStep={currentStep}
-            onStepClick={handleStepClick}
-            completedSteps={completedSteps}
-          />
+          <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+            <ProductSteps
+              steps={STEPS}
+              currentStep={currentStep}
+              onStepClick={handleStepClick}
+              completedSteps={completedSteps}
+            />
+          </div>
 
           {/* Step Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             <div className="lg:col-span-2">
               {renderStepContent()}
             </div>
 
-            {/* Sidebar - Preview (sempre visível, ações apenas na última etapa) */}
-            <div className="lg:col-span-1">
+            {/* Sidebar - Preview (oculto no mobile, visível apenas em desktop) */}
+            <div className="hidden lg:block lg:col-span-1">
               <div className="sticky top-8">
                 <ProductPreview
                   name={watch('name') || ''}
