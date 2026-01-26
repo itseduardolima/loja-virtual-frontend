@@ -1,15 +1,15 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { Input, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Card, ErrorState, ImageUpload, ImageUploadByColor, ProductPreview, CreateCategoryModal, Button, ProductSteps } from '@/components'
+import { Input, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Card, ErrorState, ImageUpload, ImageUploadByColor, ProductPreview, CreateCategoryModal, Button, ProductSteps, ConfirmDialog } from '@/components'
 import { RichTextEditor } from '@/components/ui/rich-text-editor'
 import { DynamicFields } from '@/components/Form/DynamicFields'
 import { Package, X, Star, Plus, ChevronLeft, ChevronRight } from 'lucide-react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter, useParams, usePathname } from 'next/navigation'
 import { useEditProductPage } from './useEditProductPage'
 import { useStore } from '@/hooks/useStore'
 import LoadingPage from '@/components/Layout/LoadingPage'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 
 const STEPS = [
   { id: 1, title: 'Informações Básicas', description: 'Dados essenciais' },
@@ -21,12 +21,19 @@ const STEPS = [
 export default function EditProductPage() {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
   const params = useParams()
   const productId = params.id as string
   const { data: storeData, isLoading: storeLoading } = useStore()
   const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [completedSteps, setCompletedSteps] = useState<number[]>([])
+  const [showCancelDialog, setShowCancelDialog] = useState(false)
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [shouldBlockNavigation, setShouldBlockNavigation] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [allowNavigation, setAllowNavigation] = useState(false)
 
   const {
     form,
@@ -154,6 +161,173 @@ export default function EditProductPage() {
   // Validar se todos os campos obrigatórios estão preenchidos
   const nameValue = watch('name')
   const priceValue = watch('price')
+  const descriptionValue = watch('description')
+  const hasImages = selectedImages.length > 0 || Object.keys(imagesByColor).length > 0 || 
+    (Array.isArray(product?.images) && product?.images.length > 0 && removedExistingImages.length < (product?.images.length || 0))
+
+  // Verificar se há mudanças não salvas
+  useEffect(() => {
+    const hasData = !!(nameValue || priceValue || descriptionValue || hasImages)
+    setHasUnsavedChanges(hasData)
+  }, [nameValue, priceValue, descriptionValue, hasImages])
+
+  // Permitir navegação quando o produto for salvo com sucesso
+  useEffect(() => {
+    if (isSubmitting && !isLoading && allowNavigation) {
+      // Navegação já foi permitida, manter assim
+    }
+  }, [isLoading, isSubmitting, allowNavigation])
+
+  // Interceptar mudanças de rota via pathname
+  useEffect(() => {
+    if (hasUnsavedChanges && !showCancelDialog && shouldBlockNavigation) {
+      setShouldBlockNavigation(false)
+    }
+  }, [pathname, hasUnsavedChanges, showCancelDialog, shouldBlockNavigation])
+
+  // Bloquear navegação se houver mudanças não salvas
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault()
+        e.returnValue = ''
+        return ''
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [hasUnsavedChanges])
+
+  // Interceptar navegação do Next.js
+  useEffect(() => {
+    if (!hasUnsavedChanges) {
+      setShouldBlockNavigation(false)
+      return
+    }
+
+    // Interceptar cliques em links
+    const handleLinkClick = (e: MouseEvent) => {
+      if (isSubmitting || allowNavigation) return
+      
+      const target = e.target as HTMLElement
+      
+      const button = target.closest('button[type="submit"]')
+      if (button) {
+        return
+      }
+      
+      const link = target.closest('a')
+      if (link && hasUnsavedChanges && !showCancelDialog) {
+        const href = link.getAttribute('href')
+        if (href && href.startsWith('/') && href !== pathname) {
+          e.preventDefault()
+          e.stopPropagation()
+          setPendingNavigation(href)
+          setShowCancelDialog(true)
+          setShouldBlockNavigation(true)
+        }
+      }
+    }
+
+    // Interceptar navegação do router do Next.js
+    const originalPush = router.push.bind(router) as typeof router.push
+    const originalBack = router.back.bind(router) as typeof router.back
+    const originalReplace = router.replace.bind(router) as typeof router.replace
+
+    const handleRouterPush: typeof router.push = (url: any, options?: any) => {
+      if (hasUnsavedChanges && !showCancelDialog && !isLoading && !isSubmitting && !allowNavigation) {
+        let targetUrl = ''
+        if (typeof url === 'string') {
+          targetUrl = url
+        } else if (typeof url === 'object' && url !== null) {
+          targetUrl = url.pathname || url.href || ''
+        }
+        
+        const currentPath = window.location.pathname
+        if (targetUrl && targetUrl !== pathname && targetUrl !== currentPath) {
+          setPendingNavigation(targetUrl)
+          setShowCancelDialog(true)
+          setShouldBlockNavigation(true)
+          return Promise.resolve()
+        }
+      }
+      return originalPush(url, options)
+    }
+
+    const handleRouterBack: typeof router.back = () => {
+      if (hasUnsavedChanges && !showCancelDialog && !isSubmitting && !allowNavigation) {
+        setPendingNavigation(null)
+        setShowCancelDialog(true)
+        setShouldBlockNavigation(true)
+        return
+      }
+      return originalBack()
+    }
+
+    const handleRouterReplace: typeof router.replace = (url: any, options?: any) => {
+      if (hasUnsavedChanges && !showCancelDialog && !isSubmitting && !allowNavigation) {
+        let targetUrl = ''
+        if (typeof url === 'string') {
+          targetUrl = url
+        } else if (typeof url === 'object' && url !== null) {
+          targetUrl = url.pathname || url.href || ''
+        }
+        
+        const currentPath = window.location.pathname
+        if (targetUrl && targetUrl !== pathname && targetUrl !== currentPath) {
+          setPendingNavigation(targetUrl)
+          setShowCancelDialog(true)
+          setShouldBlockNavigation(true)
+          return Promise.resolve()
+        }
+      }
+      return originalReplace(url, options)
+    }
+
+    // Sobrescrever métodos do router
+    ;(router as any).push = handleRouterPush
+    ;(router as any).back = handleRouterBack
+    ;(router as any).replace = handleRouterReplace
+
+    document.addEventListener('click', handleLinkClick, true)
+
+    return () => {
+      document.removeEventListener('click', handleLinkClick, true)
+      ;(router as any).push = originalPush
+      ;(router as any).back = originalBack
+      ;(router as any).replace = originalReplace
+    }
+  }, [hasUnsavedChanges, showCancelDialog, pathname, router, isLoading, isSubmitting, allowNavigation])
+
+  const handleCancel = () => {
+    if (hasUnsavedChanges) {
+      setShowCancelDialog(true)
+    } else {
+      router.push('/vendedor/produtos')
+    }
+  }
+
+  const handleCancelConfirm = () => {
+    setShowCancelDialog(false)
+    setHasUnsavedChanges(false)
+    setAllowNavigation(true)
+    if (pendingNavigation) {
+      router.push(pendingNavigation)
+      setPendingNavigation(null)
+    } else {
+      router.push('/vendedor/produtos')
+    }
+  }
+
+  const handleCancelDialogClose = (open: boolean) => {
+    if (!open) {
+      setShowCancelDialog(false)
+      setPendingNavigation(null)
+      setShouldBlockNavigation(false)
+    }
+  }
+
   const isFormValid = useMemo(() => {
     // Se há cores disponíveis, validar que cada cor tem pelo menos uma imagem
     let hasImages = false
@@ -251,13 +425,27 @@ export default function EditProductPage() {
             <ChevronRight className="h-4 w-4" />
           </Button>
         ) : (
-          <Button
-            type="submit"
-            disabled={!isFormValid || isLoading}
-            className="flex items-center justify-center gap-2 flex-1 sm:flex-initial"
-          >
-            {isLoading ? 'Salvando...' : 'Salvar Alterações'}
-          </Button>
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCancel}
+              className="flex items-center justify-center gap-2 flex-1 sm:flex-initial"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              disabled={!isFormValid || isLoading}
+              onClick={() => {
+                setIsSubmitting(true)
+                setAllowNavigation(true)
+              }}
+              className="flex items-center justify-center gap-2 flex-1 sm:flex-initial"
+            >
+              {isLoading ? 'Salvando...' : 'Salvar Alterações'}
+            </Button>
+          </>
         )}
       </div>
     </div>
@@ -657,7 +845,11 @@ export default function EditProductPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto sm:px-6 lg:px-8 sm:py-6">
-        <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4 sm:space-y-6 lg:space-y-8">
+        <form onSubmit={(e) => {
+          setIsSubmitting(true)
+          setAllowNavigation(true)
+          handleSubmit(onSubmit as any)(e)
+        }} className="space-y-4 sm:space-y-6 lg:space-y-8">
           {/* Header */}
           <div className="mb-4 sm:mb-6 lg:mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-primary mb-1 sm:mb-2">Editar Produto</h1>
@@ -710,6 +902,18 @@ export default function EditProductPage() {
           isOpen={isCreateCategoryModalOpen}
           onClose={() => setIsCreateCategoryModalOpen(false)}
           onCategoryCreated={handleCategoryCreated}
+        />
+
+        {/* Modal de confirmação de cancelamento */}
+        <ConfirmDialog
+          open={showCancelDialog}
+          onOpenChange={handleCancelDialogClose}
+          title="Descartar alterações?"
+          description="Você tem alterações não salvas. Tem certeza que deseja sair? Todas as informações preenchidas serão perdidas."
+          confirmText="Sim, descartar"
+          cancelText="Cancelar"
+          onConfirm={handleCancelConfirm}
+          variant="destructive"
         />
       </div>
     </div>
