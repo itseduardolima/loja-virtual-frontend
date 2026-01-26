@@ -36,10 +36,8 @@ export function useCategoriesPage() {
     error,
     deleteCategory,
     updateCategoryStatus,
-    initializeDefaultCategories,
     isDeleting,
     isUpdatingStatus,
-    isInitializingDefaults,
     meta
   } = useCategories(debouncedFilters)
 
@@ -80,33 +78,6 @@ export function useCategoriesPage() {
       showError('Erro ao atualizar status da categoria', 'Erro')
     }
   }
-
-  const handleInitializeDefaults = async () => {
-    if (!confirm('Deseja criar as categorias padrão baseadas nos nichos da sua loja? As categorias que já existem não serão duplicadas.')) {
-      return
-    }
-
-    try {
-      const result = await new Promise((resolve, reject) => {
-        initializeDefaultCategories(undefined, {
-          onSuccess: (data) => resolve(data),
-          onError: (error) => reject(error)
-        })
-      })
-      
-      const data = result as any
-      success(
-        data?.message || 'Categorias padrão criadas com sucesso!',
-        'Sucesso'
-      )
-    } catch (err: any) {
-      showError(
-        err?.response?.data?.message || 'Erro ao criar categorias padrão',
-        'Erro'
-      )
-    }
-  }
-
 
   const updateFilters = (newFilters: Partial<CategoryFilters>) => {
     setFilters(prev => ({
@@ -227,7 +198,6 @@ export function useCategoriesPage() {
     handleEdit,
     handleDeleteClick,
     handleToggleStatus,
-    handleInitializeDefaults,
     
     updateFilters,
     handlePageChange,
@@ -238,7 +208,6 @@ export function useCategoriesPage() {
     
     isDeleting,
     isUpdatingStatus,
-    isInitializingDefaults,
     
     // Table
     columns,

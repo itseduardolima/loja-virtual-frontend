@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Button, ErrorState, ConfirmDialog } from '@/components'
 import { TableFilters } from '@/components/Table/TableFilters'
 import { Table } from '@/components/Table/Table'
-import { Plus, Tag, Download } from 'lucide-react'
+import { Plus, Tag } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCategoriesPage } from './useCategoriesPage'
 import LoadingPage from '@/components/Layout/LoadingPage'
@@ -23,10 +23,8 @@ export default function CategoriesPage() {
     handlePageChange,
     handleSearchChange,
     handleSortChange,
-    handleInitializeDefaults,
     setFilters,
     isSearching,
-    isInitializingDefaults,
 
     columns,
     deleteDialogOpen,
@@ -64,15 +62,6 @@ export default function CategoriesPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Button
-              onClick={handleInitializeDefaults}
-              disabled={isInitializingDefaults}
-              variant="outline"
-              className="flex items-center gap-2 px-6 py-2 transition-all duration-200"
-            >
-              <Download className="h-4 w-4" />
-              {isInitializingDefaults ? 'Criando...' : 'Criar Categorias Padrão'}
-            </Button>
             <Button
               onClick={() => router.push('/vendedor/categorias/criar')}
               className="flex items-center gap-2 px-6 py-2 transition-all duration-200"
