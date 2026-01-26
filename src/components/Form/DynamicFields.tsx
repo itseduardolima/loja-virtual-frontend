@@ -423,7 +423,7 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
             <Label htmlFor={`field-${field.id}`} className="text-sm font-semibold text-gray-700 mb-3 block">
               {field.name} {isRequired && <span className="text-red-500">*</span>}
             </Label>
-            <div className="grid grid-cols-8 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-14 xl:grid-cols-16 gap-3 p-4 border border-gray-200 rounded-lg bg-gray-50/50 min-h-[120px]">
+            <div className="grid grid-cols-8 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-14 xl:grid-cols-16 gap-2 sm:gap-2.5 md:gap-3 p-2.5 sm:p-3 md:p-4 border border-gray-200 rounded-lg bg-gray-50/50 min-h-[100px] sm:min-h-[120px] justify-items-center">
               {colorsToShow.map((color) => {
                 const isSelected = normalizedSelectedColors.includes(color)
                 return (
@@ -437,10 +437,11 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
                       onFieldChange(field.id, newSelection)
                     }}
                     className={`
-                      relative w-12 h-12 rounded-full border-2 transition-all duration-200 shadow-sm
+                      relative rounded-full border-2 transition-all duration-200 shadow-sm flex-shrink-0
+                      w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11 lg:w-12 lg:h-12
                       hover:scale-110 hover:shadow-md
                       ${isSelected 
-                        ? 'border-primary ring-2 ring-primary ring-offset-2' 
+                        ? 'border-primary ring-2 ring-primary ring-offset-1 sm:ring-offset-2' 
                         : 'border-gray-300 hover:border-gray-400'
                       }
                     `}
@@ -448,7 +449,7 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
                     title={color}
                   >
                     {isSelected && (
-                      <Check className="absolute inset-0 m-auto w-5 h-5 text-white stroke-2 drop-shadow-md" />
+                      <Check className="absolute inset-0 m-auto w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5 text-white stroke-2 drop-shadow-md" />
                     )}
                   </button>
                 )

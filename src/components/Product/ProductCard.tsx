@@ -89,11 +89,6 @@ export function ProductCard({
             {product.featured === 1 && (
               <Star className="h-4 w-4 sm:h-5 sm:w-5 fill-yellow-400 text-yellow-400 drop-shadow-sm" />
             )}
-            {isOutOfStock && (
-              <Badge variant="destructive" className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 font-medium">
-                Esgotado
-              </Badge>
-            )}
           </div>
 
           {/* Switch de Status - Superior direito */}
