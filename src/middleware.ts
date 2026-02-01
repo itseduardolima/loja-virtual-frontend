@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const publicRoutes = ['/login', '/register', '/']
+  const publicRoutes = ['/login', '/register', '/cadastro', '/']
   
   if (publicRoutes.includes(pathname)) {
     return NextResponse.next()

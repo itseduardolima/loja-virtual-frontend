@@ -236,7 +236,7 @@ export default function ProductDetailPage() {
                 </div>
                 <span className="text-xs sm:text-sm text-primary/60">
                   {reviewsSummary?.total_reviews
-                    ? `(${rating.toFixed(1)}/5) · ${reviewsSummary.total_reviews} ${reviewsSummary.total_reviews === 1 ? 'avaliação' : 'avaliações'}`
+                    ? `(${rating.toFixed(1)}) · ${reviewsSummary.total_reviews} ${reviewsSummary.total_reviews === 1 ? 'avaliação' : 'avaliações'}`
                     : '(Sem avaliações)'}
                 </span>
               </div>

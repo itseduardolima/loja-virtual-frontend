@@ -122,6 +122,16 @@ export default function LoginPage() {
               >
                 {isLoading ? "Entrando..." : "Entrar"}
               </Button>
+
+              <p className="text-center text-sm text-gray-600">
+                Não tem uma conta?{" "}
+                <Link
+                  href="/cadastro"
+                  className="font-medium text-primary hover:underline"
+                >
+                  Cadastre-se
+                </Link>
+              </p>
             </form>
 
             {/* Divisor */}
