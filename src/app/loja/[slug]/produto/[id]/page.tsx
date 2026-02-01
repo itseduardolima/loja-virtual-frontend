@@ -1,7 +1,7 @@
 'use client'
 
 import { useParams, useRouter } from 'next/navigation'
-import { Button, Badge, LoadingSpinner, ErrorState, CartSidebar, StoreHeader } from '@/components'
+import { Button, Badge, LoadingSpinner, ErrorState, CartSidebar, StoreHeader, ProductReviews } from '@/components'
 import {
   Star,
   Plus,
@@ -15,6 +15,7 @@ import Image from 'next/image'
 
 import { buildImageUrl, formatPrice } from '@/lib/utils'
 import { useProductDetailPage } from './useProductDetailPage'
+import { useProductReviews } from '@/hooks/useProductReviews'
 import { useStoreInfo } from '@/hooks/useStoreInfo'
 import { useState, useEffect } from 'react'
 import LoadingPage from '@/components/Layout/LoadingPage'
@@ -54,6 +55,8 @@ export default function ProductDetailPage() {
     addToCart,
     isAddingToCart,
   } = useProductDetailPage(slug, productId)
+
+  const { summary: reviewsSummary } = useProductReviews(slug, productId)
 
   // Suporte a navegação por teclado
   useEffect(() => {
@@ -108,8 +111,8 @@ export default function ProductDetailPage() {
   const isOutOfStock = product.stock === 0
   const canAddToCart = !isOutOfStock && selectedSize && selectedColor && quantity > 0
 
-  // Calcular rating (mockado por enquanto)
-  const rating = 4.5
+  // Rating médio das avaliações (ou 0 se não houver)
+  const rating = reviewsSummary?.average_rating ?? 0
   const fullStars = Math.floor(rating)
   const hasHalfStar = rating % 1 >= 0.5
 
@@ -231,7 +234,11 @@ export default function ProductDetailPage() {
                     <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 text-gray-300" />
                   ))}
                 </div>
-                <span className="text-xs sm:text-sm text-primary/60">({rating}/5)</span>
+                <span className="text-xs sm:text-sm text-primary/60">
+                  {reviewsSummary?.total_reviews
+                    ? `(${rating.toFixed(1)}/5) · ${reviewsSummary.total_reviews} ${reviewsSummary.total_reviews === 1 ? 'avaliação' : 'avaliações'}`
+                    : '(Sem avaliações)'}
+                </span>
               </div>
             </div>
 
@@ -451,6 +458,13 @@ export default function ProductDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Avaliações - abaixo das Especificações */}
+      <ProductReviews
+        slug={slug}
+        productId={productId}
+        productName={product.name}
+      />
 
       {/* Cart Sidebar */}
       <CartSidebar

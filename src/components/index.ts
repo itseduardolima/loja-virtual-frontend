@@ -30,6 +30,7 @@ export { ProductFilters } from './Product/ProductFilters'
 export { EmptyImageState } from './Product/EmptyImageState'
 export { ProductPreview } from './Product/ProductPreview'
 export { ProductVariations } from './Product/ProductVariations'
+export { ProductReviews } from './Product/ProductReviews'
 
 // Table Components
 export { Table } from './Table/Table'
