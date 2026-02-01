@@ -251,7 +251,7 @@ export default function CriarLojaPage() {
             className="text-base font-semibold flex items-center gap-2"
           >
             <Phone className="h-4 w-4" />
-            WhatsApp
+            WhatsApp *
           </Label>
           <div className="flex flex-row gap-2 mt-2 items-stretch">
             <div className="relative shrink-0">
@@ -355,7 +355,7 @@ export default function CriarLojaPage() {
             className="text-base font-semibold flex items-center gap-2"
           >
             <Instagram className="h-4 w-4" />
-            Instagram
+            Instagram *
           </Label>
           <Input
             id="instagram"
@@ -378,7 +378,7 @@ export default function CriarLojaPage() {
             className="text-base font-semibold flex items-center gap-2"
           >
             <Facebook className="h-4 w-4" />
-            Facebook
+            Facebook *
           </Label>
           <Input
             id="facebook"
@@ -401,7 +401,7 @@ export default function CriarLojaPage() {
             className="text-base font-semibold flex items-center gap-2"
           >
             <Mail className="h-4 w-4" />
-            Email
+            Email *
           </Label>
           <Input
             id="email"

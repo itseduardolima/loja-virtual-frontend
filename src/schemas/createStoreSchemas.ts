@@ -44,39 +44,39 @@ export const createStoreStep1Schema = yup.object({
 export const createStoreStep2Schema = yup.object({
   whatsapp: yup
     .string()
-    .optional()
+    .required('WhatsApp é obrigatório')
     .test(
       'whatsapp-phone',
       'Número de celular inválido. Digite apenas números (8 a 15 dígitos)',
       (value) => {
-        if (!value || value.trim() === '') return true
+        if (!value || value.trim() === '') return false
         const cleanNumber = value.replace(/\D/g, '')
         return phoneNumberRegex.test(cleanNumber)
       }
     ),
   email: yup
     .string()
-    .email('Email inválido')
-    .optional(),
+    .required('Email é obrigatório')
+    .email('Email inválido'),
   instagram: yup
     .string()
-    .optional()
+    .required('Instagram é obrigatório')
     .test(
       'instagram-url',
       'Link inválido. Use: https://instagram.com/seu-usuario ou https://www.instagram.com/seu-usuario',
       (value) => {
-        if (!value || value.trim() === '') return true
+        if (!value || value.trim() === '') return false
         return instagramUrlRegex.test(value)
       }
     ),
   facebook: yup
     .string()
-    .optional()
+    .required('Facebook é obrigatório')
     .test(
       'facebook-url',
       'Link inválido. Use: https://facebook.com/seu-usuario ou https://www.facebook.com/seu-usuario',
       (value) => {
-        if (!value || value.trim() === '') return true
+        if (!value || value.trim() === '') return false
         return facebookUrlRegex.test(value)
       }
     ),
@@ -216,39 +216,39 @@ export const createStoreSchema = yup.object({
     .typeError('ID do nicho principal deve ser um número válido'),
   whatsapp: yup
     .string()
-    .optional()
+    .required('WhatsApp é obrigatório')
     .test(
       'whatsapp-phone',
       'Número de celular inválido. Digite apenas números (8 a 15 dígitos)',
       (value) => {
-        if (!value || value.trim() === '') return true
+        if (!value || value.trim() === '') return false
         const cleanNumber = value.replace(/\D/g, '')
         return phoneNumberRegex.test(cleanNumber)
       }
     ),
   email: yup
     .string()
-    .email('Email inválido')
-    .optional(),
+    .required('Email é obrigatório')
+    .email('Email inválido'),
   instagram: yup
     .string()
-    .optional()
+    .required('Instagram é obrigatório')
     .test(
       'instagram-url',
       'Link inválido. Use: https://instagram.com/seu-usuario ou https://www.instagram.com/seu-usuario',
       (value) => {
-        if (!value || value.trim() === '') return true
+        if (!value || value.trim() === '') return false
         return instagramUrlRegex.test(value)
       }
     ),
   facebook: yup
     .string()
-    .optional()
+    .required('Facebook é obrigatório')
     .test(
       'facebook-url',
       'Link inválido. Use: https://facebook.com/seu-usuario ou https://www.facebook.com/seu-usuario',
       (value) => {
-        if (!value || value.trim() === '') return true
+        if (!value || value.trim() === '') return false
         return facebookUrlRegex.test(value)
       }
     ),
