@@ -28,15 +28,11 @@ import {
   CreditCard,
   AlertCircle,
   ChevronDown,
-  LogOut,
 } from "lucide-react";
 import Image from "next/image";
 
-import { useAuth } from "@/contexts/AuthContext";
-
 export default function CriarLojaPage() {
   const hookData = useCreateStorePage();
-  const { logout } = useAuth();
 
   // Função auxiliar para acessar erros de forma segura
   const getError = (step: 1 | 2 | 3 | 4, field: string): string | undefined => {
@@ -46,10 +42,6 @@ export default function CriarLojaPage() {
     return errors?.[field];
   };
 
-  const handleLogout = () => {
-    logout();
-    hookData.router?.push("/login");
-  };
   if (hookData.loading) {
     return <LoadingPage />;
   }
@@ -57,19 +49,19 @@ export default function CriarLojaPage() {
   // Se o usuário já possui uma loja, mostrar mensagem
   if (hookData.hasStore) {
     return (
-      <div className="min-h-[calc(100vh-200px)] flex items-center justify-center">
-        <div className="max-w-7xl mx-auto px-4 py-10">
+      <div className="min-h-[calc(100vh-200px)] flex items-center justify-center px-3 sm:px-4">
+        <div className="max-w-7xl mx-auto w-full py-6 sm:py-10">
           <div className="max-w-2xl mx-auto">
             <Card className="border-0">
-              <CardContent className="p-12 text-center">
-                <div className="mb-8">
-                  <div className="mx-auto w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6">
-                    <Store className="h-12 w-12 text-green-600" />
+              <CardContent className="p-6 sm:p-12 text-center">
+                <div className="mb-6 sm:mb-8">
+                  <div className="mx-auto w-20 h-20 sm:w-24 sm:h-24 bg-green-100 rounded-full flex items-center justify-center mb-4 sm:mb-6">
+                    <Store className="h-10 w-10 sm:h-12 sm:w-12 text-green-600" />
                   </div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
                     Você já possui uma loja!
                   </h1>
-                  <p className="text-lg text-gray-600 mb-8">
+                  <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 break-words">
                     Você já tem uma loja cadastrada:{" "}
                     <strong>{hookData.store?.name}</strong>
                   </p>
@@ -77,7 +69,7 @@ export default function CriarLojaPage() {
 
                 <Button
                   onClick={() => hookData.router?.push("/vendedor")}
-                  className="px-8 py-3 flex items-center gap-2 mx-auto"
+                  className="w-full sm:w-auto px-6 sm:px-8 py-3 flex items-center justify-center gap-2 mx-auto"
                 >
                   Ir para página inicial
                 </Button>
@@ -182,7 +174,7 @@ export default function CriarLojaPage() {
           <p className="text-sm text-gray-600 mt-1 mb-4">
             Adicione o logo da sua loja (opcional)
           </p>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
             <input
               type="file"
               accept="image/*"
@@ -194,12 +186,12 @@ export default function CriarLojaPage() {
             />
             <label
               htmlFor="logo-upload"
-              className="px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 transition-colors"
+              className="px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 transition-colors shrink-0"
             >
               Escolher Logo
             </label>
             {hookData.logoPreview && (
-              <div className="w-16 h-16 rounded-lg overflow-hidden border">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden border shrink-0">
                 <Image
                   src={hookData.logoPreview}
                   alt="Logo preview"
@@ -217,7 +209,7 @@ export default function CriarLojaPage() {
           <p className="text-sm text-gray-600 mt-1 mb-4">
             Adicione um banner para sua loja (opcional)
           </p>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
             <input
               type="file"
               accept="image/*"
@@ -229,12 +221,12 @@ export default function CriarLojaPage() {
             />
             <label
               htmlFor="banner-upload"
-              className="px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 transition-colors"
+              className="px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 transition-colors shrink-0"
             >
               Escolher Banner
             </label>
             {hookData.bannerPreview && (
-              <div className="w-32 h-16 rounded-lg overflow-hidden border">
+              <div className="w-28 h-14 sm:w-32 sm:h-16 rounded-lg overflow-hidden border shrink-0">
                 <Image
                   src={hookData.bannerPreview}
                   alt="Banner preview"
@@ -261,14 +253,14 @@ export default function CriarLojaPage() {
             <Phone className="h-4 w-4" />
             WhatsApp
           </Label>
-          <div className="flex gap-2 mt-2">
-            <div className="relative">
+          <div className="flex flex-row gap-2 mt-2 items-stretch">
+            <div className="relative shrink-0">
               <button
                 type="button"
                 onClick={() =>
                   hookData.setShowCountryDropdown(!hookData.showCountryDropdown)
                 }
-                className="flex items-center h-12 gap-2 px-3 py-2 border rounded-xl border-gray-300  bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex items-center h-12 gap-2 px-3 py-2 border rounded-xl border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 justify-start"
               >
                 {hookData.getSelectedCountry()?.flagUrl ? (
                   <img
@@ -349,7 +341,7 @@ export default function CriarLojaPage() {
                 hookData.handleInputChange("whatsapp", e.target.value)
               }
               placeholder="11999999999"
-              className={`flex-1 ${getError(2, 'whatsapp') ? 'border-red-500 focus:ring-red-500' : ''}`}
+              className={`flex-1 min-w-0 h-12 ${getError(2, 'whatsapp') ? 'border-red-500 focus:ring-red-500' : ''}`}
             />
           </div>
           {getError(2, 'whatsapp') && (
@@ -769,69 +761,66 @@ export default function CriarLojaPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-20 via-blue-20 to-indigo-20">
-      <div className="max-w-7xl mx-auto px-4 py-10">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
         {/* Header */}
-        <div className="flex flex-col gap-4 mb-8 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Criar Nova Loja</h1>
-            <p className="text-gray-600 mt-1">
+        <div className="flex flex-row items-center justify-between gap-4 mb-6 sm:mb-8">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold truncate">Criar Nova Loja</h1>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">
               Configure sua loja online em poucos passos
             </p>
           </div>
-
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <p className="font-semibold text-gray-900">
-                {hookData.user?.name || "Usuário"}
-              </p>
-              <p className="text-xs text-gray-500">
-                {hookData.user?.profile || "Perfil não informado"}
-              </p>
-            </div>
-            <Button className="flex items-center gap-2" variant="destructive" onClick={handleLogout}>
-              <LogOut className="h-4 w-4" />
-              Sair
-            </Button>
+          <div className="hidden sm:block text-right min-w-0 max-w-[120px] lg:max-w-none shrink-0">
+            <p className="font-semibold text-gray-900 truncate text-sm">
+              {hookData.user?.name || "Usuário"}
+            </p>
+            <p className="text-xs text-gray-500 truncate">
+              {hookData.user?.profile || "Perfil não informado"}
+            </p>
           </div>
         </div>
 
-        {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        {/* Progress Steps: em telas grandes usa largura total; em mobile scroll horizontal */}
+        <div className="mb-6 sm:mb-8 overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
+          <div className="flex items-center w-full min-w-[280px] max-w-3xl lg:max-w-none mx-auto">
             {hookData.STEPS.map((step, index) => (
-              <div key={step.id} className="flex items-center">
-                <div className="flex items-center">
+              <div key={step.id} className="flex items-center flex-1 min-w-0 last:flex-none last:min-w-0">
+                {/* Círculo da etapa */}
+                <div className="flex items-center shrink-0">
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${hookData.currentStep >= step.id
-                        ? " bg-primary text-white  hover:bg-primary/80"
+                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold shrink-0 ${hookData.currentStep >= step.id
+                        ? "bg-primary text-white hover:bg-primary/80"
                         : "bg-secondary text-primary"
                       }`}
                   >
                     {hookData.currentStep > step.id ? (
-                      <Check className="h-5 w-5" />
+                      <Check className="h-4 w-4 sm:h-5 sm:w-5" />
                     ) : (
                       step.id
                     )}
                   </div>
-                  <div className="ml-3 hidden sm:block">
+                  <div className="ml-2 sm:ml-3 hidden sm:block max-w-[72px] md:max-w-[100px] lg:max-w-none">
                     <p
-                      className={`text-sm font-semibold ${hookData.currentStep >= step.id
+                      className={`text-xs sm:text-sm font-semibold truncate lg:whitespace-normal ${hookData.currentStep >= step.id
                           ? "text-primary"
                           : "text-gray-600"
                         }`}
                     >
                       {step.title}
                     </p>
-                    <p className="text-xs text-gray-500">{step.description}</p>
+                    <p className="text-xs text-gray-500 truncate lg:whitespace-normal">{step.description}</p>
                   </div>
                 </div>
+                {/* Linha centralizada entre os números */}
                 {index < hookData.STEPS.length - 1 && (
-                  <div
-                    className={`w-16 h-0.5 mx-4 ${hookData.currentStep > step.id
-                        ? "bg-primary"
-                        : "bg-secondary"
-                      }`}
-                  />
+                  <div className="flex-1 flex items-center min-w-[12px] sm:min-w-[16px] lg:min-w-[24px] px-1 sm:px-2 lg:px-4">
+                    <div
+                      className={`w-full h-0.5 rounded-full ${hookData.currentStep > step.id
+                          ? "bg-primary"
+                          : "bg-secondary"
+                        }`}
+                    />
+                  </div>
                 )}
               </div>
             ))}
@@ -840,21 +829,21 @@ export default function CriarLojaPage() {
 
         {/* Form Content */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3">
+          <CardHeader className="px-4 sm:px-6 md:px-8 pt-4 sm:pt-6 pb-2 sm:pb-4">
+            <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
               {hookData.STEPS[hookData.currentStep - 1].title}
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-8">{renderCurrentStep()}</CardContent>
+          <CardContent className="p-4 sm:p-6 md:p-8">{renderCurrentStep()}</CardContent>
         </Card>
 
         {/* Navigation */}
-        <div className="flex justify-between mt-8">
+        <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-0 sm:justify-between mt-6 sm:mt-8">
           <Button
             variant="outline"
             onClick={hookData.prevStep}
             disabled={hookData.currentStep === 1}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-2 w-full sm:w-auto order-2 sm:order-1"
           >
             <ArrowLeft className="h-4 w-4" />
             Anterior
@@ -864,7 +853,7 @@ export default function CriarLojaPage() {
             <Button
               onClick={hookData.nextStep}
               disabled={!hookData.isStepValid}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-2 w-full sm:w-auto order-1 sm:order-2"
             >
               Próximo
               <ArrowRight className="h-4 w-4" />
@@ -873,7 +862,7 @@ export default function CriarLojaPage() {
             <Button
               onClick={hookData.handleSubmit}
               disabled={!hookData.isStepValid || hookData.isCreating}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-2 w-full sm:w-auto order-1 sm:order-2"
             >
               {hookData.isCreating ? (
                 <LoadingSpinner size="sm" />

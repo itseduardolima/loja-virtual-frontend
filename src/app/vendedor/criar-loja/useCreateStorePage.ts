@@ -96,6 +96,47 @@ export function useCreateStorePage() {
     }
   }, [])
 
+  // Verificar se o step atual é válido (sempre chamado antes de qualquer return)
+  const isStepValid = useMemo(() => {
+    const hasErrors = (() => {
+      switch (currentStep) {
+        case 1:
+          return Object.keys(step1Errors).length > 0
+        case 2:
+          return Object.keys(step2Errors).length > 0
+        case 3:
+          return Object.keys(step3Errors).length > 0
+        case 4:
+          return Object.keys(step4Errors).length > 0
+        default:
+          return false
+      }
+    })()
+
+    if (hasErrors) return false
+
+    try {
+      switch (currentStep) {
+        case 1:
+          createStoreStep1Schema.validateSync(formData, { abortEarly: false })
+          return true
+        case 2:
+          createStoreStep2Schema.validateSync(formData, { abortEarly: false })
+          return true
+        case 3:
+          createStoreStep3Schema.validateSync(formData, { abortEarly: false })
+          return true
+        case 4:
+          createStoreStep4Schema.validateSync(formData, { abortEarly: false })
+          return true
+        default:
+          return false
+      }
+    } catch {
+      return false
+    }
+  }, [currentStep, formData, step1Errors, step2Errors, step3Errors, step4Errors])
+
   // Verificações de loading e autenticação
   if (authLoading) {
     return { 
@@ -520,47 +561,6 @@ export function useCreateStorePage() {
       }
     }
   }
-
-  // Verificar se o step atual é válido
-  const isStepValid = useMemo(() => {
-    const hasErrors = (() => {
-      switch (currentStep) {
-        case 1:
-          return Object.keys(step1Errors).length > 0
-        case 2:
-          return Object.keys(step2Errors).length > 0
-        case 3:
-          return Object.keys(step3Errors).length > 0
-        case 4:
-          return Object.keys(step4Errors).length > 0
-        default:
-          return false
-      }
-    })()
-    
-    if (hasErrors) return false
-    
-    try {
-      switch (currentStep) {
-        case 1:
-          createStoreStep1Schema.validateSync(formData, { abortEarly: false })
-          return true
-        case 2:
-          createStoreStep2Schema.validateSync(formData, { abortEarly: false })
-          return true
-        case 3:
-          createStoreStep3Schema.validateSync(formData, { abortEarly: false })
-          return true
-        case 4:
-          createStoreStep4Schema.validateSync(formData, { abortEarly: false })
-          return true
-        default:
-          return false
-      }
-    } catch {
-      return false
-    }
-  }, [currentStep, formData, step1Errors, step2Errors, step3Errors, step4Errors])
 
   // Retornar dados para tela com loja
   return {
