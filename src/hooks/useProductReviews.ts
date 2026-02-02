@@ -8,8 +8,11 @@ import {
   UpdateReviewRequest,
 } from '@/types/review'
 
+export type ReviewSort = 'latest' | 'highest' | 'images'
+
 interface UseProductReviewsOptions {
   page?: number
+  sort?: ReviewSort
   onCreateSuccess?: () => void
 }
 
@@ -18,17 +21,19 @@ export function useProductReviews(
   productId: string,
   options: UseProductReviewsOptions | number = {}
 ) {
-  const { page = 1, onCreateSuccess } =
-    typeof options === 'number' ? { page: options, onCreateSuccess: undefined } : options
+  const { page = 1, sort = 'latest', onCreateSuccess } =
+    typeof options === 'number'
+      ? { page: options, sort: 'latest' as ReviewSort, onCreateSuccess: undefined }
+      : options
   const queryClient = useQueryClient()
   const { toast } = useToastContext()
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['product-reviews', slug, productId, page],
+    queryKey: ['product-reviews', slug, productId, page, sort],
     queryFn: async (): Promise<ProductReviewsResponse> => {
       const response = await api.get<ProductReviewsResponse>(
         `/catalog/store/${slug}/products/${productId}/reviews`,
-        { params: { page, limit: 6 } }
+        { params: { page, limit: 6, sort } }
       )
       return response.data
     },

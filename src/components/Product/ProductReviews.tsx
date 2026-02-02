@@ -332,6 +332,7 @@ function ReviewCard({ review, currentUserId, onEdit, isUpdating }: ReviewCardPro
 export function ProductReviews({ slug, productId }: ProductReviewsProps) {
   const { isAuthenticated, user, loginWithGoogle } = useAuth()
   const [page, setPage] = useState(1)
+  const [sort, setSort] = useState<'latest' | 'highest' | 'images'>('latest')
   const [allReviews, setAllReviews] = useState<ProductReview[]>([])
   const [writeReviewOpen, setWriteReviewOpen] = useState(false)
 
@@ -346,6 +347,7 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
     isUpdating,
   } = useProductReviews(slug, productId, {
     page,
+    sort,
     onCreateSuccess: () => setPage(1),
   })
 
@@ -355,6 +357,7 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
     if (prevProductKey.current !== productKey) {
       prevProductKey.current = productKey
       setPage(1)
+      setSort('latest')
       setAllReviews([])
     }
   }, [slug, productId])
@@ -431,13 +434,20 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
             >
               <SlidersHorizontal className="h-4 w-4" />
             </button>
-            <Select defaultValue="latest">
+            <Select
+              value={sort}
+              onValueChange={(v) => {
+                setSort(v as 'latest' | 'highest' | 'images')
+                setPage(1)
+                setAllReviews([])
+              }}
+            >
               <SelectTrigger className="w-[140px] h-10 bg-gray-100 border-0">
                 <SelectValue placeholder="Ordenar" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="latest">Mais recentes</SelectItem>
-                <SelectItem value="helpful">Mais úteis</SelectItem>
+                <SelectItem value="images">Com imagens</SelectItem>
                 <SelectItem value="highest">Maior nota</SelectItem>
               </SelectContent>
             </Select>

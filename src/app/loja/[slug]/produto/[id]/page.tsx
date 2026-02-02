@@ -450,7 +450,7 @@ export default function ProductDetailPage() {
                   {product.description ? 'Especificações' : 'Especificações'}
                 </h2>
                 <div
-                  className="text-primary/60 text-sm sm:text-base leading-relaxed prose prose-sm max-w-none prose-headings:text-primary/80 prose-p:text-primary/60 prose-ul:text-primary/60 prose-ol:text-primary/60 prose-strong:text-primary/80"
+                  className="text-primary/60 text-sm sm:text-base leading-relaxed prose prose-sm lg:max-w-1/2 prose-headings:text-primary/80 prose-p:text-primary/60 prose-ul:text-primary/60 prose-ol:text-primary/60 prose-strong:text-primary/80"
                   dangerouslySetInnerHTML={{ __html: product.specifications }}
                 />
               </>
