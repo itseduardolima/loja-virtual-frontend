@@ -9,7 +9,6 @@ import { EmptyImageState } from './EmptyImageState'
 import { ProductCardProps } from '@/app/loja/[slug]/produtos/types'
 import { formatPrice, buildImageUrl } from '@/lib/utils'
 import { Switch } from '@/components/ui/switch'
-import { getColorHex } from '@/schemas'
 
 export function ProductCard({
   product,
@@ -125,46 +124,26 @@ export function ProductCard({
             )}
           </div>
 
-          {/* Cores */}
-          {product.color ? (
+          {/* Avaliações */}
+          {(product.total_reviews ?? 0) > 0 ? (
             <div className="flex items-center gap-1.5">
-              <div
-                className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full border border-gray-300 flex-shrink-0"
-                style={{ backgroundColor: getColorHex(product.color) }}
-                title={product.color}
-              />
+              <div className="flex items-center gap-0.5">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${
+                      star <= Math.round(product.average_rating ?? 0)
+                        ? 'fill-amber-400 text-amber-400'
+                        : 'text-gray-200'
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-xs text-gray-500">
+                {product.average_rating?.toFixed(1) ?? '0'} ({product.total_reviews ?? 0})
+              </span>
             </div>
-          ) : product.dynamic_fields && product.dynamic_fields.length > 0 && (() => {
-            const colorField = product.dynamic_fields.find(
-              field => field.field_name.toLowerCase().includes('cor')
-            )
-
-            if (colorField) {
-              return (
-                <div className="flex items-center gap-1.5">
-                  <div className="flex gap-0.5 sm:gap-1">
-                    {colorField.value.split(',').slice(0, 5).map((color, colorIndex) => {
-                      const trimmedColor = color.trim()
-                      return (
-                        <div
-                          key={colorIndex}
-                          className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full border border-gray-300 flex-shrink-0"
-                          style={{ backgroundColor: getColorHex(trimmedColor) }}
-                          title={trimmedColor}
-                        />
-                      )
-                    })}
-                    {colorField.value.split(',').length > 5 && (
-                      <span className="text-[10px] sm:text-xs text-gray-400 ml-0.5">
-                        +{colorField.value.split(',').length - 5}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )
-            }
-            return null
-          })()}
+          ) : null}
 
           {/* Preço */}
           <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">

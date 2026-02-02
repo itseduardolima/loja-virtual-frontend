@@ -133,7 +133,7 @@ export default function ProductDetailPage() {
       />
 
       {/* Main Content */}
-      <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-12">
+      <div className="max-w-[1380px] mx-auto px-4 py-4 sm:py-6 lg:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-16">
           {/* Product Images */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
@@ -432,7 +432,7 @@ export default function ProductDetailPage() {
       {/* Description and Specifications (Bottom Section) */}
       {(product.description || product.specifications) && (
         <div className="border-t bg-white">
-          <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+          <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
             {/* Description - Mobile only */}
             {product.description && (
               <div className="sm:hidden mb-6">

@@ -42,6 +42,8 @@ export interface Product {
     name: string
     slug: string
   }
+  average_rating?: number
+  total_reviews?: number
 }
 
 export interface ProductsResponse {

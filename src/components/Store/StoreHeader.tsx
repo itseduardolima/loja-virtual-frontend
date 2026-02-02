@@ -145,7 +145,7 @@ export function StoreHeader({
   }
 
   return (
-    <div className="w-full mx-auto px-4 sm:px-6 py-4 lg:py-6">
+    <div className="max-w-[1380px] mx-auto px-4 py-4 lg:py-6">
       <div className="mx-auto py-3 sm:py-4 lg:py-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 lg:gap-6">
           {/* Informações da Loja */}
