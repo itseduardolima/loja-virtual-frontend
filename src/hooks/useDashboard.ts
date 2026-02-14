@@ -91,11 +91,20 @@ export interface DashboardData {
   comparativeStats: ComparativeStats
 }
 
-export function useDashboard() {
+export interface DashboardDateFilter {
+  dateFrom?: string
+  dateTo?: string
+}
+
+export function useDashboard(dateFilter?: DashboardDateFilter) {
+  const params = dateFilter?.dateFrom && dateFilter?.dateTo
+    ? { dateFrom: dateFilter.dateFrom, dateTo: dateFilter.dateTo }
+    : {}
+
   const summaryQuery = useQuery({
-    queryKey: ['dashboard', 'summary'],
+    queryKey: ['dashboard', 'summary', params],
     queryFn: async (): Promise<DashboardSummary> => {
-      const response = await api.get('/dashboard/summary')
+      const response = await api.get('/dashboard/summary', { params })
       
       // Verifica se a resposta tem a estrutura esperada
       if (response.data?.data?.summary) {
@@ -119,27 +128,27 @@ export function useDashboard() {
   })
 
   const recentOrdersQuery = useQuery({
-    queryKey: ['dashboard', 'recent-orders'],
+    queryKey: ['dashboard', 'recent-orders', params],
     queryFn: async (): Promise<RecentOrder[]> => {
-      const response = await api.get('/dashboard/recent-orders')
+      const response = await api.get('/dashboard/recent-orders', { params })
       return response.data.data
     },
     staleTime: 30000,
   })
 
   const topProductsQuery = useQuery({
-    queryKey: ['dashboard', 'top-products'],
+    queryKey: ['dashboard', 'top-products', params],
     queryFn: async (): Promise<TopProduct[]> => {
-      const response = await api.get('/dashboard/top-products')
+      const response = await api.get('/dashboard/top-products', { params })
       return response.data.data
     },
     staleTime: 30000,
   })
 
   const comparativeStatsQuery = useQuery({
-    queryKey: ['dashboard', 'comparative-stats'],
+    queryKey: ['dashboard', 'comparative-stats', params],
     queryFn: async (): Promise<ComparativeStats> => {
-      const response = await api.get('/dashboard/comparative-stats')
+      const response = await api.get('/dashboard/comparative-stats', { params })
       return response.data.data
     },
     staleTime: 30000,

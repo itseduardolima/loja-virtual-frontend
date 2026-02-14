@@ -32,6 +32,8 @@ interface RevenueData {
 
 interface DashboardRevenueChartProps {
   data?: RevenueData[]
+  dateFrom?: string
+  dateTo?: string
 }
 
 const chartConfig = {
@@ -41,13 +43,17 @@ const chartConfig = {
   },
 } satisfies Record<string, { label: string; color: string }>
 
-export function DashboardRevenueChart({ data: initialData }: DashboardRevenueChartProps) {
+export function DashboardRevenueChart({ data: initialData, dateFrom, dateTo }: DashboardRevenueChartProps) {
   const [period, setPeriod] = useState<'day' | 'week' | 'month'>('month')
 
+  const params = new URLSearchParams({ period })
+  if (dateFrom) params.set('dateFrom', dateFrom)
+  if (dateTo) params.set('dateTo', dateTo)
+
   const { data: revenueData = [], isLoading } = useQuery({
-    queryKey: ['dashboard', 'revenue', period],
+    queryKey: ['dashboard', 'revenue', period, dateFrom, dateTo],
     queryFn: async (): Promise<RevenueData[]> => {
-      const response = await api.get(`/dashboard/revenue?period=${period}`)
+      const response = await api.get(`/dashboard/revenue?${params.toString()}`)
       return response.data.data || []
     },
     staleTime: 30000,
