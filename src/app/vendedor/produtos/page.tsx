@@ -83,12 +83,12 @@ export default function ProdutosPage() {
       icon: Star
     },
     {
-      value: stats.totalStock,
-      label: ['Estoque', 'Total'],
-      bgColor: 'bg-purple-50',
-      borderColor: 'border-purple-400',
-      textColor: 'text-purple-700',
-      icon: BarChart3
+      value: stats.inactive,
+      label: ['Produtos', 'Esgotados'],
+      bgColor: 'bg-red-50',
+      borderColor: 'border-red-400',
+      textColor: 'text-red-700',
+      icon: Package
     }
   ]
 

@@ -64,27 +64,11 @@ export interface RevenueData {
   revenue: number
 }
 
-export interface ComparativeStats {
-  orders: {
-    current: number
-    previous: number
-    change: number
-    trend: 'up' | 'down'
-  }
-  revenue: {
-    current: number
-    previous: number
-    change: number
-    trend: 'up' | 'down'
-  }
-}
-
 export interface DashboardData {
   summary: DashboardSummary
   recentOrders: RecentOrder[]
   topProducts: TopProduct[]
   revenue: RevenueData[]
-  comparativeStats: ComparativeStats
 }
 
 export interface DashboardDateFilter {
@@ -141,23 +125,13 @@ export function useDashboard(dateFilter?: DashboardDateFilter) {
     staleTime: 30000,
   })
 
-  const comparativeStatsQuery = useQuery({
-    queryKey: ['dashboard', 'comparative-stats', params],
-    queryFn: async (): Promise<ComparativeStats> => {
-      const response = await api.get('/dashboard/comparative-stats', { params })
-      return response.data.data
-    },
-    staleTime: 30000,
-  })
-
   return {
     summary: summaryQuery.data,
     recentOrders: recentOrdersQuery.data || [],
     topProducts: topProductsQuery.data || [],
-    comparativeStats: comparativeStatsQuery.data,
-    isLoading: summaryQuery.isLoading || recentOrdersQuery.isLoading || topProductsQuery.isLoading || comparativeStatsQuery.isLoading,
-    isError: summaryQuery.isError || recentOrdersQuery.isError || topProductsQuery.isError || comparativeStatsQuery.isError,
-    error: summaryQuery.error || recentOrdersQuery.error || topProductsQuery.error || comparativeStatsQuery.error,
+    isLoading: summaryQuery.isLoading || recentOrdersQuery.isLoading || topProductsQuery.isLoading,
+    isError: summaryQuery.isError || recentOrdersQuery.isError || topProductsQuery.isError,
+    error: summaryQuery.error || recentOrdersQuery.error || topProductsQuery.error,
   }
 }
 

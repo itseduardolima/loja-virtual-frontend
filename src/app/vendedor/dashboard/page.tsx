@@ -6,7 +6,6 @@ import { DashboardStatsCard } from '@/components/Dashboard/DashboardStatsCard'
 import { DashboardRevenueChart } from '@/components/Dashboard/DashboardRevenueChart'
 import { DashboardRecentOrders } from '@/components/Dashboard/DashboardRecentOrders'
 import { DashboardTopProducts } from '@/components/Dashboard/DashboardTopProducts'
-import { DashboardComparativeStats } from '@/components/Dashboard/DashboardComparativeStats'
 import { AlertTriangle, BarChart3, FileText, Tag, Users } from 'lucide-react'
 import LoadingPage from '@/components/Layout/LoadingPage'
 
@@ -15,7 +14,6 @@ export default function DashboardPage() {
     summary,
     recentOrders,
     topProducts,
-    comparativeStats,
     isLoading,
     isError,
     dateFilter,
@@ -108,10 +106,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Gráficos de Análise */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
+      {/* Gráfico de Receita */}
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6">
         <DashboardRevenueChart dateFrom={dateFilter?.dateFrom} dateTo={dateFilter?.dateTo} />
-        <DashboardComparativeStats data={comparativeStats} hasDateFilter={hasDateFilter} />
       </div>
     </div>
   )

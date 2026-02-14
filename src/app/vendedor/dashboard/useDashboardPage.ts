@@ -19,7 +19,6 @@ export function useDashboardPage() {
     summary,
     recentOrders,
     topProducts,
-    comparativeStats,
     isLoading,
     isError,
   } = useDashboard(dateFilter)
@@ -87,7 +86,6 @@ export function useDashboardPage() {
     summary,
     recentOrders,
     topProducts,
-    comparativeStats,
     // Estado de loading/erro
     isLoading,
     isError,
