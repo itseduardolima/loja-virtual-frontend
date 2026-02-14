@@ -8,6 +8,16 @@ import Image from 'next/image'
 import { Package, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
+/** Retorna a primeira URL de imagem seja array ou objeto por cor (ex: { "Preto": ["url"] }) */
+function getFirstImageUrl(images: string[] | Record<string, string[]> | undefined): string | null {
+  if (!images) return null
+  if (Array.isArray(images)) return images[0] ?? null
+  const firstKey = Object.keys(images)[0]
+  if (!firstKey) return null
+  const arr = images[firstKey]
+  return Array.isArray(arr) && arr.length > 0 ? arr[0] : null
+}
+
 interface DashboardRecentOrdersProps {
   orders: RecentOrder[]
 }
@@ -56,7 +66,7 @@ export function DashboardRecentOrders({ orders }: DashboardRecentOrdersProps) {
             {displayedOrdersMobile.map((order, index) => {
               const firstItem = order.items && order.items.length > 0 ? order.items[0] : null
               const totalQuantity = order.items?.reduce((sum, item) => sum + item.quantity, 0) || 0
-              
+              const firstImageUrl = firstItem ? getFirstImageUrl(firstItem.images) : null
 
               return (
                 <div
@@ -67,10 +77,10 @@ export function DashboardRecentOrders({ orders }: DashboardRecentOrdersProps) {
                   <div className="flex items-center gap-3 mb-3">
                     {firstItem ? (
                       <>
-                        {firstItem.images && firstItem.images.length > 0 ? (
+                        {firstImageUrl ? (
                           <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                             <Image
-                              src={buildImageUrl(firstItem.images[0])}
+                              src={buildImageUrl(firstImageUrl)}
                               alt={firstItem.product_name}
                               fill
                               className="object-cover"
@@ -179,6 +189,7 @@ export function DashboardRecentOrders({ orders }: DashboardRecentOrdersProps) {
                 {orders.map((order, index) => {
                   const firstItem = order.items && order.items.length > 0 ? order.items[0] : null
                   const totalQuantity = order.items?.reduce((sum, item) => sum + item.quantity, 0) || 0
+                  const firstImageUrl = firstItem ? getFirstImageUrl(firstItem.images) : null
                   const bgColor = index % 2 === 0 ? 'bg-white' : 'bg-[#FAFAFB]'
 
                   return (
@@ -189,10 +200,10 @@ export function DashboardRecentOrders({ orders }: DashboardRecentOrdersProps) {
                       <td className="p-4 rounded-xl">
                         {firstItem ? (
                           <div className="flex items-center gap-3">
-                            {firstItem.images && firstItem.images.length > 0 ? (
+                            {firstImageUrl ? (
                               <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                                 <Image
-                                  src={buildImageUrl(firstItem.images[0])}
+                                  src={buildImageUrl(firstImageUrl)}
                                   alt={firstItem.product_name}
                                   fill
                                   className="object-cover"

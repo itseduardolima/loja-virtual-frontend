@@ -49,7 +49,7 @@ export interface RecentOrder {
     product_name: string
     quantity: number
     price: number
-    images: string[]
+    images: string[] | Record<string, string[]>
   }>
 }
 
