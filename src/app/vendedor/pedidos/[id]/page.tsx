@@ -120,7 +120,7 @@ Em breve entraremos em contato para confirmar o pedido! 🛍️`
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50">
+    <div className="max-w-[1380px] mx-auto bg-gradient-to-b from-gray-50 via-white to-gray-50">
       <div className="max-w-7xl mx-auto py-10 px-4 lg:px-0 space-y-8">
 
         <div className='flex justify-between'>
@@ -242,13 +242,13 @@ Em breve entraremos em contato para confirmar o pedido! 🛍️`
                           // Se images é um objeto (formato novo com cores)
                           if (images && typeof images === 'object' && !Array.isArray(images)) {
                             // Tentar pegar a imagem da cor selecionada
-                            if (item.color && images[item.color] && Array.isArray(images[item.color]) && images[item.color].length > 0) {
+                            if (item.color && images[item.color] && Array.isArray(images[item.color]) && (images[item.color] as string[]).length > 0) {
                               return images[item.color][0]
                             }
                             
                             // Se não encontrar, pegar a primeira cor disponível
                             const firstColor = Object.keys(images)[0]
-                            if (firstColor && Array.isArray(images[firstColor]) && images[firstColor].length > 0) {
+                            if (firstColor && Array.isArray(images[firstColor]) && (images[firstColor] as string[]).length > 0) {
                               return images[firstColor][0]
                             }
                           }

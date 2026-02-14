@@ -103,7 +103,7 @@ export default function PlanoPage() {
   const features = plan?.features ? (typeof plan.features === 'string' ? JSON.parse(plan.features) : plan.features) : []
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Gerenciar Plano</h1>

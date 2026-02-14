@@ -68,9 +68,9 @@ export default function OrdersPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto py-8">
+      <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
         <div>
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-[1380px] mx-auto">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Pedidos</h1>
