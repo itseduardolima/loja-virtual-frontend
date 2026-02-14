@@ -8,10 +8,6 @@ interface DashboardStatsCardProps {
   value: string | number
   subtitle?: string
   icon: LucideIcon
-  trend?: {
-    value: number
-    label: string
-  }
   variant?: 'pink' | 'orange' | 'green' | 'purple'
 }
 
@@ -20,7 +16,6 @@ export function DashboardStatsCard({
   value,
   subtitle,
   icon: Icon,
-  trend,
   variant = 'pink',
 }: DashboardStatsCardProps) {
   const variantStyles = {
@@ -31,7 +26,6 @@ export function DashboardStatsCard({
       value: 'text-gray-900',
       title: 'text-gray-600',
       subtitle: 'text-gray-500',
-      trend: 'text-pink-600',
     },
     orange: {
       bg: 'bg-gradient-to-br from-orange-50 to-orange-100',
@@ -40,7 +34,6 @@ export function DashboardStatsCard({
       value: 'text-gray-900',
       title: 'text-gray-600',
       subtitle: 'text-gray-500',
-      trend: 'text-orange-600',
     },
     green: {
       bg: 'bg-gradient-to-br from-green-50 to-green-100',
@@ -49,7 +42,6 @@ export function DashboardStatsCard({
       value: 'text-gray-900',
       title: 'text-gray-600',
       subtitle: 'text-gray-500',
-      trend: 'text-green-600',
     },
     purple: {
       bg: 'bg-gradient-to-br from-purple-50 to-purple-100',
@@ -58,7 +50,6 @@ export function DashboardStatsCard({
       value: 'text-gray-900',
       title: 'text-gray-600',
       subtitle: 'text-gray-500',
-      trend: 'text-purple-600',
     },
   }
 
@@ -81,11 +72,6 @@ export function DashboardStatsCard({
             <p className={cn('text-[10px] sm:text-xs mb-0.5 sm:mb-1 md:mb-2 leading-tight', styles.subtitle)}>
               {subtitle}
             </p>
-          )}
-          {trend && (
-            <div className={cn('text-[10px] sm:text-xs font-semibold leading-tight', styles.trend)}>
-              {trend.value > 0 ? '+' : ''}{trend.value}% {trend.label}
-            </div>
           )}
         </div>
         <div className={cn(

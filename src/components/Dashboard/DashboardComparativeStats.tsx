@@ -23,20 +23,21 @@ import type { ComparativeStats } from '@/hooks/useDashboard'
 
 interface DashboardComparativeStatsProps {
   data?: ComparativeStats
+  hasDateFilter?: boolean
 }
 
-const chartConfig = {
+const chartConfig = (hasDateFilter: boolean) => ({
   atual: {
-    label: 'Mês Atual',
+    label: hasDateFilter ? 'Período selecionado' : 'Últimos 30 dias',
     color: 'hsl(221.2 83.2% 53.3%)',
   },
   anterior: {
-    label: 'Mês Anterior',
+    label: hasDateFilter ? 'Período anterior' : '30 dias anteriores',
     color: 'hsl(210 40% 85%)',
   },
-} satisfies Record<string, { label: string; color: string }>
+})
 
-export function DashboardComparativeStats({ data }: DashboardComparativeStatsProps) {
+export function DashboardComparativeStats({ data, hasDateFilter = false }: DashboardComparativeStatsProps) {
   const chartData = useMemo(() => {
     if (!data) return []
     return [
@@ -53,7 +54,7 @@ export function DashboardComparativeStats({ data }: DashboardComparativeStatsPro
       <Card className="border-0 shadow-sm rounded-2xl">
         <CardHeader>
           <CardTitle className="text-base sm:text-lg font-semibold text-gray-900">
-            Comparativo Mensal
+            Comparativo de Período
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -65,14 +66,19 @@ export function DashboardComparativeStats({ data }: DashboardComparativeStatsPro
     )
   }
 
+  const config = chartConfig(hasDateFilter) as Record<string, { label: string; color: string }>
+  const previousLabel = config.anterior.label
+
   return (
     <Card className="border-0 shadow-sm rounded-2xl">
       <CardHeader className="pb-3 sm:pb-4">
         <CardTitle className="text-base sm:text-lg font-semibold text-gray-900">
-          Comparativo Mensal
+          Comparativo de Período
         </CardTitle>
         <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-          Comparação entre mês atual e mês anterior
+          {hasDateFilter
+            ? 'Comparação entre o período selecionado e o período anterior de mesma duração'
+            : 'Comparação entre os últimos 30 dias e os 30 dias anteriores'}
         </p>
       </CardHeader>
       <CardContent>
@@ -101,7 +107,7 @@ export function DashboardComparativeStats({ data }: DashboardComparativeStatsPro
                 </span>
               </div>
               <p className="text-xs text-gray-500">
-                Mês anterior: {data.orders.previous}
+                {previousLabel}: {data.orders.previous}
               </p>
             </div>
 
@@ -127,13 +133,13 @@ export function DashboardComparativeStats({ data }: DashboardComparativeStatsPro
                 </span>
               </div>
               <p className="text-xs text-gray-500">
-                Mês anterior: {formatPrice(data.revenue.previous)}
+                {previousLabel}: {formatPrice(data.revenue.previous)}
               </p>
             </div>
           </div>
 
           {/* Gráfico de Barras */}
-          <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px] w-full">
+          <ChartContainer config={config} className="h-[250px] sm:h-[300px] w-full">
             <BarChart
               data={chartData}
               margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
@@ -169,7 +175,7 @@ export function DashboardComparativeStats({ data }: DashboardComparativeStatsPro
                       <p className="font-semibold mb-2 text-sm">{data.name}</p>
                       <div className="space-y-1">
                         <div className="flex items-center justify-between gap-4">
-                          <span className="text-xs sm:text-sm text-gray-600">Mês Atual:</span>
+                          <span className="text-xs sm:text-sm text-gray-600">{config.atual.label}:</span>
                           <span className="text-xs sm:text-sm font-semibold">
                             {data.name === 'Receita' 
                               ? formatPrice(data.atual)
@@ -177,7 +183,7 @@ export function DashboardComparativeStats({ data }: DashboardComparativeStatsPro
                           </span>
                         </div>
                         <div className="flex items-center justify-between gap-4">
-                          <span className="text-xs sm:text-sm text-gray-600">Mês Anterior:</span>
+                          <span className="text-xs sm:text-sm text-gray-600">{config.anterior.label}:</span>
                           <span className="text-xs sm:text-sm font-semibold">
                             {data.name === 'Receita'
                               ? formatPrice(data.anterior)
@@ -193,13 +199,13 @@ export function DashboardComparativeStats({ data }: DashboardComparativeStatsPro
                 dataKey="atual" 
                 fill="var(--color-atual)"
                 radius={[8, 8, 0, 0]}
-                name="Mês Atual"
+                name={config.atual.label}
               />
               <Bar 
                 dataKey="anterior" 
                 fill="var(--color-anterior)"
                 radius={[8, 8, 0, 0]}
-                name="Mês Anterior"
+                name={config.anterior.label}
               />
               <ChartLegend 
                 content={<ChartLegendContent />}

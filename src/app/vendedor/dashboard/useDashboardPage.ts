@@ -82,38 +82,6 @@ export function useDashboardPage() {
     return `R$ ${revenue.toFixed(0)}`
   }, [summary?.today?.revenue])
 
-  const revenueTrend = useMemo(
-    () =>
-      summary?.today?.revenue_growth
-        ? { value: summary.today.revenue_growth, label: 'de ontem' }
-        : undefined,
-    [summary?.today?.revenue_growth],
-  )
-
-  const ordersTrend = useMemo(
-    () =>
-      summary?.today?.orders_growth
-        ? { value: summary.today.orders_growth, label: 'de ontem' }
-        : undefined,
-    [summary?.today?.orders_growth],
-  )
-
-  const productsTrend = useMemo(
-    () =>
-      summary?.today?.products_growth
-        ? { value: summary.today.products_growth, label: 'de ontem' }
-        : undefined,
-    [summary?.today?.products_growth],
-  )
-
-  const customersTrend = useMemo(
-    () =>
-      summary?.today?.customers_growth
-        ? { value: summary.today.customers_growth, label: 'de ontem' }
-        : undefined,
-    [summary?.today?.customers_growth],
-  )
-
   return {
     // Dados
     summary,
@@ -136,9 +104,5 @@ export function useDashboardPage() {
     hasDateFilter: !!dateRange,
     // Valores derivados para os cards
     revenueValue,
-    revenueTrend,
-    ordersTrend,
-    productsTrend,
-    customersTrend,
   }
 }

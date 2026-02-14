@@ -1,7 +1,7 @@
 'use client'
 
 import { useDashboardPage } from './useDashboardPage'
-import { DashboardDateRangeFilter } from './DashboardDateRangeFilter'
+import { DashboardDateRangeFilter } from '../../../components/Dashboard/DashboardDateRangeFilter'
 import { DashboardStatsCard } from '@/components/Dashboard/DashboardStatsCard'
 import { DashboardRevenueChart } from '@/components/Dashboard/DashboardRevenueChart'
 import { DashboardRecentOrders } from '@/components/Dashboard/DashboardRecentOrders'
@@ -26,10 +26,6 @@ export default function DashboardPage() {
     setQuickRange,
     hasDateFilter,
     revenueValue,
-    revenueTrend,
-    ordersTrend,
-    productsTrend,
-    customersTrend,
   } = useDashboardPage()
 
   if (isLoading) {
@@ -79,34 +75,26 @@ export default function DashboardPage() {
         <DashboardStatsCard
           title="Vendas Totais"
           value={revenueValue}
-          subtitle="Resumo de Vendas"
           icon={BarChart3}
           variant="pink"
-          trend={revenueTrend}
         />
         <DashboardStatsCard
           title="Total de Pedidos"
           value={summary?.today?.orders || 0}
-          subtitle="Resumo de Pedidos"
           icon={FileText}
           variant="orange"
-          trend={ordersTrend}
         />
         <DashboardStatsCard
           title="Produtos Vendidos"
           value={summary?.today?.products_sold || 0}
-          subtitle="Resumo de Produtos"
           icon={Tag}
           variant="green"
-          trend={productsTrend}
         />
         <DashboardStatsCard
           title="Novos Clientes"
           value={summary?.today?.new_customers || 0}
-          subtitle="Resumo de Clientes"
           icon={Users}
           variant="purple"
-          trend={customersTrend}
         />
       </div>
 
@@ -123,7 +111,7 @@ export default function DashboardPage() {
       {/* Gráficos de Análise */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
         <DashboardRevenueChart dateFrom={dateFilter?.dateFrom} dateTo={dateFilter?.dateTo} />
-        <DashboardComparativeStats data={comparativeStats} />
+        <DashboardComparativeStats data={comparativeStats} hasDateFilter={hasDateFilter} />
       </div>
     </div>
   )

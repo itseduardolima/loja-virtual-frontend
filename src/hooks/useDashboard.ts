@@ -7,10 +7,6 @@ export interface DashboardSummary {
     revenue: number
     products_sold: number
     new_customers: number
-    revenue_growth: number
-    orders_growth: number
-    products_growth: number
-    customers_growth: number
   }
   week: {
     orders: number
