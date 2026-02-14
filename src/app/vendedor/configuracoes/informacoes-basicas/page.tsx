@@ -26,6 +26,7 @@ export default function InformacoesBasicasPage() {
   if (isLoading) {
     return <LoadingPage />
   }
+  const API_URL = process.env.NEXT_PUBLIC_API_URL
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -103,9 +104,9 @@ export default function InformacoesBasicasPage() {
                     <span className="text-sm text-gray-600">Clique para fazer upload</span>
                   </label>
                   {logoPreview && (
-                    <div className="w-32 h-32 rounded-lg overflow-hidden border border-gray-200">
+                    <div className="w-52 h-52 rounded-lg overflow-hidden border border-gray-200">
                       <Image
-                        src={logoPreview}
+                        src={`${API_URL}${logoPreview}`}
                         alt="Logo preview"
                         width={128}
                         height={128}
@@ -137,9 +138,9 @@ export default function InformacoesBasicasPage() {
                     <span className="text-sm text-gray-600">Clique para fazer upload</span>
                   </label>
                   {bannerPreview && (
-                    <div className="w-full h-32 rounded-lg overflow-hidden border border-gray-200">
+                    <div className="w-full h-52 rounded-lg overflow-hidden border border-gray-200">
                       <Image
-                        src={bannerPreview}
+                        src={`${API_URL}${bannerPreview}`}
                         alt="Banner preview"
                         width={400}
                         height={128}
