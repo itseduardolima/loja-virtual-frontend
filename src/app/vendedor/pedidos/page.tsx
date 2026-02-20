@@ -86,7 +86,7 @@ export default function OrdersPage() {
       {/* Painel de pedidos */}
       <div className="w-full lg:w-[35%] lg:max-w-[500px] lg:shrink-0 flex flex-col bg-white lg:rounded-2xl lg:border lg:border-gray-200 lg:shadow-sm overflow-hidden">
         <div className="p-4 border-b border-gray-100">
-          <h1 className="text-xl font-semibold text-gray-900">Painel de pedidos</h1>
+          <h1 className="text-xl font-bold text-gray-900 font-integral">Painel de pedidos</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             {totalCount} pedido{totalCount !== 1 ? 's' : ''} no total
           </p>
@@ -181,7 +181,7 @@ export default function OrdersPage() {
       {/* Detalhes do pedido */}
       <div className="w-full flex-1 min-w-0 lg:rounded-2xl lg:shadow-sm overflow-hidden">
         <div className="sticky top-0 px-4 py-3 z-10">
-          <h2 className="text-3xl font-bold text-gray-900 font-integral">Detalhes do pedido</h2>
+          <h2 className="text-2xl font-bold text-gray-900 font-integral">Detalhes do pedido</h2>
         </div>
         <div className="p-4 max-h-[calc(100vh-220px)] lg:max-h-[calc(100vh-180px)] overflow-y-auto">
           <OrderDetailPanel orderId={selectedOrderId} />
