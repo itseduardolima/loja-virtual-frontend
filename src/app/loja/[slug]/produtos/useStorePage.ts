@@ -10,13 +10,16 @@ import {
 
 interface UseStorePageProps {
   slug: string
+  initialCategoryId?: number
 }
 
-export function useStorePage({ slug }: UseStorePageProps): UseStorePageReturn {
+export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): UseStorePageReturn {
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<SortOrder>('DESC')
   const [sortField, setSortField] = useState('created_at')
-  const [filters, setFilters] = useState<StoreFilters>({})
+  const [filters, setFilters] = useState<StoreFilters>(() =>
+    initialCategoryId ? { categoryId: initialCategoryId } : {}
+  )
   const [isManualSearch, setIsManualSearch] = useState(false)
   
   const debouncedSearch = useDebounce(search, 1000)

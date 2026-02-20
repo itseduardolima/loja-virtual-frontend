@@ -43,6 +43,7 @@ export { StorePagination } from './Store/StorePagination'
 export { StoreSidebar } from './Store/StoreSidebar'
 export { StorePendingFields } from './Store/StorePendingFields'
 export { StoreHeader } from './Store/StoreHeader'
+export { StoreCategorySection } from './Store/StoreCategorySection'
 export { CustomerOrdersDrawer } from './Store/CustomerOrdersDrawer'
 
 // Category Components

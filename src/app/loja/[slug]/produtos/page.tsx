@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ProductCard, StorePagination, StoreSidebar, ErrorState, CartSidebar, StoreHeader, LoadingPage } from '@/components'
 import { Star, Package, Filter, X } from 'lucide-react'
@@ -13,7 +13,11 @@ import { useCart } from '@/hooks/useCart'
 
 export default function StorePage() {
   const params = useParams()
+  const searchParams = useSearchParams()
   const slug = params.slug as string
+  const categoryFromUrl = searchParams.get('category')
+  const parsedCategory = categoryFromUrl ? parseInt(categoryFromUrl, 10) : NaN
+  const initialCategoryId = Number.isNaN(parsedCategory) ? undefined : parsedCategory
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -60,7 +64,7 @@ export default function StorePage() {
     handlePageChange,
     handleAddToFavorites,
     handleViewDetails
-  } = useStorePage({ slug })
+  } = useStorePage({ slug, initialCategoryId })
 
   // Hook para buscar informações da loja
   const { storeInfo } = useStoreInfo(slug)
