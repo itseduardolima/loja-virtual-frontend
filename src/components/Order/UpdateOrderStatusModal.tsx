@@ -1,18 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
 import {
   Clock,
   CheckCircle,
   Truck,
   XCircle,
-  Edit3
 } from 'lucide-react'
 import { ORDER_STATUS } from '@/types/order'
 import { useUpdateOrderStatus } from '@/hooks/useUpdateOrderStatus'
+import { STATUS_FLOW, STATUS_OPTIONS } from '@/lib/orderPanelUtils'
 
 interface UpdateOrderStatusModalProps {
   orderId: number
@@ -22,8 +21,21 @@ interface UpdateOrderStatusModalProps {
 
 export function UpdateOrderStatusModal({ orderId, currentStatus, orderNumber }: UpdateOrderStatusModalProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [selectedStatus, setSelectedStatus] = useState(currentStatus)
+  const allowedNext = STATUS_FLOW[currentStatus] ?? []
+  const firstAllowed = allowedNext[0]
+  const [selectedStatus, setSelectedStatus] = useState<number | null>(firstAllowed ?? currentStatus)
   const { mutate: updateStatus, isPending } = useUpdateOrderStatus()
+
+  const optionsToShow = useMemo(
+    () => STATUS_OPTIONS.filter((opt) => allowedNext.includes(opt.value)),
+    [allowedNext]
+  )
+
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedStatus(firstAllowed ?? currentStatus)
+    }
+  }, [isOpen, currentStatus, firstAllowed])
 
   const getStatusIcon = (status: number) => {
     const statusInfo = ORDER_STATUS[status as keyof typeof ORDER_STATUS] || ORDER_STATUS[1]
@@ -42,6 +54,7 @@ export function UpdateOrderStatusModal({ orderId, currentStatus, orderNumber }: 
   }
 
   const handleStatusUpdate = () => {
+    if (selectedStatus === null) return
     updateStatus(
       { orderId, status: selectedStatus },
       {
@@ -52,13 +65,8 @@ export function UpdateOrderStatusModal({ orderId, currentStatus, orderNumber }: 
     )
   }
 
-  const statusOptions = [
-    { value: 1, label: 'Pendente', description: 'Aguardando pagamento' },
-    { value: 2, label: 'Confirmado', description: 'Pagamento confirmado' },
-    { value: 3, label: 'Enviado', description: 'Pedido enviado para entrega' },
-    { value: 4, label: 'Entregue', description: 'Pedido entregue ao cliente' },
-    { value: 5, label: 'Cancelado', description: 'Pedido cancelado' }
-  ]
+  const isFinalStatus = allowedNext.length === 0
+  const effectiveSelected = selectedStatus ?? currentStatus
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -70,50 +78,56 @@ export function UpdateOrderStatusModal({ orderId, currentStatus, orderNumber }: 
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Atualizar Status do Pedido</DialogTitle>
-
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="space-y-3">
-            {statusOptions.map((option) => (
-              <div
-                key={option.value}
-                className={`p-3 rounded-2xl border cursor-pointer transition-colors ${selectedStatus === option.value
-                  ? 'bg-primary'
-                  : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                onClick={() => setSelectedStatus(option.value)}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-full bg-gray-100`}>
-                    {getStatusIcon(option.value)}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className={`font-medium ${selectedStatus === option.value ? 'text-primary-foreground' : 'text-gray-900'}`}>{option.label}</span>
-                      
+          {isFinalStatus ? (
+            <p className="text-sm text-gray-600 py-2">
+              Este pedido já está <strong>{ORDER_STATUS[currentStatus as keyof typeof ORDER_STATUS]?.label}</strong>. Não há próximo passo no fluxo.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-gray-600">Próximo(s) passo(s) no fluxo:</p>
+              {optionsToShow.map((option) => (
+                <div
+                  key={option.value}
+                  className={`p-3 rounded-2xl border cursor-pointer transition-colors ${effectiveSelected === option.value
+                    ? 'bg-primary'
+                    : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  onClick={() => setSelectedStatus(option.value)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-full bg-gray-100">
+                      {getStatusIcon(option.value)}
                     </div>
-                    <p className={`text-sm ${selectedStatus === option.value ? 'text-primary-foreground' : 'text-gray-600'}`}>{option.description}</p>
+                    <div className="flex-1">
+                      <span className={`font-medium ${effectiveSelected === option.value ? 'text-primary-foreground' : 'text-gray-900'}`}>
+                        {option.label}
+                      </span>
+                      <p className={`text-sm mt-0.5 ${effectiveSelected === option.value ? 'text-primary-foreground' : 'text-gray-600'}`}>
+                        {option.description}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           <div className="flex items-center justify-between pt-4 border-t">
             <div className="text-sm text-gray-600">
               Status atual:
               <span
-
-                className={`ml-2 text-sm ${getStatusColor(currentStatus) === 'yellow' ? 'text-yellow-700' :
-                  getStatusColor(currentStatus) === 'blue' ? ' text-blue-700' :
-                    getStatusColor(currentStatus) === 'purple' ? ' text-purple-700' :
-                      getStatusColor(currentStatus) === 'green' ? ' text-green-700' :
-                        ' text-red-700'
-                  }`}
+                className={`ml-2 font-medium ${
+                  getStatusColor(currentStatus) === 'yellow' ? 'text-yellow-700' :
+                  getStatusColor(currentStatus) === 'blue' ? 'text-blue-700' :
+                  getStatusColor(currentStatus) === 'purple' ? 'text-purple-700' :
+                  getStatusColor(currentStatus) === 'green' ? 'text-green-700' :
+                  'text-red-700'
+                }`}
               >
-
-                <span>{ORDER_STATUS[currentStatus as keyof typeof ORDER_STATUS]?.label}</span>
+                {ORDER_STATUS[currentStatus as keyof typeof ORDER_STATUS]?.label}
               </span>
             </div>
           </div>
@@ -128,7 +142,7 @@ export function UpdateOrderStatusModal({ orderId, currentStatus, orderNumber }: 
             </Button>
             <Button
               onClick={handleStatusUpdate}
-              disabled={isPending || selectedStatus === currentStatus}
+              disabled={isPending || isFinalStatus || selectedStatus === null || selectedStatus === currentStatus}
               className="flex-1"
             >
               {isPending ? 'Atualizando...' : 'Salvar'}

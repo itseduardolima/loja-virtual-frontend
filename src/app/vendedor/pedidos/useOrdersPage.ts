@@ -4,15 +4,18 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useOrders } from '@/hooks/useOrders'
 import { useDebounce } from '@/hooks/useDebounce'
-import { ORDER_STATUS, SORT_OPTIONS, type OrdersFilters } from '@/types/order'
+import { ORDER_STATUS, SORT_OPTIONS, type OrdersFilters, type Order } from '@/types/order'
 import { useAuth } from '@/contexts/AuthContext'
 import { EyeIcon } from 'lucide-react'
 import { formatDate, formatPrice } from '@/lib/utils'
 import { type Column } from '@/components/Table/Table'
 
+const PANEL_ORDERS_LIMIT = 100
+
 export function useOrdersPage() {
   const router = useRouter()
   const { isAuthenticated, user, isLoading: authLoading } = useAuth()
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null)
   const [filters, setFilters] = useState<OrdersFilters>({
     page: 1,
     limit: 10,
@@ -23,6 +26,13 @@ export function useOrdersPage() {
 
   const { data, isLoading, error } = useOrders({
     ...filters,
+    search: debouncedSearchTerm || undefined
+  })
+
+  const { data: panelData } = useOrders({
+    page: 1,
+    limit: PANEL_ORDERS_LIMIT,
+    sort: 'DATE_DESC',
     search: debouncedSearchTerm || undefined
   })
 
@@ -59,6 +69,16 @@ export function useOrdersPage() {
   const orders = data?.data || []
   const meta = data?.meta
   const hasFilters = !!debouncedSearchTerm || !!filters.status
+
+  const panelOrders = panelData?.data || []
+  const ordersByStatus = useMemo(() => {
+    const grouped: Record<number, Order[]> = { 1: [], 2: [], 3: [], 4: [], 5: [] }
+    panelOrders.forEach((order) => {
+      const status = order.status as 1 | 2 | 3 | 4 | 5
+      if (status >= 1 && status <= 5) grouped[status].push(order)
+    })
+    return grouped
+  }, [panelOrders])
 
   const columns: Column<any>[] = useMemo(() => [
     {
@@ -128,27 +148,27 @@ export function useOrdersPage() {
     isAuthenticated,
     user,
     authLoading,
-    
+    // Panel (lista por status + detalhe)
+    selectedOrderId,
+    setSelectedOrderId,
+    panelOrders,
+    ordersByStatus,
     // Filters
     filters,
     searchTerm,
     setSearchTerm,
     handleFilterChange,
-    
     // Data
     orders,
     meta,
     isLoading,
     error,
-    
     // Pagination
     handlePageChange,
-    
     // Table
     columns,
     hasFilters,
     getStatusInfo,
-    
     // Utils
     ORDER_STATUS,
     SORT_OPTIONS,
