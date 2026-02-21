@@ -91,7 +91,7 @@ export default function CriarLojaPage() {
           id="name"
           value={hookData.formData.name}
           onChange={(e) => hookData.handleInputChange("name", e.target.value)}
-          placeholder="Ex: Minha Loja de Roupas"
+          placeholder="Digite o nome da sua loja"
           className={`mt-2 ${getError(1, 'name') ? 'border-red-500 focus:ring-red-500' : ''}`}
         />
         {getError(1, 'name') && (
@@ -109,7 +109,7 @@ export default function CriarLojaPage() {
           onChange={(e) =>
             hookData.handleInputChange("description", e.target.value)
           }
-          placeholder="Descreva sua loja e o que você vende..."
+          placeholder="Digite a descrição da sua loja"
           className={`mt-2 ${getError(1, 'description') ? 'border-red-500 focus:ring-red-500' : ''}`}
           rows={3}
         />
@@ -340,7 +340,7 @@ export default function CriarLojaPage() {
               onChange={(e) =>
                 hookData.handleInputChange("whatsapp", e.target.value)
               }
-              placeholder="11999999999"
+              placeholder="Digite seu WhatsApp"
               className={`flex-1 min-w-0 h-12 ${getError(2, 'whatsapp') ? 'border-red-500 focus:ring-red-500' : ''}`}
             />
           </div>
@@ -410,7 +410,7 @@ export default function CriarLojaPage() {
             onChange={(e) =>
               hookData.handleInputChange("email", e.target.value)
             }
-            placeholder="contato@minhaloja.com.br"
+            placeholder="Digite seu e-mail ou email da sua loja"
             className={`mt-2 ${getError(2, 'email') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
           {getError(2, 'email') && (
@@ -430,7 +430,7 @@ export default function CriarLojaPage() {
             onChange={(e) =>
               hookData.handleInputChange("cnpj", e.target.value)
             }
-            placeholder="00.000.000/0000-00"
+            placeholder="Digite seu CNPJ"
             className={`mt-2 ${getError(2, 'cnpj') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
           {getError(2, 'cnpj') && (
@@ -448,7 +448,7 @@ export default function CriarLojaPage() {
             onChange={(e) =>
               hookData.handleInputChange("cpf", e.target.value)
             }
-            placeholder="000.000.000-00"
+            placeholder="Digite seu CPF"
             className={`mt-2 ${getError(2, 'cpf') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
           {getError(2, 'cpf') && (
@@ -483,7 +483,7 @@ export default function CriarLojaPage() {
             className="text-base font-semibold flex items-center gap-2"
           >
             <MapPin className="h-4 w-4" />
-            Endereço
+            Endereço *
           </Label>
           <Input
             id="address"
@@ -491,7 +491,7 @@ export default function CriarLojaPage() {
             onChange={(e) =>
               hookData.handleInputChange("address", e.target.value)
             }
-            placeholder="Rua das Flores, 123"
+            placeholder="Digite seu endereço"
             className={`mt-2 ${getError(3, 'address') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
           {getError(3, 'address') && (
@@ -501,13 +501,13 @@ export default function CriarLojaPage() {
 
         <div>
           <Label htmlFor="city" className="text-base font-semibold">
-            Cidade
+            Cidade *
           </Label>
           <Input
             id="city"
             value={hookData.formData.city}
             onChange={(e) => hookData.handleInputChange("city", e.target.value)}
-            placeholder="São Paulo"
+            placeholder="Digite sua cidade"
             className={`mt-2 ${getError(3, 'city') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
           {getError(3, 'city') && (
@@ -517,7 +517,7 @@ export default function CriarLojaPage() {
 
         <div>
           <Label htmlFor="state" className="text-base font-semibold">
-            Estado (UF)
+            Estado (UF) *
           </Label>
           <Input
             id="state"
@@ -525,7 +525,7 @@ export default function CriarLojaPage() {
             onChange={(e) =>
               hookData.handleInputChange("state", e.target.value)
             }
-            placeholder="SP"
+            placeholder="Digite seu estado (UF)"
             className={`mt-2 ${getError(3, 'state') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
           {getError(3, 'state') && (
@@ -535,7 +535,7 @@ export default function CriarLojaPage() {
 
         <div>
           <Label htmlFor="zipcode" className="text-base font-semibold">
-            CEP
+            CEP *
           </Label>
           <Input
             id="zipcode"
@@ -543,7 +543,7 @@ export default function CriarLojaPage() {
             onChange={(e) =>
               hookData.handleInputChange("zipcode", e.target.value)
             }
-            placeholder="01234-567"
+            placeholder="Digite seu CEP"
             className={`mt-2 ${getError(3, 'zipcode') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
           {getError(3, 'zipcode') && (
@@ -553,7 +553,7 @@ export default function CriarLojaPage() {
 
         <div>
           <Label htmlFor="neighborhood" className="text-base font-semibold">
-            Bairro
+            Bairro *
           </Label>
           <Input
             id="neighborhood"
@@ -561,7 +561,7 @@ export default function CriarLojaPage() {
             onChange={(e) =>
               hookData.handleInputChange("neighborhood", e.target.value)
             }
-            placeholder="Centro"
+            placeholder="Digite seu bairro"
             className={`mt-2 ${getError(3, 'neighborhood') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
           {getError(3, 'neighborhood') && (
@@ -571,7 +571,7 @@ export default function CriarLojaPage() {
 
         <div>
           <Label htmlFor="number" className="text-base font-semibold">
-            Número
+            Número *
           </Label>
           <Input
             id="number"
@@ -579,7 +579,7 @@ export default function CriarLojaPage() {
             onChange={(e) =>
               hookData.handleInputChange("number", e.target.value)
             }
-            placeholder="123"
+            placeholder="Digite o número"
             className={`mt-2 ${getError(3, 'number') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
           {getError(3, 'number') && (
@@ -597,7 +597,7 @@ export default function CriarLojaPage() {
             onChange={(e) =>
               hookData.handleInputChange("complement", e.target.value)
             }
-            placeholder="Apto 45"
+            placeholder="Digite o complemento"
             className={`mt-2 ${getError(3, 'complement') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
           {getError(3, 'complement') && (
@@ -618,7 +618,7 @@ export default function CriarLojaPage() {
             onChange={(e) =>
               hookData.handleInputChange("delivery_fee", e.target.value)
             }
-            placeholder="5.50"
+            placeholder="Digite a taxa de entrega"
             className={`mt-2 ${getError(3, 'delivery_fee') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
           {getError(3, 'delivery_fee') && (
@@ -640,7 +640,7 @@ export default function CriarLojaPage() {
             onChange={(e) =>
               hookData.handleInputChange("free_delivery_min", e.target.value)
             }
-            placeholder="50.00"
+            placeholder="Digite o valor mínimo para entrega grátis"
             className={`mt-2 ${getError(3, 'free_delivery_min') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
           {getError(3, 'free_delivery_min') && (
@@ -662,7 +662,7 @@ export default function CriarLojaPage() {
             onChange={(e) =>
               hookData.handleInputChange("delivery_time", e.target.value)
             }
-            placeholder="2-3 dias úteis"
+            placeholder="Digite o tempo de entrega"
             className={`mt-2 ${getError(3, 'delivery_time') ? 'border-red-500 focus:ring-red-500' : ''}`}
           />
           {getError(3, 'delivery_time') && (

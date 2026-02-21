@@ -123,31 +123,31 @@ export const createStoreStep2Schema = yup.object({
     .max(14, 'CPF deve ter no máximo 14 caracteres')
 })
 
-// Schema para criação de loja - Step 3 (Endereço)
+// Schema para criação de loja - Step 3 (Endereço) - endereço obrigatório ao criar loja
 export const createStoreStep3Schema = yup.object({
   address: yup
     .string()
-    .optional()
+    .required('Endereço (rua) é obrigatório')
     .max(255, 'Endereço deve ter no máximo 255 caracteres'),
   city: yup
     .string()
-    .optional()
+    .required('Cidade é obrigatória')
     .max(100, 'Cidade deve ter no máximo 100 caracteres'),
   state: yup
     .string()
-    .optional()
-    .max(2, 'Estado deve ter 2 caracteres'),
+    .required('Estado (UF) é obrigatório')
+    .length(2, 'Estado deve ter 2 caracteres (ex: SP)'),
   zipcode: yup
     .string()
-    .optional()
+    .required('CEP é obrigatório')
     .max(10, 'CEP deve ter no máximo 10 caracteres'),
   neighborhood: yup
     .string()
-    .optional()
+    .required('Bairro é obrigatório')
     .max(100, 'Bairro deve ter no máximo 100 caracteres'),
   number: yup
     .string()
-    .optional()
+    .required('Número é obrigatório')
     .max(10, 'Número deve ter no máximo 10 caracteres'),
   complement: yup
     .string()
@@ -295,27 +295,27 @@ export const createStoreSchema = yup.object({
     .max(14, 'CPF deve ter no máximo 14 caracteres'),
   address: yup
     .string()
-    .optional()
+    .required('Endereço (rua) é obrigatório')
     .max(255, 'Endereço deve ter no máximo 255 caracteres'),
   city: yup
     .string()
-    .optional()
+    .required('Cidade é obrigatória')
     .max(100, 'Cidade deve ter no máximo 100 caracteres'),
   state: yup
     .string()
-    .optional()
-    .max(2, 'Estado deve ter 2 caracteres'),
+    .required('Estado (UF) é obrigatório')
+    .length(2, 'Estado deve ter 2 caracteres (ex: SP)'),
   zipcode: yup
     .string()
-    .optional()
+    .required('CEP é obrigatório')
     .max(10, 'CEP deve ter no máximo 10 caracteres'),
   neighborhood: yup
     .string()
-    .optional()
+    .required('Bairro é obrigatório')
     .max(100, 'Bairro deve ter no máximo 100 caracteres'),
   number: yup
     .string()
-    .optional()
+    .required('Número é obrigatório')
     .max(10, 'Número deve ter no máximo 10 caracteres'),
   complement: yup
     .string()
