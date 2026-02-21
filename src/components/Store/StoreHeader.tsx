@@ -335,11 +335,13 @@ export function StoreHeader({
                   onViewOrders={() => setIsOrdersDrawerOpen(true)}
                 />
 
-                {/* Drawer de Atualização de Perfil */}
-                <UpdateProfileDrawer
-                  isOpen={isUpdateProfileOpen}
-                  onClose={() => setIsUpdateProfileOpen(false)}
-                />
+                {/* Drawer de Atualização de Perfil - montado só ao abrir para evitar peso no header */}
+                {isUpdateProfileOpen && (
+                  <UpdateProfileDrawer
+                    isOpen
+                    onClose={() => setIsUpdateProfileOpen(false)}
+                  />
+                )}
 
                 {/* Drawer de Pedidos e Rastreio */}
                 <CustomerOrdersDrawer

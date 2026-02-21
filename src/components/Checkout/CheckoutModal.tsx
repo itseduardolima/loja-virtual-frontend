@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useCheckout } from '@/hooks/useCheckout'
 import { useAuth } from '@/contexts/AuthContext'
-import { CreditCard, User, Mail, MessageSquare, Phone } from 'lucide-react'
+import { useCustomerProfile } from '@/hooks/useCustomerProfile'
+import { checkoutFormSchema } from '@/schemas/checkoutSchemas'
 
 interface CheckoutModalProps {
   isOpen: boolean
@@ -22,8 +23,8 @@ interface CheckoutModalProps {
 export function CheckoutModal({ isOpen, onClose, sessionId, storeId, storeSlug, totalPrice }: CheckoutModalProps) {
   const { checkout, isCheckoutLoading } = useCheckout()
   const { user } = useAuth()
-  
-  // Buscar dados do usuário do contexto ou localStorage
+  const { fetchProfile } = useCustomerProfile()
+
   const getUserData = () => {
     if (user) return user
     const userDataStr = localStorage.getItem('user-data')
@@ -37,27 +38,37 @@ export function CheckoutModal({ isOpen, onClose, sessionId, storeId, storeSlug, 
     return null
   }
 
-  const userData = getUserData()
-  
   const [formData, setFormData] = useState({
-    customer_name: userData?.name || '',
-    customer_email: userData?.email || '',
+    customer_name: '',
+    customer_email: '',
     customer_phone: '',
     notes: ''
   })
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
-  // Atualizar dados quando o modal abrir ou o usuário mudar
   useEffect(() => {
-    if (isOpen) {
-      const currentUserData = getUserData()
-      setFormData({
-        customer_name: currentUserData?.name || '',
-        customer_email: currentUserData?.email || '',
-        customer_phone: '',
-        notes: ''
+    if (!isOpen) return
+    const fallback = getUserData()
+    setFormData(prev => ({
+      ...prev,
+      customer_name: fallback?.name || prev.customer_name || '',
+      customer_email: fallback?.email || prev.customer_email || '',
+      customer_phone: prev.customer_phone || '',
+      notes: prev.notes || ''
+    }))
+    fetchProfile()
+      .then((res) => {
+        const data = res?.data
+        if (data) {
+          setFormData(prev => ({
+            ...prev,
+            customer_name: data.name || prev.customer_name,
+            customer_email: data.email || prev.customer_email,
+            customer_phone: data.phone || prev.customer_phone
+          }))
+        }
       })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      .catch(() => { })
   }, [isOpen, user])
 
   const handleInputChange = (field: string, value: string) => {
@@ -65,13 +76,30 @@ export function CheckoutModal({ isOpen, onClose, sessionId, storeId, storeSlug, 
       ...prev,
       [field]: value
     }))
+    if (errors[field]) {
+      setErrors(prev => {
+        const next = { ...prev }
+        delete next[field]
+        return next
+      })
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (!formData.customer_name.trim() || !formData.customer_email.trim() || !formData.customer_phone.trim()) {
-      return
+    setErrors({})
+    try {
+      await checkoutFormSchema.validate(formData, { abortEarly: false })
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'inner' in err) {
+        const yupErr = err as { inner: Array<{ path?: string; message?: string }> }
+        const next: Record<string, string> = {}
+        for (const e of yupErr.inner || []) {
+          if (e.path && e.message) next[e.path] = e.message
+        }
+        setErrors(next)
+        return
+      }
     }
 
     await checkout(sessionId, storeId, {
@@ -80,27 +108,27 @@ export function CheckoutModal({ isOpen, onClose, sessionId, storeId, storeSlug, 
       customer_phone: formData.customer_phone.trim(),
       notes: formData.notes.trim() || undefined
     }, storeSlug)
-    
+
     onClose()
   }
 
   const handleClose = () => {
-    const currentUserData = getUserData()
     setFormData({
-      customer_name: currentUserData?.name || '',
-      customer_email: currentUserData?.email || '',
+      customer_name: '',
+      customer_email: '',
       customer_phone: '',
       notes: ''
     })
+    setErrors({})
     onClose()
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
+
             Finalizar Pedido
           </DialogTitle>
         </DialogHeader>
@@ -109,7 +137,6 @@ export function CheckoutModal({ isOpen, onClose, sessionId, storeId, storeSlug, 
           {/* Nome do Cliente */}
           <div className="space-y-2">
             <Label htmlFor="customer_name" className="flex items-center gap-2">
-              <User className="h-4 w-4" />
               Nome Completo *
             </Label>
             <Input
@@ -119,15 +146,20 @@ export function CheckoutModal({ isOpen, onClose, sessionId, storeId, storeSlug, 
               onChange={(e) => handleInputChange('customer_name', e.target.value)}
               placeholder="Digite seu nome completo"
               required
-              disabled
-              className="w-full bg-gray-100"
+              className={`w-full ${errors.customer_name ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+              aria-invalid={!!errors.customer_name}
+              aria-describedby={errors.customer_name ? 'customer_name_error' : undefined}
             />
+            {errors.customer_name && (
+              <p id="customer_name_error" className="text-sm text-red-600">
+                {errors.customer_name}
+              </p>
+            )}
           </div>
 
           {/* Email do Cliente */}
           <div className="space-y-2">
             <Label htmlFor="customer_email" className="flex items-center gap-2">
-              <Mail className="h-4 w-4" />
               Email *
             </Label>
             <Input
@@ -137,32 +169,44 @@ export function CheckoutModal({ isOpen, onClose, sessionId, storeId, storeSlug, 
               onChange={(e) => handleInputChange('customer_email', e.target.value)}
               placeholder="Digite seu email"
               required
-              disabled
-              className="w-full bg-gray-100"
+              className={`w-full ${errors.customer_email ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+              aria-invalid={!!errors.customer_email}
+              aria-describedby={errors.customer_email ? 'customer_email_error' : undefined}
             />
+            {errors.customer_email && (
+              <p id="customer_email_error" className="text-sm text-red-600">
+                {errors.customer_email}
+              </p>
+            )}
           </div>
 
           {/* Telefone do Cliente */}
           <div className="space-y-2">
             <Label htmlFor="customer_phone" className="flex items-center gap-2">
-              <Phone className="h-4 w-4" />
-              Telefone *
+              WhatsApp *
             </Label>
             <Input
               id="customer_phone"
               type="tel"
               value={formData.customer_phone}
               onChange={(e) => handleInputChange('customer_phone', e.target.value)}
-              placeholder="(11) 99999-9999"
+              placeholder="Digite seu WhatsApp"
               required
-              className="w-full"
+              className={`w-full ${errors.customer_phone ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+              aria-invalid={!!errors.customer_phone}
+              aria-describedby={errors.customer_phone ? 'customer_phone_error' : undefined}
             />
+            {errors.customer_phone && (
+              <p id="customer_phone_error" className="text-sm text-red-600">
+                {errors.customer_phone}
+              </p>
+            )}
           </div>
 
           {/* Observações */}
           <div className="space-y-2">
             <Label htmlFor="notes" className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4" />
+
               Observações (opcional)
             </Label>
             <Textarea
@@ -211,7 +255,7 @@ export function CheckoutModal({ isOpen, onClose, sessionId, storeId, storeSlug, 
         {/* Informação sobre WhatsApp */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
           <p className="text-sm text-blue-800">
-            <strong>Importante:</strong> Após finalizar o pedido, você será redirecionado para o WhatsApp 
+            <strong>Importante:</strong> Após finalizar o pedido, você será redirecionado para o WhatsApp
             do vendedor para confirmar e finalizar a compra.
           </p>
         </div>

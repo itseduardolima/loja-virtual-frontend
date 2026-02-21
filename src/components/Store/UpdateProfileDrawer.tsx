@@ -29,43 +29,43 @@ export function UpdateProfileDrawer({ isOpen, onClose }: UpdateProfileDrawerProp
     address_country: ''
   })
 
-  // Carregar dados do perfil quando o drawer abrir
+  // Carregar dados do perfil só quando o drawer abrir (evita refetch a cada re-render do header)
   useEffect(() => {
+    if (!isOpen || !user) return
+    let cancelled = false
     const loadProfile = async () => {
-      if (isOpen && user) {
-        try {
-          const response = await fetchProfile()
-          if (response?.data) {
-            setFormData({
-              name: response.data.name || '',
-              email: response.data.email || '',
-              phone: response.data.phone || '',
-              address_street: response.data.address_street || '',
-              address_city: response.data.address_city || '',
-              address_state: response.data.address_state || '',
-              address_zipcode: response.data.address_zipcode || '',
-              address_country: response.data.address_country || 'Brasil'
-            })
-          }
-        } catch (error) {
-          console.error('Erro ao carregar perfil:', error)
-          // Se falhar, usar dados básicos do user
-          setFormData({
-            name: user.name || '',
-            email: user.email || '',
-            phone: '',
-            address_street: '',
-            address_city: '',
-            address_state: '',
-            address_zipcode: '',
-            address_country: 'Brasil'
-          })
-        }
+      try {
+        const response = await fetchProfile()
+        if (cancelled || !response?.data) return
+        setFormData({
+          name: response.data.name || '',
+          email: response.data.email || '',
+          phone: response.data.phone || '',
+          address_street: response.data.address_street || '',
+          address_city: response.data.address_city || '',
+          address_state: response.data.address_state || '',
+          address_zipcode: response.data.address_zipcode || '',
+          address_country: response.data.address_country || 'Brasil'
+        })
+      } catch (error) {
+        if (cancelled) return
+        console.error('Erro ao carregar perfil:', error)
+        setFormData({
+          name: user.name || '',
+          email: user.email || '',
+          phone: '',
+          address_street: '',
+          address_city: '',
+          address_state: '',
+          address_zipcode: '',
+          address_country: 'Brasil'
+        })
       }
     }
-
     loadProfile()
-  }, [isOpen, user, fetchProfile])
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetch só ao abrir; fetchProfile não deve re-disparar o efeito
+  }, [isOpen, user])
 
   const handleInputChange = (field: keyof UpdateCustomerProfileDto, value: string) => {
     setFormData(prev => ({
