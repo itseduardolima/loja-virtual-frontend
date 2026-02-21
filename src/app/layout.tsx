@@ -7,6 +7,7 @@ import { QueryProvider } from '@/providers/QueryProvider'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ToastProvider } from '@/contexts/ToastContext'
 import { ToastContainer } from '@/components/Toast/ToastContainer'
+import { CompleteProfileGuard } from '@/components/User/CompleteProfileGuard'
 
 const satoshi = localFont({
   src: '../../public/fonts/Satoshi-Variable.ttf',
@@ -47,10 +48,12 @@ export default function RootLayout({
       <body className={`${satoshi.variable} ${integralCF.variable} ${nunito.variable} font-sans`}>
         <QueryProvider>
           <AuthProvider>
-            <ToastProvider>
-              {children}
-              <ToastContainer />
-            </ToastProvider>
+            <CompleteProfileGuard>
+              <ToastProvider>
+                {children}
+                <ToastContainer />
+              </ToastProvider>
+            </CompleteProfileGuard>
           </AuthProvider>
         </QueryProvider>
       </body>
