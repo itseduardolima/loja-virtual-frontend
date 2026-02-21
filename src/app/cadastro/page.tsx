@@ -64,14 +64,17 @@ export default function CadastroPage() {
       return;
     }
 
+    const whatsappDigits = whatsapp.replace(/\D/g, "");
+    if (!whatsappDigits || whatsappDigits.length < 8) {
+      return;
+    }
+
     if (password !== confirmPassword) {
       setPasswordMismatchError("As senhas não coincidem");
       return;
     }
 
-    const whatsappFull = whatsapp.trim()
-      ? `${getCountryCallingCode()}${whatsapp.replace(/\D/g, "")}`
-      : undefined;
+    const whatsappFull = `${getCountryCallingCode()}${whatsappDigits}`;
 
     register({
       name: name.trim(),
@@ -99,7 +102,7 @@ export default function CadastroPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div className="space-y-1.5">
                 <Label htmlFor="name" className="text-sm font-medium text-slate-700">
-                  Nome completo
+                  Nome completo <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
                   <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -118,7 +121,7 @@ export default function CadastroPage() {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="email" className="text-sm font-medium text-slate-700">
-                  E-mail
+                  E-mail <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -138,7 +141,7 @@ export default function CadastroPage() {
             {/* WhatsApp */}
             <div className="space-y-1.5">
               <Label htmlFor="whatsapp" className="text-sm font-medium text-slate-700">
-                WhatsApp <span className="text-slate-400 font-normal">(opcional)</span>
+                WhatsApp <span className="text-red-500">*</span>
               </Label>
               <div className="flex gap-2">
                 <div className="relative shrink-0" ref={dropdownRef}>
@@ -192,6 +195,7 @@ export default function CadastroPage() {
                   className="flex-1 h-11  border-slate-200 focus:border-slate-400 focus:ring-slate-400/20"
                   minLength={8}
                   maxLength={15}
+                  required
                 />
               </div>
             </div>
@@ -201,7 +205,7 @@ export default function CadastroPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-1.5">
                   <Label htmlFor="password" className="text-sm font-medium text-slate-700">
-                    Senha
+                    Senha <span className="text-red-500">*</span>
                   </Label>
                   <div className="relative">
                     <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -227,7 +231,7 @@ export default function CadastroPage() {
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="confirmPassword" className="text-sm font-medium text-slate-700">
-                    Confirmar senha
+                    Confirmar senha <span className="text-red-500">*</span>
                   </Label>
                   <div className="relative">
                     <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
