@@ -27,6 +27,30 @@ export interface ProductReviewsResponse {
   }
 }
 
+export interface StoreReview {
+  id: number
+  rating: number
+  comment: string | null
+  images?: string[]
+  created_at: string
+  user: {
+    id: number
+    name: string
+  }
+  product: {
+    id: number
+    name: string
+    image: string | null
+  }
+}
+
+export interface StoreReviewsResponse {
+  data: StoreReview[]
+  meta: {
+    total: number
+  }
+}
+
 export interface CreateReviewRequest {
   product_id: number
   rating: number

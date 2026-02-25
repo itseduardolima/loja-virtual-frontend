@@ -13,6 +13,8 @@ import { useStoreHomePage } from './useStoreHomePage'
 import { buildImageUrl } from '@/lib/utils'
 import { Package } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useStoreReviews } from '@/hooks/useStoreReviews'
+import { StoreReviewsCarousel } from '@/components/Store/StoreReviewsCarousel'
 
 export default function StoreHomePage() {
   const params = useParams()
@@ -34,6 +36,11 @@ export default function StoreHomePage() {
     handleAddToFavorites,
     handleSearchSubmit,
   } = useStoreHomePage(slug)
+
+  const {
+    reviews: storeReviews,
+    isLoading: storeReviewsLoading,
+  } = useStoreReviews(slug, 20, 4)
 
   if (storeError && !storeInfo) {
     return (
@@ -121,6 +128,17 @@ export default function StoreHomePage() {
           </>
         )}
       </div>
+
+      {storeReviewsLoading ? null : storeReviews.length > 0 ? (
+        <section>
+          <div className="mx-auto px-4 sm:px-6 lg:px-20 py-10 lg:py-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 font-integral text-center">
+              Nossos clientes satisfeitos
+            </h2>
+            <StoreReviewsCarousel reviews={storeReviews} />
+          </div>
+        </section>
+      ) : null}
 
       <CartSidebar
         isOpen={isCartOpen}

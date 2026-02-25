@@ -456,27 +456,48 @@ export default function CriarLojaPage() {
           )}
         </div>
       </div>
-
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
-          <div>
-            <h4 className="font-semibold text-yellow-800">
-              Informações Opcionais
-            </h4>
-            <p className="text-sm text-yellow-700 mt-1">
-              Você pode preencher essas informações agora ou depois, através da
-              edição da loja.
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 
   const renderStep3 = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <div>
+          <Label htmlFor="zipcode" className="text-base font-semibold">
+            CEP *
+          </Label>
+          <Input
+            id="zipcode"
+            value={hookData.formData.zipcode}
+            onChange={(e) =>
+              hookData.handleInputChange("zipcode", e.target.value)
+            }
+            placeholder="Digite seu CEP"
+            className={`mt-2 ${getError(3, 'zipcode') ? 'border-red-500 focus:ring-red-500' : ''}`}
+          />
+          {getError(3, 'zipcode') && (
+            <p className="mt-1 text-sm text-red-600">{getError(3, 'zipcode')}</p>
+          )}
+        </div>
+
+        <div>
+          <Label htmlFor="neighborhood" className="text-base font-semibold">
+            Bairro *
+          </Label>
+          <Input
+            id="neighborhood"
+            value={hookData.formData.neighborhood}
+            onChange={(e) =>
+              hookData.handleInputChange("neighborhood", e.target.value)
+            }
+            placeholder="Digite seu bairro"
+            className={`mt-2 ${getError(3, 'neighborhood') ? 'border-red-500 focus:ring-red-500' : ''}`}
+          />
+          {getError(3, 'neighborhood') && (
+            <p className="mt-1 text-sm text-red-600">{getError(3, 'neighborhood')}</p>
+          )}
+        </div>
         <div className="md:col-span-2">
           <Label
             htmlFor="address"
@@ -533,41 +554,7 @@ export default function CriarLojaPage() {
           )}
         </div>
 
-        <div>
-          <Label htmlFor="zipcode" className="text-base font-semibold">
-            CEP *
-          </Label>
-          <Input
-            id="zipcode"
-            value={hookData.formData.zipcode}
-            onChange={(e) =>
-              hookData.handleInputChange("zipcode", e.target.value)
-            }
-            placeholder="Digite seu CEP"
-            className={`mt-2 ${getError(3, 'zipcode') ? 'border-red-500 focus:ring-red-500' : ''}`}
-          />
-          {getError(3, 'zipcode') && (
-            <p className="mt-1 text-sm text-red-600">{getError(3, 'zipcode')}</p>
-          )}
-        </div>
-
-        <div>
-          <Label htmlFor="neighborhood" className="text-base font-semibold">
-            Bairro *
-          </Label>
-          <Input
-            id="neighborhood"
-            value={hookData.formData.neighborhood}
-            onChange={(e) =>
-              hookData.handleInputChange("neighborhood", e.target.value)
-            }
-            placeholder="Digite seu bairro"
-            className={`mt-2 ${getError(3, 'neighborhood') ? 'border-red-500 focus:ring-red-500' : ''}`}
-          />
-          {getError(3, 'neighborhood') && (
-            <p className="mt-1 text-sm text-red-600">{getError(3, 'neighborhood')}</p>
-          )}
-        </div>
+       
 
         <div>
           <Label htmlFor="number" className="text-base font-semibold">
@@ -668,21 +655,6 @@ export default function CriarLojaPage() {
           {getError(3, 'delivery_time') && (
             <p className="mt-1 text-sm text-red-600">{getError(3, 'delivery_time')}</p>
           )}
-        </div>
-      </div>
-
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
-          <div>
-            <h4 className="font-semibold text-yellow-800">
-              Informações Opcionais
-            </h4>
-            <p className="text-sm text-yellow-700 mt-1">
-              Você pode preencher essas informações agora ou depois, através da
-              edição da loja.
-            </p>
-          </div>
         </div>
       </div>
     </div>

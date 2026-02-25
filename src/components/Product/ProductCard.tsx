@@ -27,6 +27,11 @@ export function ProductCard({
   const [isHovered, setIsHovered] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
+  const getDisplayName = (name: string) => {
+    if (!name) return ''
+    return name.length > 30 ? `${name.slice(0, 30)}...` : name
+  }
+
   // Obter imagens disponíveis (prioridade: images_by_color > images como objeto > images como array)
   const getAvailableImages = (): string[] => {
     // Se houver images_by_color, usar a primeira cor disponível
@@ -113,8 +118,11 @@ export function ProductCard({
         <div className="p-2 sm:p-3 space-y-1.5 sm:space-y-2 flex-1 flex flex-col justify-between">
           <div className="flex items-start justify-between gap-2">
             {/* Nome do Produto */}
-            <h3 className="font-bold text-sm sm:text-base md:text-lg text-gray-900 line-clamp-2 flex-1 leading-tight">
-              {product.name}
+            <h3
+              className="font-bold text-sm sm:text-base md:text-lg text-gray-900 line-clamp-2 flex-1 leading-tight"
+              title={product.name}
+            >
+              {getDisplayName(product.name)}
             </h3>
 
             {showStatusSwitch && (
@@ -125,25 +133,25 @@ export function ProductCard({
           </div>
 
           {/* Avaliações */}
-          {(product.total_reviews ?? 0) > 0 ? (
-            <div className="flex items-center gap-1.5">
-              <div className="flex items-center gap-0.5">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${
-                      star <= Math.round(product.average_rating ?? 0)
-                        ? 'fill-amber-400 text-amber-400'
-                        : 'text-gray-200'
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="text-xs text-gray-500">
-                {product.average_rating?.toFixed(1) ?? '0'} ({product.total_reviews ?? 0})
-              </span>
+          <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-0.5">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${
+                    star <= Math.round(product.average_rating ?? 0)
+                      ? 'fill-amber-400 text-amber-400'
+                      : 'text-gray-200'
+                  }`}
+                />
+              ))}
             </div>
-          ) : null}
+            <span className="text-xs text-gray-500">
+              {(product.total_reviews ?? 0) > 0
+                ? `${(product.average_rating ?? 0).toFixed(1)} (${product.total_reviews ?? 0})`
+                : '(0)'}
+            </span>
+          </div>
 
           {/* Preço */}
           <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
