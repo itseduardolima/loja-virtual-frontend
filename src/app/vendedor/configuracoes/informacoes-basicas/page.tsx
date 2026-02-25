@@ -69,11 +69,11 @@ export default function InformacoesBasicasPage() {
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 placeholder="Descreva sua loja..."
                 className={`mt-2 min-h-[100px] ${errors.description ? 'border-red-500 focus:ring-red-500' : ''}`}
-                maxLength={500}
+                maxLength={170}
               />
               <div className="flex justify-between items-center mt-1">
                 <p className="text-xs text-gray-500">
-                  {formData.description.length}/500 caracteres
+                  {formData.description.length}/170 caracteres
                 </p>
                 {errors.description && (
                   <p className="text-sm text-red-600">{errors.description}</p>

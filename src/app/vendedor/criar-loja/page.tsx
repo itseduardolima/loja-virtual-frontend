@@ -112,6 +112,7 @@ export default function CriarLojaPage() {
           placeholder="Digite a descrição da sua loja"
           className={`mt-2 ${getError(1, 'description') ? 'border-red-500 focus:ring-red-500' : ''}`}
           rows={3}
+          maxLength={170}
         />
         {getError(1, 'description') && (
           <p className="mt-1 text-sm text-red-600">{getError(1, 'description')}</p>

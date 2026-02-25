@@ -15,6 +15,7 @@ import { Package } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useStoreReviews } from '@/hooks/useStoreReviews'
 import { StoreReviewsCarousel } from '@/components/Store/StoreReviewsCarousel'
+import { AppFooter } from '@/components/Layout/AppFooter'
 
 export default function StoreHomePage() {
   const params = useParams()
@@ -139,6 +140,8 @@ export default function StoreHomePage() {
           </div>
         </section>
       ) : null}
+
+      <AppFooter />
 
       <CartSidebar
         isOpen={isCartOpen}

@@ -65,7 +65,7 @@ export function SidebarVendedor({ currentPath }: SidebarVendedorProps) {
     },
     {
       name: 'Ver minha loja',
-      href: store?.slug ? `/loja/${store.slug}/produtos` : '#',
+      href: store?.slug ? `/loja/${store.slug}` : '#',
       icon: Store,
       current: currentPath?.startsWith(store?.slug ? `/loja/${store.slug}/produtos` : '#')
     }

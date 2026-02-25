@@ -10,7 +10,7 @@ export const updateInformacoesBasicasSchema = yup.object({
   description: yup
     .string()
     .optional()
-    .max(500, 'Descrição deve ter no máximo 500 caracteres'),
+    .max(170, 'Descrição deve ter no máximo 170 caracteres'),
   niche_ids: yup
     .array()
     .of(yup.string())

@@ -11,6 +11,14 @@ export interface StoreInfo {
   website?: string
   email?: string
   phone?: string
+  address?: string
+  city?: string
+  state?: string
+  zipcode?: string
+  neighborhood?: string
+  number?: string
+  complement?: string
+  payment_methods?: string[]
   created_at: string
   _count?: {
     products: number

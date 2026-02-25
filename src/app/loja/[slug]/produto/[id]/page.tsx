@@ -22,6 +22,7 @@ import LoadingPage from '@/components/Layout/LoadingPage'
 import { getColorHex } from '@/schemas'
 import { useAddToCartAnimation } from '@/hooks/useAddToCartAnimation'
 import { AddToCartAnimation } from '@/components/Animation/AddToCartAnimation'
+import { AppFooter } from '@/components/Layout/AppFooter'
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -484,6 +485,8 @@ export default function ProductDetailPage() {
           onComplete={onAnimationComplete}
         />
       )}
+
+      <AppFooter />
     </div>
   )
 }
