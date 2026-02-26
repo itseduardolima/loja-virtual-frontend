@@ -11,6 +11,8 @@ export interface StoreInfo {
   website?: string
   email?: string
   phone?: string
+  cnpj?: string
+  business_hours?: Record<string, string>
   address?: string
   city?: string
   state?: string

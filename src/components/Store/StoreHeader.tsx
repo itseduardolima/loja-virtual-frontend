@@ -54,7 +54,7 @@ export function StoreHeader({
   const debouncedSearch = useDebounce(searchValue || '', 300)
 
   const handleStoreNameClick = () => {
-    router.push(`/loja/${slug}/produtos`)
+    router.push(`/loja/${slug}`)
   }
 
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

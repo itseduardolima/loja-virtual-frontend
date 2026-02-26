@@ -51,6 +51,15 @@ export default function StoreHomePage() {
     )
   }
 
+  if (productsLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingPage />
+      </div>
+    )
+  }
+
+
   return (
     <div className="min-h-screen">
       <StoreHeader

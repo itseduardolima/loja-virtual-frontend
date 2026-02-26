@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useStoreInfo } from '@/hooks/useStoreInfo'
 import { buildImageUrl } from '@/lib/utils'
-import { Instagram, Facebook} from 'lucide-react'
+import { Instagram, Facebook } from 'lucide-react'
 import { WhatsappIcon } from '@/assets/icons/WhatsappIcon'
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
@@ -15,6 +15,16 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
   boleto: 'Boleto',
   cash: 'Dinheiro',
   transfer: 'Transferência',
+}
+
+const DAY_LABELS: Record<string, string> = {
+  segunda: 'Segunda',
+  terca: 'Terça',
+  quarta: 'Quarta',
+  quinta: 'Quinta',
+  sexta: 'Sexta',
+  sabado: 'Sábado',
+  domingo: 'Domingo',
 }
 
 function StoreFooterContent({ slug }: { slug: string }) {
@@ -34,6 +44,8 @@ function StoreFooterContent({ slug }: { slug: string }) {
     storeInfo.instagram || storeInfo.facebook || storeInfo.whatsapp
   const paymentMethods = storeInfo.payment_methods ?? []
   const hasPayment = paymentMethods.length > 0
+  const businessHours = storeInfo.business_hours ?? {}
+  const hasBusinessHours = Object.keys(businessHours).length > 0
   const hasAddress =
     storeInfo.address ||
     storeInfo.city ||
@@ -41,12 +53,15 @@ function StoreFooterContent({ slug }: { slug: string }) {
     storeInfo.zipcode ||
     storeInfo.neighborhood ||
     storeInfo.number
+  const hasLocationInfo = hasAddress || hasBusinessHours || !!storeInfo.cnpj
 
   return (
     <footer className="bg-gray-50 mt-auto">
       <div className="mx-auto px-4 sm:px-6 lg:px-20 py-10 lg:py-12">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div className="flex items-center gap-4">
+
+        <div className="grid grid-cols-1 md:grid-cols-4 space-y-8 md:space-y-0">
+
+          <div><div className="flex items-center gap-4">
             {storeInfo.logo ? (
               <Link href={`/loja/${slug}`} className="flex-shrink-0">
                 <Image
@@ -71,101 +86,127 @@ function StoreFooterContent({ slug }: { slug: string }) {
                 </p>
               ) : null}
             </div>
+          </div></div>
+          {hasLocationInfo ? (<div className="flex md:mx-auto flex-col">
+            <p className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">
+              Endereço
+            </p>
+            <div className="text-sm text-gray-600 space-y-0.5">
+              {storeInfo.address || storeInfo.number || storeInfo.neighborhood ? (
+                <p>
+                  {storeInfo.address}
+                  {storeInfo.number ? `, ${storeInfo.number}` : ''}
+                  {storeInfo.neighborhood ? ` - ${storeInfo.neighborhood}` : ''}
+                </p>
+              ) : null}
+              {(storeInfo.city || storeInfo.state || storeInfo.zipcode) && (
+                <p>
+                  {storeInfo.city}
+                  {storeInfo.state ? ` - ${storeInfo.state}` : ''}
+                  {storeInfo.zipcode ? ` · CEP ${storeInfo.zipcode}` : ''}
+                </p>
+              )}
+
+
+            </div>
           </div>
+          ) : null}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {hasAddress ? (
-              <div>
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                  Endereço
-                </p>
-                <div className="text-sm text-gray-600 space-y-0.5">
-                  {storeInfo.address || storeInfo.number || storeInfo.neighborhood ? (
-                    <p>
-                      {storeInfo.address}
-                      {storeInfo.number ? `, ${storeInfo.number}` : ''}
-                      {storeInfo.neighborhood ? ` - ${storeInfo.neighborhood}` : ''}
-                    </p>
-                  ) : null}
-                  {(storeInfo.city || storeInfo.state || storeInfo.zipcode) && (
-                    <p>
-                      {storeInfo.city}
-                      {storeInfo.state ? ` - ${storeInfo.state}` : ''}
-                      {storeInfo.zipcode ? ` · CEP ${storeInfo.zipcode}` : ''}
-                    </p>
-                  )}
-                </div>
-              </div>
-            ) : null}
-
-            {hasSocial ? (
-              <div>
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                  Redes sociais
-                </p>
-                <div className="flex items-center gap-3">
-                  {storeInfo.instagram ? (
-                    <a
-                      href={
-                        storeInfo.instagram
-                      }
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-gray-600 hover:text-gray-900"
-                      aria-label="Instagram"
-                    >
-                      <Instagram className="h-5 w-5" />
-                    </a>
-                  ) : null}
-                  {storeInfo.facebook ? (
-                    <a
-                      href={
-                        storeInfo.facebook
-                      }
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-gray-600 hover:text-gray-900"
-                      aria-label="Facebook"
-                    >
-                      <Facebook className="h-5 w-5" />
-                    </a>
-                  ) : null}
-                  {storeInfo.whatsapp ? (
-                    <a
-                      href={`https://wa.me/${storeInfo.whatsapp.replace(/\D/g, '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-gray-600 hover:text-gray-900"
-                      aria-label="WhatsApp"
-                    >
-                      <WhatsappIcon />
-                    </a>
-                  ) : null}
-                </div>
-              </div>
-            ) : null}
-
-            {hasPayment ? (
-              <div>
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1">
-                  
-                  Formas de pagamento
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {paymentMethods.map((id) => (
-                    <span
-                      key={id}
-                      className="inline-flex items-center px-2.5 py-1 rounded-full bg-white border border-gray-200 text-xs font-bold text-gray-700"
-                    >
-                      {PAYMENT_METHOD_LABELS[id] ?? id}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ) : null}
+          {hasSocial ? (<div className="flex md:mx-auto flex-col">
+            <p className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">
+              Redes sociais
+            </p>
+            <div className="flex items-center gap-3">
+              {storeInfo.instagram ? (
+                <a
+                  href={
+                    storeInfo.instagram
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-600 hover:text-gray-900"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="h-5 w-5" />
+                </a>
+              ) : null}
+              {storeInfo.facebook ? (
+                <a
+                  href={
+                    storeInfo.facebook
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-600 hover:text-gray-900"
+                  aria-label="Facebook"
+                >
+                  <Facebook className="h-5 w-5" />
+                </a>
+              ) : null}
+              {storeInfo.whatsapp ? (
+                <a
+                  href={`https://wa.me/${storeInfo.whatsapp.replace(/\D/g, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-600 hover:text-gray-900"
+                  aria-label="WhatsApp"
+                >
+                  <WhatsappIcon />
+                </a>
+              ) : null}
+            </div>
           </div>
+          ) : null}
+
+          {hasBusinessHours ? (<div className="flex md:mx-auto flex-col">
+            <p className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">
+              Horário de funcionamento
+            </p>
+            <div className="space-y-0.5">
+              {Object.entries(businessHours).map(([day, hours]) => {
+                const [open, close] = (hours || '').split('-')
+                if (!open || !close) return null
+                return (
+                  <p key={day} className="text-sm text-gray-600">
+                    {DAY_LABELS[day] ?? day}:{' '}
+                    {open.trim()} às {close.trim()}
+                  </p>
+                )
+              })}
+            </div>
+          </div>
+          ) : null}
+
+          {hasPayment ? (
+            <div>
+              <p className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">
+
+                Formas de pagamento
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {paymentMethods.map((id) => (
+                  <span
+                    key={id}
+                    className="inline-flex items-center px-2.5 py-1 rounded-full bg-white border border-gray-200 text-xs font-bold text-gray-700"
+                  >
+                    {PAYMENT_METHOD_LABELS[id] ?? id}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {storeInfo.cnpj && (
+            <div className="w-[257px] md:md:mx-auto flex flex-col">
+              <p className="text-xs font-bold text-gray-900 uppercase tracking-wider">CNPJ</p>
+              <span className="text-sm text-gray-600">{storeInfo.cnpj}</span>
+            </div>
+          )}
+
+
         </div>
       </div>
+
     </footer>
   )
 }
