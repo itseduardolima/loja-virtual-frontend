@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ChevronDown } from 'lucide-react'
+import { PhoneCountryInput } from '@/components/Form/PhoneCountryInput'
 import { useCustomerProfile } from '@/hooks/useCustomerProfile'
 import { useCountries } from '@/hooks/useCountries'
 import { UpdateCustomerProfileDto } from '@/types/customer'
@@ -30,10 +30,8 @@ export function CompleteProfileModal({
 }: CompleteProfileModalProps) {
   const { updateProfileAsync, isUpdating } = useCustomerProfile()
   const { data: countriesData, isLoading: countriesLoading } = useCountries()
-  const dropdownRef = useRef<HTMLDivElement>(null)
   const [phone, setPhone] = useState('')
   const [selectedCountry, setSelectedCountry] = useState('BR')
-  const [showCountryDropdown, setShowCountryDropdown] = useState(false)
   const [address_street, setAddressStreet] = useState(initialData?.address_street ?? '')
   const [address_city, setAddressCity] = useState(initialData?.address_city ?? '')
   const [address_state, setAddressState] = useState(initialData?.address_state ?? '')
@@ -45,16 +43,6 @@ export function CompleteProfileModal({
     countriesData?.find((c) => c.cca2 === selectedCountry)
   const getCountryCallingCode = () =>
     getSelectedCountry()?.callingCodes?.[0] || '55'
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowCountryDropdown(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
 
   useEffect(() => {
     if (initialData) {
@@ -128,64 +116,20 @@ export function CompleteProfileModal({
                 <Label htmlFor="complete-phone" className="text-sm font-medium text-gray-700">
                   WhatsApp <span className="text-red-500">*</span>
                 </Label>
-                <div className="flex gap-2">
-                  <div className="relative shrink-0" ref={dropdownRef}>
-                    <button
-                      type="button"
-                      onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-                      className="flex items-center rounded-xl h-11 gap-2 px-3 border border-gray-200 bg-gray-50/50 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400/20 focus:border-gray-400 min-w-[76px] transition-colors"
-                    >
-                      {getSelectedCountry()?.flagUrl ? (
-                        <img
-                          src={getSelectedCountry()?.flagUrl}
-                          alt=""
-                          className="w-5 h-4 object-cover rounded-sm"
-                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
-                        />
-                      ) : null}
-                      <span className="text-sm font-medium text-gray-700">{getCountryCallingCode()}</span>
-                      <ChevronDown className="h-4 w-4 text-gray-500" />
-                    </button>
-                    {showCountryDropdown && (
-                      <div className="absolute top-full left-0 z-20 w-56 max-h-52 overflow-y-auto bg-white border border-gray-200 shadow-lg mt-1 py-1 rounded-lg">
-                        {countriesLoading ? (
-                          <div className="p-4 text-center">
-                            <LoadingSpinner size="sm" fullScreen={false} />
-                          </div>
-                        ) : (
-                          countriesData?.map((country) => (
-                            <button
-                              key={country.cca2}
-                              type="button"
-                              onClick={() => {
-                                setSelectedCountry(country.cca2)
-                                setShowCountryDropdown(false)
-                              }}
-                              className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-50 transition-colors ${
-                                selectedCountry === country.cca2 ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                              }`}
-                            >
-                              <img src={country.flagUrl} alt="" className="w-5 h-4 object-cover rounded-sm" />
-                              <span className="flex-1 text-sm truncate">{country.name.common}</span>
-                              <span className="text-xs text-gray-500">+{country.callingCodes[0]}</span>
-                            </button>
-                          ))
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <Input
-                    id="complete-phone"
-                    type="tel"
-                    placeholder="11999998888"
-                    value={phone}
-                    onChange={handlePhoneChange}
-                    className="flex-1 h-11 border-gray-200"
-                    minLength={8}
-                    maxLength={15}
-                    required
-                  />
-                </div>
+                <PhoneCountryInput
+                  id="complete-phone"
+                  value={phone}
+                  onValueChange={(val) => setPhone(val)}
+                  placeholder="11999998888"
+                  minLength={8}
+                  maxLength={15}
+                  required
+                  selectedCountry={selectedCountry}
+                  onSelectedCountryChange={setSelectedCountry}
+                  countriesData={countriesData}
+                  countriesLoading={countriesLoading}
+                  inputClassName="flex-1 h-11 border-gray-200"
+                />
               </div>
             )}
 

@@ -14,6 +14,7 @@ import {
   LoadingSpinner,
   LoadingPage,
 } from "@/components";
+import { PhoneCountryInput } from "@/components/Form/PhoneCountryInput";
 import {
   Store,
   ArrowLeft,
@@ -254,95 +255,22 @@ export default function CriarLojaPage() {
             <Phone className="h-4 w-4" />
             WhatsApp *
           </Label>
-          <div className="flex flex-row gap-2 mt-2 items-stretch">
-            <div className="relative shrink-0">
-              <button
-                type="button"
-                onClick={() =>
-                  hookData.setShowCountryDropdown(!hookData.showCountryDropdown)
-                }
-                className="flex items-center h-12 gap-2 px-3 py-2 border rounded-xl border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 justify-start"
-              >
-                {hookData.getSelectedCountry()?.flagUrl ? (
-                  <img
-                    src={hookData.getSelectedCountry()?.flagUrl}
-                    alt={`Bandeira do ${hookData.getSelectedCountry()?.name.common
-                      }`}
-                    className="w-5 h-4 object-cover rounded-sm"
-                    onError={(e) => {
-                      const target = e.currentTarget as HTMLImageElement;
-                      const nextElement =
-                        target.nextElementSibling as HTMLElement;
-                      target.style.display = "none";
-                      if (nextElement) nextElement.style.display = "inline";
-                    }}
-                  />
-                ) : null}
-                <span className="text-lg hidden">
-                  {hookData.getSelectedCountry()?.flag || "🇧🇷"}
-                </span>
-                <span className="text-sm font-medium">
-                  {hookData.getCountryCallingCode()}
-                </span>
-                <ChevronDown className="h-4 w-4" />
-              </button>
-              {hookData.showCountryDropdown && (
-                <div
-                  ref={hookData.dropdownRef}
-                  className="absolute top-full left-0 z-10 w-64 max-h-60 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-lg mt-1"
-                >
-                  {hookData.countriesLoading ? (
-                    <div className="p-4 text-center">
-                      <LoadingSpinner size="sm" />
-                    </div>
-                  ) : (
-                    hookData.countriesData?.map((country) => (
-                      <button
-                        key={country.cca2}
-                        type="button"
-                        onClick={() =>
-                          hookData.handleCountrySelect(country.cca2)
-                        }
-                        className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-50 ${hookData.selectedCountry === country.cca2
-                            ? "bg-blue-50 text-blue-700"
-                            : ""
-                          }`}
-                      >
-                        <img
-                          src={country.flagUrl}
-                          alt={`Bandeira do ${country.name.common}`}
-                          className="w-5 h-4 object-cover rounded-sm"
-                          onError={(e) => {
-                            // Fallback para emoji se a imagem não carregar
-                            const target = e.currentTarget as HTMLImageElement;
-                            const nextElement =
-                              target.nextElementSibling as HTMLElement;
-                            target.style.display = "none";
-                            if (nextElement)
-                              nextElement.style.display = "inline";
-                          }}
-                        />
-                        <span className="text-lg hidden">{country.flag}</span>
-                        <span className="flex-1 text-sm">
-                          {country.name.common}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {country.callingCodes[0]}
-                        </span>
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-            <Input
+          <div className="mt-2">
+            <PhoneCountryInput
               id="whatsapp"
               value={hookData.formData.whatsapp}
-              onChange={(e) =>
-                hookData.handleInputChange("whatsapp", e.target.value)
+              onValueChange={(val) =>
+                hookData.handleInputChange("whatsapp", val)
               }
               placeholder="Digite seu WhatsApp"
-              className={`flex-1 min-w-0 h-12 ${getError(2, 'whatsapp') ? 'border-red-500 focus:ring-red-500' : ''}`}
+              minLength={8}
+              maxLength={15}
+              required
+              selectedCountry={hookData.selectedCountry}
+              onSelectedCountryChange={hookData.setSelectedCountry}
+              countriesData={hookData.countriesData}
+              countriesLoading={hookData.countriesLoading}
+              inputClassName={`flex-1 min-w-0 h-12 ${getError(2, 'whatsapp') ? 'border-red-500 focus:ring-red-500' : ''}`}
             />
           </div>
           {getError(2, 'whatsapp') && (

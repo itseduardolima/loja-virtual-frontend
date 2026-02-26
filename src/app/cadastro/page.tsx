@@ -3,10 +3,10 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Eye, EyeOff, Mail, Lock, User, ChevronDown, Check } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, Check } from 'lucide-react'
 import Link from 'next/link'
 import { useCadastro } from './useCadastro'
-import { LoadingSpinner } from '@/components'
+import { PhoneCountryInput } from '@/components/Form/PhoneCountryInput'
 
 export default function CadastroPage() {
   const {
@@ -25,13 +25,8 @@ export default function CadastroPage() {
     whatsapp,
     selectedCountry,
     setSelectedCountry,
-    showCountryDropdown,
-    setShowCountryDropdown,
-    dropdownRef,
     countriesData,
     countriesLoading,
-    getSelectedCountry,
-    getCountryCallingCode,
     passwordRequirements,
     handleSubmit,
     handleWhatsappChange,
@@ -87,64 +82,20 @@ export default function CadastroPage() {
               <Label htmlFor="whatsapp" className="text-sm font-medium text-slate-700">
                 WhatsApp <span className="text-red-500">*</span>
               </Label>
-              <div className="flex gap-2">
-                <div className="relative shrink-0" ref={dropdownRef}>
-                  <button
-                    type="button"
-                    onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-                    className="flex items-center rounded-xl h-11 gap-2 px-3 border border-slate-200 bg-slate-50/50 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400/20 focus:border-slate-400 min-w-[76px] transition-colors"
-                  >
-                    {getSelectedCountry()?.flagUrl ? (
-                      <img
-                        src={getSelectedCountry()?.flagUrl}
-                        alt=""
-                        className="w-5 h-4 object-cover rounded-sm"
-                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
-                      />
-                    ) : null}
-                    <span className="text-sm font-medium text-slate-700">{getCountryCallingCode()}</span>
-                    <ChevronDown className="h-4 w-4 text-slate-500" />
-                  </button>
-                  {showCountryDropdown && (
-                    <div className="absolute top-full left-0 z-20 w-56 max-h-52 overflow-y-auto bg-white border border-slate-200 shadow-lg mt-1 py-1 scrollbar-thin">
-                      {countriesLoading ? (
-                        <div className="p-4 text-center">
-                          <LoadingSpinner size="sm" />
-                        </div>
-                      ) : (
-                        countriesData?.map((country) => (
-                          <button
-                            key={country.cca2}
-                            type="button"
-                            onClick={() => {
-                              setSelectedCountry(country.cca2)
-                              setShowCountryDropdown(false)
-                            }}
-                            className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-slate-50 transition-colors ${
-                              selectedCountry === country.cca2 ? 'bg-slate-100 text-slate-900' : 'text-slate-700'
-                            }`}
-                          >
-                            <img src={country.flagUrl} alt="" className="w-5 h-4 object-cover rounded-sm" />
-                            <span className="flex-1 text-sm truncate">{country.name.common}</span>
-                            <span className="text-xs text-slate-500">+{country.callingCodes[0]}</span>
-                          </button>
-                        ))
-                      )}
-                    </div>
-                  )}
-                </div>
-                <Input
-                  id="whatsapp"
-                  type="tel"
-                  placeholder="11999998888"
-                  value={whatsapp}
-                  onChange={handleWhatsappChange}
-                  className="flex-1 h-11 border-slate-200 focus:border-slate-400 focus:ring-slate-400/20"
-                  minLength={8}
-                  maxLength={15}
-                  required
-                />
-              </div>
+              <PhoneCountryInput
+                id="whatsapp"
+                value={whatsapp}
+                onValueChange={(val) => handleWhatsappChange({ target: { value: val } } as any)}
+                placeholder="11999998888"
+                minLength={8}
+                maxLength={15}
+                required
+                selectedCountry={selectedCountry}
+                onSelectedCountryChange={setSelectedCountry}
+                countriesData={countriesData}
+                countriesLoading={countriesLoading}
+                inputClassName="flex-1 h-11 border-slate-200 focus:border-slate-400 focus:ring-slate-400/20"
+              />
             </div>
 
             <div className="space-y-5">
