@@ -27,7 +27,8 @@ export function useCustomerProfile() {
       toast.success(data.message || 'Perfil atualizado com sucesso')
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || error.message || 'Erro ao atualizar perfil'
+      const raw = error.response?.data?.message ?? error.message ?? 'Erro ao atualizar perfil'
+      const message = Array.isArray(raw) ? raw[0] ?? raw.join(' ') : raw
       toast.error(message)
     },
   })

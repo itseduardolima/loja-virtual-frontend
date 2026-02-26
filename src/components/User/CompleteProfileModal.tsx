@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
+import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -9,6 +10,16 @@ import { useCustomerProfile } from '@/hooks/useCustomerProfile'
 import { useCountries } from '@/hooks/useCountries'
 import { UpdateCustomerProfileDto } from '@/types/customer'
 import { LoadingSpinner } from '@/components/Layout/LoadingSpinner'
+import { updateCustomerProfileSchema } from '@/schemas'
+
+const completeProfileSchema = updateCustomerProfileSchema.pick([
+  'phone',
+  'address_street',
+  'address_city',
+  'address_state',
+  'address_zipcode',
+  'address_country',
+])
 
 interface CompleteProfileModalProps {
   isOpen: boolean
@@ -37,12 +48,17 @@ export function CompleteProfileModal({
   const [address_state, setAddressState] = useState(initialData?.address_state ?? '')
   const [address_zipcode, setAddressZipcode] = useState(initialData?.address_zipcode ?? '')
   const [address_country, setAddressCountry] = useState(initialData?.address_country ?? 'Brasil')
-  const needsPhone = !initialData || initialData.phone == null
+  const needsPhone = initialData?.phone == null || initialData?.phone === ''
 
   const getSelectedCountry = () =>
     countriesData?.find((c) => c.cca2 === selectedCountry)
   const getCountryCallingCode = () =>
     getSelectedCountry()?.callingCodes?.[0] || '55'
+
+  const canSubmit =
+    address_street.trim().length > 0 &&
+    address_city.trim().length > 0 &&
+    (!needsPhone || phone.replace(/\D/g, '').length >= 8)
 
   useEffect(() => {
     if (initialData) {
@@ -61,17 +77,42 @@ export function CompleteProfileModal({
     }
   }, [initialData])
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPhone(e.target.value.replace(/\D/g, ''))
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const phoneDigits = phone.replace(/\D/g, '')
     if (needsPhone) {
-      if (!phoneDigits || phoneDigits.length < 8) return
+      if (!phoneDigits || phoneDigits.length < 8) {
+        toast.error('Informe um WhatsApp válido para continuar.')
+        return
+      }
     }
-    if (!address_street.trim() || !address_city.trim()) return
+    if (!address_street.trim() || !address_city.trim()) {
+      toast.error('Preencha endereço e cidade para continuar.')
+      return
+    }
+
+    const phoneFull = needsPhone && phoneDigits ? `${getCountryCallingCode()}${phoneDigits}` : ''
+
+    const payload = {
+      phone: phoneFull,
+      address_street,
+      address_city,
+      address_state,
+      address_zipcode,
+      address_country,
+    }
+
+    try {
+      await completeProfileSchema.validate(payload, { abortEarly: false })
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'inner' in err && Array.isArray((err as { inner: unknown[] }).inner)) {
+        const firstMessage = (err as { inner: Array<{ message: string }> }).inner[0]?.message
+        if (firstMessage) {
+          toast.error(firstMessage)
+        }
+      }
+      return
+    }
 
     const data: UpdateCustomerProfileDto = {
       address_street: address_street.trim(),
@@ -82,7 +123,6 @@ export function CompleteProfileModal({
     }
 
     if (needsPhone) {
-      const phoneFull = `${getCountryCallingCode()}${phoneDigits}`
       data.phone = phoneFull
     }
 
@@ -90,7 +130,7 @@ export function CompleteProfileModal({
       await updateProfileAsync(data)
       onComplete()
     } catch {
-      // toast já é tratado no hook
+      // toast já é tratado no hook useCustomerProfile
     }
   }
 
@@ -211,7 +251,7 @@ export function CompleteProfileModal({
               <Button
                 type="submit"
                 className="w-full h-11"
-                disabled={isUpdating}
+                disabled={isUpdating || !canSubmit}
               >
                 {isUpdating ? (
                   <>

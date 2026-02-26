@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCustomerProfile } from '@/hooks/useCustomerProfile'
 import { UpdateCustomerProfileDto } from '@/types/customer'
+import { updateCustomerProfileSchema } from '@/schemas'
 import { LoadingSpinner } from '../Layout/LoadingSpinner'
 
 interface UpdateProfileDrawerProps {
@@ -28,6 +30,7 @@ export function UpdateProfileDrawer({ isOpen, onClose }: UpdateProfileDrawerProp
     address_zipcode: '',
     address_country: ''
   })
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   // Carregar dados do perfil só quando o drawer abrir (evita refetch a cada re-render do header)
   useEffect(() => {
@@ -72,74 +75,82 @@ export function UpdateProfileDrawer({ isOpen, onClose }: UpdateProfileDrawerProp
       ...prev,
       [field]: value
     }))
+    if (errors[field]) {
+      setErrors(prev => {
+        const next = { ...prev }
+        delete next[field]
+        return next
+      })
+    }
   }
+
+  const canSubmit =
+    (formData.name?.trim() ?? '').length > 0 &&
+    (formData.email?.trim() ?? '').length > 0
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Validar campos obrigatórios
-    if (!formData.name || !formData.name.trim()) {
-      alert('O nome é obrigatório')
-      return
+    const payload = {
+      name: formData.name ?? '',
+      email: formData.email ?? '',
+      phone: formData.phone ?? '',
+      address_street: formData.address_street ?? '',
+      address_city: formData.address_city ?? '',
+      address_state: formData.address_state ?? '',
+      address_zipcode: formData.address_zipcode ?? '',
+      address_country: formData.address_country ?? '',
     }
 
-    if (!formData.email || !formData.email.trim()) {
-      alert('O e-mail é obrigatório')
-      return
-    }
+    try {
+      const validated = await updateCustomerProfileSchema.validate(payload, {
+        abortEarly: false,
+      })
+      setErrors({})
+      const dataToSend: UpdateCustomerProfileDto = {
+        name: validated.name.trim(),
+        email: validated.email.trim(),
+      }
+      if (validated.phone && validated.phone.trim()) {
+        dataToSend.phone = validated.phone.trim().replace(/[^\d+]/g, '')
+      }
+      if (validated.address_street?.trim()) dataToSend.address_street = validated.address_street.trim()
+      if (validated.address_city?.trim()) dataToSend.address_city = validated.address_city.trim()
+      if (validated.address_state?.trim()) dataToSend.address_state = validated.address_state.trim()
+      if (validated.address_zipcode?.trim()) dataToSend.address_zipcode = validated.address_zipcode.trim().replace(/\D/g, '')
+      if (validated.address_country?.trim()) dataToSend.address_country = validated.address_country.trim()
 
-    // Preparar dados para enviar - enviar apenas campos preenchidos
-    const dataToSend: UpdateCustomerProfileDto = {
-      name: formData.name.trim(),
-      email: formData.email.trim(),
-    }
-
-    // Adicionar campos opcionais apenas se preenchidos
-    if (formData.phone && formData.phone.trim()) {
-      dataToSend.phone = formData.phone.trim()
-    }
-    if (formData.address_street && formData.address_street.trim()) {
-      dataToSend.address_street = formData.address_street.trim()
-    }
-    if (formData.address_city && formData.address_city.trim()) {
-      dataToSend.address_city = formData.address_city.trim()
-    }
-    if (formData.address_state && formData.address_state.trim()) {
-      dataToSend.address_state = formData.address_state.trim()
-    }
-    if (formData.address_zipcode && formData.address_zipcode.trim()) {
-      dataToSend.address_zipcode = formData.address_zipcode.trim()
-    }
-    if (formData.address_country && formData.address_country.trim()) {
-      dataToSend.address_country = formData.address_country.trim()
-    }
-
-    updateProfileAsync(dataToSend)
-      .then((response) => {
-        // Atualizar o contexto de autenticação com os novos dados
-        if (response?.data && user) {
-          setUser({
-            ...user,
-            name: response.data.name || user.name,
-            email: response.data.email || user.email
-          })
-          // Atualizar também no localStorage
-          const userData = localStorage.getItem('user-data')
-          if (userData) {
-            const parsedUser = JSON.parse(userData)
-            const updatedUser = {
-              ...parsedUser,
-              name: response.data.name || parsedUser.name,
-              email: response.data.email || parsedUser.email
-            }
-            localStorage.setItem('user-data', JSON.stringify(updatedUser))
+      const response = await updateProfileAsync(dataToSend)
+      if (response?.data && user) {
+        setUser({
+          ...user,
+          name: response.data.name || user.name,
+          email: response.data.email || user.email
+        })
+        const userData = localStorage.getItem('user-data')
+        if (userData) {
+          const parsedUser = JSON.parse(userData)
+          const updatedUser = {
+            ...parsedUser,
+            name: response.data.name || parsedUser.name,
+            email: response.data.email || parsedUser.email
           }
+          localStorage.setItem('user-data', JSON.stringify(updatedUser))
         }
-        onClose()
-      })
-      .catch(() => {
-
-      })
+      }
+      onClose()
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'inner' in err && Array.isArray((err as { inner: unknown[] }).inner)) {
+        const validationErrors: Record<string, string> = {}
+        ;(err as { inner: Array<{ path?: string; message: string }> }).inner.forEach((e) => {
+          if (e.path) validationErrors[e.path] = e.message
+        })
+        setErrors(validationErrors)
+        const firstMessage = (err as { inner: Array<{ message: string }> }).inner[0]?.message
+        if (firstMessage) toast.error(firstMessage)
+      }
+      // Erros da API são exibidos no toast pelo hook useCustomerProfile
+    }
   }
 
   if (!isOpen) return null
@@ -190,7 +201,11 @@ export function UpdateProfileDrawer({ isOpen, onClose }: UpdateProfileDrawerProp
                         onChange={(e) => handleInputChange('name', e.target.value)}
                         placeholder="Seu nome completo"
                         required
+                        className={errors.name ? 'border-red-500 focus:ring-red-500' : ''}
                       />
+                      {errors.name && (
+                        <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                      )}
                     </div>
 
                     <div>
@@ -202,7 +217,11 @@ export function UpdateProfileDrawer({ isOpen, onClose }: UpdateProfileDrawerProp
                         onChange={(e) => handleInputChange('email', e.target.value)}
                         placeholder="seu@email.com"
                         required
+                        className={errors.email ? 'border-red-500 focus:ring-red-500' : ''}
                       />
+                      {errors.email && (
+                        <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                      )}
                     </div>
 
                     <div>
@@ -211,8 +230,12 @@ export function UpdateProfileDrawer({ isOpen, onClose }: UpdateProfileDrawerProp
                         id="phone"
                         value={formData.phone}
                         onChange={(e) => handleInputChange('phone', e.target.value)}
-                        placeholder="(11) 99999-9999"
+                        placeholder="5511999999999"
+                        className={errors.phone ? 'border-red-500 focus:ring-red-500' : ''}
                       />
+                      {errors.phone && (
+                        <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -222,6 +245,33 @@ export function UpdateProfileDrawer({ isOpen, onClose }: UpdateProfileDrawerProp
                   <h3 className="text-base font-semibold text-gray-900">Endereço</h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="address_zipcode">CEP</Label>
+                      <Input
+                        id="address_zipcode"
+                        value={formData.address_zipcode}
+                        onChange={(e) => handleInputChange('address_zipcode', e.target.value)}
+                        placeholder="12345-678"
+                        className={errors.address_zipcode ? 'border-red-500 focus:ring-red-500' : ''}
+                      />
+                      {errors.address_zipcode && (
+                        <p className="mt-1 text-sm text-red-600">{errors.address_zipcode}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label htmlFor="address_country">País</Label>
+                      <Input
+                        id="address_country"
+                        value={formData.address_country}
+                        onChange={(e) => handleInputChange('address_country', e.target.value)}
+                        placeholder="Brasil"
+                        className={errors.address_country ? 'border-red-500 focus:ring-red-500' : ''}
+                      />
+                      {errors.address_country && (
+                        <p className="mt-1 text-sm text-red-600">{errors.address_country}</p>
+                      )}
+                    </div>
                     <div className="md:col-span-2">
                       <Label htmlFor="address_street">Rua/Endereço</Label>
                       <Input
@@ -229,7 +279,11 @@ export function UpdateProfileDrawer({ isOpen, onClose }: UpdateProfileDrawerProp
                         value={formData.address_street}
                         onChange={(e) => handleInputChange('address_street', e.target.value)}
                         placeholder="Rua, número, complemento"
+                        className={errors.address_street ? 'border-red-500 focus:ring-red-500' : ''}
                       />
+                      {errors.address_street && (
+                        <p className="mt-1 text-sm text-red-600">{errors.address_street}</p>
+                      )}
                     </div>
 
                     <div>
@@ -239,7 +293,11 @@ export function UpdateProfileDrawer({ isOpen, onClose }: UpdateProfileDrawerProp
                         value={formData.address_city}
                         onChange={(e) => handleInputChange('address_city', e.target.value)}
                         placeholder="Cidade"
+                        className={errors.address_city ? 'border-red-500 focus:ring-red-500' : ''}
                       />
+                      {errors.address_city && (
+                        <p className="mt-1 text-sm text-red-600">{errors.address_city}</p>
+                      )}
                     </div>
 
                     <div>
@@ -250,28 +308,14 @@ export function UpdateProfileDrawer({ isOpen, onClose }: UpdateProfileDrawerProp
                         onChange={(e) => handleInputChange('address_state', e.target.value.toUpperCase())}
                         placeholder="SP"
                         maxLength={2}
+                        className={errors.address_state ? 'border-red-500 focus:ring-red-500' : ''}
                       />
+                      {errors.address_state && (
+                        <p className="mt-1 text-sm text-red-600">{errors.address_state}</p>
+                      )}
                     </div>
 
-                    <div>
-                      <Label htmlFor="address_zipcode">CEP</Label>
-                      <Input
-                        id="address_zipcode"
-                        value={formData.address_zipcode}
-                        onChange={(e) => handleInputChange('address_zipcode', e.target.value)}
-                        placeholder="12345-678"
-                      />
-                    </div>
 
-                    <div>
-                      <Label htmlFor="address_country">País</Label>
-                      <Input
-                        id="address_country"
-                        value={formData.address_country}
-                        onChange={(e) => handleInputChange('address_country', e.target.value)}
-                        placeholder="Brasil"
-                      />
-                    </div>
                   </div>
                 </div>
 
@@ -289,7 +333,7 @@ export function UpdateProfileDrawer({ isOpen, onClose }: UpdateProfileDrawerProp
                   <Button
                     type="submit"
                     className="flex-1"
-                    disabled={isUpdating}
+                    disabled={isUpdating || !canSubmit}
                   >
                     {isUpdating ? (
                       <>
