@@ -7,43 +7,54 @@ import { useToastContext } from '@/contexts/ToastContext'
 import { useCheckout } from './useCheckout'
 
 export function useLogin() {
-  const { login, isLoading, user } = useAuth()
+  const { login, isLoading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const { getCheckoutData, clearCheckoutData } = useCheckout()
   const { success: showSuccess, error: showError } = useToastContext()
 
+  const isRedirectAllowed = (path: string) => {
+    const normalized = path.replace(/^https?:\/\/[^/]+/, '').split('?')[0] || '/'
+    if (normalized === '/' || normalized === '/login' || normalized === '/cadastro') return false
+    if (normalized.startsWith('/cadastro/')) return false
+    if (path.includes('/produto/null') || path.includes('/produto/undefined')) return false
+    return true
+  }
+
   const handleLogin = async (credentials: LoginRequest) => {
     try {
-      await login(credentials)
+      const data = await login(credentials)
       showSuccess('Login realizado com sucesso!')
-      
+
+      const profile = data.user.profile
+
+      // Vendedor: sempre redireciona para a página do vendedor
+      if (profile === 'Vendedor') {
+        router.push('/vendedor')
+        return
+      }
+
+      // Cliente (ou outros perfis): checkout tem prioridade; depois última página válida
       const checkoutData = getCheckoutData()
       if (checkoutData) {
         clearCheckoutData()
-        
-        // Se há dados de checkout, redirecionar para a URL específica onde estava
-        // Validar que a URL não contenha 'null' ou seja inválida
-        if (checkoutData.redirectUrl && !checkoutData.redirectUrl.includes('/produto/null') && !checkoutData.redirectUrl.includes('/produto/undefined')) {
+        if (checkoutData.redirectUrl && isRedirectAllowed(checkoutData.redirectUrl)) {
           router.push(checkoutData.redirectUrl)
           return
-        } else if (checkoutData.storeSlug) {
-          // Fallback para a loja se não houver redirectUrl válido
+        }
+        if (checkoutData.storeSlug) {
           router.push(`/loja/${checkoutData.storeSlug}/produtos`)
           return
         }
       }
-      
-      // Verificar se há parâmetro de redirecionamento
+
       const redirect = searchParams.get('redirect')
-      if (redirect && !redirect.includes('/produto/null') && !redirect.includes('/produto/undefined')) {
+      if (redirect && isRedirectAllowed(redirect)) {
         router.push(redirect)
         return
       }
-      
-      // Se não há dados de checkout nem redirect, sempre redireciona para a página inicial
+
       router.push('/')
-      
     } catch (error: any) {
       const errorMessage = error.response?.data?.message
       showError(errorMessage, 'Erro')

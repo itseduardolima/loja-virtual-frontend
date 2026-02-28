@@ -146,9 +146,7 @@ export function CompleteProfileModal({
           <h2 className="text-xl font-semibold text-gray-900 mb-1">
             Complete seu cadastro
           </h2>
-          <p className="text-sm text-gray-600 mb-6">
-            Para continuar, preencha seu WhatsApp e endereço.
-          </p>
+          
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {needsPhone && (

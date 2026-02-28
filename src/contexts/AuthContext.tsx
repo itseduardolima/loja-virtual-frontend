@@ -35,37 +35,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem('refresh-token', refreshToken)
             localStorage.setItem('user-data', decodedUser)
 
-            // Verifica se há URL de redirecionamento salva
             const savedRedirectUrl = localStorage.getItem('redirect-after-login')
-            console.log('Redirect salvo encontrado:', savedRedirectUrl)
-            console.log('Perfil do usuário:', userData.profile)
-            
-            // Limpa os parâmetros da URL
+            localStorage.removeItem('redirect-after-login')
+
             const newUrl = window.location.pathname
             window.history.replaceState({}, '', newUrl)
-
             setIsLoading(false)
 
-            // Redireciona imediatamente se houver redirect salvo, senão vai para a página inicial
-            if (savedRedirectUrl) {
-              console.log('Redirecionando imediatamente para:', savedRedirectUrl)
-              // Remove a URL salva do localStorage
-              localStorage.removeItem('redirect-after-login')
-              // Redireciona para a URL salva
-              if (savedRedirectUrl.startsWith('http://') || savedRedirectUrl.startsWith('https://')) {
-                window.location.href = savedRedirectUrl
-              } else {
-                // Se for um caminho relativo, constrói a URL completa
-                const baseUrl = window.location.origin
-                const finalUrl = `${baseUrl}${savedRedirectUrl.startsWith('/') ? savedRedirectUrl : '/' + savedRedirectUrl}`
-                console.log('URL final construída:', finalUrl)
-                window.location.href = finalUrl
-              }
-            } else {
-              // Se não houver URL salva, sempre redireciona para a página inicial
-              console.log('Nenhum redirect salvo, redirecionando para página inicial')
-              window.location.href = window.location.origin + '/'
+            const isRedirectAllowed = (path: string) => {
+              const normalized = (path || '').replace(/^https?:\/\/[^/]+/, '').split('?')[0] || '/'
+              if (normalized === '/' || normalized === '/login' || normalized === '/cadastro') return false
+              if (normalized.startsWith('/cadastro/')) return false
+              return true
             }
+
+            const baseUrl = window.location.origin
+            let targetPath = baseUrl + '/'
+
+            if (userData.profile === 'Vendedor') {
+              targetPath = baseUrl + '/vendedor'
+            } else if (savedRedirectUrl && isRedirectAllowed(savedRedirectUrl)) {
+              if (savedRedirectUrl.startsWith('http://') || savedRedirectUrl.startsWith('https://')) {
+                targetPath = savedRedirectUrl
+              } else {
+                targetPath = baseUrl + (savedRedirectUrl.startsWith('/') ? savedRedirectUrl : '/' + savedRedirectUrl)
+              }
+            }
+
+            window.location.href = targetPath
 
             return true // Indica que processou o callback
           } catch (error) {
@@ -168,7 +165,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   })
 
   const login = async (credentials: LoginRequest) => {
-    await loginMutation.mutateAsync(credentials)
+    const data = await loginMutation.mutateAsync(credentials)
+    return data
   }
 
   const logout = () => {
