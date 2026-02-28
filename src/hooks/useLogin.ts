@@ -28,9 +28,9 @@ export function useLogin() {
 
       const profile = data.user.profile
 
-      // Vendedor: sempre redireciona para a página do vendedor
+      // Vendedor: redireciona direto para a página do vendedor (navegação completa evita passar por "/")
       if (profile === 'Vendedor') {
-        router.push('/vendedor')
+        window.location.href = '/vendedor'
         return
       }
 
