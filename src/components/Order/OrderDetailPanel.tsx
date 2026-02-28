@@ -9,12 +9,11 @@ import {
   Package,
   FileText,
   ShoppingBag,
-
+  MapPin,
   PhoneCall,
-
 } from 'lucide-react'
 import { useOrderDetail } from '@/hooks/useOrderDetail'
-import { ORDER_STATUS, type Order } from '@/types/order'
+import { type Order } from '@/types/order'
 import { formatDate, formatPrice } from '@/lib/utils'
 import { buildImageUrl } from '@/lib/imageUtils'
 import { UpdateOrderStatusModal } from '@/components/Order/UpdateOrderStatusModal'
@@ -53,7 +52,7 @@ ${order.items.map(item =>
     `• ${item.product.name} - Tamanho: ${item.size} - Cor: ${item.color} - Qtd: ${item.quantity} - ${formatPrice(parseFloat(item.price))}`
   ).join('\n')}
 
-Em breve entraremos em contato para confirmar o pedido! 🛍️`
+Em breve entraremos em contato para confirmar o pedido!`
   return encodeURIComponent(message)
 }
 
@@ -145,29 +144,6 @@ export function OrderDetailPanel({ orderId, onStatusUpdate }: OrderDetailPanelPr
         </Button>
       </div>
 
-
-      {/* Cliente */}
-      <Card>
-        <CardHeader className="py-3 px-4">
-          <CardTitle className="flex items-center gap-2 text-base font-bold">
-            <User className="h-5 w-5" />
-            Contato
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="py-2 px-4 pb-4 space-y-2 text-base">
-          {order.customer_phone && (
-            <div className="flex items-center gap-2 text-gray-700">
-              <Phone className="h-5 w-5 text-gray-400" />
-              {order.customer_phone}
-            </div>
-          )}
-          <div className="flex items-center gap-2 text-gray-700">
-            <Mail className="h-5 w-5 text-gray-400" />
-            {order.customer_email}
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Itens */}
       <Card>
         <CardHeader className="py-3 px-4">
@@ -222,6 +198,55 @@ export function OrderDetailPanel({ orderId, onStatusUpdate }: OrderDetailPanelPr
         </CardContent>
       </Card>
 
+
+      {/* Endereço do comprador */}
+      {(order.user && (
+        order.user.address_formatted ||
+        order.user.address_street ||
+        order.user.address_city
+      )) ? (
+        <Card>
+          <CardHeader className="py-3 px-4">
+            <CardTitle className="flex items-center gap-2 text-base font-bold">
+              <MapPin className="h-5 w-5" />
+              Endereço de entrega
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-2 px-4 pb-4 space-y-1.5 text-base text-gray-700">
+            {order.user.address_formatted ? (
+              <p className="whitespace-pre-line">{order.user.address_formatted}</p>
+            ) : (
+              <>
+                {order.user.address_street && (
+                  <p>{order.user.address_street}</p>
+                )}
+                {(order.user.address_city || order.user.address_state) && (
+                  <p>
+                    {[order.user.address_city, order.user.address_state].filter(Boolean).join(' - ')}
+                    {order.user.address_zipcode ? `, ${order.user.address_zipcode}` : ''}
+                  </p>
+                )}
+                {order.user.address_country && (
+                  <p>{order.user.address_country}</p>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader className="py-3 px-4">
+            <CardTitle className="flex items-center gap-2 text-base font-bold">
+              <MapPin className="h-5 w-5" />
+              Endereço de entrega
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-2 px-4 pb-4">
+            <p className="text-gray-500 text-sm">Endereço não informado pelo comprador</p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Observações */}
       {order.notes && (
         <Card>
@@ -244,6 +269,28 @@ export function OrderDetailPanel({ orderId, onStatusUpdate }: OrderDetailPanelPr
         </CardHeader>
         <CardContent className="py-2 px-4 pb-4">
           <OrderTrackingTimeline currentStatus={order.status} orderId={order.id} showTitle={false} isVendor />
+        </CardContent>
+      </Card>
+
+      {/* Cliente / Contato */}
+      <Card>
+        <CardHeader className="py-3 px-4">
+          <CardTitle className="flex items-center gap-2 text-base font-bold">
+            <User className="h-5 w-5" />
+            Contato
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="py-2 px-4 pb-4 space-y-2 text-base">
+          {order.customer_phone && (
+            <div className="flex items-center gap-2 text-gray-700">
+              <Phone className="h-5 w-5 text-gray-400 shrink-0" />
+              {order.customer_phone}
+            </div>
+          )}
+          <div className="flex items-center gap-2 text-gray-700">
+            <Mail className="h-5 w-5 text-gray-400 shrink-0" />
+            {order.customer_email}
+          </div>
         </CardContent>
       </Card>
 

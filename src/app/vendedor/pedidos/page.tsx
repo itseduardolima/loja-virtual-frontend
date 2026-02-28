@@ -126,8 +126,8 @@ export default function OrdersPage() {
                     <ChevronRight className={cn('h-4 w-4 shrink-0', colors.icon)} />
                   )}
                   <span className={cn('shrink-0', colors.icon)}>{getStatusIcon(statusKey)}</span>
-                  <span className={cn('font-medium flex-1', colors.icon)}>{label}</span>
-                  <span className={cn('text-sm font-medium px-2 py-0.5 rounded-full', colors.badge)}>
+                  <span className={cn('font-bold flex-1', colors.icon)}>{label}</span>
+                  <span className={cn('text-sm font-bold px-2 py-0.5 rounded-full', colors.badge)}>
                     {count} pedido{count !== 1 ? 's' : ''}
                   </span>
                 </button>
@@ -150,7 +150,7 @@ export default function OrdersPage() {
                               )}
                             >
                               <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-gray-900 truncate">
+                                <p className="font-bold text-sm text-gray-900 truncate">
                                   #{order.order_code}
                                 </p>
                                 <p className="text-sm text-gray-600 truncate">
@@ -158,10 +158,10 @@ export default function OrdersPage() {
                                 </p>
                               </div>
                               <div className="flex items-center gap-3 shrink-0 text-sm">
-                                <span className="text-gray-500">
-                                  Feito às {formatDate(order.created_at)}
+                                <span className="text-gray-500 text-xs">
+                                  {formatDate(order.created_at)}
                                 </span>
-                                <span className="font-semibold text-gray-900">
+                                <span className="font-bold text-sm text-gray-900">
                                   {formatPrice(parseFloat(order.total))}
                                 </span>
                               </div>

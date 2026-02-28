@@ -16,6 +16,20 @@ export interface OrderItem {
   }
 }
 
+/** Dados do comprador (usuário) quando o pedido está vinculado a uma conta */
+export interface OrderBuyer {
+  id: number
+  name: string | null
+  email: string | null
+  phone: string | null
+  address_street: string | null
+  address_city: string | null
+  address_state: string | null
+  address_zipcode: string | null
+  address_country: string | null
+  address_formatted: string | null
+}
+
 export interface Order {
   id: number
   order_number: string
@@ -33,7 +47,7 @@ export interface Order {
   store_id: number
   user_id: number | null
   items: OrderItem[]
-  user: any | null
+  user: OrderBuyer | null
   store?: {
     id: number
     name: string
