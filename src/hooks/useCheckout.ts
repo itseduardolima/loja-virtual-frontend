@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 import { useToastContext } from '@/contexts/ToastContext'
 import { useAuth } from '@/contexts/AuthContext'
@@ -15,7 +15,8 @@ interface CheckoutResponse {
   data: {
     order: {
       id: number
-      code: string
+      code?: string
+      order_code?: string
       customer_name: string
       customer_phone: string
       customer_email: string
@@ -42,34 +43,52 @@ export function useCheckout() {
   const { toast } = useToastContext()
   const { isAuthenticated, user } = useAuth()
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   const checkoutMutation = useMutation({
-    mutationFn: async ({ 
-      sessionId, 
-      storeId, 
-      checkoutData 
-    }: { 
+    mutationFn: async ({
+      sessionId,
+      storeId,
+      checkoutData,
+    }: {
       sessionId: string
       storeId: number
-      checkoutData: CheckoutRequest 
+      checkoutData: CheckoutRequest
+      storeSlug?: string
     }) => {
       const response = await api.post<CheckoutResponse>('/cart/checkout', checkoutData, {
-        params: { 
-          session_id: sessionId, 
-          store_id: storeId 
-        }
+        params: {
+          session_id: sessionId,
+          store_id: storeId,
+        },
       })
       return response.data
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
+      const storeSlug = variables.storeSlug
+      const orderCode = data.data?.order?.order_code ?? data.data?.order?.code ?? ''
+
       toast({
         title: 'Pedido criado com sucesso!',
         description: data.message,
-        variant: 'success'
+        variant: 'success',
       })
-      
-      // Redirecionar para o WhatsApp
-      window.open(data.data.whatsapp_link, '_blank')
+
+      // Abre WhatsApp em nova aba
+      if (data.data?.whatsapp_link) {
+        window.open(data.data.whatsapp_link, '_blank')
+      }
+
+      // Invalida carrinho para refletir que foi finalizado
+      queryClient.invalidateQueries({ queryKey: ['cart-items'] })
+      queryClient.invalidateQueries({ queryKey: ['cart-session', variables.storeId] })
+
+      // Redireciona para a página de pedido realizado com sucesso
+      if (storeSlug) {
+        const params = new URLSearchParams()
+        if (orderCode) params.set('codigo', orderCode)
+        router.push(`/loja/${storeSlug}/pedido-sucesso?${params.toString()}`)
+      }
     },
     onError: (error: any) => {
       const errorMessage = error.response?.data?.message || 'Erro ao finalizar pedido'
@@ -102,7 +121,7 @@ export function useCheckout() {
     }
 
     // Se estiver logado, prosseguir com o checkout
-    await checkoutMutation.mutateAsync({ sessionId, storeId, checkoutData })
+    await checkoutMutation.mutateAsync({ sessionId, storeId, checkoutData, storeSlug })
   }
 
   const getCheckoutData = () => {
