@@ -1,13 +1,32 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from '@dnd-kit/core'
 import { ErrorState } from '@/components/Layout/ErrorState'
 import LoadingPage from '@/components/Layout/LoadingPage'
 import { useOrdersPage } from './useOrdersPage'
 import { OrderDetailPanel } from '@/components/Order/OrderDetailPanel'
-import { formatDate, formatPrice, cn } from '@/lib/utils'
-import { STATUS_ORDER, STATUS_HEADER_COLORS, getStatusIcon } from '@/lib/orderPanelUtils'
-import { Search, ChevronDown, ChevronRight } from 'lucide-react'
+import { KanbanColumn } from '@/components/Order/KanbanColumn'
+import {
+  OrderKanbanCard,
+  OrderKanbanCardPreview,
+  parseOrderIdFromDraggableId,
+} from '@/components/Order/OrderKanbanCard'
+import { parseStatusFromDroppableId } from '@/components/Order/KanbanColumn'
+import { STATUS_ORDER, STATUS_HEADER_COLORS } from '@/lib/orderPanelUtils'
+import { useUpdateOrderStatus } from '@/hooks/useUpdateOrderStatus'
+import { Search, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { cn } from '@/lib/utils'
 
 export default function OrdersPage() {
   const {
@@ -17,6 +36,7 @@ export default function OrdersPage() {
     searchTerm,
     setSearchTerm,
     ordersByStatus,
+    panelOrders,
     isLoading,
     error,
     selectedOrderId,
@@ -24,31 +44,44 @@ export default function OrdersPage() {
     ORDER_STATUS: STATUS_MAP,
   } = useOrdersPage()
 
-  const [openSections, setOpenSections] = useState<Record<number, boolean>>(() => {
-    const initial: Record<number, boolean> = {}
-    STATUS_ORDER.forEach((s) => { initial[s] = true })
-    return initial
-  })
-
-  const toggleSection = (status: number) => {
-    setOpenSections((prev) => ({ ...prev, [status]: !prev[status] }))
-  }
+  const { mutate: updateOrderStatus } = useUpdateOrderStatus()
+  const [activeOrderId, setActiveOrderId] = useState<number | null>(null)
 
   const totalCount = useMemo(() => {
     return STATUS_ORDER.reduce((acc, s) => acc + (ordersByStatus[s]?.length ?? 0), 0)
   }, [ordersByStatus])
 
-  // Selecionar o primeiro pedido da listagem ao carregar
-  useEffect(() => {
-    if (selectedOrderId !== null) return
-    for (const status of STATUS_ORDER) {
-      const orders = ordersByStatus[status] ?? []
-      if (orders.length > 0) {
-        setSelectedOrderId(orders[0].id)
-        break
-      }
-    }
-  }, [ordersByStatus, selectedOrderId, setSelectedOrderId])
+  const orderById = useMemo(() => {
+    const map = new Map<number, (typeof panelOrders)[0]>()
+    panelOrders.forEach((o) => map.set(o.id, o))
+    return map
+  }, [panelOrders])
+
+  const activeOrder = activeOrderId != null ? orderById.get(activeOrderId) ?? null : null
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    })
+  )
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const id = parseOrderIdFromDraggableId(String(event.active.id))
+    if (id != null) setActiveOrderId(id)
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setActiveOrderId(null)
+    const orderId = parseOrderIdFromDraggableId(String(event.active.id))
+    const overId = event.over?.id
+    if (orderId == null || overId == null) return
+    const newStatus = parseStatusFromDroppableId(String(overId))
+    if (newStatus == null) return
+    const order = orderById.get(orderId)
+    if (!order) return
+    if (order.status === newStatus) return
+    updateOrderStatus({ orderId, status: newStatus })
+  }
 
   if (authLoading) {
     return (
@@ -82,111 +115,96 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="h-full flex flex-col lg:flex-row gap-0 lg:gap-6 -mx-4 lg:mx-0">
-      {/* Painel de pedidos */}
-      <div className="w-full lg:w-[35%] lg:max-w-[500px] lg:shrink-0 flex flex-col bg-white lg:rounded-2xl lg:border lg:border-gray-200 lg:shadow-sm overflow-hidden">
+    <div className="h-full flex flex-col lg:flex-row gap-4 lg:gap-6 -mx-4 lg:mx-0">
+      {/* Quadro Kanban */}
+      <div className="w-full flex-1 min-w-0 flex flex-col bg-white lg:rounded-2xl lg:border lg:border-gray-200 lg:shadow-sm overflow-hidden">
         <div className="p-4 border-b border-gray-100">
-          <h1 className="text-xl font-bold text-gray-900 font-integral">Painel de pedidos</h1>
+          <h1 className="text-xl font-bold text-gray-900 font-integral">Quadro de pedidos</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            {totalCount} pedido{totalCount !== 1 ? 's' : ''} no total
+            {totalCount} pedido{totalCount !== 1 ? 's' : ''} — Arraste os cards para alterar o status
           </p>
-          <div className="relative mt-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="search"
-              placeholder="Pesquisar pedido"
+          <div className="relative mt-4 flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5 z-10" />
+            <Input
+              type="text"
+              placeholder="Buscar pedidos..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-300"
+              className={cn(
+                'pl-9 sm:pl-10 py-2 sm:py-2.5 bg-muted rounded-full text-sm h-9 sm:h-10 w-full',
+                searchTerm ? 'pr-9 sm:pr-10' : 'pr-3 sm:pr-4'
+              )}
             />
+            {searchTerm && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-200/80 z-10"
+                onClick={() => setSearchTerm('')}
+                aria-label="Limpar busca"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-1">
-          {STATUS_ORDER.map((statusKey) => {
-            const orders = ordersByStatus[statusKey] ?? []
-            const label = STATUS_MAP[statusKey as keyof typeof STATUS_MAP]?.label ?? 'Pedidos'
-            const isOpen = openSections[statusKey] ?? true
-            const count = orders.length
-            const colors = STATUS_HEADER_COLORS[statusKey] ?? STATUS_HEADER_COLORS[1]
+        <div className="flex-1 overflow-auto p-4">
+          <DndContext
+            sensors={sensors}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <div className="flex gap-4 min-w-max pb-2">
+              {STATUS_ORDER.map((statusKey) => {
+                const orders = ordersByStatus[statusKey] ?? []
+                const label = STATUS_MAP[statusKey as keyof typeof STATUS_MAP]?.label ?? 'Pedidos'
+                const colors = STATUS_HEADER_COLORS[statusKey] ?? STATUS_HEADER_COLORS[1]
+                return (
+                  <KanbanColumn
+                    key={statusKey}
+                    statusKey={statusKey}
+                    label={label}
+                    orders={orders}
+                    colors={colors}
+                    selectedOrderId={selectedOrderId}
+                    onSelectOrder={setSelectedOrderId}
+                  />
+                )
+              })}
+            </div>
 
-            return (
-              <div key={statusKey} className="rounded-xl border border-gray-200 overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => toggleSection(statusKey)}
-                  className={cn(
-                    'w-full flex items-center gap-3 px-4 py-3 text-left transition-colors',
-                    colors.bg
-                  )}
-                >
-                  {isOpen ? (
-                    <ChevronDown className={cn('h-4 w-4 shrink-0', colors.icon)} />
-                  ) : (
-                    <ChevronRight className={cn('h-4 w-4 shrink-0', colors.icon)} />
-                  )}
-                  <span className={cn('shrink-0', colors.icon)}>{getStatusIcon(statusKey)}</span>
-                  <span className={cn('font-bold flex-1', colors.icon)}>{label}</span>
-                  <span className={cn('text-sm font-bold px-2 py-0.5 rounded-full', colors.badge)}>
-                    {count} pedido{count !== 1 ? 's' : ''}
-                  </span>
-                </button>
-                {isOpen && (
-                  <div className="border-t border-gray-200 bg-white">
-                    {orders.length === 0 ? (
-                      <div className="px-4 py-6 text-center text-sm text-gray-400">
-                        Nenhum pedido neste status
-                      </div>
-                    ) : (
-                      <ul className="divide-y divide-gray-100">
-                        {orders.map((order) => (
-                          <li key={order.id}>
-                            <button
-                              type="button"
-                              onClick={() => setSelectedOrderId(order.id)}
-                              className={cn(
-                                'w-full flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-4 py-3 text-left transition-colors',
-                                selectedOrderId === order.id ? colors.selectedRow : 'hover:bg-gray-50'
-                              )}
-                            >
-                              <div className="flex-1 min-w-0">
-                                <p className="font-bold text-sm text-gray-900 truncate">
-                                  #{order.order_code}
-                                </p>
-                                <p className="text-sm text-gray-600 truncate">
-                                  {order.customer_name}
-                                </p>
-                              </div>
-                              <div className="flex items-center gap-3 shrink-0 text-sm">
-                                <span className="text-gray-500 text-xs">
-                                  {formatDate(order.created_at)}
-                                </span>
-                                <span className="font-bold text-sm text-gray-900">
-                                  {formatPrice(parseFloat(order.total))}
-                                </span>
-                              </div>
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                )}
-              </div>
-            )
-          })}
+            <DragOverlay>
+              {activeOrder ? (
+                <OrderKanbanCardPreview order={activeOrder} />
+              ) : null}
+            </DragOverlay>
+          </DndContext>
         </div>
       </div>
 
-      {/* Detalhes do pedido */}
-      <div className="w-full flex-1 min-w-0 lg:rounded-2xl lg:shadow-sm overflow-hidden">
-        <div className="sticky top-0 px-4 py-3 z-10">
-          <h2 className="text-2xl font-bold text-gray-900 font-integral">Detalhes do pedido</h2>
+      {/* Detalhes do pedido — só aparece quando um pedido está selecionado */}
+      {selectedOrderId !== null && (
+        <div className="w-full lg:w-[360px] xl:w-[400px] lg:shrink-0 flex flex-col min-w-0 lg:rounded-2xl lg:border lg:border-gray-200 lg:shadow-sm overflow-hidden bg-white">
+          <div className="sticky top-0 px-3 py-2.5 z-10 bg-white border-b border-gray-100 flex items-center justify-between gap-2">
+            <h2 className="text-base font-bold text-gray-900 font-integral">Detalhes do pedido</h2>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+              onClick={() => setSelectedOrderId(null)}
+              aria-label="Fechar detalhes do pedido"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="p-3 max-h-[calc(100vh-220px)] lg:max-h-[calc(100vh-180px)] overflow-y-auto overflow-x-hidden bg-gray-50/50 lg:rounded-b-2xl">
+            <OrderDetailPanel orderId={selectedOrderId} />
+          </div>
         </div>
-        <div className="p-4 max-h-[calc(100vh-220px)] lg:max-h-[calc(100vh-180px)] overflow-y-auto">
-          <OrderDetailPanel orderId={selectedOrderId} />
-        </div>
-      </div>
+      )}
     </div>
   )
 }

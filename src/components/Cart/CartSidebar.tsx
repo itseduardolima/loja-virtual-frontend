@@ -189,15 +189,17 @@ export function CartSidebar({ isOpen, onClose, storeId, storeSlug, currentPath }
                               
                               // Se images é um objeto (formato novo com cores)
                               if (images && typeof images === 'object' && !Array.isArray(images)) {
+                                const byColor = images as Record<string, string[]>
                                 // Tentar pegar a imagem da cor selecionada
-                                if (item.color && images[item.color] && Array.isArray(images[item.color]) && images[item.color].length > 0) {
-                                  return images[item.color][0]
+                                const forColor = item.color ? byColor[item.color] : null
+                                if (Array.isArray(forColor) && forColor.length > 0) {
+                                  return forColor[0]
                                 }
-                                
                                 // Se não encontrar, pegar a primeira cor disponível
-                                const firstColor = Object.keys(images)[0]
-                                if (firstColor && Array.isArray(images[firstColor]) && images[firstColor].length > 0) {
-                                  return images[firstColor][0]
+                                const firstColor = Object.keys(byColor)[0]
+                                const firstImages = firstColor ? byColor[firstColor] : null
+                                if (Array.isArray(firstImages) && firstImages.length > 0) {
+                                  return firstImages[0]
                                 }
                               }
                               

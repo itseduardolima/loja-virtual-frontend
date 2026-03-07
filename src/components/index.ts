@@ -57,7 +57,6 @@ export { CartSidebar } from './Cart/CartSidebar'
 export { CheckoutModal } from './Checkout/CheckoutModal'
 
 // Order Components
-export { UpdateOrderStatusModal } from './Order/UpdateOrderStatusModal'
 export { OrderTrackingTimeline } from './Order/OrderTrackingTimeline'
 
 // Form Components
