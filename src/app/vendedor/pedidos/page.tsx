@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   DndContext,
   DragOverlay,
@@ -23,6 +24,7 @@ import {
 import { parseStatusFromDroppableId } from '@/components/Order/KanbanColumn'
 import { STATUS_ORDER, STATUS_HEADER_COLORS } from '@/lib/orderPanelUtils'
 import { useUpdateOrderStatus } from '@/hooks/useUpdateOrderStatus'
+import type { OrdersResponse } from '@/types/order'
 import { Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -44,6 +46,7 @@ export default function OrdersPage() {
     ORDER_STATUS: STATUS_MAP,
   } = useOrdersPage()
 
+  const queryClient = useQueryClient()
   const { mutate: updateOrderStatus } = useUpdateOrderStatus()
   const [activeOrderId, setActiveOrderId] = useState<number | null>(null)
 
@@ -71,15 +74,36 @@ export default function OrdersPage() {
   }
 
   const handleDragEnd = (event: DragEndEvent) => {
-    setActiveOrderId(null)
     const orderId = parseOrderIdFromDraggableId(String(event.active.id))
     const overId = event.over?.id
-    if (orderId == null || overId == null) return
+    if (orderId == null || overId == null) {
+      setActiveOrderId(null)
+      return
+    }
     const newStatus = parseStatusFromDroppableId(String(overId))
-    if (newStatus == null) return
+    if (newStatus == null) {
+      setActiveOrderId(null)
+      return
+    }
     const order = orderById.get(orderId)
-    if (!order) return
-    if (order.status === newStatus) return
+    if (!order || order.status === newStatus) {
+      setActiveOrderId(null)
+      return
+    }
+
+    queryClient.setQueriesData(
+      { queryKey: ['orders'] },
+      (old: OrdersResponse | undefined) => {
+        if (!old?.data) return old
+        return {
+          ...old,
+          data: old.data.map((o) =>
+            o.id === orderId ? { ...o, status: newStatus } : o
+          ),
+        }
+      }
+    )
+    setActiveOrderId(null)
     updateOrderStatus({ orderId, status: newStatus })
   }
 

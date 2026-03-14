@@ -33,23 +33,15 @@ export function OrderKanbanCard({
     attributes,
     listeners,
     setNodeRef,
-    transform,
     isDragging,
   } = useDraggable({
     id: getOrderDraggableId(order.id),
     data: { order },
   })
 
-  // Durante o arraste não aplicamos transform no original: só o DragOverlay se move.
-  // O card original fica invisível para evitar efeito de “fantasma”/duplicado.
-  const style = !isDragging && transform
-    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
-    : undefined
-
   return (
     <div
       ref={setNodeRef}
-      style={style}
       {...listeners}
       {...attributes}
       onClick={onClick}
