@@ -29,6 +29,7 @@ import { Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
+import { MobileOrdersView } from '@/components/Order/MobileOrdersView'
 
 export default function OrdersPage() {
   const {
@@ -71,6 +72,22 @@ export default function OrdersPage() {
   const handleDragStart = (event: DragStartEvent) => {
     const id = parseOrderIdFromDraggableId(String(event.active.id))
     if (id != null) setActiveOrderId(id)
+  }
+
+  const handleMoveOrder = (orderId: number, newStatus: number) => {
+    queryClient.setQueriesData(
+      { queryKey: ['orders'] },
+      (old: OrdersResponse | undefined) => {
+        if (!old?.data) return old
+        return {
+          ...old,
+          data: old.data.map((o) =>
+            o.id === orderId ? { ...o, status: newStatus } : o
+          ),
+        }
+      }
+    )
+    updateOrderStatus({ orderId, status: newStatus })
   }
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -140,8 +157,21 @@ export default function OrdersPage() {
 
   return (
     <div className="h-full flex flex-col lg:flex-row gap-4 lg:gap-6 -mx-4 lg:mx-0">
-      {/* Quadro Kanban */}
-      <div className="w-full flex-1 min-w-0 flex flex-col bg-white lg:rounded-2xl lg:border lg:border-gray-200 lg:shadow-sm overflow-hidden">
+      {/* View mobile — visível apenas em telas pequenas */}
+      <div className="lg:hidden w-full">
+        <MobileOrdersView
+          ordersByStatus={ordersByStatus}
+          totalCount={totalCount}
+          selectedOrderId={selectedOrderId}
+          onSelectOrder={setSelectedOrderId}
+          onMoveOrder={handleMoveOrder}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+        />
+      </div>
+
+      {/* Quadro Kanban — visível apenas em lg+ */}
+      <div className="hidden lg:flex w-full flex-1 min-w-0 flex-col bg-white lg:rounded-2xl lg:border lg:border-gray-200 lg:shadow-sm overflow-hidden">
         <div className="p-4 border-b border-gray-100">
           <h1 className="text-xl font-bold text-gray-900 font-integral">Quadro de pedidos</h1>
           <p className="text-sm text-gray-500 mt-0.5">
@@ -208,9 +238,9 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {/* Detalhes do pedido — só aparece quando um pedido está selecionado */}
+      {/* Detalhes do pedido — só em desktop (lg+), mobile usa MobileOrdersView */}
       {selectedOrderId !== null && (
-        <div className="w-full lg:w-[360px] xl:w-[400px] lg:shrink-0 flex flex-col min-w-0 lg:rounded-2xl lg:border lg:border-gray-200 lg:shadow-sm overflow-hidden bg-white">
+        <div className="hidden lg:flex w-full lg:w-[360px] xl:w-[400px] lg:shrink-0 flex-col min-w-0 lg:rounded-2xl lg:border lg:border-gray-200 lg:shadow-sm overflow-hidden bg-white">
           <div className="sticky top-0 px-3 py-2.5 z-10 bg-white border-b border-gray-100 flex items-center justify-between gap-2">
             <h2 className="text-base font-bold text-gray-900 font-integral">Detalhes do pedido</h2>
             <Button
