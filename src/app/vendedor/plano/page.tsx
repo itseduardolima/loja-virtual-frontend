@@ -4,17 +4,20 @@ import { useMySubscription } from '@/hooks/useMySubscription'
 import { useCancelSubscription } from '@/hooks/useCancelSubscription'
 import { Card, CardContent, CardHeader, CardTitle, Button, LoadingSpinner } from '@/components'
 import { RenewSubscriptionModal } from '@/components/Subscription/RenewSubscriptionModal'
+import { RefundModal } from '@/components/Subscription/RefundModal'
 import { formatPrice, formatBillingCycle } from '@/lib/utils'
-import { 
-  CreditCard, 
-  Calendar, 
-  CheckCircle2, 
-  XCircle, 
+import {
+  CreditCard,
+  Calendar,
+  CheckCircle2,
+  XCircle,
   AlertCircle,
   Package,
   Store,
   X,
-  RefreshCw
+  RefreshCw,
+  RotateCcw,
+  Clock
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -23,6 +26,16 @@ export default function PlanoPage() {
   const { mutate: cancelSubscription, isPending: isCanceling } = useCancelSubscription()
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [showRenewModal, setShowRenewModal] = useState(false)
+  const [showRefundModal, setShowRefundModal] = useState(false)
+
+  // Calcula dias restantes na janela de reembolso (7 dias a partir do current_period_start)
+  const refundDaysRemaining = (() => {
+    if (!subscription?.current_period_start) return 0
+    const periodStart = new Date(subscription.current_period_start)
+    const now = new Date()
+    const diffDays = (now.getTime() - periodStart.getTime()) / (1000 * 60 * 60 * 24)
+    return Math.max(0, Math.ceil(7 - diffDays))
+  })()
 
   const handleCancel = () => {
     if (!subscription) return
@@ -268,6 +281,32 @@ export default function PlanoPage() {
             <CardContent className="space-y-4">
               {subscription.status === 'active' && (
                 <>
+                  {/* Banner de reembolso disponível */}
+                  {refundDaysRemaining > 0 && (
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Clock className="w-4 h-4 text-blue-600 shrink-0" />
+                        <p className="text-sm font-semibold text-blue-900">
+                          Reembolso disponível
+                        </p>
+                      </div>
+                      <p className="text-xs text-blue-700 mb-3">
+                        Você ainda tem{' '}
+                        <strong>{refundDaysRemaining} dia{refundDaysRemaining !== 1 ? 's' : ''}</strong>{' '}
+                        para solicitar reembolso integral.
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full border-blue-300 text-blue-700 hover:bg-blue-100"
+                        onClick={() => setShowRefundModal(true)}
+                      >
+                        <RotateCcw className="w-3.5 h-3.5 mr-2" />
+                        Solicitar Reembolso
+                      </Button>
+                    </div>
+                  )}
+
                   {!showCancelConfirm ? (
                     <Button
                       variant="destructive"
@@ -366,6 +405,9 @@ export default function PlanoPage() {
                 <p>
                   • Você pode reativar sua assinatura a qualquer momento.
                 </p>
+                <p>
+                  • Reembolso integral disponível nos primeiros 7 dias após assinar ou renovar.
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -378,6 +420,16 @@ export default function PlanoPage() {
           open={showRenewModal}
           onOpenChange={setShowRenewModal}
           planPrice={typeof plan.price === 'string' ? parseFloat(plan.price) : (plan.price || 0)}
+        />
+      )}
+
+      {/* Modal de Reembolso */}
+      {plan && (
+        <RefundModal
+          open={showRefundModal}
+          onOpenChange={setShowRefundModal}
+          planPrice={typeof plan.price === 'string' ? parseFloat(plan.price) : (plan.price || 0)}
+          daysRemaining={refundDaysRemaining}
         />
       )}
     </div>
