@@ -1,24 +1,21 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
+import { SidebarAdmin, UserHeader } from '@/components'
 import LoadingPage from '@/components/Layout/LoadingPage'
 import AccessDenied from '@/components/Layout/AccessDenied'
 import { useEffect, useState } from 'react'
 import { useValidateToken } from '@/hooks/useValidateToken'
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
   const router = useRouter()
   const { isLoading: authLoading, isAuthenticated, logout } = useAuth()
   const [isReady, setIsReady] = useState(false)
   const [accessDenied, setAccessDenied] = useState(false)
   const token = typeof window !== 'undefined' ? localStorage.getItem('auth-token') : null
-  
-  // Valida o token no backend
+
   const { data: validatedUser, isLoading: isValidating, isError } = useValidateToken(
     !authLoading && isAuthenticated && !!token
   )
@@ -30,56 +27,65 @@ export default function AdminLayout({
       return
     }
 
-    // Se não está autenticado, redireciona para login
     if (!isAuthenticated) {
       router.push('/login')
       return
     }
 
-    // Se a validação falhou (token inválido ou perfil incorreto)
     if (isError) {
       logout()
       router.push('/login')
       return
     }
 
-    // Se está autenticado mas não é administrador, mostra acesso negado
     if (validatedUser && validatedUser.profile !== 'Administrador') {
       setAccessDenied(true)
       setIsReady(false)
       return
     }
 
-    // Se é administrador, permite acesso
     if (validatedUser && validatedUser.profile === 'Administrador') {
       setAccessDenied(false)
-      const timer = setTimeout(() => {
-        setIsReady(true)
-      }, 200)
+      const timer = setTimeout(() => setIsReady(true), 200)
       return () => clearTimeout(timer)
     }
   }, [authLoading, isValidating, isAuthenticated, router, validatedUser, isError, logout])
 
-  // Se está carregando ou validando, mostra loading
-  if (authLoading || isValidating) {
-    return <LoadingPage />
-  }
+  useEffect(() => {
+    if (isReady) {
+      document.body.style.overflow = 'hidden'
+      document.documentElement.style.overflow = 'hidden'
+      return () => {
+        document.body.style.overflow = ''
+        document.documentElement.style.overflow = ''
+      }
+    }
+  }, [isReady])
 
-  // Se não tem acesso, mostra tela de acesso negado
+  if (authLoading || isValidating) return <LoadingPage />
+
   if (accessDenied) {
     return (
       <AccessDenied
         title="Acesso Não Permitido"
-        message="Esta área é exclusiva para administradores. Você precisa ter um perfil de administrador para acessar esta página."
+        message="Esta área é exclusiva para administradores."
       />
     )
   }
 
-  // Se não está pronto ainda, mostra loading
-  if (!isReady) {
-    return <LoadingPage />
-  }
+  if (!isReady) return <LoadingPage />
 
-  return <>{children}</>
+  return (
+    <div className="flex h-screen overflow-hidden">
+      <SidebarAdmin currentPath={pathname} />
+      <div className="flex-1 lg:ml-0 flex flex-col overflow-hidden">
+        <UserHeader currentPath={pathname} />
+        <div className="flex-1 overflow-y-auto bg-[#FAFAFB]">
+          <div className="px-4 py-8">
+            {children}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }
-
