@@ -44,11 +44,11 @@ export function RefundModal({ open, onOpenChange, planPrice, daysRemaining }: Re
             <AlertTriangle className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
             <div className="space-y-1">
               <p className="text-sm font-semibold text-orange-900">
-                Esta ação não pode ser desfeita
+                Solicitação sujeita a aprovação
               </p>
               <p className="text-sm text-orange-800">
-                Ao confirmar, sua assinatura será cancelada imediatamente e o valor de{' '}
-                <strong>{formatPrice(planPrice)}</strong> será devolvido para o método de pagamento original.
+                Ao confirmar, uma solicitação de reembolso de{' '}
+                <strong>{formatPrice(planPrice)}</strong> será enviada para análise do administrador.
               </p>
             </div>
           </div>
@@ -64,19 +64,19 @@ export function RefundModal({ open, onOpenChange, planPrice, daysRemaining }: Re
             </p>
           </div>
 
-          {/* Consequências */}
+          {/* O que acontece */}
           <ul className="space-y-2 text-sm text-gray-600">
             <li className="flex items-start gap-2">
               <span className="text-gray-400 mt-0.5">•</span>
-              Acesso ao painel de vendedor será removido imediatamente.
+              Sua solicitação será analisada pelo administrador.
             </li>
             <li className="flex items-start gap-2">
               <span className="text-gray-400 mt-0.5">•</span>
-              Sua loja e produtos serão desativados.
+              Após aprovação, a assinatura será cancelada e o valor estornado.
             </li>
             <li className="flex items-start gap-2">
               <span className="text-gray-400 mt-0.5">•</span>
-              O reembolso pode levar até 7 dias úteis dependendo do método de pagamento.
+              O estorno pode levar até 7 dias úteis dependendo do método de pagamento.
             </li>
           </ul>
 
@@ -95,7 +95,7 @@ export function RefundModal({ open, onOpenChange, planPrice, daysRemaining }: Re
               onClick={handleConfirm}
               disabled={isPending}
             >
-              {isPending ? 'Processando...' : 'Confirmar Reembolso'}
+              {isPending ? 'Enviando...' : 'Solicitar Reembolso'}
             </Button>
           </div>
         </div>
