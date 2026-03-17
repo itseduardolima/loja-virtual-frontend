@@ -37,6 +37,9 @@ export default function PlanoPage() {
     return Math.max(0, Math.ceil(7 - diffDays))
   })()
 
+  // Detecta se já existe uma solicitação de reembolso pendente
+  const hasRefundRequested = subscription?.payments?.some(p => p.status === 'refund_requested') ?? false
+
   const handleCancel = () => {
     if (!subscription) return
     
@@ -281,8 +284,23 @@ export default function PlanoPage() {
             <CardContent className="space-y-4">
               {subscription.status === 'active' && (
                 <>
+                  {/* Banner de reembolso em análise */}
+                  {hasRefundRequested && (
+                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Clock className="w-4 h-4 text-yellow-600 shrink-0" />
+                        <p className="text-sm font-semibold text-yellow-900">
+                          Reembolso em análise
+                        </p>
+                      </div>
+                      <p className="text-xs text-yellow-700">
+                        Sua solicitação de reembolso está sendo analisada. Você será notificado em breve.
+                      </p>
+                    </div>
+                  )}
+
                   {/* Banner de reembolso disponível */}
-                  {refundDaysRemaining > 0 && (
+                  {!hasRefundRequested && refundDaysRemaining > 0 && (
                     <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
                         <Clock className="w-4 h-4 text-blue-600 shrink-0" />

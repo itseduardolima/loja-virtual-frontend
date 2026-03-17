@@ -21,11 +21,11 @@ export function useEstornosPage() {
   const handleAction = async () => {
     if (!confirmAction) return
     try {
-      await api.patch(`/admin/refunds/${confirmAction.refund.id}/${confirmAction.action}`)
-      success(confirmAction.action === 'approve' ? 'Estorno aprovado' : 'Estorno rejeitado')
+      const res = await api.post(`/admin/refunds/${confirmAction.refund.id}/${confirmAction.action}`)
+      success(res.data?.message ?? (confirmAction.action === 'approve' ? 'Estorno aprovado' : 'Estorno rejeitado'))
       qc.invalidateQueries({ queryKey: ['admin', 'refunds'] })
-    } catch {
-      error('Erro ao processar estorno')
+    } catch (e: any) {
+      error(e?.response?.data?.message ?? 'Erro ao processar estorno')
     } finally {
       setConfirmAction(null)
     }

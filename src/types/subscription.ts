@@ -34,13 +34,28 @@ export interface SubscriptionPlan {
  */
 export type SubscriptionStatus = 'pending' | 'active' | 'expired' | 'canceled'
 
+export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded' | 'refund_requested'
+
+export interface Payment {
+  id: number
+  subscription_id: number
+  amount: string
+  currency: string
+  status: PaymentStatus
+  payment_provider: string
+  payment_id: string | null
+  payment_method: string | null
+  paid_at: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface Subscription {
   id: number
   user_id: number
   plan_id: number
   status: SubscriptionStatus
   payment_provider: string
-  payment_id: string | null
   subscription_id: string
   current_period_start: string
   current_period_end: string
@@ -49,7 +64,7 @@ export interface Subscription {
   created_at: string
   updated_at: string
   plan?: SubscriptionPlan
-  payments?: any[]
+  payments?: Payment[]
 }
 
 export interface CreateSubscriptionRequest {
