@@ -28,6 +28,9 @@ export default function PlanoPage() {
   const [showRenewModal, setShowRenewModal] = useState(false)
   const [showRefundModal, setShowRefundModal] = useState(false)
 
+  // Assinatura ativa mas com cancelamento agendado para o fim do período
+  const isCancelScheduled = subscription?.cancel_at_period_end === 1 && subscription?.status === 'active'
+
   // Calcula dias restantes na janela de reembolso (7 dias a partir do current_period_start)
   const refundDaysRemaining = (() => {
     if (!subscription?.current_period_start) return 0
@@ -51,6 +54,15 @@ export default function PlanoPage() {
   }
 
   const getStatusBadge = (status: string) => {
+    if (isCancelScheduled) {
+      return (
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border bg-orange-100 text-orange-800 border-orange-200">
+          <Clock className="w-4 h-4 text-orange-600" />
+          <span className="text-sm font-semibold">Cancelamento Agendado</span>
+        </div>
+      )
+    }
+
     const statusConfig = {
       active: {
         label: 'Ativa',
@@ -282,7 +294,32 @@ export default function PlanoPage() {
               <CardTitle>Ações</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {subscription.status === 'active' && (
+              {subscription.status === 'active' && isCancelScheduled && (
+                <div className="space-y-3">
+                  <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Clock className="w-4 h-4 text-orange-600 shrink-0" />
+                      <p className="text-sm font-semibold text-orange-900">
+                        Cancelamento agendado
+                      </p>
+                    </div>
+                    <p className="text-sm text-orange-800">
+                      Sua assinatura será encerrada em{' '}
+                      <strong>
+                        {new Date(subscription.current_period_end).toLocaleDateString('pt-BR', {
+                          day: '2-digit',
+                          month: 'long',
+                          year: 'numeric',
+                          timeZone: 'UTC',
+                        })}
+                      </strong>
+                      . Você mantém acesso completo até lá.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {subscription.status === 'active' && !isCancelScheduled && (
                 <>
                   {/* Banner de reembolso em análise */}
                   {hasRefundRequested && (
