@@ -886,11 +886,9 @@ export default function EditProductPage() {
                   stock={watch('stock') || 0}
                   existingImages={Array.isArray(product?.images) ? (product?.images || []) : []}
                   removedExistingImages={removedExistingImages}
-                  onSave={handleSubmit(onSubmit)}
-                  onCancel={() => router.push('/vendedor/produtos')}
                   isLoading={isLoading}
                   isDisabled={!isFormValid}
-                  showActions={currentStep === STEPS.length}
+                  showActions={false}
                 />
               </div>
             </div>
