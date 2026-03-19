@@ -1,17 +1,22 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useProduct, useDeleteProduct } from '@/hooks/useProducts'
+import { useProduct, useDeleteProduct, useUpdateProduct } from '@/hooks/useProducts'
 import { buildImageUrl } from '@/lib/utils'
 import { useToastContext } from '@/contexts/ToastContext'
 
 export function useProductDetailPage(productId: string) {
   const router = useRouter()
-  const { error: showErrorToast } = useToastContext()
+  const { error: showErrorToast, success: showSuccessToast } = useToastContext()
   const { data: product, isLoading, error } = useProduct(productId)
   const deleteProductMutation = useDeleteProduct()
+  const updateProductMutation = useUpdateProduct()
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [selectedColor, setSelectedColor] = useState<string | null>(null)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+
+  // Reorder mode state
+  const [reorderMode, setReorderMode] = useState(false)
+  const [reorderedImagesByColor, setReorderedImagesByColor] = useState<Record<string, string[]>>({})
 
   const colorMap: Record<string, string> = {
     'Azul': '#3B82F6',
@@ -145,6 +150,38 @@ export function useProductDetailPage(productId: string) {
     }
   }
 
+  // Reorder functions
+  const enterReorderMode = () => {
+    setReorderedImagesByColor({ ...imagesByColor })
+    setReorderMode(true)
+  }
+
+  const cancelReorder = () => {
+    setReorderedImagesByColor({})
+    setReorderMode(false)
+  }
+
+  const handleReorderImages = (color: string, newUrls: string[]) => {
+    setReorderedImagesByColor(prev => ({ ...prev, [color]: newUrls }))
+  }
+
+  const saveImageOrder = async () => {
+    if (!product?.id) return
+    const formData = new FormData()
+    formData.append('existing_images_order', JSON.stringify(reorderedImagesByColor))
+    // Send minimal required fields to pass backend validation
+    formData.append('name', product.name)
+    formData.append('price', product.price)
+    try {
+      await updateProductMutation.mutateAsync({ id: product.id, data: formData })
+      showSuccessToast('Ordem das imagens salva!', 'Sucesso')
+      setReorderMode(false)
+      setReorderedImagesByColor({})
+    } catch (error: any) {
+      showErrorToast(error.response?.data?.message || 'Erro ao salvar ordem', 'Erro')
+    }
+  }
+
   // Função para abrir modal de confirmação
   const openDeleteDialog = () => {
     setShowDeleteDialog(true)
@@ -193,6 +230,14 @@ export function useProductDetailPage(productId: string) {
     handleDeleteProduct,
     showDeleteDialog,
     setShowDeleteDialog,
-    isDeleting: deleteProductMutation.isPending
+    isDeleting: deleteProductMutation.isPending,
+    // Reorder
+    reorderMode,
+    reorderedImagesByColor,
+    enterReorderMode,
+    cancelReorder,
+    handleReorderImages,
+    saveImageOrder,
+    isSavingOrder: updateProductMutation.isPending
   }
 }

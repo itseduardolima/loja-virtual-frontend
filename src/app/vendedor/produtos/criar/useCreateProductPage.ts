@@ -4,21 +4,22 @@ import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/axios'
-import { 
-  createProductSchema, 
+import {
+  createProductSchema,
   CreateProductFormData
 } from '@/schemas'
 import { useToastContext } from '@/contexts/ToastContext'
 import { useStore } from '@/hooks/useStore'
 import { useNiches, useNicheFields } from '@/hooks/useNiches'
 import { NicheFieldValue } from '@/types'
+import { OrderedImage } from '@/components/Form/ImageUploadByColor'
 
 export function useCreateProductPage(user: any) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const { error: showError, success: showSuccess } = useToastContext()
   const [selectedImages, setSelectedImages] = useState<File[]>([])
-  const [imagesByColor, setImagesByColor] = useState<Record<string, File[]>>({})
+  const [orderedImagesByColor, setOrderedImagesByColor] = useState<Record<string, OrderedImage[]>>({})
   const [selectedNicheId, setSelectedNicheId] = useState<number | null>(null)
   const [dynamicFieldValues, setDynamicFieldValues] = useState<Record<string, NicheFieldValue>>({})
 
@@ -50,7 +51,7 @@ export function useCreateProductPage(user: any) {
       try {
         const params = new URLSearchParams()
         params.append('status', '1')
-        params.append('limit', '1000') // Limite alto para buscar todas as categorias
+        params.append('limit', '1000')
         if (selectedNicheId) {
           params.append('niche_id', selectedNicheId.toString())
         }
@@ -70,17 +71,15 @@ export function useCreateProductPage(user: any) {
 
   const createProductMutation = useMutation({
     mutationFn: async (data: CreateProductFormData) => {
-      // Verificar se há imagens (por cor ou simples)
-      const hasImagesByColor = Object.keys(imagesByColor).length > 0 && 
-        Object.values(imagesByColor).some(images => images.length > 0)
+      const hasColorImages = Object.values(orderedImagesByColor).some(items => items.length > 0)
       const hasSimpleImages = selectedImages.length > 0
 
-      if (!hasImagesByColor && !hasSimpleImages) {
+      if (!hasColorImages && !hasSimpleImages) {
         throw new Error('É necessário ter pelo menos uma imagem')
       }
 
       const formData = new FormData()
-      
+
       formData.append('name', data.name)
       if (data.description && data.description.trim()) {
         formData.append('description', data.description.trim())
@@ -94,13 +93,11 @@ export function useCreateProductPage(user: any) {
         formData.append('category_id', data.category_id.toString())
       }
       formData.append('featured', data.featured ? 'true' : 'false')
-      
-      // Adicionar campo de specifications
+
       if (data.specifications && data.specifications.trim()) {
         formData.append('specifications', data.specifications.trim())
       }
 
-      // Adicionar campos dinâmicos se houver nicho selecionado
       if (selectedNicheId && Object.keys(dynamicFieldValues).length > 0) {
         const dynamicFields = Object.values(dynamicFieldValues).map((fieldValue) => ({
           field_id: fieldValue.field_id,
@@ -108,49 +105,37 @@ export function useCreateProductPage(user: any) {
         }))
         formData.append('dynamic_fields', JSON.stringify(dynamicFields))
       }
-      
-      // Processar imagens por cor se houver
-      if (hasImagesByColor) {
-        // Criar um mapeamento de índices para as imagens
+
+      if (hasColorImages) {
+        // All items are type 'new' (create has no existing images)
         const allImages: File[] = []
         const imagesByColorWithIndices: Record<string, number[]> = {}
-        
-        Object.entries(imagesByColor).forEach(([color, images]) => {
-          const indices: number[] = []
-          images.forEach(image => {
-            const index = allImages.length
-            allImages.push(image)
-            indices.push(index)
-          })
-          imagesByColorWithIndices[color] = indices
-        })
-        
-        // Adicionar todas as imagens ao FormData
-        allImages.forEach(image => {
-          formData.append('images', image)
-        })
-        
-        // Adicionar o mapeamento de imagens por cor
+
+        for (const [color, items] of Object.entries(orderedImagesByColor)) {
+          const newItems = items.filter(i => i.type === 'new') as { type: 'new'; file: File }[]
+          if (newItems.length > 0) {
+            imagesByColorWithIndices[color] = newItems.map(i => {
+              const idx = allImages.length
+              allImages.push(i.file)
+              return idx
+            })
+          }
+        }
+
+        allImages.forEach(image => formData.append('images', image))
         formData.append('images_by_color', JSON.stringify(imagesByColorWithIndices))
       } else {
-        // Formato antigo: array simples
-        selectedImages.forEach(image => {
-          formData.append('images', image)
-        })
+        selectedImages.forEach(image => formData.append('images', image))
       }
 
       const response = await api.post('/products', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+        headers: { 'Content-Type': 'multipart/form-data' }
       })
       return response.data
     },
     onSuccess: () => {
-      // Invalidar queries para atualizar a listagem
       queryClient.invalidateQueries({ queryKey: ['products'] })
       queryClient.invalidateQueries({ queryKey: ['product'] })
-      // Forçar refetch imediato
       queryClient.refetchQueries({ queryKey: ['products'] })
       showSuccess('Produto criado com sucesso!', 'Sucesso')
       router.push('/vendedor/produtos')
@@ -170,13 +155,21 @@ export function useCreateProductPage(user: any) {
     setSelectedImages(prev => prev.filter((_, i) => i !== index))
   }
 
+  const reorderImages = (newImages: File[]) => {
+    setSelectedImages(newImages)
+  }
+
+  const handleOrderedImagesChange = (color: string, newOrder: OrderedImage[]) => {
+    setOrderedImagesByColor(prev => ({ ...prev, [color]: newOrder }))
+  }
+
   const onSubmit = (data: CreateProductFormData) => {
     createProductMutation.mutate(data)
   }
 
   const handleNicheChange = (nicheId: number | null) => {
     setSelectedNicheId(nicheId)
-    setDynamicFieldValues({}) // Limpar campos quando trocar de nicho
+    setDynamicFieldValues({})
   }
 
   const handleDynamicFieldChange = (fieldId: number, value: string | string[]) => {
@@ -186,33 +179,23 @@ export function useCreateProductPage(user: any) {
     }))
   }
 
-  // Extrair cores dos campos dinâmicos
   const availableColors = useMemo(() => {
     if (!nicheFields || nicheFields.length === 0) return []
-    
-    // Encontrar o campo de cor
     const colorField = nicheFields.find(f => f.name.toLowerCase() === 'cor')
     if (!colorField) return []
-    
-    // Buscar o valor do campo de cor nos dynamicFieldValues
     const colorFieldValue = dynamicFieldValues[colorField.id.toString()]
     if (!colorFieldValue) return []
-    
     const value = colorFieldValue.value
-    if (Array.isArray(value)) {
-      return value
-    }
-    if (typeof value === 'string') {
-      return value.split(',').map(c => c.trim()).filter(Boolean)
-    }
+    if (Array.isArray(value)) return value
+    if (typeof value === 'string') return value.split(',').map(c => c.trim()).filter(Boolean)
     return []
   }, [dynamicFieldValues, nicheFields])
 
   return {
     form,
     selectedImages,
-    imagesByColor,
-    setImagesByColor,
+    orderedImagesByColor,
+    handleOrderedImagesChange,
     categories,
     niches,
     selectedNicheId,
@@ -222,6 +205,7 @@ export function useCreateProductPage(user: any) {
     error: createProductMutation.error,
     handleImageChange,
     removeImage,
+    reorderImages,
     handleNicheChange,
     handleDynamicFieldChange,
     onSubmit

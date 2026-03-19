@@ -39,21 +39,20 @@ export default function EditProductPage() {
     form,
     product,
     selectedImages,
-    imagesByColor,
-    setImagesByColor,
+    orderedImagesByColor,
+    handleOrderedImagesChange,
     categories,
     niches,
     selectedNicheId,
     dynamicFieldValues,
     availableColors,
     removedExistingImages,
-    removedImagesByColor,
-    setRemovedImagesByColor,
     isInitialized,
     isLoading,
     error,
     handleImageChange,
     removeImage,
+    reorderImages,
     removeExistingImage,
     handleNicheChange,
     handleDynamicFieldChange,
@@ -79,48 +78,17 @@ export default function EditProductPage() {
         // Etapa 2 é opcional (tipo de produto)
         return true
       case 3:
-        // Se há cores disponíveis, validar que cada cor tem pelo menos uma imagem
         if (availableColors.length > 0) {
-          // Verificar se todas as cores têm imagens
-          const allColorsHaveImages = availableColors.every(color => {
-            // Verificar se há imagens novas para esta cor
-            const hasNewImages = imagesByColor[color] && imagesByColor[color].length > 0
-            
-            // Verificar se há imagens existentes que não foram removidas
-            const existingImages = product?.images_by_color && 
-              typeof product.images_by_color === 'object' &&
-              !Array.isArray(product.images_by_color)
-              ? (product.images_by_color[color] || [])
-              : []
-            const removedIndices = removedImagesByColor[color] || []
-            const hasExistingImages = existingImages.length > removedIndices.length
-            
-            return hasNewImages || hasExistingImages
-          })
-          
-          return allColorsHaveImages
+          // All selected colors must have at least one image in the unified list
+          return availableColors.every(color => (orderedImagesByColor[color]?.length || 0) > 0)
         }
-        
-        // Se não há cores disponíveis, validar se há imagens simples
-        const hasImagesByColor = Object.keys(imagesByColor).length > 0 && 
-          Object.values(imagesByColor).some(images => images.length > 0)
+        // No colors: validate simple images
         const hasSimpleImages = selectedImages.length > 0
-        const remainingExistingImages = Array.isArray(product?.images) 
+        const remainingExistingImages = Array.isArray(product?.images)
           ? (product?.images || []).filter((_: any, index: number) => !removedExistingImages.includes(index))
           : []
-        const hasExistingImages = remainingExistingImages.length > 0
-        
-        // Verificar imagens por cor existentes
-        const hasExistingImagesByColor = product?.images_by_color && 
-          typeof product.images_by_color === 'object' &&
-          !Array.isArray(product.images_by_color) &&
-          Object.keys(product.images_by_color).some(color => {
-            const colorImages = product.images_by_color[color] || []
-            const removedIndices = removedImagesByColor[color] || []
-            return colorImages.length > removedIndices.length
-          })
-        
-        return hasImagesByColor || hasSimpleImages || hasExistingImages || hasExistingImagesByColor
+        const hasColorImages = Object.values(orderedImagesByColor).some(items => items.length > 0)
+        return hasSimpleImages || remainingExistingImages.length > 0 || hasColorImages
       case 4:
         // Etapa 4 é opcional (especificações)
         return true
@@ -162,7 +130,8 @@ export default function EditProductPage() {
   const nameValue = watch('name')
   const priceValue = watch('price')
   const descriptionValue = watch('description')
-  const hasImages = selectedImages.length > 0 || Object.keys(imagesByColor).length > 0 || 
+  const hasImages = selectedImages.length > 0 ||
+    Object.values(orderedImagesByColor).some(items => items.length > 0) ||
     (Array.isArray(product?.images) && product?.images.length > 0 && removedExistingImages.length < (product?.images.length || 0))
 
   // Verificar se há mudanças não salvas
@@ -329,49 +298,19 @@ export default function EditProductPage() {
   }
 
   const isFormValid = useMemo(() => {
-    // Se há cores disponíveis, validar que cada cor tem pelo menos uma imagem
     let hasImages = false
-    
+
     if (availableColors.length > 0) {
-      // Verificar se todas as cores têm imagens
-      hasImages = availableColors.every(color => {
-        // Verificar se há imagens novas para esta cor
-        const hasNewImages = imagesByColor[color] && imagesByColor[color].length > 0
-        
-        // Verificar se há imagens existentes que não foram removidas
-        const existingImages = product?.images_by_color && 
-          typeof product.images_by_color === 'object' &&
-          !Array.isArray(product.images_by_color)
-          ? (product.images_by_color[color] || [])
-          : []
-        const removedIndices = removedImagesByColor[color] || []
-        const hasExistingImages = existingImages.length > removedIndices.length
-        
-        return hasNewImages || hasExistingImages
-      })
+      hasImages = availableColors.every(color => (orderedImagesByColor[color]?.length || 0) > 0)
     } else {
-      // Se não há cores disponíveis, validar se há imagens simples
-      const hasImagesByColor = Object.keys(imagesByColor).length > 0 && 
-        Object.values(imagesByColor).some(images => images.length > 0)
-      const hasSimpleImages = selectedImages.length > 0
-      const remainingExistingImages = Array.isArray(product?.images) 
+      const remainingExistingImages = Array.isArray(product?.images)
         ? (product?.images || []).filter((_: any, index: number) => !removedExistingImages.includes(index))
         : []
-      const hasExistingImages = remainingExistingImages.length > 0
-      
-      // Verificar imagens por cor existentes
-      const hasExistingImagesByColor = product?.images_by_color && 
-        typeof product.images_by_color === 'object' && 
-        !Array.isArray(product.images_by_color) &&
-        Object.keys(product.images_by_color).some(color => {
-          const colorImages = product.images_by_color[color] || []
-          const removedIndices = removedImagesByColor[color] || []
-          return colorImages.length > removedIndices.length
-        })
-      
-      hasImages = hasImagesByColor || hasSimpleImages || hasExistingImages || hasExistingImagesByColor
+      hasImages = selectedImages.length > 0 ||
+        Object.values(orderedImagesByColor).some(items => items.length > 0) ||
+        remainingExistingImages.length > 0
     }
-    
+
     return !!(
       nameValue &&
       nameValue.trim().length >= 3 &&
@@ -379,7 +318,7 @@ export default function EditProductPage() {
       priceValue > 0 &&
       hasImages
     )
-  }, [nameValue, priceValue, selectedImages.length, imagesByColor, product?.images, removedExistingImages, removedImagesByColor, product?.images_by_color, availableColors])
+  }, [nameValue, priceValue, selectedImages.length, orderedImagesByColor, product?.images, removedExistingImages, availableColors])
 
   if (authLoading || storeLoading) {
     return <LoadingPage />
@@ -728,22 +667,7 @@ export default function EditProductPage() {
         // Função helper para verificar quais cores estão sem imagens
         const getColorsWithoutImages = () => {
           if (availableColors.length === 0) return []
-          
-          return availableColors.filter(color => {
-            // Verificar se há imagens novas para esta cor
-            const hasNewImages = imagesByColor[color] && imagesByColor[color].length > 0
-            
-            // Verificar se há imagens existentes que não foram removidas
-            const existingImages = product?.images_by_color && 
-              typeof product.images_by_color === 'object' &&
-              !Array.isArray(product.images_by_color)
-              ? (product.images_by_color[color] || [])
-              : []
-            const removedIndices = removedImagesByColor[color] || []
-            const hasExistingImages = existingImages.length > removedIndices.length
-            
-            return !hasNewImages && !hasExistingImages
-          })
+          return availableColors.filter(color => (orderedImagesByColor[color]?.length || 0) === 0)
         }
         
         const colorsWithoutImages = getColorsWithoutImages()
@@ -753,17 +677,9 @@ export default function EditProductPage() {
             {availableColors.length > 0 ? (
               <>
                 <ImageUploadByColor
-                  imagesByColor={imagesByColor}
-                  onImagesByColorChange={setImagesByColor}
+                  orderedImagesByColor={orderedImagesByColor}
+                  onOrderedImagesChange={handleOrderedImagesChange}
                   availableColors={availableColors}
-                  existingImagesByColor={product?.images_by_color || (typeof product?.images === 'object' && !Array.isArray(product?.images) ? product.images : {})}
-                  onRemoveExistingImage={(color, index) => {
-                    setRemovedImagesByColor(prev => ({
-                      ...prev,
-                      [color]: [...(prev[color] || []), index]
-                    }))
-                  }}
-                  removedExistingImages={removedImagesByColor}
                 />
                 {colorsWithoutImages.length > 0 && (
                   <Card className="p-4 bg-red-50 border-red-200 border-2">
@@ -786,6 +702,7 @@ export default function EditProductPage() {
                 selectedImages={selectedImages}
                 onImageChange={handleImageChange}
                 onRemoveImage={removeImage}
+                onReorderImages={reorderImages}
                 existingImages={Array.isArray(product?.images) ? (product?.images || []) : []}
                 onRemoveExistingImage={removeExistingImage}
                 removedExistingImages={removedExistingImages}
@@ -881,7 +798,12 @@ export default function EditProductPage() {
                   price={watch('price') || 0}
                   featured={watch('featured') || false}
                   selectedImages={selectedImages}
-                  imagesByColor={imagesByColor}
+                  imagesByColor={Object.fromEntries(
+                    Object.entries(orderedImagesByColor).map(([c, items]) => [
+                      c,
+                      items.filter(i => i.type === 'new').map(i => (i as any).file as File)
+                    ])
+                  )}
                   category={categories.find(cat => cat.id === watch('category_id'))}
                   stock={watch('stock') || 0}
                   existingImages={Array.isArray(product?.images) ? (product?.images || []) : []}
