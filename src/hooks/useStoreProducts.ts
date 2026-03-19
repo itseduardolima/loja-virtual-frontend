@@ -43,6 +43,7 @@ export function useStoreProducts(params: StoreProductsParams): UseStoreProductsR
       if (params.max_price) queryParams.append('max_price', params.max_price.toString())
       if (params.min_price) queryParams.append('min_price', params.min_price.toString())
       if (params.category_id) queryParams.append('category_id', params.category_id.toString())
+      if (params.niche_id) queryParams.append('niche_id', params.niche_id.toString())
       if (params.search) queryParams.append('search', params.search)
       if (params.dynamic_filters) {
         // Enviar dynamic_filters como string JSON na query string

@@ -40,6 +40,7 @@ export interface StoreCategory {
   id: number
   name: string
   description: string
+  niche_id?: number
   _count: {
     products: number
   }
@@ -61,6 +62,7 @@ export interface StoreProductsParams {
   max_price?: number
   min_price?: number
   category_id?: number
+  niche_id?: number
   search?: string
   dynamic_filters?: Record<string, string> | string
 }

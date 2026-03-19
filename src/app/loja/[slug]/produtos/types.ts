@@ -7,6 +7,7 @@ export interface StoreFilters {
   size?: string
   minPrice?: number
   maxPrice?: number
+  nicheId?: number
   categoryId?: number
   dynamicFilters?: Record<string, string>
 }
@@ -42,6 +43,7 @@ export interface ProcessedStoreData {
   categories: Array<{ id: number; name: string }>
   availableColors: string[]
   availableSizes: string[]
+  availableDynamicFieldNames: string[]
 }
 
 // Tipos para os handlers da página
@@ -96,6 +98,7 @@ export interface StoreFiltersProps {
   categories: Array<{ id: number; name: string }>
   availableColors: string[]
   availableSizes: string[]
+  availableDynamicFieldNames: string[]
 }
 
 export interface ProductCardProps {

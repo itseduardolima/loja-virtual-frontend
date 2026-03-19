@@ -24,6 +24,10 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
   
   const debouncedSearch = useDebounce(search, 1000)
 
+  // Quando só o nicho está selecionado (sem categoria), busca todos os produtos
+  // para filtrar client-side corretamente (o backend não filtra por niche_id)
+  const isNicheOnlyFilter = !!(filters.nicheId && !filters.categoryId)
+
   const {
     products: productsData,
     loading,
@@ -33,7 +37,7 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
   } = useStoreProducts({
     slug,
     page: 1,
-    limit: 20,
+    limit: isNicheOnlyFilter ? 1000 : 20,
     sort,
     sort_field: sortField,
     featured: filters.featured,
@@ -41,6 +45,7 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
     size: filters.size,
     max_price: filters.maxPrice,
     min_price: filters.minPrice,
+    niche_id: filters.nicheId,
     category_id: filters.categoryId,
     dynamic_filters: filters.dynamicFilters,
     search: debouncedSearch || undefined
@@ -108,6 +113,19 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
     return Array.from(colors).filter(Boolean).sort()
   }, [products])
 
+  const availableDynamicFieldNames = useMemo(() => {
+    const names = new Set<string>()
+    if (!Array.isArray(products)) return []
+    products.forEach(product => {
+      if (product.dynamic_fields && Array.isArray(product.dynamic_fields)) {
+        product.dynamic_fields.forEach(field => {
+          if (field.field_name) names.add(field.field_name)
+        })
+      }
+    })
+    return Array.from(names)
+  }, [products])
+
   const availableSizes = useMemo(() => {
     const sizes = new Set<string>()
     if (!Array.isArray(products)) return []
@@ -170,6 +188,7 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
       size: newFilters.size,
       max_price: newFilters.maxPrice,
       min_price: newFilters.minPrice,
+      niche_id: newFilters.nicheId,
       category_id: newFilters.categoryId,
       dynamic_filters: newFilters.dynamicFilters,
       page: 1
@@ -185,6 +204,7 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
       size: undefined,
       max_price: undefined,
       min_price: undefined,
+      niche_id: undefined,
       category_id: undefined,
       dynamic_filters: undefined,
       search: undefined,
@@ -221,6 +241,7 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
     categories,
     availableColors,
     availableSizes,
+    availableDynamicFieldNames,
     handleSearch,
     handleSearchSubmit,
     handleSortChange,

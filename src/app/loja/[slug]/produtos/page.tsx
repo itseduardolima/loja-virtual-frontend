@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ProductCard, StorePagination, StoreSidebar, ErrorState, CartSidebar, StoreHeader, LoadingPage } from '@/components'
@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useStorePage } from './useStorePage'
 import { useStoreInfo } from '@/hooks/useStoreInfo'
+import { useStoreCategories } from '@/hooks/useStoreCategories'
+import { useNiches, useStoreFields } from '@/hooks/useNiches'
 import { useCart } from '@/hooks/useCart'
 
 export default function StorePage() {
@@ -54,6 +56,7 @@ export default function StorePage() {
     categories,
     availableColors,
     availableSizes,
+    availableDynamicFieldNames,
 
     // Handlers
     handleSearch,
@@ -69,8 +72,55 @@ export default function StorePage() {
   // Hook para buscar informações da loja
   const { storeInfo } = useStoreInfo(slug)
 
+  // Categorias completas e niches para o sidebar
+  const { categories: storeCategories } = useStoreCategories(slug)
+  const { data: nichesData } = useNiches(storeInfo?.id || null)
+  const { data: allStoreFields } = useStoreFields(storeInfo?.id || null)
+
+  // Mapa categoria → nicho, acumulativo para não perder dados ao aplicar filtros
+  const categoryNicheMapRef = useMemo(() => ({ current: {} as Record<number, number> }), [])
+
+  const categoryNicheMap = useMemo(() => {
+    if (!allStoreFields?.length || !products?.length) return categoryNicheMapRef.current
+
+    // field_name → niche_id
+    const fieldNicheMap: Record<string, number> = {}
+    allStoreFields.forEach(field => {
+      fieldNicheMap[field.name] = field.niche_id
+    })
+
+    // Acumula novas entradas sem remover as existentes
+    products.forEach(product => {
+      if (product.category?.id && product.dynamic_fields?.length > 0) {
+        if (categoryNicheMapRef.current[product.category.id] !== undefined) return
+        for (const df of product.dynamic_fields) {
+          const nicheId = fieldNicheMap[df.field_name]
+          if (nicheId) {
+            categoryNicheMapRef.current[product.category.id] = nicheId
+            break
+          }
+        }
+      }
+    })
+
+    return { ...categoryNicheMapRef.current }
+  }, [allStoreFields, products, categoryNicheMapRef])
+
+  // Filtro client-side por nicho: quando nicho selecionado sem categoria específica,
+  // filtra produtos cujo category.id pertence ao nicho selecionado
+  const displayProducts = useMemo(() => {
+    if (filters.nicheId && !filters.categoryId && Object.keys(categoryNicheMap).length > 0) {
+      return products.filter(p => p.category?.id && categoryNicheMap[p.category.id] === filters.nicheId)
+    }
+    return products
+  }, [products, filters.nicheId, filters.categoryId, categoryNicheMap])
+
   // Função para determinar o título da página
   const getPageTitle = () => {
+    if (filters.nicheId && !filters.categoryId && nichesData?.data) {
+      const niche = nichesData.data.find(n => n.id === filters.nicheId)
+      if (niche) return niche.name
+    }
     if (filters.categoryId && categories.length > 0) {
       const selectedCategory = categories.find(cat => cat.id === filters.categoryId)
       return selectedCategory ? selectedCategory.name : 'Todos os produtos'
@@ -127,7 +177,7 @@ export default function StorePage() {
               Filtros
             </Button>
             <AnimatePresence>
-              {(filters.categoryId || filters.color || filters.size || filters.featured || filters.minPrice || filters.maxPrice) && (
+              {(filters.nicheId || filters.categoryId || filters.color || filters.size || filters.featured || filters.minPrice || filters.maxPrice) && (
                 <motion.div
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
@@ -210,7 +260,11 @@ export default function StorePage() {
                   categories={categories}
                   availableColors={availableColors}
                   availableSizes={availableSizes}
+                  availableDynamicFieldNames={availableDynamicFieldNames}
                   storeId={storeInfo?.id || null}
+                  storeCategories={storeCategories}
+                  niches={nichesData?.data || []}
+                  categoryNicheMap={categoryNicheMap}
                 />
               </div>
                 </motion.div>
@@ -235,7 +289,11 @@ export default function StorePage() {
                 categories={categories}
                 availableColors={availableColors}
                 availableSizes={availableSizes}
+                availableDynamicFieldNames={availableDynamicFieldNames}
                 storeId={storeInfo?.id || null}
+                storeCategories={storeCategories}
+                niches={nichesData?.data || []}
+                categoryNicheMap={categoryNicheMap}
               />
             </div>
           </aside>
@@ -273,7 +331,11 @@ export default function StorePage() {
                         transition={{ duration: 0.4, delay: 0.2 }}
                         className="text-sm sm:text-base text-gray-600"
                       >
-                        {meta?.total || products?.length || 0} {(meta?.total || products?.length || 0) === 1 ? 'produto encontrado' : 'produtos encontrados'}
+                        {(() => {
+                          const isNicheOnlyFilter = filters.nicheId && !filters.categoryId && Object.keys(categoryNicheMap).length > 0
+                          const count = isNicheOnlyFilter ? displayProducts?.length || 0 : meta?.total || displayProducts?.length || 0
+                          return `${count} ${count === 1 ? 'produto encontrado' : 'produtos encontrados'}`
+                        })()}
                       </motion.p>
                     </div>
                   </div>
@@ -284,6 +346,19 @@ export default function StorePage() {
                     className="flex flex-wrap items-center gap-2"
                   >
                     <AnimatePresence mode="popLayout">
+                      {filters.nicheId && nichesData?.data?.find(n => n.id === filters.nicheId) && (
+                        <motion.div
+                          key="niche"
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Badge variant="secondary" className="text-xs">
+                            Tipo: {nichesData.data.find(n => n.id === filters.nicheId)?.name}
+                          </Badge>
+                        </motion.div>
+                      )}
                       {filters.featured && (
                         <motion.div
                           key="featured"
@@ -337,7 +412,7 @@ export default function StorePage() {
                           </Badge>
                         </motion.div>
                       )}
-                      {(filters.categoryId || filters.color || filters.size || filters.featured || filters.minPrice || filters.maxPrice) && (
+                      {(filters.nicheId || filters.categoryId || filters.color || filters.size || filters.featured || filters.minPrice || filters.maxPrice) && (
                         <motion.div
                           key="clear"
                           initial={{ scale: 0, opacity: 0 }}
@@ -360,14 +435,14 @@ export default function StorePage() {
                 </motion.div>
 
                 {/* Grid de Produtos */}
-                  {products && Array.isArray(products) && products.length > 0 ? (
+                  {displayProducts && Array.isArray(displayProducts) && displayProducts.length > 0 ? (
                     <>
                       <motion.div
                         layout
                         className="grid gap-4 sm:gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4"
                       >
                         <AnimatePresence mode="popLayout">
-                          {products.map((product, index) => (
+                          {displayProducts.map((product, index) => (
                             <motion.div
                               key={product.id}
                               layout
@@ -391,8 +466,8 @@ export default function StorePage() {
                         </AnimatePresence>
                       </motion.div>
 
-                      {/* Paginação */}
-                      {meta && meta.lastPage > 1 && (
+                      {/* Paginação - oculta quando filtragem client-side por nicho está ativa */}
+                      {meta && meta.lastPage > 1 && !(filters.nicheId && !filters.categoryId) && (
                         <motion.div
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
