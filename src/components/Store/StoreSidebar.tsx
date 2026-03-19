@@ -11,7 +11,8 @@ import { Filter, ChevronUp, Check } from 'lucide-react'
 import { StoreFiltersProps } from '@/app/loja/[slug]/produtos/types'
 import { formatPrice } from '@/lib/utils'
 import { useStoreFields } from '@/hooks/useNiches'
-import { NicheField } from '@/types/niche'
+import { Niche, NicheField } from '@/types/niche'
+import { StoreCategory } from '@/types/store'
 import { COLOR_OPTIONS, getColorHex } from '@/schemas'
 
 interface StoreSidebarProps extends StoreFiltersProps {
@@ -21,6 +22,9 @@ interface StoreSidebarProps extends StoreFiltersProps {
   variant?: 'sidebar' | 'inline'
   showSearch?: boolean
   storeId?: number | null
+  storeCategories?: StoreCategory[]
+  niches?: Niche[]
+  categoryNicheMap?: Record<number, number>
 }
 
 
@@ -31,6 +35,10 @@ export function StoreSidebar({
   variant = 'sidebar',
   showSearch = false,
   storeId = null,
+  availableDynamicFieldNames = [],
+  storeCategories = [],
+  niches = [],
+  categoryNicheMap = {},
   ...filterProps
 }: StoreSidebarProps) {
   const isInline = variant === 'inline'
@@ -45,6 +53,7 @@ export function StoreSidebar({
     filterProps.activeFilters.maxPrice || 200
   ])
   const [localFeatured, setLocalFeatured] = useState<boolean>(filterProps.activeFilters.featured || false)
+  const [localNicheId, setLocalNicheId] = useState<number | undefined>(filterProps.activeFilters.nicheId)
   const [localCategoryId, setLocalCategoryId] = useState<number | undefined>(filterProps.activeFilters.categoryId)
   const [localColor, setLocalColor] = useState<string | undefined>(filterProps.activeFilters.color)
   const [localSize, setLocalSize] = useState<string | undefined>(filterProps.activeFilters.size)
@@ -58,13 +67,31 @@ export function StoreSidebar({
   const [expandedColorFields, setExpandedColorFields] = useState<Record<string, boolean>>({}) // Controlar expansão de cores
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({}) // Usar nome do campo como chave
   
+  // Categoria aplicada (filtro já enviado para a API)
+  const appliedCategoryId = filterProps.activeFilters.categoryId
+
+  // Base de categorias: usa storeCategories se disponível, senão usa as derivadas dos produtos
+  const baseCategories = storeCategories.length > 0 ? storeCategories : filterProps.categories
+
+  // Categorias filtradas pelo nicho selecionado usando o mapa categoria→nicho
+  const categoriesForSelectedNiche = localNicheId && Object.keys(categoryNicheMap).length > 0
+    ? baseCategories.filter(cat => categoryNicheMap[cat.id] === localNicheId)
+    : baseCategories
+
   // Filtrar apenas campos com opções (select e color), excluindo text, textarea e number
-  const fieldsWithOptions = fields.filter(field => 
-    (field.field_type === 'select' || field.field_type === 'color') && 
-    field.options && 
-    Array.isArray(field.options) && 
-    field.options.length > 0
-  )
+  // Mostra campos personalizados apenas quando há uma categoria aplicada,
+  // filtrando pelos nomes de campos que existem nos produtos dessa categoria
+  const fieldsWithOptions = fields.filter(field => {
+    if (!(field.field_type === 'select' || field.field_type === 'color')) return false
+    if (!field.options || !Array.isArray(field.options) || field.options.length === 0) return false
+    // Só mostra campos personalizados quando uma categoria está aplicada
+    if (!appliedCategoryId) return false
+    // Se há campos dos produtos disponíveis, filtra por eles; senão não mostra nada
+    if (availableDynamicFieldNames.length > 0) {
+      return availableDynamicFieldNames.includes(field.name)
+    }
+    return false
+  })
   
   // Agrupar campos por nome (unificar campos com mesmo nome de diferentes nichos)
   const groupedFieldsByName = fieldsWithOptions.reduce((acc, field) => {
@@ -97,6 +124,7 @@ export function StoreSidebar({
   // Contar filtros ativos
   const activeFiltersCount = [
     localFeatured,
+    localNicheId,
     localCategoryId,
     localColor,
     localSize,
@@ -121,6 +149,12 @@ export function StoreSidebar({
     }
   }, [openDropdowns])
   
+  // Limpar filtros dinâmicos quando a categoria aplicada mudar
+  useEffect(() => {
+    setDynamicFieldValues({})
+    setOpenDropdowns({})
+  }, [filterProps.activeFilters.categoryId])
+
   // Atualizar os estados locais quando os filtros externos mudarem
   useEffect(() => {
     setPriceRange([
@@ -128,15 +162,17 @@ export function StoreSidebar({
       filterProps.activeFilters.maxPrice || 200
     ])
     setLocalFeatured(filterProps.activeFilters.featured || false)
+    setLocalNicheId(filterProps.activeFilters.nicheId)
     setLocalCategoryId(filterProps.activeFilters.categoryId)
     setLocalColor(filterProps.activeFilters.color)
     setLocalSize(filterProps.activeFilters.size)
     setLocalSort(filterProps.sortValue)
     setLocalSortField(filterProps.sortFieldValue)
   }, [
-    filterProps.activeFilters.minPrice, 
+    filterProps.activeFilters.minPrice,
     filterProps.activeFilters.maxPrice,
     filterProps.activeFilters.featured,
+    filterProps.activeFilters.nicheId,
     filterProps.activeFilters.categoryId,
     filterProps.activeFilters.color,
     filterProps.activeFilters.size,
@@ -176,6 +212,7 @@ export function StoreSidebar({
     // Aplicar filtros
     filterProps.onFilterChange({
       featured: localFeatured || undefined,
+      nicheId: localNicheId,
       categoryId: localCategoryId,
       color: localColor,
       size: localSize,
@@ -189,6 +226,7 @@ export function StoreSidebar({
   const handleClearFilters = () => {
     setPriceRange([0, 200])
     setLocalFeatured(false)
+    setLocalNicheId(undefined)
     setLocalCategoryId(undefined)
     setLocalColor(undefined)
     setLocalSize(undefined)
@@ -624,8 +662,36 @@ export function StoreSidebar({
             </div>
           </div>
 
+          {/* Tipo de Produto (Nicho) */}
+          {niches.length > 0 && (
+            <div>
+              <Label className="text-sm font-bold text-gray-900 cursor-pointer mb-2 block">Tipo de Produto</Label>
+              <Select
+                value={localNicheId?.toString() || 'all'}
+                onValueChange={(value) => {
+                  const newNicheId = value === 'all' ? undefined : parseInt(value)
+                  setLocalNicheId(newNicheId)
+                  // Limpa categoria ao trocar o tipo de produto
+                  setLocalCategoryId(undefined)
+                }}
+              >
+                <SelectTrigger className="w-full h-10 sm:h-11 text-sm">
+                  <SelectValue placeholder="Selecione um tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os tipos</SelectItem>
+                  {niches.map((niche) => (
+                    <SelectItem key={niche.id} value={niche.id.toString()}>
+                      {niche.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           {/* Categoria */}
-          {filterProps.categories.length > 0 && (
+          {categoriesForSelectedNiche.length > 0 && (
             <div>
               <Label className="text-sm font-bold text-gray-900 cursor-pointer mb-2 block">Categoria</Label>
               <Select
@@ -636,8 +702,10 @@ export function StoreSidebar({
                   <SelectValue placeholder="Selecione uma categoria" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas as categorias</SelectItem>
-                  {filterProps.categories.map((category) => (
+                  <SelectItem value="all">
+                    {localNicheId ? 'Todas as categorias do tipo' : 'Todas as categorias'}
+                  </SelectItem>
+                  {categoriesForSelectedNiche.map((category) => (
                     <SelectItem key={category.id} value={category.id.toString()}>
                       {category.name}
                     </SelectItem>
@@ -674,8 +742,8 @@ export function StoreSidebar({
             )}
           </div>
 
-          {/* Campos Dinâmicos */}
-          {fieldsWithOptions.length > 0 && (
+          {/* Campos Dinâmicos - exibe apenas quando uma categoria está aplicada e há campos disponíveis */}
+          {appliedCategoryId && fieldsWithOptions.length > 0 && (
             <div className="space-y-3">
               <button
                 onClick={() => setIsFieldsCollapsed(!isFieldsCollapsed)}
