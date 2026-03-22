@@ -14,7 +14,7 @@ import {
   X
 } from 'lucide-react'
 import { EmptyImageState } from '@/components/Product/EmptyImageState'
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Image from 'next/image'
 import { useProductDetailPage } from './useProductDetailPage'
@@ -56,11 +56,9 @@ export default function ProductDetailPage() {
     isSavingOrder
   } = useProductDetailPage(productId)
 
-  // Local drag state for the reorder panel
-  const [dragIndex, setDragIndex] = useState<{ color: string; idx: number } | null>(null)
-  const [dragOverIndex, setDragOverIndex] = useState<{ color: string; idx: number } | null>(null)
-  const reorderPanelRef = useRef<HTMLDivElement>(null)
-
+  // Local drag state for thumbnail reorder
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
 
   if (authLoading) {
     return <LoadingSpinner />
@@ -114,29 +112,89 @@ export default function ProductDetailPage() {
       <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto sm:px-6 lg:px-8 pt-4 pb-6 sm:pb-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-16">
           {/* Product Images */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          <div className={`flex flex-col sm:flex-row gap-3 sm:gap-4 transition-all ${reorderMode ? 'ring-2 ring-primary/30 rounded-2xl p-2 sm:p-3 bg-primary/[0.02]' : ''}`}>
             {/* Thumbnail Images - Horizontal em mobile, Vertical em desktop */}
             {currentImages && currentImages.length > 1 && (
-              <div className="flex flex-row sm:flex-col gap-2 sm:gap-3 order-2 sm:order-1 overflow-x-auto sm:overflow-x-visible pb-2 sm:pb-0 -mx-4 sm:mx-0 px-4 sm:px-0">
-                {currentImages.map((image: string, index: number) => (
-                  <button
-                    key={index}
-                    onClick={() => selectImage(index)}
-                    className={`relative rounded-lg sm:rounded-2xl overflow-hidden border-2 transition-all flex-shrink-0 ${selectedImageIndex === index
-                      ? 'border-primary'
-                      : 'border-gray-200 hover:border-gray-300 active:border-primary'
-                      }`}
-                  >
-                    <Image
-                      src={buildImageUrl(image)}
-                      alt={`${product.name} ${index + 1}`}
-                      width={80}
-                      height={80}
-                      className="object-cover w-20 h-20 sm:w-24 sm:h-24 lg:w-[100px] lg:h-[100px]"
-                      sizes="(max-width: 640px) 80px, (max-width: 1024px) 96px, 100px"
-                    />
-                  </button>
-                ))}
+              <div className="flex flex-col gap-2 order-2 sm:order-1">
+                <div className="flex flex-row sm:flex-col gap-2 sm:gap-3 overflow-x-auto sm:overflow-x-visible pb-2 sm:pb-0 -mx-4 sm:mx-0 px-4 sm:px-0">
+                  {(reorderMode && selectedColor
+                    ? (reorderedImagesByColor[selectedColor] ?? currentImages)
+                    : currentImages
+                  ).map((image: string, index: number) => {
+                    const isDragging = reorderMode && dragIndex === index
+                    const isDropTarget = reorderMode && dragOverIndex === index && dragIndex !== index
+                    return (
+                      <div
+                        key={index}
+                        draggable={reorderMode}
+                        onDragStart={reorderMode ? (e) => {
+                          e.stopPropagation()
+                          setDragIndex(index)
+                          e.dataTransfer.effectAllowed = 'move'
+                          e.dataTransfer.setData('text/plain', String(index))
+                        } : undefined}
+                        onDragOver={reorderMode ? (e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          e.dataTransfer.dropEffect = 'move'
+                          if (dragOverIndex !== index) setDragOverIndex(index)
+                        } : undefined}
+                        onDrop={reorderMode ? (e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          if (dragIndex === null || dragIndex === index || !selectedColor) {
+                            setDragIndex(null)
+                            setDragOverIndex(null)
+                            return
+                          }
+                          const items = [...(reorderedImagesByColor[selectedColor] ?? currentImages)]
+                          const [removed] = items.splice(dragIndex, 1)
+                          items.splice(index, 0, removed)
+                          handleReorderImages(selectedColor, items)
+                          setDragIndex(null)
+                          setDragOverIndex(null)
+                        } : undefined}
+                        onDragEnd={reorderMode ? () => {
+                          setDragIndex(null)
+                          setDragOverIndex(null)
+                        } : undefined}
+                        onClick={() => !reorderMode && selectImage(index)}
+                        className={`relative group rounded-lg sm:rounded-2xl overflow-hidden border-2 transition-all flex-shrink-0
+                          ${!reorderMode && selectedImageIndex === index ? 'border-primary' : ''}
+                          ${!reorderMode && selectedImageIndex !== index ? 'border-gray-200 hover:border-gray-300 active:border-primary' : ''}
+                          ${reorderMode ? 'cursor-grab active:cursor-grabbing border-gray-200' : 'cursor-pointer'}
+                          ${isDropTarget ? 'ring-2 ring-primary ring-offset-1 border-primary' : ''}
+                          ${isDragging ? 'opacity-40 scale-95' : ''}
+                        `}
+                      >
+                        <Image
+                          src={buildImageUrl(image)}
+                          alt={`${product.name} ${index + 1}`}
+                          width={80}
+                          height={80}
+                          className="object-cover w-20 h-20 sm:w-24 sm:h-24 lg:w-[100px] lg:h-[100px] select-none"
+                          sizes="(max-width: 640px) 80px, (max-width: 1024px) 96px, 100px"
+                          draggable={false}
+                        />
+                        {reorderMode && index === 0 && (
+                          <div className="absolute top-1 left-1 bg-primary text-white text-[9px] font-semibold px-1 py-0.5 rounded leading-none">
+                            Principal
+                          </div>
+                        )}
+                        {reorderMode && (
+                          <div className="absolute top-1 right-1 bg-black/40 text-white rounded p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <GripVertical className="h-3 w-3" />
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+                {reorderMode && (
+                  <p className="text-[10px] text-primary/40 text-center hidden sm:block">
+                    Arraste para reordenar
+                  </p>
+                )}
               </div>
             )}
 
@@ -145,13 +203,24 @@ export default function ProductDetailPage() {
               {currentImages && currentImages.length > 0 ? (
                 <>
                   <Image
-                    src={buildImageUrls(currentImages)[selectedImageIndex]}
+                    src={buildImageUrls(
+                      reorderMode && selectedColor
+                        ? (reorderedImagesByColor[selectedColor] ?? currentImages)
+                        : currentImages
+                    )[0]}
                     alt={product.name}
                     fill
                     className="object-cover"
                     priority
                     sizes="(max-width: 640px) 100vw, 50vw"
                   />
+                  {/* Reorder mode indicator */}
+                  {reorderMode && (
+                    <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-primary text-white text-xs font-medium px-2.5 py-1.5 rounded-full shadow-lg">
+                      <GripVertical className="h-3 w-3" />
+                      Reordenando
+                    </div>
+                  )}
                   {/* Navegação de imagens em mobile - setas */}
                   {currentImages.length > 1 && (
                     <>
@@ -368,151 +437,59 @@ export default function ProductDetailPage() {
 
             {/* Action Buttons */}
             <div className="flex flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-4 sm:pt-6">
-              <Button
-                className="flex-1 h-12 sm:h-12 text-base sm:text-lg font-medium active:scale-[0.98] transition-transform touch-manipulation"
-                onClick={() => router.push(`/vendedor/produtos/editar/${productId}`)}
-              >
-                <Edit className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-                Editar Produto
-              </Button>
-              {Object.keys(imagesByColor).length > 0 && !reorderMode && (
-                <Button
-                  variant="outline"
-                  className="h-12 sm:h-12 px-4 active:scale-[0.98] transition-transform touch-manipulation"
-                  onClick={() => {
-                    enterReorderMode()
-                    setTimeout(() => reorderPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
-                  }}
-                  title="Reordenar imagens"
-                >
-                  <LayoutList className="h-4 w-4 sm:h-5 sm:w-5" />
-                </Button>
+              {reorderMode ? (
+                <>
+                  <Button
+                    variant="outline"
+                    className="flex-1 h-12 sm:h-12 text-base font-medium active:scale-[0.98] transition-transform touch-manipulation"
+                    onClick={cancelReorder}
+                    disabled={isSavingOrder}
+                  >
+                    <X className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                    Cancelar
+                  </Button>
+                  <Button
+                    className="flex-1 h-12 sm:h-12 text-base font-medium active:scale-[0.98] transition-transform touch-manipulation"
+                    onClick={saveImageOrder}
+                    disabled={isSavingOrder}
+                  >
+                    <Check className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                    {isSavingOrder ? 'Salvando...' : 'Salvar ordem'}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    className="flex-1 h-12 sm:h-12 text-base sm:text-lg font-medium active:scale-[0.98] transition-transform touch-manipulation"
+                    onClick={() => router.push(`/vendedor/produtos/editar/${productId}`)}
+                  >
+                    <Edit className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                    Editar Produto
+                  </Button>
+                  {Object.keys(imagesByColor).length > 0 && (
+                    <Button
+                      variant="outline"
+                      className="h-12 sm:h-12 px-4 active:scale-[0.98] transition-transform touch-manipulation"
+                      onClick={enterReorderMode}
+                      title="Reordenar imagens"
+                    >
+                      <LayoutList className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </Button>
+                  )}
+                  <Button
+                    variant="destructive"
+                    className="h-12 sm:h-12 px-4 sm:px-4 active:scale-[0.98] transition-transform touch-manipulation"
+                    onClick={openDeleteDialog}
+                  >
+                    <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
+                  </Button>
+                </>
               )}
-              <Button
-                variant="destructive"
-                className="h-12 sm:h-12 px-4 sm:px-4 active:scale-[0.98] transition-transform touch-manipulation"
-                onClick={openDeleteDialog}
-              >
-                <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
-              </Button>
             </div>
-
 
           </div>
         </div>
       </div>
-
-      {/* Reorder Images Panel */}
-      {reorderMode && (
-        <div ref={reorderPanelRef} className="max-w-7xl 2xl:max-w-screen-2xl mx-auto sm:px-6 lg:px-8 pb-6">
-          <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-base sm:text-lg font-bold text-gray-900">Reordenar Imagens</h2>
-                <p className="text-xs sm:text-sm text-gray-500">Arraste as imagens para definir a ordem. A primeira é a principal.</p>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={cancelReorder}
-                  disabled={isSavingOrder}
-                >
-                  <X className="h-4 w-4 mr-1" />
-                  Cancelar
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={saveImageOrder}
-                  disabled={isSavingOrder}
-                >
-                  <Check className="h-4 w-4 mr-1" />
-                  {isSavingOrder ? 'Salvando...' : 'Salvar ordem'}
-                </Button>
-              </div>
-            </div>
-
-            {Object.entries(reorderedImagesByColor).map(([color, urls]) => (
-              <div key={color} className="mb-6 last:mb-0">
-                <div className="flex items-center gap-2 mb-3">
-                  <div
-                    className="w-5 h-5 rounded-full border border-gray-300 flex-shrink-0"
-                    style={{ backgroundColor: getColorHex(color) }}
-                  />
-                  <span className="text-sm font-medium text-gray-700">{color}</span>
-                  <span className="text-xs text-gray-400">({urls.length} imagem{urls.length !== 1 ? 's' : ''})</span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                  {urls.map((url, idx) => {
-                    const isDragging = dragIndex?.color === color && dragIndex?.idx === idx
-                    const isDropTarget = dragOverIndex?.color === color && dragOverIndex?.idx === idx && dragIndex?.idx !== idx
-                    return (
-                      <div
-                        key={idx}
-                        draggable
-                        onDragStart={(e) => {
-                          e.stopPropagation()
-                          setDragIndex({ color, idx })
-                          e.dataTransfer.effectAllowed = 'move'
-                          e.dataTransfer.setData('text/plain', String(idx))
-                        }}
-                        onDragOver={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          e.dataTransfer.dropEffect = 'move'
-                          if (!dragOverIndex || dragOverIndex.color !== color || dragOverIndex.idx !== idx) {
-                            setDragOverIndex({ color, idx })
-                          }
-                        }}
-                        onDrop={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          if (!dragIndex || dragIndex.color !== color || dragIndex.idx === idx) {
-                            setDragIndex(null)
-                            setDragOverIndex(null)
-                            return
-                          }
-                          const items = [...urls]
-                          const [removed] = items.splice(dragIndex.idx, 1)
-                          items.splice(idx, 0, removed)
-                          handleReorderImages(color, items)
-                          setDragIndex(null)
-                          setDragOverIndex(null)
-                        }}
-                        onDragEnd={() => {
-                          setDragIndex(null)
-                          setDragOverIndex(null)
-                        }}
-                        className={`relative group cursor-grab active:cursor-grabbing transition-all rounded-xl overflow-hidden
-                          ${isDragging ? 'opacity-40 scale-95' : ''}
-                          ${isDropTarget ? 'ring-2 ring-primary ring-offset-1' : ''}
-                        `}
-                      >
-                        <Image
-                          src={buildImageUrl(url)}
-                          alt={`${color} ${idx + 1}`}
-                          width={200}
-                          height={200}
-                          className="w-full h-28 sm:h-36 object-cover select-none"
-                          draggable={false}
-                        />
-                        {idx === 0 && (
-                          <div className="absolute top-1 left-1 bg-primary text-white text-[10px] font-semibold px-1.5 py-0.5 rounded">
-                            Principal
-                          </div>
-                        )}
-                        <div className="absolute top-1 right-1 bg-black/40 text-white rounded p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <GripVertical className="h-3.5 w-3.5" />
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Description and Specifications (Bottom Section) */}
       {(product.description || product.specifications) && (
