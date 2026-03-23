@@ -199,7 +199,7 @@ export default function ProductDetailPage() {
             )}
 
             {/* Main Image */}
-            <div className="w-full sm:flex-1 relative rounded-2xl overflow-hidden order-1 sm:order-2 min-w-0 h-[60vh] sm:h-auto">
+            <div className="w-full sm:flex-1 relative rounded-2xl overflow-hidden order-1 sm:order-2 min-w-0 h-[60vh] sm:h-auto bg-gray-50">
               {currentImages && currentImages.length > 0 ? (
                 <>
                   <Image
@@ -210,7 +210,7 @@ export default function ProductDetailPage() {
                     )[0]}
                     alt={product.name}
                     fill
-                    className="object-cover"
+                    className="object-contain"
                     priority
                     sizes="(max-width: 640px) 100vw, 50vw"
                   />

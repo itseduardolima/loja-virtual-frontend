@@ -75,7 +75,17 @@ export function useCreateProductPage(user: any) {
       const hasSimpleImages = selectedImages.length > 0
 
       if (!hasColorImages && !hasSimpleImages) {
-        throw new Error('É necessário ter pelo menos uma imagem')
+        throw new Error('O produto deve ter exatamente 5 imagens por cor')
+      }
+
+      if (hasColorImages) {
+        for (const [color, items] of Object.entries(orderedImagesByColor)) {
+          if (items.length < 5) throw new Error(`A cor "${color}" deve ter exatamente 5 imagens`)
+          if (items.length > 5) throw new Error(`A cor "${color}" deve ter exatamente 5 imagens`)
+        }
+      } else {
+        if (selectedImages.length < 5) throw new Error('O produto deve ter exatamente 5 imagens')
+        if (selectedImages.length > 5) throw new Error('O produto deve ter exatamente 5 imagens')
       }
 
       const formData = new FormData()
@@ -198,6 +208,7 @@ export function useCreateProductPage(user: any) {
     handleOrderedImagesChange,
     categories,
     niches,
+    nicheFields: nicheFields || [],
     selectedNicheId,
     dynamicFieldValues,
     availableColors,

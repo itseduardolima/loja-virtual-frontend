@@ -43,6 +43,7 @@ export default function EditProductPage() {
     handleOrderedImagesChange,
     categories,
     niches,
+    nicheFields,
     selectedNicheId,
     dynamicFieldValues,
     availableColors,
@@ -79,16 +80,16 @@ export default function EditProductPage() {
         return true
       case 3:
         if (availableColors.length > 0) {
-          // All selected colors must have at least one image in the unified list
-          return availableColors.every(color => (orderedImagesByColor[color]?.length || 0) > 0)
+          // All selected colors must have at least 4 images
+          return availableColors.every(color => (orderedImagesByColor[color]?.length || 0) >= 4)
         }
-        // No colors: validate simple images
-        const hasSimpleImages = selectedImages.length > 0
+        // No colors: validate simple images (min 4)
         const remainingExistingImages = Array.isArray(product?.images)
           ? (product?.images || []).filter((_: any, index: number) => !removedExistingImages.includes(index))
           : []
-        const hasColorImages = Object.values(orderedImagesByColor).some(items => items.length > 0)
-        return hasSimpleImages || remainingExistingImages.length > 0 || hasColorImages
+        const totalSimple = selectedImages.length + remainingExistingImages.length
+        const totalColor = Object.values(orderedImagesByColor).reduce((sum, items) => sum + items.length, 0)
+        return totalSimple >= 4 || totalColor >= 4
       case 4:
         // Etapa 4 é opcional (especificações)
         return true
@@ -301,14 +302,14 @@ export default function EditProductPage() {
     let hasImages = false
 
     if (availableColors.length > 0) {
-      hasImages = availableColors.every(color => (orderedImagesByColor[color]?.length || 0) > 0)
+      hasImages = availableColors.every(color => (orderedImagesByColor[color]?.length || 0) >= 4)
     } else {
       const remainingExistingImages = Array.isArray(product?.images)
         ? (product?.images || []).filter((_: any, index: number) => !removedExistingImages.includes(index))
         : []
-      hasImages = selectedImages.length > 0 ||
-        Object.values(orderedImagesByColor).some(items => items.length > 0) ||
-        remainingExistingImages.length > 0
+      const totalSimple = selectedImages.length + remainingExistingImages.length
+      const totalColor = Object.values(orderedImagesByColor).reduce((sum, items) => sum + items.length, 0)
+      hasImages = totalSimple >= 4 || totalColor >= 4
     }
 
     return !!(
@@ -319,6 +320,33 @@ export default function EditProductPage() {
       hasImages
     )
   }, [nameValue, priceValue, selectedImages.length, orderedImagesByColor, product?.images, removedExistingImages, availableColors])
+
+  const isNextDisabled = useMemo(() => {
+    switch (currentStep) {
+      case 1:
+        return !nameValue || nameValue.trim().length < 3 || !priceValue || priceValue <= 0
+      case 2:
+        if (!selectedNicheId || nicheFields.length === 0) return false
+        return nicheFields.some(field => {
+          if (field.required !== 1) return false
+          const val = dynamicFieldValues[field.id.toString()]?.value
+          if (Array.isArray(val)) return val.length === 0
+          return !val || String(val).trim() === ''
+        })
+      case 3:
+        if (availableColors.length > 0) {
+          return !availableColors.every(color => (orderedImagesByColor[color]?.length || 0) >= 4)
+        }
+        const remainingExisting = Array.isArray(product?.images)
+          ? (product?.images || []).filter((_: any, i: number) => !removedExistingImages.includes(i))
+          : []
+        const totalSimple = selectedImages.length + remainingExisting.length
+        const totalColor = Object.values(orderedImagesByColor).reduce((sum, items) => sum + items.length, 0)
+        return totalSimple < 4 && totalColor < 4
+      default:
+        return false
+    }
+  }, [currentStep, nameValue, priceValue, selectedNicheId, nicheFields, dynamicFieldValues, availableColors, orderedImagesByColor, selectedImages, product, removedExistingImages])
 
   if (authLoading || storeLoading) {
     return <LoadingPage />
@@ -358,6 +386,7 @@ export default function EditProductPage() {
           <Button
             type="button"
             onClick={handleNext}
+            disabled={isNextDisabled}
             className="flex items-center justify-center gap-2 flex-1 sm:flex-initial"
           >
             Próximo
@@ -664,14 +693,14 @@ export default function EditProductPage() {
         )
 
       case 3:
-        // Função helper para verificar quais cores estão sem imagens
-        const getColorsWithoutImages = () => {
+        // Função helper para verificar quais cores têm menos de 4 imagens
+        const getColorsWithoutMinImages = () => {
           if (availableColors.length === 0) return []
-          return availableColors.filter(color => (orderedImagesByColor[color]?.length || 0) === 0)
+          return availableColors.filter(color => (orderedImagesByColor[color]?.length || 0) < 4)
         }
-        
-        const colorsWithoutImages = getColorsWithoutImages()
-        
+
+        const colorsWithoutMinImages = getColorsWithoutMinImages()
+
         return (
           <div className="space-y-4 sm:space-y-6">
             {availableColors.length > 0 ? (
@@ -681,16 +710,19 @@ export default function EditProductPage() {
                   onOrderedImagesChange={handleOrderedImagesChange}
                   availableColors={availableColors}
                 />
-                {colorsWithoutImages.length > 0 && (
+                {colorsWithoutMinImages.length > 0 && (
                   <Card className="p-4 bg-red-50 border-red-200 border-2">
                     <div className="flex items-start gap-3">
                       <X className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="text-sm font-semibold text-red-900 mb-1">
-                          Adicione imagens para todas as cores selecionadas
+                          Cada cor precisa de no mínimo 4 imagens
                         </p>
                         <p className="text-sm text-red-700">
-                          As seguintes cores ainda precisam de imagens: <span className="font-semibold">{colorsWithoutImages.join(', ')}</span>
+                          {colorsWithoutMinImages.map(color => {
+                            const count = orderedImagesByColor[color]?.length || 0
+                            return `${color} (${count}/4)`
+                          }).join(', ')}
                         </p>
                       </div>
                     </div>

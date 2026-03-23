@@ -181,17 +181,25 @@ export function useEditProductPage(productId: string, user: any) {
   const onSubmit = (data: CreateProductFormData) => {
     const hasColorImages = Object.values(orderedImagesByColor).some(items => items.length > 0)
 
-    // Validate at least one image
-    if (!hasColorImages) {
+    // Validate image count (min 4, max 10)
+    let totalImages: number
+    if (hasColorImages) {
+      totalImages = Object.values(orderedImagesByColor).reduce((sum, items) => sum + items.length, 0)
+    } else {
       const remainingExistingImages = Array.isArray(product?.images)
         ? (product?.images || []).filter((_: any, index: number) => !removedExistingImages.includes(index))
         : []
-      const totalImages = selectedImages.length + remainingExistingImages.length
+      totalImages = selectedImages.length + remainingExistingImages.length
+    }
 
-      if (totalImages === 0) {
-        showError('É necessário ter pelo menos uma imagem', 'Validação')
-        return
+    if (hasColorImages) {
+      for (const [color, items] of Object.entries(orderedImagesByColor)) {
+        if (items.length < 5) { showError(`A cor "${color}" deve ter exatamente 5 imagens`, 'Validação'); return }
+        if (items.length > 5) { showError(`A cor "${color}" deve ter exatamente 5 imagens`, 'Validação'); return }
       }
+    } else {
+      if (totalImages < 5) { showError('O produto deve ter exatamente 5 imagens', 'Validação'); return }
+      if (totalImages > 5) { showError('O produto deve ter exatamente 5 imagens', 'Validação'); return }
     }
 
     const formData = new FormData()
@@ -309,6 +317,7 @@ export function useEditProductPage(productId: string, user: any) {
     handleOrderedImagesChange,
     categories,
     niches,
+    nicheFields: nicheFields || [],
     selectedNicheId,
     dynamicFieldValues,
     availableColors,
