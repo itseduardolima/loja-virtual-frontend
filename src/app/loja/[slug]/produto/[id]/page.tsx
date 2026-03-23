@@ -171,7 +171,7 @@ export default function ProductDetailPage() {
                     src={buildImageUrls(currentImages)[selectedImageIndex]}
                     alt={product.name}
                     fill
-                    className="object-cover"
+                    className="object-contain"
                     priority
                     sizes="(max-width: 640px) 100vw, 50vw"
                   />

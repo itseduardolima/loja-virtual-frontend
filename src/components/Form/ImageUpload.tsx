@@ -34,10 +34,14 @@ export function ImageUpload({
   maxSize = 5,
   acceptedFormats = "JPEG, PNG, JPG, WEBP"
 }: ImageUploadProps) {
+  const MIN_FILES = 4
   const [isDragOver, setIsDragOver] = useState(false)
   const [dragItemIndex, setDragItemIndex] = useState<number | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const activeExistingCount = existingImages.filter((_, i) => !removedExistingImages.includes(i)).length
+  const totalCount = selectedImages.length + activeExistingCount
 
   const handleAreaDragOver = (e: React.DragEvent) => {
     if (!e.dataTransfer.types.includes('Files')) return
@@ -103,22 +107,38 @@ export function ImageUpload({
         <div className="p-3 bg-gray-50 rounded-xl">
           <ImageIcon className="h-6 w-6 text-primary" />
         </div>
-        <div>
+        <div className="flex-1 min-w-0">
           <h2 className="text-xl font-bold text-gray-900">{title}</h2>
           <p className="text-sm text-gray-500">{description}</p>
+        </div>
+        <div className="flex-shrink-0 text-right">
+          <span className={`text-sm font-semibold ${
+            totalCount < MIN_FILES ? 'text-red-500' :
+            totalCount >= maxFiles ? 'text-amber-500' :
+            'text-green-600'
+          }`}>
+            {totalCount}/{maxFiles}
+          </span>
+          <p className="text-[10px] text-gray-400 mt-0.5">
+            {totalCount >= maxFiles ? 'limite atingido' : `mín. ${MIN_FILES} imagens`}
+          </p>
         </div>
       </div>
 
       <div className="space-y-6">
         {/* Upload area */}
         <div
-          className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer ${
-            isDragOver ? 'border-primary bg-gray-50' : 'border-gray-300 hover:border-primary'
+          className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
+            totalCount >= maxFiles
+              ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-60'
+              : isDragOver
+              ? 'border-primary bg-gray-50 cursor-pointer'
+              : 'border-gray-300 hover:border-primary cursor-pointer'
           }`}
-          onDragOver={handleAreaDragOver}
-          onDragLeave={handleAreaDragLeave}
-          onDrop={handleAreaDrop}
-          onClick={() => fileInputRef.current?.click()}
+          onDragOver={totalCount >= maxFiles ? undefined : handleAreaDragOver}
+          onDragLeave={totalCount >= maxFiles ? undefined : handleAreaDragLeave}
+          onDrop={totalCount >= maxFiles ? undefined : handleAreaDrop}
+          onClick={() => { if (totalCount < maxFiles) fileInputRef.current?.click() }}
         >
           <input
             ref={fileInputRef}
@@ -133,15 +153,21 @@ export function ImageUpload({
               <ImageIcon className="h-12 w-12 text-primary" />
             </div>
             <div className="space-y-2">
-              <p className="text-lg font-semibold text-gray-900">Arraste e solte suas imagens aqui</p>
-              <p className="text-gray-600">ou clique para selecionar arquivos</p>
+              {totalCount >= maxFiles ? (
+                <p className="text-lg font-semibold text-gray-500">Limite de {maxFiles} imagens atingido</p>
+              ) : (
+                <p className="text-lg font-semibold text-gray-900">Arraste e solte suas imagens aqui</p>
+              )}
+              <p className="text-gray-600">
+                {totalCount >= maxFiles ? 'Remova imagens para adicionar novas' : 'ou clique para selecionar arquivos'}
+              </p>
             </div>
-            <Button type="button" className="px-6 py-3">
+            <Button type="button" className="px-6 py-3" disabled={totalCount >= maxFiles}>
               <Upload className="h-5 w-5 mr-2" />
               Selecionar Imagens
             </Button>
             <p className="text-sm text-gray-500">
-              Formatos aceitos: {acceptedFormats} • Máximo {maxSize}MB por imagem
+              Formatos aceitos: {acceptedFormats} • Máximo {maxSize}MB por imagem • {MIN_FILES}–{maxFiles} imagens no total
             </p>
           </div>
         </div>

@@ -61,10 +61,15 @@ export function ImageUploadByColor({
     }
   }
 
+  const MIN_IMAGES = 5
+  const MAX_IMAGES_PER_COLOR = 5
+
+  const currentColorCount = selectedColor ? (orderedImagesByColor[selectedColor]?.length || 0) : 0
+
   const addFiles = (files: File[]) => {
     if (!selectedColor || files.length === 0) return
     const current = orderedImagesByColor[selectedColor] || []
-    const remaining = maxFilesPerColor - current.length
+    const remaining = MAX_IMAGES_PER_COLOR - current.length
     if (remaining <= 0) return
     const toAdd = files.slice(0, remaining).map(f => ({ type: 'new' as const, file: f }))
     onOrderedImagesChange(selectedColor, [...current, ...toAdd])
@@ -159,10 +164,24 @@ export function ImageUploadByColor({
         <div className="p-2 sm:p-3 bg-gray-50 rounded-xl flex-shrink-0">
           <ImageIcon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
         </div>
-        <div>
+        <div className="flex-1 min-w-0">
           <h2 className="text-lg sm:text-xl font-bold text-gray-900">{title}</h2>
           <p className="text-xs sm:text-sm text-gray-500">{description}</p>
         </div>
+        {selectedColor && (
+          <div className="flex-shrink-0 text-right">
+            <span className={`text-sm font-semibold ${
+              currentColorCount < MIN_IMAGES ? 'text-red-500' :
+              currentColorCount >= MAX_IMAGES_PER_COLOR ? 'text-amber-500' :
+              'text-green-600'
+            }`}>
+              {currentColorCount}/{MAX_IMAGES_PER_COLOR}
+            </span>
+            <p className="text-[10px] text-gray-400 mt-0.5">
+              {currentColorCount === MAX_IMAGES_PER_COLOR ? 'limite atingido' : `${MIN_IMAGES} por cor`}
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="space-y-4 sm:space-y-6">
@@ -210,15 +229,18 @@ export function ImageUploadByColor({
         {/* Upload area */}
         {selectedColor && (
           <div
-            className={`border-2 border-dashed rounded-xl p-4 sm:p-6 lg:p-8 text-center transition-colors cursor-pointer ${
-              isDragOver
-                ? 'border-primary bg-gray-50'
-                : 'border-gray-300 hover:border-primary'
+            className={`border-2 border-dashed rounded-xl p-4 sm:p-6 lg:p-8 text-center transition-colors ${
+              currentColorCount >= MAX_IMAGES_PER_COLOR
+                ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-60'
+                : isDragOver
+                ? 'border-primary bg-gray-50 cursor-pointer'
+                : 'border-gray-300 hover:border-primary cursor-pointer'
             }`}
-            onDragOver={handleAreaDragOver}
-            onDragLeave={handleAreaDragLeave}
-            onDrop={handleAreaDrop}
+            onDragOver={currentColorCount >= MAX_IMAGES_PER_COLOR ? undefined : handleAreaDragOver}
+            onDragLeave={currentColorCount >= MAX_IMAGES_PER_COLOR ? undefined : handleAreaDragLeave}
+            onDrop={currentColorCount >= MAX_IMAGES_PER_COLOR ? undefined : handleAreaDrop}
             onClick={() => {
+              if (currentColorCount >= MAX_IMAGES_PER_COLOR) return
               if (!selectedColor) {
                 alert('Por favor, selecione uma cor primeiro')
                 return
@@ -239,97 +261,87 @@ export function ImageUploadByColor({
                 <ImageIcon className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-primary" />
               </div>
               <div className="space-y-1 sm:space-y-2">
-                <p className="text-base sm:text-lg font-semibold text-gray-900">
-                  Adicionar imagens para: <span className="text-primary">{selectedColor}</span>
-                </p>
+                {currentColorCount >= MAX_IMAGES_PER_COLOR ? (
+                  <p className="text-base sm:text-lg font-semibold text-gray-500">
+                    Limite de {MAX_IMAGES_PER_COLOR} imagens por cor atingido
+                  </p>
+                ) : (
+                  <p className="text-base sm:text-lg font-semibold text-gray-900">
+                    Adicionar imagens para: <span className="text-primary">{selectedColor}</span>
+                  </p>
+                )}
                 <p className="text-sm sm:text-base text-gray-600">
-                  Arraste e solte ou clique para selecionar
+                  {currentColorCount >= MAX_IMAGES_PER_COLOR ? 'Remova imagens para adicionar novas' : 'Arraste e solte ou clique para selecionar'}
                 </p>
               </div>
-              <Button type="button" className="px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base">
+              <Button type="button" className="px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base" disabled={currentColorCount >= MAX_IMAGES_PER_COLOR}>
                 <Upload className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                 Selecionar Imagens
               </Button>
               <p className="text-xs sm:text-sm text-gray-500 px-2">
-                Formatos aceitos: {acceptedFormats} • Máximo {maxSize}MB por imagem
+                Formatos aceitos: {acceptedFormats} • Máximo {maxSize}MB por imagem • {MIN_IMAGES} imagens por cor
               </p>
             </div>
           </div>
         )}
 
-        {/* Images per color — unified ordered list with drag-and-drop */}
-        {allColors.some(c => (orderedImagesByColor[c]?.length || 0) > 0) && (
+        {/* Images for selected color */}
+        {selectedColor && (orderedImagesByColor[selectedColor]?.length || 0) > 0 && (
           <div className="space-y-3 sm:space-y-4">
             <p className="text-xs sm:text-sm text-gray-500">
               Arraste as imagens para reordenar. A primeira imagem é a principal.
             </p>
-            {allColors
-              .filter(color => (orderedImagesByColor[color]?.length || 0) > 0)
-              .map((color) => {
-                const items = orderedImagesByColor[color] || []
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+              {(orderedImagesByColor[selectedColor] || []).map((item, idx) => {
+                const isDragging = dragColor === selectedColor && dragItemIndex === idx
+                const isDropTarget = dragColor === selectedColor && dragOverIndex === idx && dragItemIndex !== idx
                 return (
-                  <div key={color} className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-gray-300 flex-shrink-0"
-                        style={{ backgroundColor: getColorHex(color) }}
-                      />
-                      <span className="text-xs sm:text-sm font-medium text-gray-700">{color}</span>
+                  <div
+                    key={idx}
+                    draggable
+                    onDragStart={(e) => handleItemDragStart(selectedColor, idx, e)}
+                    onDragOver={(e) => handleItemDragOver(selectedColor, idx, e)}
+                    onDrop={(e) => handleItemDrop(selectedColor, idx, e)}
+                    onDragEnd={handleItemDragEnd}
+                    className={`relative group cursor-grab active:cursor-grabbing transition-all
+                      ${isDragging ? 'opacity-40 scale-95' : ''}
+                      ${isDropTarget ? 'ring-2 ring-primary ring-offset-1 rounded-lg' : ''}
+                    `}
+                  >
+                    <img
+                      src={getImageSrc(item)}
+                      alt={`${selectedColor} ${idx + 1}`}
+                      className="w-full h-32 sm:h-40 md:h-48 lg:h-52 object-cover rounded-lg select-none"
+                      draggable={false}
+                    />
+                    {/* Principal badge */}
+                    {idx === 0 && (
+                      <div className="absolute top-1 left-1 bg-primary text-white text-[10px] sm:text-xs font-semibold px-1.5 py-0.5 rounded">
+                        Principal
+                      </div>
+                    )}
+                    {/* Drag handle */}
+                    <div className="absolute top-1 right-7 bg-black bg-opacity-40 text-white rounded p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <GripVertical className="h-3 w-3 sm:h-4 sm:w-4" />
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-                      {items.map((item, idx) => {
-                        const isDragging = dragColor === color && dragItemIndex === idx
-                        const isDropTarget = dragColor === color && dragOverIndex === idx && dragItemIndex !== idx
-                        return (
-                          <div
-                            key={idx}
-                            draggable
-                            onDragStart={(e) => handleItemDragStart(color, idx, e)}
-                            onDragOver={(e) => handleItemDragOver(color, idx, e)}
-                            onDrop={(e) => handleItemDrop(color, idx, e)}
-                            onDragEnd={handleItemDragEnd}
-                            className={`relative group cursor-grab active:cursor-grabbing transition-all
-                              ${isDragging ? 'opacity-40 scale-95' : ''}
-                              ${isDropTarget ? 'ring-2 ring-primary ring-offset-1 rounded-lg' : ''}
-                            `}
-                          >
-                            <img
-                              src={getImageSrc(item)}
-                              alt={`${color} ${idx + 1}`}
-                              className="w-full h-32 sm:h-40 md:h-48 lg:h-52 object-cover rounded-lg select-none"
-                              draggable={false}
-                            />
-                            {/* Principal badge */}
-                            {idx === 0 && (
-                              <div className="absolute top-1 left-1 bg-primary text-white text-[10px] sm:text-xs font-semibold px-1.5 py-0.5 rounded">
-                                Principal
-                              </div>
-                            )}
-                            {/* Drag handle */}
-                            <div className="absolute top-1 right-7 bg-black bg-opacity-40 text-white rounded p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <GripVertical className="h-3 w-3 sm:h-4 sm:w-4" />
-                            </div>
-                            {/* New image badge */}
-                            {item.type === 'new' && (
-                              <div className="absolute bottom-1 left-1 bg-green-500 text-white text-[10px] font-semibold px-1 py-0.5 rounded">
-                                Nova
-                              </div>
-                            )}
-                            {/* Remove button */}
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveItem(color, idx)}
-                              className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-red-500 text-white rounded-full p-1 sm:p-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10"
-                            >
-                              <X className="h-3 w-3 sm:h-4 sm:w-4" />
-                            </button>
-                          </div>
-                        )
-                      })}
-                    </div>
+                    {/* New image badge */}
+                    {item.type === 'new' && (
+                      <div className="absolute bottom-1 left-1 bg-green-500 text-white text-[10px] font-semibold px-1 py-0.5 rounded">
+                        Nova
+                      </div>
+                    )}
+                    {/* Remove button */}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveItem(selectedColor, idx)}
+                      className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-red-500 text-white rounded-full p-1 sm:p-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10"
+                    >
+                      <X className="h-3 w-3 sm:h-4 sm:w-4" />
+                    </button>
                   </div>
                 )
               })}
+            </div>
           </div>
         )}
       </div>
