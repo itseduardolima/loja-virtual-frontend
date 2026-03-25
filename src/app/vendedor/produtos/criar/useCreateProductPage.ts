@@ -31,6 +31,7 @@ export function useCreateProductPage(user: any) {
 
   const form = useForm<CreateProductFormData>({
     resolver: yupResolver(createProductSchema) as any,
+    mode: 'onChange',
     defaultValues: {
       name: '',
       description: '',

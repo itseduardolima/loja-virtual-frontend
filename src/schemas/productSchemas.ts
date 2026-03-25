@@ -12,16 +12,17 @@ export const createProductSchema = yup.object({
     .string()
     .required('Nome do produto é obrigatório')
     .min(3, 'Nome deve ter no mínimo 3 caracteres')
-    .max(200, 'Nome deve ter no máximo 200 caracteres'),
+    .max(100, 'Nome deve ter no máximo 100 caracteres'),
   description: yup
     .string()
     .optional()
-    .max(1000, 'Descrição deve ter no máximo 1000 caracteres'),
+    .max(500, 'Descrição deve ter no máximo 500 caracteres'),
   price: yup
     .number()
     .transform(normalizeNumber)
     .required('Preço é obrigatório')
     .min(0.01, 'Preço deve ser maior que zero')
+    .max(999999.99, 'Preço não pode ser maior que R$ 999.999,99')
     .typeError('Preço deve ser um número válido'),
   sizes: yup.array().of(yup.string()).optional(),
   colors: yup.array().of(yup.string()).optional(),
@@ -38,14 +39,16 @@ export const createProductSchema = yup.object({
     .transform(normalizeNumber)
     .optional()
     .min(0, 'Estoque não pode ser negativo')
+    .max(999999, 'Estoque não pode ser maior que 999.999')
     .typeError('Estoque deve ser um número válido'),
   discount_price: yup
     .number()
     .transform(normalizeNumber)
     .optional()
     .nullable()
-    .min(0, 'Preço com desconto não pode ser negativo')
-    .typeError('Preço com desconto deve ser um número válido'),
+    .min(0.01, 'Valor de desconto deve ser maior que zero')
+    .max(999999.99, 'Valor de desconto não pode ser maior que R$ 999.999,99')
+    .typeError('Valor de desconto deve ser um número válido'),
   category_id: yup
     .number()
     .transform(normalizeNumber)
@@ -58,14 +61,15 @@ export const updateProductSchema = yup.object({
   name: yup
     .string()
     .min(3, 'Nome deve ter no mínimo 3 caracteres')
-    .max(200, 'Nome deve ter no máximo 200 caracteres'),
+    .max(100, 'Nome deve ter no máximo 100 caracteres'),
   description: yup
     .string()
-    .max(1000, 'Descrição deve ter no máximo 1000 caracteres'),
+    .max(500, 'Descrição deve ter no máximo 500 caracteres'),
   price: yup
     .number()
     .transform(normalizeNumber)
     .min(0.01, 'Preço deve ser maior que zero')
+    .max(999999.99, 'Preço não pode ser maior que R$ 999.999,99')
     .typeError('Preço deve ser um número válido'),
   sizes: yup.array().of(yup.string()),
   colors: yup.array().of(yup.string()),
@@ -73,14 +77,16 @@ export const updateProductSchema = yup.object({
     .number()
     .transform(normalizeNumber)
     .min(0, 'Estoque não pode ser negativo')
+    .max(999999, 'Estoque não pode ser maior que 999.999')
     .typeError('Estoque deve ser um número válido'),
   discount_price: yup
     .number()
     .transform(normalizeNumber)
     .optional()
     .nullable()
-    .min(0, 'Preço com desconto não pode ser negativo')
-    .typeError('Preço com desconto deve ser um número válido'),
+    .min(0.01, 'Valor de desconto deve ser maior que zero')
+    .max(999999.99, 'Valor de desconto não pode ser maior que R$ 999.999,99')
+    .typeError('Valor de desconto deve ser um número válido'),
   category_id: yup
     .number()
     .transform(normalizeNumber)

@@ -62,6 +62,20 @@ export default function EditProductPage() {
 
   const { register, handleSubmit, formState: { errors }, setValue, watch, trigger } = form
 
+  const formatBRL = (cents: number) =>
+    (cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+  const handleCurrencyInput = (field: 'price' | 'discount_price') =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const digits = e.target.value.replace(/\D/g, '')
+      const cents = parseInt(digits, 10) || 0
+      if (cents > 99999999) return
+      setValue(field, cents > 0 ? cents / 100 : undefined, { shouldValidate: digits.length > 0 })
+    }
+
+  const { ref: priceRef, name: priceName, onBlur: priceOnBlur } = register('price')
+  const { ref: discountRef, name: discountName, onBlur: discountOnBlur } = register('discount_price')
+
   const handleCategoryCreated = (categoryId: number) => {
     setValue('category_id', categoryId)
     setIsCreateCategoryModalOpen(false)
@@ -444,14 +458,20 @@ export default function EditProductPage() {
                   id="name"
                   {...register('name')}
                   placeholder="Ex: Camiseta Básica Feminina"
+                  maxLength={100}
                   className={`h-11 sm:h-12 text-sm sm:text-base ${errors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
                 />
-                {errors.name && (
-                  <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                    <X className="h-3 w-3" />
-                    {errors.name.message}
-                  </p>
-                )}
+                <div className="flex items-center justify-between mt-1">
+                  {errors.name ? (
+                    <p className="text-red-500 text-sm flex items-center gap-1">
+                      <X className="h-3 w-3" />
+                      {errors.name.message}
+                    </p>
+                  ) : <span />}
+                  <span className={`text-xs ${(nameValue?.length || 0) > 85 ? 'text-orange-500' : 'text-gray-400'}`}>
+                    {nameValue?.length || 0}/100
+                  </span>
+                </div>
               </div>
 
               {/* Descrição */}
@@ -464,14 +484,20 @@ export default function EditProductPage() {
                   {...register('description')}
                   placeholder="Descreva as características, materiais e benefícios do produto..."
                   rows={5}
+                  maxLength={500}
                   className={`text-sm sm:text-base ${errors.description ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors resize-none`}
                 />
-                {errors.description && (
-                  <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                    <X className="h-3 w-3" />
-                    {errors.description.message}
-                  </p>
-                )}
+                <div className="flex items-center justify-between mt-1">
+                  {errors.description ? (
+                    <p className="text-red-500 text-sm flex items-center gap-1">
+                      <X className="h-3 w-3" />
+                      {errors.description.message}
+                    </p>
+                  ) : <span />}
+                  <span className={`text-xs ${(descriptionValue?.length || 0) > 450 ? 'text-orange-500' : 'text-gray-400'}`}>
+                    {descriptionValue?.length || 0}/500
+                  </span>
+                </div>
               </div>
 
               {/* Preço, Estoque e Desconto */}
@@ -484,13 +510,15 @@ export default function EditProductPage() {
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm sm:text-base">R$</span>
                     <Input
                       id="price"
-                      type="number"
-                      step="0.01"
-                      min="0.01"
-                      {...register('price', { valueAsNumber: true })}
+                      type="text"
+                      inputMode="numeric"
+                      ref={priceRef}
+                      name={priceName}
+                      onBlur={priceOnBlur}
+                      onChange={handleCurrencyInput('price')}
                       placeholder="0,00"
-                      value={watch('price') || ''}
-                      className={`h-11 sm:h-12 pl-7 sm:pl-8 text-base sm:text-lg [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${errors.price ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
+                      value={priceValue ? formatBRL(Math.round(priceValue * 100)) : ''}
+                      className={`h-11 sm:h-12 pl-7 sm:pl-8 text-base sm:text-lg ${errors.price ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
                     />
                   </div>
                   {errors.price && (
@@ -509,13 +537,15 @@ export default function EditProductPage() {
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm sm:text-base">R$</span>
                     <Input
                       id="discount_price"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      {...register('discount_price', { valueAsNumber: true })}
+                      type="text"
+                      inputMode="numeric"
+                      ref={discountRef}
+                      name={discountName}
+                      onBlur={discountOnBlur}
+                      onChange={handleCurrencyInput('discount_price')}
                       placeholder="0,00"
-                      value={watch('discount_price') || ''}
-                      className={`h-11 sm:h-12 pl-7 sm:pl-8 text-base sm:text-lg [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${errors.discount_price ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
+                      value={watch('discount_price') ? formatBRL(Math.round(watch('discount_price')! * 100)) : ''}
+                      className={`h-11 sm:h-12 pl-7 sm:pl-8 text-base sm:text-lg ${errors.discount_price ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
                     />
                   </div>
                   {errors.discount_price && (
@@ -534,7 +564,22 @@ export default function EditProductPage() {
                     id="stock"
                     type="number"
                     min="0"
+                    max="999999"
                     {...register('stock', { valueAsNumber: true })}
+                    onKeyDown={(e) => {
+                      if (e.ctrlKey || e.metaKey) return
+                      if (!/^\d$/.test(e.key)) return
+                      const input = e.currentTarget
+                      const start = input.selectionStart ?? input.value.length
+                      const end = input.selectionEnd ?? input.value.length
+                      const simulated = input.value.slice(0, start) + e.key + input.value.slice(end)
+                      if (parseInt(simulated, 10) > 999999) e.preventDefault()
+                    }}
+                    onPaste={(e) => {
+                      e.preventDefault()
+                      const num = Math.min(parseInt(e.clipboardData.getData('text'), 10), 999999)
+                      if (!isNaN(num)) setValue('stock', num, { shouldValidate: true })
+                    }}
                     placeholder="0"
                     value={watch('stock') || ''}
                     className={`h-11 sm:h-12 text-base sm:text-lg [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${errors.stock ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
