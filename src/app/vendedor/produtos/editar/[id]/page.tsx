@@ -65,6 +65,13 @@ export default function EditProductPage() {
   const formatBRL = (cents: number) =>
     (cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
+  const parseBRL = (v: unknown): number | undefined => {
+    if (typeof v === 'number') return isNaN(v) ? undefined : v
+    if (!v) return undefined
+    const num = parseFloat(String(v).replace(/\./g, '').replace(',', '.'))
+    return isNaN(num) ? undefined : num
+  }
+
   const handleCurrencyInput = (field: 'price' | 'discount_price') =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const digits = e.target.value.replace(/\D/g, '')
@@ -72,9 +79,6 @@ export default function EditProductPage() {
       if (cents > 99999999) return
       setValue(field, cents > 0 ? cents / 100 : undefined, { shouldValidate: digits.length > 0 })
     }
-
-  const { ref: priceRef, name: priceName, onBlur: priceOnBlur } = register('price')
-  const { ref: discountRef, name: discountName, onBlur: discountOnBlur } = register('discount_price')
 
   const handleCategoryCreated = (categoryId: number) => {
     setValue('category_id', categoryId)
@@ -512,9 +516,7 @@ export default function EditProductPage() {
                       id="price"
                       type="text"
                       inputMode="numeric"
-                      ref={priceRef}
-                      name={priceName}
-                      onBlur={priceOnBlur}
+                      {...register('price', { setValueAs: parseBRL })}
                       onChange={handleCurrencyInput('price')}
                       placeholder="0,00"
                       value={priceValue ? formatBRL(Math.round(priceValue * 100)) : ''}
@@ -539,9 +541,7 @@ export default function EditProductPage() {
                       id="discount_price"
                       type="text"
                       inputMode="numeric"
-                      ref={discountRef}
-                      name={discountName}
-                      onBlur={discountOnBlur}
+                      {...register('discount_price', { setValueAs: parseBRL })}
                       onChange={handleCurrencyInput('discount_price')}
                       placeholder="0,00"
                       value={watch('discount_price') ? formatBRL(Math.round(watch('discount_price')! * 100)) : ''}
@@ -761,7 +761,7 @@ export default function EditProductPage() {
                       <X className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="text-sm font-semibold text-red-900 mb-1">
-                          Cada cor precisa de no mínimo 4 imagens
+                          Cada cor precisa de no mínimo 5 imagens
                         </p>
                         <p className="text-sm text-red-700">
                           {colorsWithoutMinImages.map(color => {
