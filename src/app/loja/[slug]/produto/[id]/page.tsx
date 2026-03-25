@@ -215,10 +215,10 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Product Info */}
-          <div className="space-y-4 sm:space-y-6">
+          <div className="space-y-4 sm:space-y-6 min-w-0">
             {/* Product Title */}
             <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-3 sm:mb-4">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-3 sm:mb-4 break-words">
                 {product.name}
               </h1>
 
@@ -270,7 +270,7 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Description - Desktop only */}
-            <p className="hidden sm:block text-primary/60 text-sm sm:text-base leading-relaxed">
+            <p className="hidden sm:block text-primary/60 text-sm sm:text-base leading-relaxed break-words">
               {product.description}
             </p>
 
@@ -438,7 +438,7 @@ export default function ProductDetailPage() {
             {product.description && (
               <div className="sm:hidden mb-6">
                 <h2 className="text-lg font-bold text-primary mb-3">Descrição</h2>
-                <p className="text-primary/60 text-sm leading-relaxed">
+                <p className="text-primary/60 text-sm leading-relaxed break-words">
                   {product.description}
                 </p>
               </div>
@@ -451,7 +451,7 @@ export default function ProductDetailPage() {
                   {product.description ? 'Especificações' : 'Especificações'}
                 </h2>
                 <div
-                  className="text-primary/60 text-sm sm:text-base leading-relaxed prose prose-sm lg:max-w-1/2 prose-headings:text-primary/80 prose-p:text-primary/60 prose-ul:text-primary/60 prose-ol:text-primary/60 prose-strong:text-primary/80"
+                  className="text-primary/60 text-sm sm:text-base leading-relaxed prose prose-sm lg:max-w-1/2 prose-headings:text-primary/80 prose-p:text-primary/60 prose-ul:text-primary/60 prose-ol:text-primary/60 prose-strong:text-primary/80 break-words"
                   dangerouslySetInnerHTML={{ __html: product.specifications }}
                 />
               </>
