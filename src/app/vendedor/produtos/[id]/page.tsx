@@ -101,8 +101,7 @@ export default function ProductDetailPage() {
     )
   }
 
-  // Calcular rating (mockado por enquanto)
-  const rating = 4.5
+  const rating = product.average_rating ?? 0
   const fullStars = Math.floor(rating)
   const hasHalfStar = rating % 1 >= 0.5
 
@@ -262,7 +261,7 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Product Info */}
-          <div className="space-y-4 sm:space-y-6">
+          <div className="space-y-4 sm:space-y-6 min-w-0">
             {/* Product Title */}
             <div>
               <div className="flex items-center gap-2 mb-3 sm:mb-4 flex-wrap">
@@ -275,7 +274,7 @@ export default function ProductDetailPage() {
                   {getStatusInfo(product.status).text}
                 </Badge>
               </div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-3 sm:mb-4">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-3 sm:mb-4 break-words">
                 {product.name}
               </h1>
 
@@ -292,7 +291,11 @@ export default function ProductDetailPage() {
                     <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 text-gray-300" />
                   ))}
                 </div>
-                <span className="text-xs sm:text-sm text-primary/60">({rating}/5)</span>
+                <span className="text-xs sm:text-sm text-primary/60">
+                  {product.total_reviews
+                    ? `(${rating.toFixed(1)}) · ${product.total_reviews} ${product.total_reviews === 1 ? 'avaliação' : 'avaliações'}`
+                    : 'Sem avaliações'}
+                </span>
               </div>
             </div>
 
@@ -323,7 +326,7 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Description - Desktop only */}
-            <p className="hidden sm:block text-primary/60 text-sm sm:text-base leading-relaxed">
+            <p className="hidden sm:block text-primary/60 text-sm sm:text-base leading-relaxed break-words">
               {product.description}
             </p>
 
@@ -499,7 +502,7 @@ export default function ProductDetailPage() {
             {product.description && (
               <div className="sm:hidden mb-6">
                 <h2 className="text-lg font-bold text-primary mb-3">Descrição</h2>
-                <p className="text-primary/60 text-sm leading-relaxed">
+                <p className="text-primary/60 text-sm leading-relaxed break-words">
                   {product.description}
                 </p>
               </div>
@@ -512,7 +515,7 @@ export default function ProductDetailPage() {
                   Especificações
                 </h2>
                 <div
-                  className="text-primary/60 text-sm sm:text-base leading-relaxed prose prose-sm max-w-none prose-headings:text-primary/80 prose-p:text-primary/60 prose-ul:text-primary/60 prose-ol:text-primary/60 prose-strong:text-primary/80"
+                  className="text-primary/60 text-sm sm:text-base leading-relaxed prose prose-sm max-w-none prose-headings:text-primary/80 prose-p:text-primary/60 prose-ul:text-primary/60 prose-ol:text-primary/60 prose-strong:text-primary/80 break-words"
                   dangerouslySetInnerHTML={{ __html: product.specifications }}
                 />
               </>
