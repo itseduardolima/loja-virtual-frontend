@@ -21,11 +21,9 @@ export default function VendedorLayout({
   const [isReady, setIsReady] = useState(false)
   const [accessDenied, setAccessDenied] = useState(false)
   const [subscriptionBlocked, setSubscriptionBlocked] = useState(false)
-  const token = typeof window !== 'undefined' ? localStorage.getItem('auth-token') : null
-  
-  // Valida o token no backend
+  // Valida o token no backend (cookie é enviado automaticamente)
   const { data: validatedUser, isLoading: isValidating, isError } = useValidateToken(
-    !authLoading && isAuthenticated && !!token
+    !authLoading && isAuthenticated
   )
   
   // Busca a assinatura do usuário (exceto na página de plano e criar-loja)

@@ -14,10 +14,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { isLoading: authLoading, isAuthenticated, logout } = useAuth()
   const [isReady, setIsReady] = useState(false)
   const [accessDenied, setAccessDenied] = useState(false)
-  const token = typeof window !== 'undefined' ? localStorage.getItem('auth-token') : null
-
   const { data: validatedUser, isLoading: isValidating, isError } = useValidateToken(
-    !authLoading && isAuthenticated && !!token
+    !authLoading && isAuthenticated
   )
 
   useEffect(() => {

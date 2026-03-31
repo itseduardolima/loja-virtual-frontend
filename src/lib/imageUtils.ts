@@ -20,13 +20,10 @@ export function buildImageUrl(imagePath: string): string {
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
     return imagePath
   }
-  
-  // Remove barra inicial se existir para evitar dupla barra
-  const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath
-  
-  // Constrói a URL completa
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL
-  return `${apiUrl}/${cleanPath}`
+
+  // Paths do backend (/files/...) são servidos via proxy Next.js na mesma origem
+  // Isso evita bloqueio por Cross-Origin-Resource-Policy
+  return imagePath.startsWith('/') ? imagePath : `/${imagePath}`
 }
 
 /**
