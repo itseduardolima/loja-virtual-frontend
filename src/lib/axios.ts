@@ -6,97 +6,55 @@ export const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // cookies httpOnly enviados automaticamente
 })
 
-// Flag para evitar múltiplas tentativas de refresh
+// Flag para evitar múltiplas tentativas de refresh simultâneas
 let isRefreshing = false
 let failedQueue: Array<{
   resolve: (value?: any) => void
   reject: (error?: any) => void
 }> = []
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: any) => {
   failedQueue.forEach(({ resolve, reject }) => {
     if (error) {
       reject(error)
     } else {
-      resolve(token)
+      resolve()
     }
   })
-  
   failedQueue = []
 }
 
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('auth-token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
-  }
-)
-
 api.interceptors.response.use(
-  (response) => {
-    return response
-  },
+  (response) => response,
   async (error) => {
     const originalRequest = error.config
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
-        // Se já está tentando renovar o token, adiciona à fila
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject })
-        }).then(token => {
-          originalRequest.headers.Authorization = `Bearer ${token}`
-          return api(originalRequest)
-        }).catch(err => {
-          return Promise.reject(err)
-        })
+        }).then(() => api(originalRequest))
+          .catch(err => Promise.reject(err))
       }
 
       originalRequest._retry = true
       isRefreshing = true
 
-      const refreshToken = localStorage.getItem('refresh-token')
-      
-      if (refreshToken) {
-        try {
-          const response = await api.post('/auth/refresh', { refresh_token: refreshToken })
-          const { access_token, refresh_token: newRefreshToken } = response.data
-          
-          localStorage.setItem('auth-token', access_token)
-          localStorage.setItem('refresh-token', newRefreshToken)
-          
-          processQueue(null, access_token)
-          
-          originalRequest.headers.Authorization = `Bearer ${access_token}`
-          return api(originalRequest)
-        } catch (refreshError) {
-          processQueue(refreshError, null)
-          // Se o refresh falhou, limpa tudo e redireciona
-          localStorage.removeItem('auth-token')
-          localStorage.removeItem('refresh-token')
-          localStorage.removeItem('user-data')
-          // Redireciona para login sem parâmetro redirect
-          window.location.href = '/login'
-          return Promise.reject(refreshError)
-        } finally {
-          isRefreshing = false
-        }
-      } else {
-        // Não tem refresh token, limpa tudo e redireciona
-        localStorage.removeItem('auth-token')
-        localStorage.removeItem('refresh-token')
+      try {
+        // Cookie refresh_token enviado automaticamente; novo access_token vai nos cookies
+        await api.post('/auth/refresh_token', {})
+        processQueue(null)
+        return api(originalRequest)
+      } catch (refreshError) {
+        processQueue(refreshError)
         localStorage.removeItem('user-data')
-        // Redireciona para login sem parâmetro redirect
         window.location.href = '/login'
-        return Promise.reject(error)
+        return Promise.reject(refreshError)
+      } finally {
+        isRefreshing = false
       }
     }
 

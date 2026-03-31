@@ -106,7 +106,7 @@ export default function InformacoesBasicasPage() {
                   {logoPreview && (
                     <div className="w-52 h-52 rounded-lg overflow-hidden border border-gray-200">
                       <Image
-                        src={`${API_URL}${logoPreview}`}
+                        src={logoPreview.startsWith('data:') || logoPreview.startsWith('http') ? logoPreview : `${API_URL}${logoPreview}`}
                         alt="Logo preview"
                         width={128}
                         height={128}
@@ -140,7 +140,7 @@ export default function InformacoesBasicasPage() {
                   {bannerPreview && (
                     <div className="w-full h-52 rounded-lg overflow-hidden border border-gray-200">
                       <Image
-                        src={`${API_URL}${bannerPreview}`}
+                        src={bannerPreview.startsWith('data:') || bannerPreview.startsWith('http') ? bannerPreview : `${API_URL}${bannerPreview}`}
                         alt="Banner preview"
                         width={400}
                         height={128}

@@ -7,13 +7,10 @@ export const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // envia/recebe cookies httpOnly automaticamente
 })
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('auth-token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
   // FormData: deixar o navegador definir Content-Type com boundary correto
   if (config.data instanceof FormData && config.headers) {
     delete config.headers['Content-Type']
@@ -25,12 +22,10 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Só redireciona se estivermos em uma página que requer autenticação
       const currentPath = window.location.pathname
       const protectedPaths = ['/vendedor', '/admin']
-      
+
       if (protectedPaths.some(path => currentPath.startsWith(path))) {
-        localStorage.removeItem('auth-token')
         localStorage.removeItem('user-data')
         window.location.href = '/login'
       }

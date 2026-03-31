@@ -23,6 +23,14 @@ const parseApiUrl = (url) => {
 const apiConfig = parseApiUrl(apiUrl)
 
 const nextConfig = {
+  async rewrites() {
+    return [
+      {
+        source: '/files/:path*',
+        destination: `${apiUrl}/files/:path*`,
+      },
+    ]
+  },
   images: {
     remotePatterns: [
       {
