@@ -23,6 +23,11 @@ import { getColorHex } from '@/schemas'
 import { useAddToCartAnimation } from '@/hooks/useAddToCartAnimation'
 import { AddToCartAnimation } from '@/components/Animation/AddToCartAnimation'
 import { AppFooter } from '@/components/Layout/AppFooter'
+import { WishlistButton } from '@/components/Product/WishlistButton'
+import { ShareButtons } from '@/components/Product/ShareButtons'
+import { ProductImageZoom } from '@/components/Product/ProductImageZoom'
+import { RecentlyViewedSection } from '@/components/Product/RecentlyViewedSection'
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed'
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -58,6 +63,23 @@ export default function ProductDetailPage() {
   } = useProductDetailPage(slug, productId)
 
   const { summary: reviewsSummary } = useProductReviews(slug, productId)
+  const { addRecentlyViewed } = useRecentlyViewed()
+
+  // Registrar produto visto recentemente
+  useEffect(() => {
+    if (product) {
+      const images = Array.isArray(product.images)
+        ? product.images
+        : Object.values(product.images as Record<string, string[]>).flat()
+      addRecentlyViewed({
+        id: product.id,
+        name: product.name,
+        price: product.final_price?.toString() ?? product.price,
+        images,
+        storeSlug: slug,
+      })
+    }
+  }, [product?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Suporte a navegação por teclado
   useEffect(() => {
@@ -167,13 +189,9 @@ export default function ProductDetailPage() {
             <div className="w-full sm:flex-1 relative rounded-2xl overflow-hidden order-1 sm:order-2 min-w-0 h-[60vh] sm:h-auto">
               {currentImages && currentImages.length > 0 ? (
                 <>
-                  <Image
+                  <ProductImageZoom
                     src={buildImageUrls(currentImages)[selectedImageIndex]}
                     alt={product.name}
-                    fill
-                    className="object-contain"
-                    priority
-                    sizes="(max-width: 640px) 100vw, 50vw"
                   />
                   {/* Navegação de imagens em mobile - setas */}
                   {currentImages.length > 1 && (
@@ -218,9 +236,13 @@ export default function ProductDetailPage() {
           <div className="space-y-4 sm:space-y-6 min-w-0">
             {/* Product Title */}
             <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-3 sm:mb-4 break-words">
-                {product.name}
-              </h1>
+              <div className="flex items-start justify-between gap-3 mb-3 sm:mb-4">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary break-words flex-1">
+                  {product.name}
+                </h1>
+                <WishlistButton productId={product.id} className="flex-shrink-0 mt-1" />
+              </div>
+              <ShareButtons />
 
               {/* Rating */}
               <div className="flex items-center gap-2 mb-3 sm:mb-4">
@@ -485,6 +507,9 @@ export default function ProductDetailPage() {
           onComplete={onAnimationComplete}
         />
       )}
+
+      {/* Vistos Recentemente */}
+      <RecentlyViewedSection currentProductId={product.id} storeSlug={slug} />
 
       <AppFooter />
     </div>

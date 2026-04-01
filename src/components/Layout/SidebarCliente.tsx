@@ -3,10 +3,11 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { 
+import {
   Home,
   ShoppingBag,
   User,
+  Heart,
   Menu,
   X
 } from 'lucide-react'
@@ -31,6 +32,12 @@ export function SidebarCliente({ currentPath }: SidebarClienteProps) {
       href: '/cliente/pedidos',
       icon: ShoppingBag,
       current: currentPath?.startsWith('/cliente/pedidos')
+    },
+    {
+      name: 'Favoritos',
+      href: '/cliente/favoritos',
+      icon: Heart,
+      current: currentPath?.startsWith('/cliente/favoritos')
     },
     {
       name: 'Meu Perfil',
