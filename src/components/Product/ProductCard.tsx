@@ -9,6 +9,7 @@ import { EmptyImageState } from './EmptyImageState'
 import { ProductCardProps } from '@/app/loja/[slug]/produtos/types'
 import { formatPrice, buildImageUrl } from '@/lib/utils'
 import { Switch } from '@/components/ui/switch'
+import { WishlistButton } from './WishlistButton'
 
 export function ProductCard({
   product,
@@ -109,6 +110,13 @@ export function ProductCard({
                 disabled={isUpdatingStatus}
                 className="data-[state=checked]:bg-green-500"
               />
+            </div>
+          )}
+
+          {/* Botão Wishlist - Superior direito (quando não há switch de status) */}
+          {!showStatusSwitch && showFavorites && (
+            <div className="absolute top-2 right-2 z-10">
+              <WishlistButton productId={product.id} />
             </div>
           )}
 

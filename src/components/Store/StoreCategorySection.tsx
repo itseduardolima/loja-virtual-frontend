@@ -14,6 +14,8 @@ interface StoreCategorySectionProps {
   category: StoreCategory
   onViewDetails: (product: Product) => void
   onAddToFavorites: (product: Product) => void
+  /** Quando fornecido, usa estes produtos diretamente e não faz fetch interno */
+  products?: Product[]
 }
 
 export function StoreCategorySection({
@@ -21,17 +23,21 @@ export function StoreCategorySection({
   category,
   onViewDetails,
   onAddToFavorites,
+  products: productsProp,
 }: StoreCategorySectionProps) {
-  const { products, loading } = useStoreProducts({
-    slug,
+  // Se produtos já foram passados diretamente, não faz fetch (slug vazio impede a requisição)
+  const { products: fetched, loading } = useStoreProducts({
+    slug: productsProp ? '' : slug,
     page: 1,
     limit: PRODUCTS_PER_SECTION,
     sort: 'DESC',
     sort_field: 'created_at',
-    category_id: category.id,
+    category_id: category.id > 0 ? category.id : undefined,
   })
 
-  if (loading) {
+  const products = productsProp ?? fetched
+
+  if (!productsProp && loading) {
     return (
       <section className="mb-10 sm:mb-14">
         <h2 className="text-lg sm:text-xl font-bold text-gray-900 uppercase tracking-wide mb-4 sm:mb-6">
@@ -63,7 +69,11 @@ export function StoreCategorySection({
       </div>
       <div className="flex justify-center mt-6">
         <Button variant="outline" asChild>
-          <Link href={`/loja/${slug}/produtos?category=${category.id}`}>
+          <Link href={
+            category.id > 0
+              ? `/loja/${slug}/produtos?category=${category.id}`
+              : `/loja/${slug}/produtos`
+          }>
             Ver todos
           </Link>
         </Button>

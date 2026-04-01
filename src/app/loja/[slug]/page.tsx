@@ -26,6 +26,8 @@ export default function StoreHomePage() {
     storeError,
     categoriesToShow,
     products,
+    featuredProducts,
+    topRatedProducts,
     loading,
     productsLoading,
     hasCategorySections,
@@ -88,6 +90,26 @@ export default function StoreHomePage() {
           </div>
         ) : hasCategorySections ? (
           <>
+            {!search && featuredProducts.length > 0 && (
+              <StoreCategorySection
+                key="featured"
+                slug={slug}
+                category={{ id: 0, name: 'Em Destaque', description: '', _count: { products: featuredProducts.length } }}
+                products={featuredProducts}
+                onViewDetails={handleViewDetails}
+                onAddToFavorites={handleAddToFavorites}
+              />
+            )}
+            {!search && topRatedProducts.length > 0 && (
+              <StoreCategorySection
+                key="top-rated"
+                slug={slug}
+                category={{ id: -1, name: 'Mais Avaliados', description: '', _count: { products: topRatedProducts.length } }}
+                products={topRatedProducts}
+                onViewDetails={handleViewDetails}
+                onAddToFavorites={handleAddToFavorites}
+              />
+            )}
             {categoriesToShow.map((category) => (
               <StoreCategorySection
                 key={category.id}

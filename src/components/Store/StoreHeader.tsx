@@ -15,6 +15,7 @@ import { api } from '@/lib/api'
 import { Product, ProductsResponse } from '@/types/product'
 import { formatPrice, buildImageUrl } from '@/lib/utils'
 import { CustomerOrdersDrawer } from './CustomerOrdersDrawer'
+import { CustomerFavoritesDrawer } from './CustomerFavoritesDrawer'
 import { CustomerProfileMenuDrawer } from './CustomerProfileMenuDrawer'
 import { UpdateProfileDrawer } from './UpdateProfileDrawer'
 import { VendorSettingsDrawer } from './VendorSettingsDrawer'
@@ -45,6 +46,7 @@ export function StoreHeader({
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const [isOrdersDrawerOpen, setIsOrdersDrawerOpen] = useState(false)
+  const [isFavoritesDrawerOpen, setIsFavoritesDrawerOpen] = useState(false)
   const [isUpdateProfileOpen, setIsUpdateProfileOpen] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
@@ -333,6 +335,7 @@ export function StoreHeader({
                   onClose={() => setIsProfileMenuOpen(false)}
                   onUpdateProfile={() => setIsUpdateProfileOpen(true)}
                   onViewOrders={() => setIsOrdersDrawerOpen(true)}
+                  onViewFavorites={() => setIsFavoritesDrawerOpen(true)}
                 />
 
                 {/* Drawer de Atualização de Perfil - montado só ao abrir para evitar peso no header */}
@@ -346,9 +349,13 @@ export function StoreHeader({
                 {/* Drawer de Pedidos e Rastreio */}
                 <CustomerOrdersDrawer
                   isOpen={isOrdersDrawerOpen}
-                  onClose={() => {
-                    setIsOrdersDrawerOpen(false)
-                  }}
+                  onClose={() => setIsOrdersDrawerOpen(false)}
+                />
+
+                {/* Drawer de Favoritos */}
+                <CustomerFavoritesDrawer
+                  isOpen={isFavoritesDrawerOpen}
+                  onClose={() => setIsFavoritesDrawerOpen(false)}
                 />
               </>
             )}

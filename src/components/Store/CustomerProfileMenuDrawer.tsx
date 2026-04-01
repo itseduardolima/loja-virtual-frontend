@@ -1,6 +1,6 @@
 'use client'
 
-import { X, User, Package, LogOut, Settings } from 'lucide-react'
+import { X, User, Package, LogOut, Settings, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -9,13 +9,15 @@ interface CustomerProfileMenuDrawerProps {
   onClose: () => void
   onUpdateProfile: () => void
   onViewOrders: () => void
+  onViewFavorites: () => void
 }
 
 export function CustomerProfileMenuDrawer({
   isOpen,
   onClose,
   onUpdateProfile,
-  onViewOrders
+  onViewOrders,
+  onViewFavorites,
 }: CustomerProfileMenuDrawerProps) {
   const { user, logout } = useAuth()
 
@@ -90,6 +92,18 @@ export function CustomerProfileMenuDrawer({
               >
                 <Package className="w-5 h-5" />
                 <span>Meus Pedidos</span>
+              </Button>
+
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-3 h-12 text-left"
+                onClick={() => {
+                  onViewFavorites()
+                  onClose()
+                }}
+              >
+                <Heart className="w-5 h-5" />
+                <span>Meus Favoritos</span>
               </Button>
 
               <div className="border-t border-gray-200 my-2" />

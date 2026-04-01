@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { useStoreInfo } from '@/hooks/useStoreInfo'
 import { useStoreCategories } from '@/hooks/useStoreCategories'
 import { useStoreProducts } from '@/hooks/useStoreProducts'
+import { useTopRatedProducts } from '@/hooks/useTopRatedProducts'
 import { useDebounce } from '@/hooks/useDebounce'
 import { Product } from '@/types/product'
 import type { StoreCategory, StoreInfo } from '@/types/store'
@@ -16,6 +17,8 @@ export interface UseStoreHomePageReturn {
   storeError: string | null
   categoriesToShow: StoreCategory[]
   products: Product[]
+  featuredProducts: Product[]
+  topRatedProducts: Product[]
   loading: boolean
   productsLoading: boolean
   hasCategorySections: boolean
@@ -44,6 +47,17 @@ export function useStoreHomePage(slug: string): UseStoreHomePageReturn {
     search: debouncedSearch || undefined,
   })
 
+  const { products: featuredRaw } = useStoreProducts({
+    slug,
+    page: 1,
+    limit: 8,
+    featured: true,
+    sort: 'DESC',
+    sort_field: 'created_at',
+  })
+
+  const { data: topRatedData } = useTopRatedProducts(slug, 8)
+
   const categoriesToShow = useMemo(() => {
     const list = allCategories || []
     const hasCount = list.some((c: StoreCategory) => c._count != null)
@@ -52,6 +66,9 @@ export function useStoreHomePage(slug: string): UseStoreHomePageReturn {
       : list
     return withProducts.slice(0, MAX_CATEGORIES)
   }, [allCategories])
+
+  const featuredProducts = featuredRaw ?? []
+  const topRatedProducts = topRatedData?.data ?? []
 
   const loading = storeLoading || categoriesLoading
   const hasCategorySections = categoriesToShow.length > 0
@@ -73,6 +90,8 @@ export function useStoreHomePage(slug: string): UseStoreHomePageReturn {
     storeError: storeError ?? null,
     categoriesToShow,
     products,
+    featuredProducts,
+    topRatedProducts,
     loading,
     productsLoading,
     hasCategorySections,
