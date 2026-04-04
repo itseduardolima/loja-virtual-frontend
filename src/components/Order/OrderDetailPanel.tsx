@@ -11,6 +11,7 @@ import {
   ShoppingBag,
   MapPin,
   PhoneCall,
+  Tag,
 } from 'lucide-react'
 import { useOrderDetail } from '@/hooks/useOrderDetail'
 import { type Order } from '@/types/order'
@@ -18,6 +19,86 @@ import { formatDate, formatPrice } from '@/lib/utils'
 import { buildImageUrl } from '@/lib/imageUtils'
 import { OrderTrackingTimeline } from '@/components/Order/OrderTrackingTimeline'
 import { WhatsappIcon } from '@/assets/icons/WhatsappIcon'
+
+function renderDeliveryAddress(order: Order) {
+  let deliveryAddr: Record<string, string> | null = null
+  if (order.delivery_address) {
+    try { deliveryAddr = JSON.parse(order.delivery_address) } catch { /* */ }
+  }
+
+  if (deliveryAddr) {
+    const { name, street, number, complement, neighborhood, city, state, zipcode } = deliveryAddr
+    return (
+      <Card>
+        <CardHeader className="py-2 px-3">
+          <CardTitle className="flex items-center gap-2 text-sm font-bold">
+            <MapPin className="h-4 w-4 shrink-0" />
+            Endereço de entrega
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="py-2 px-3 pb-3 space-y-0.5 text-sm text-gray-700 break-words">
+          {name && <p className="font-medium text-gray-900">{name}</p>}
+          {street && (
+            <p>
+              {street}
+              {number ? `, ${number}` : ''}
+              {complement ? ` - ${complement}` : ''}
+            </p>
+          )}
+          {(neighborhood || city || state) && (
+            <p>
+              {[neighborhood, city, state].filter(Boolean).join(', ')}
+              {zipcode ? ` - ${zipcode}` : ''}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (order.user && (order.user.address_formatted || order.user.address_street || order.user.address_city)) {
+    return (
+      <Card>
+        <CardHeader className="py-2 px-3">
+          <CardTitle className="flex items-center gap-2 text-sm font-bold">
+            <MapPin className="h-4 w-4 shrink-0" />
+            Endereço de entrega
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="py-2 px-3 pb-3 space-y-1 text-sm text-gray-700 break-words">
+          {order.user.address_formatted ? (
+            <p className="whitespace-pre-line">{order.user.address_formatted}</p>
+          ) : (
+            <>
+              {order.user.address_street && <p>{order.user.address_street}</p>}
+              {(order.user.address_city || order.user.address_state) && (
+                <p>
+                  {[order.user.address_city, order.user.address_state].filter(Boolean).join(' - ')}
+                  {order.user.address_zipcode ? `, ${order.user.address_zipcode}` : ''}
+                </p>
+              )}
+              {order.user.address_country && <p>{order.user.address_country}</p>}
+            </>
+          )}
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <Card>
+      <CardHeader className="py-2 px-3">
+        <CardTitle className="flex items-center gap-2 text-sm font-bold">
+          <MapPin className="h-4 w-4 shrink-0" />
+          Endereço de entrega
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="py-2 px-3 pb-3">
+        <p className="text-gray-500 text-xs">Endereço não informado pelo comprador</p>
+      </CardContent>
+    </Card>
+  )
+}
 
 function getProductImage(item: Order['items'][0]): string | null {
   const images = item.product.images
@@ -176,9 +257,30 @@ export function OrderDetailPanel({ orderId, onStatusUpdate }: OrderDetailPanelPr
         </CardContent>
       </Card>
 
-      {/* Total */}
+      {/* Cupom + Total */}
       <Card>
-        <CardContent className="py-3 px-3">
+        <CardContent className="py-3 px-3 space-y-2">
+          {/* Subtotal */}
+          {order.coupon_discount && parseFloat(order.coupon_discount) > 0 && (
+            <>
+              <div className="flex justify-between items-center text-sm text-gray-500">
+                <span>Subtotal</span>
+                <span>
+                  {formatPrice(parseFloat(order.total) + parseFloat(order.coupon_discount))}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="flex items-center gap-1.5 text-green-700 font-medium">
+                  <Tag className="h-3.5 w-3.5" />
+                  {order.coupon_code ?? 'Cupom'}
+                </span>
+                <span className="text-green-700 font-medium">
+                  -{formatPrice(parseFloat(order.coupon_discount))}
+                </span>
+              </div>
+              <div className="border-t border-gray-100 pt-2" />
+            </>
+          )}
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-900 font-bold">Total</span>
             <span className="text-base font-bold text-gray-900">{formatPrice(parseFloat(order.total))}</span>
@@ -186,53 +288,8 @@ export function OrderDetailPanel({ orderId, onStatusUpdate }: OrderDetailPanelPr
         </CardContent>
       </Card>
 
-      {/* Endereço do comprador */}
-      {(order.user && (
-        order.user.address_formatted ||
-        order.user.address_street ||
-        order.user.address_city
-      )) ? (
-        <Card>
-          <CardHeader className="py-2 px-3">
-            <CardTitle className="flex items-center gap-2 text-sm font-bold">
-              <MapPin className="h-4 w-4 shrink-0" />
-              Endereço de entrega
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="py-2 px-3 pb-3 space-y-1 text-sm text-gray-700 break-words">
-            {order.user.address_formatted ? (
-              <p className="whitespace-pre-line">{order.user.address_formatted}</p>
-            ) : (
-              <>
-                {order.user.address_street && (
-                  <p>{order.user.address_street}</p>
-                )}
-                {(order.user.address_city || order.user.address_state) && (
-                  <p>
-                    {[order.user.address_city, order.user.address_state].filter(Boolean).join(' - ')}
-                    {order.user.address_zipcode ? `, ${order.user.address_zipcode}` : ''}
-                  </p>
-                )}
-                {order.user.address_country && (
-                  <p>{order.user.address_country}</p>
-                )}
-              </>
-            )}
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardHeader className="py-2 px-3">
-            <CardTitle className="flex items-center gap-2 text-sm font-bold">
-              <MapPin className="h-4 w-4 shrink-0" />
-              Endereço de entrega
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="py-2 px-3 pb-3">
-            <p className="text-gray-500 text-xs">Endereço não informado pelo comprador</p>
-          </CardContent>
-        </Card>
-      )}
+      {/* Endereço de entrega */}
+      {renderDeliveryAddress(order)}
 
       {/* Observações */}
       {order.notes && (
