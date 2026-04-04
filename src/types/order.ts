@@ -46,6 +46,9 @@ export interface Order {
   updated_at: string
   store_id: number
   user_id: number | null
+  coupon_code: string | null
+  coupon_discount: string | null
+  delivery_address: string | null
   items: OrderItem[]
   user: OrderBuyer | null
   store?: {
