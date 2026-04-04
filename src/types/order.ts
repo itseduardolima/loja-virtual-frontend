@@ -71,6 +71,8 @@ export interface OrdersFilters {
   status?: number
   search?: string
   sort?: string
+  date_from?: string
+  date_to?: string
 }
 
 export const ORDER_STATUS = {

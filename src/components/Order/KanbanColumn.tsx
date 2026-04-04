@@ -5,6 +5,7 @@ import { type Order } from '@/types/order'
 import { OrderKanbanCard } from './OrderKanbanCard'
 import { getStatusIcon } from '@/lib/orderPanelUtils'
 import { cn } from '@/lib/utils'
+import { ChevronDown } from 'lucide-react'
 
 const DROPPABLE_PREFIX = 'status-'
 
@@ -25,6 +26,8 @@ interface KanbanColumnProps {
   colors: { bg: string; badge: string; icon: string; selectedRow: string }
   selectedOrderId: number | null
   onSelectOrder: (orderId: number) => void
+  hasMore?: boolean
+  onShowMore?: () => void
 }
 
 export function KanbanColumn({
@@ -34,6 +37,8 @@ export function KanbanColumn({
   colors,
   selectedOrderId,
   onSelectOrder,
+  hasMore,
+  onShowMore,
 }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: getStatusDroppableId(statusKey),
@@ -43,7 +48,7 @@ export function KanbanColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        'flex flex-col w-[280px] shrink-0 rounded-xl border-2 border-dashed transition-colors',
+        'flex flex-col flex-1 min-w-[220px] rounded-xl border-2 border-dashed transition-colors',
         isOver ? 'border-gray-400 bg-gray-50/80' : 'border-gray-200 bg-gray-50/30'
       )}
     >
@@ -56,7 +61,6 @@ export function KanbanColumn({
       >
         <span className={cn('shrink-0', colors.icon)}>{getStatusIcon(statusKey)}</span>
         <span className={cn('font-bold text-sm flex-1', colors.icon)}>{label}</span>
-        
       </div>
       <div className="flex-1 min-h-[120px] p-3 space-y-2">
         {orders.length === 0 ? (
@@ -75,6 +79,18 @@ export function KanbanColumn({
           ))
         )}
       </div>
+      {hasMore && onShowMore && (
+        <div className="px-3 pb-3">
+          <button
+            type="button"
+            onClick={onShowMore}
+            className="w-full flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+          >
+            <ChevronDown className="h-3.5 w-3.5" />
+            Ver mais pedidos
+          </button>
+        </div>
+      )}
     </div>
   )
 }
