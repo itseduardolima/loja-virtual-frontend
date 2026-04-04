@@ -28,40 +28,6 @@ export const updateCustomerProfileSchema = yup.object({
         return phoneRegex.test(normalized)
       }
     ),
-  address_street: yup
-    .string()
-    .optional()
-    .transform((v) => (v?.trim() === '' ? undefined : v?.trim()))
-    .max(255, 'Endereço deve ter no máximo 255 caracteres'),
-  address_city: yup
-    .string()
-    .optional()
-    .transform((v) => (v?.trim() === '' ? undefined : v?.trim()))
-    .max(100, 'Cidade deve ter no máximo 100 caracteres'),
-  address_state: yup
-    .string()
-    .optional()
-    .transform((v) => (v?.trim() === '' ? undefined : v?.trim().toUpperCase()))
-    .max(2, 'Estado deve ter 2 caracteres (UF)'),
-  address_zipcode: yup
-    .string()
-    .optional()
-    .transform((v) => (v?.trim() === '' ? undefined : v?.trim()))
-    .max(10, 'CEP deve ter no máximo 10 caracteres')
-    .test(
-      'zipcode-format',
-      'CEP inválido. Use o formato 12345-678 ou 12345678',
-      (value) => {
-        if (!value || value.trim() === '') return true
-        const digits = value.replace(/\D/g, '')
-        return digits.length === 8
-      }
-    ),
-  address_country: yup
-    .string()
-    .optional()
-    .transform((v) => (v?.trim() === '' ? undefined : v?.trim()))
-    .max(100, 'País deve ter no máximo 100 caracteres'),
 })
 
 export type UpdateCustomerProfileFormData = yup.InferType<typeof updateCustomerProfileSchema>

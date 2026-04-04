@@ -22,12 +22,6 @@ export interface OrderBuyer {
   name: string | null
   email: string | null
   phone: string | null
-  address_street: string | null
-  address_city: string | null
-  address_state: string | null
-  address_zipcode: string | null
-  address_country: string | null
-  address_formatted: string | null
 }
 
 export interface Order {

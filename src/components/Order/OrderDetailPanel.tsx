@@ -26,16 +26,20 @@ function renderDeliveryAddress(order: Order) {
     try { deliveryAddr = JSON.parse(order.delivery_address) } catch { /* */ }
   }
 
+  const cardHeader = (
+    <CardHeader className="py-2 px-3">
+      <CardTitle className="flex items-center gap-2 text-sm font-bold">
+        <MapPin className="h-4 w-4 shrink-0" />
+        Endereço de entrega
+      </CardTitle>
+    </CardHeader>
+  )
+
   if (deliveryAddr) {
     const { name, street, number, complement, neighborhood, city, state, zipcode } = deliveryAddr
     return (
       <Card>
-        <CardHeader className="py-2 px-3">
-          <CardTitle className="flex items-center gap-2 text-sm font-bold">
-            <MapPin className="h-4 w-4 shrink-0" />
-            Endereço de entrega
-          </CardTitle>
-        </CardHeader>
+        {cardHeader}
         <CardContent className="py-2 px-3 pb-3 space-y-0.5 text-sm text-gray-700 break-words">
           {name && <p className="font-medium text-gray-900">{name}</p>}
           {street && (
@@ -56,43 +60,9 @@ function renderDeliveryAddress(order: Order) {
     )
   }
 
-  if (order.user && (order.user.address_formatted || order.user.address_street || order.user.address_city)) {
-    return (
-      <Card>
-        <CardHeader className="py-2 px-3">
-          <CardTitle className="flex items-center gap-2 text-sm font-bold">
-            <MapPin className="h-4 w-4 shrink-0" />
-            Endereço de entrega
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="py-2 px-3 pb-3 space-y-1 text-sm text-gray-700 break-words">
-          {order.user.address_formatted ? (
-            <p className="whitespace-pre-line">{order.user.address_formatted}</p>
-          ) : (
-            <>
-              {order.user.address_street && <p>{order.user.address_street}</p>}
-              {(order.user.address_city || order.user.address_state) && (
-                <p>
-                  {[order.user.address_city, order.user.address_state].filter(Boolean).join(' - ')}
-                  {order.user.address_zipcode ? `, ${order.user.address_zipcode}` : ''}
-                </p>
-              )}
-              {order.user.address_country && <p>{order.user.address_country}</p>}
-            </>
-          )}
-        </CardContent>
-      </Card>
-    )
-  }
-
   return (
     <Card>
-      <CardHeader className="py-2 px-3">
-        <CardTitle className="flex items-center gap-2 text-sm font-bold">
-          <MapPin className="h-4 w-4 shrink-0" />
-          Endereço de entrega
-        </CardTitle>
-      </CardHeader>
+      {cardHeader}
       <CardContent className="py-2 px-3 pb-3">
         <p className="text-gray-500 text-xs">Endereço não informado pelo comprador</p>
       </CardContent>
