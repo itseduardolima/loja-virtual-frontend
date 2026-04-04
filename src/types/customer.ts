@@ -95,11 +95,6 @@ export interface UpdateCustomerProfileDto {
   name?: string
   email?: string
   phone?: string
-  address_street?: string
-  address_city?: string
-  address_state?: string
-  address_zipcode?: string
-  address_country?: string
 }
 
 export interface CustomerProfile {
@@ -107,12 +102,6 @@ export interface CustomerProfile {
   name: string
   email: string
   phone: string | null
-  address_street: string | null
-  address_city: string | null
-  address_state: string | null
-  address_zipcode: string | null
-  address_country: string | null
-  address_formatted: string | null
   updated_at: string
 }
 

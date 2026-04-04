@@ -83,20 +83,6 @@ export function UserDetailDrawer({ userId, open, onClose }: UserDetailDrawerProp
                 />
               </div>
 
-              {/* Endereço */}
-              {(user as any).address_city && (
-                <div className="pt-2">
-                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">Endereço</p>
-                  <div className="grid grid-cols-2 gap-4">
-                    <InfoItem label="Cidade" value={(user as any).address_city ?? '-'} />
-                    <InfoItem label="Estado" value={(user as any).address_state ?? '-'} />
-                    <InfoItem label="CEP" value={(user as any).address_zipcode ?? '-'} className="col-span-2" />
-                    {(user as any).address_street && (
-                      <InfoItem label="Rua" value={(user as any).address_street} className="col-span-2" />
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </div>

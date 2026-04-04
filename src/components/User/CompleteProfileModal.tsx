@@ -3,33 +3,17 @@
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { PhoneCountryInput } from '@/components/Form/PhoneCountryInput'
 import { useCustomerProfile } from '@/hooks/useCustomerProfile'
 import { useCountries } from '@/hooks/useCountries'
 import { UpdateCustomerProfileDto } from '@/types/customer'
 import { LoadingSpinner } from '@/components/Layout/LoadingSpinner'
-import { updateCustomerProfileSchema } from '@/schemas'
-
-const completeProfileSchema = updateCustomerProfileSchema.pick([
-  'phone',
-  'address_street',
-  'address_city',
-  'address_state',
-  'address_zipcode',
-  'address_country',
-])
 
 interface CompleteProfileModalProps {
   isOpen: boolean
   initialData?: {
     phone?: string | null
-    address_street?: string | null
-    address_city?: string | null
-    address_state?: string | null
-    address_zipcode?: string | null
-    address_country?: string | null
   }
   onComplete: () => void
 }
@@ -43,11 +27,6 @@ export function CompleteProfileModal({
   const { data: countriesData, isLoading: countriesLoading } = useCountries()
   const [phone, setPhone] = useState('')
   const [selectedCountry, setSelectedCountry] = useState('BR')
-  const [address_street, setAddressStreet] = useState(initialData?.address_street ?? '')
-  const [address_city, setAddressCity] = useState(initialData?.address_city ?? '')
-  const [address_state, setAddressState] = useState(initialData?.address_state ?? '')
-  const [address_zipcode, setAddressZipcode] = useState(initialData?.address_zipcode ?? '')
-  const [address_country, setAddressCountry] = useState(initialData?.address_country ?? 'Brasil')
   const needsPhone = initialData?.phone == null || initialData?.phone === ''
 
   const getSelectedCountry = () =>
@@ -55,76 +34,31 @@ export function CompleteProfileModal({
   const getCountryCallingCode = () =>
     getSelectedCountry()?.callingCodes?.[0] || '55'
 
-  const canSubmit =
-    address_street.trim().length > 0 &&
-    address_city.trim().length > 0 &&
-    (!needsPhone || phone.replace(/\D/g, '').length >= 8)
+  const canSubmit = !needsPhone || phone.replace(/\D/g, '').length >= 8
 
   useEffect(() => {
-    if (initialData) {
-      const raw = (initialData.phone ?? '').replace(/\D/g, '')
+    if (initialData?.phone) {
+      const raw = initialData.phone.replace(/\D/g, '')
       if (raw.startsWith('55')) {
         setSelectedCountry('BR')
         setPhone(raw.slice(2))
       } else {
         setPhone(raw)
       }
-      setAddressStreet(initialData.address_street ?? '')
-      setAddressCity(initialData.address_city ?? '')
-      setAddressState(initialData.address_state ?? '')
-      setAddressZipcode(initialData.address_zipcode ?? '')
-      setAddressCountry(initialData.address_country ?? 'Brasil')
     }
   }, [initialData])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const phoneDigits = phone.replace(/\D/g, '')
-    if (needsPhone) {
-      if (!phoneDigits || phoneDigits.length < 8) {
-        toast.error('Informe um WhatsApp válido para continuar.')
-        return
-      }
-    }
-    if (!address_street.trim() || !address_city.trim()) {
-      toast.error('Preencha endereço e cidade para continuar.')
+    if (needsPhone && (!phoneDigits || phoneDigits.length < 8)) {
+      toast.error('Informe um WhatsApp válido para continuar.')
       return
     }
 
     const phoneFull = needsPhone && phoneDigits ? `${getCountryCallingCode()}${phoneDigits}` : ''
-
-    const payload = {
-      phone: phoneFull,
-      address_street,
-      address_city,
-      address_state,
-      address_zipcode,
-      address_country,
-    }
-
-    try {
-      await completeProfileSchema.validate(payload, { abortEarly: false })
-    } catch (err: unknown) {
-      if (err && typeof err === 'object' && 'inner' in err && Array.isArray((err as { inner: unknown[] }).inner)) {
-        const firstMessage = (err as { inner: Array<{ message: string }> }).inner[0]?.message
-        if (firstMessage) {
-          toast.error(firstMessage)
-        }
-      }
-      return
-    }
-
-    const data: UpdateCustomerProfileDto = {
-      address_street: address_street.trim(),
-      address_city: address_city.trim(),
-      address_state: address_state.trim() || undefined,
-      address_zipcode: address_zipcode.trim() || undefined,
-      address_country: address_country.trim() || 'Brasil',
-    }
-
-    if (needsPhone) {
-      data.phone = phoneFull
-    }
+    const data: UpdateCustomerProfileDto = {}
+    if (needsPhone) data.phone = phoneFull
 
     try {
       await updateProfileAsync(data)
@@ -139,16 +73,15 @@ export function CompleteProfileModal({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60">
       <div
-        className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-2xl shadow-xl w-full max-w-lg"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6 sm:p-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-1">
             Complete seu cadastro
           </h2>
-          
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5 mt-4">
             {needsPhone && (
               <div className="space-y-2">
                 <Label htmlFor="complete-phone" className="text-sm font-medium text-gray-700">
@@ -170,80 +103,6 @@ export function CompleteProfileModal({
                 />
               </div>
             )}
-
-            <div className="space-y-4 pt-2 border-t border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-900">Endereço</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="complete-zipcode" className="text-sm font-medium text-gray-700">
-                    CEP
-                  </Label>
-                  <Input
-                    id="complete-zipcode"
-                    value={address_zipcode}
-                    onChange={(e) => setAddressZipcode(e.target.value)}
-                    placeholder="Digite seu CEP"
-                    className="h-11 border-gray-200"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="complete-country" className="text-sm font-medium text-gray-700">
-                    País
-                  </Label>
-                  <Input
-                    id="complete-country"
-                    value={address_country}
-                    onChange={(e) => setAddressCountry(e.target.value)}
-                    placeholder="Digite seu país"
-                    className="h-11 border-gray-200"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="complete-street" className="text-sm font-medium text-gray-700">
-                  Bairro, Rua, número e complemento <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="complete-street"
-                  value={address_street}
-                  onChange={(e) => setAddressStreet(e.target.value)}
-                  placeholder="Digite seu endereço"
-                  className="h-11 border-gray-200"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="complete-city" className="text-sm font-medium text-gray-700">
-                    Cidade <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="complete-city"
-                    value={address_city}
-                    onChange={(e) => setAddressCity(e.target.value)}
-                    placeholder="Digite sua cidade"
-                    className="h-11 border-gray-200"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="complete-state" className="text-sm font-medium text-gray-700">
-                    Estado (UF)
-                  </Label>
-                  <Input
-                    id="complete-state"
-                    value={address_state}
-                    onChange={(e) => setAddressState(e.target.value.toUpperCase())}
-                    placeholder="Digite seu estado"
-                    maxLength={2}
-                    className="h-11 border-gray-200"
-                  />
-                </div>
-              </div>
-
-           
-            </div>
 
             <div className="pt-4">
               <Button
