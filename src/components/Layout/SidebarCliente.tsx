@@ -8,6 +8,7 @@ import {
   ShoppingBag,
   User,
   Heart,
+  MapPin,
   Menu,
   X
 } from 'lucide-react'
@@ -38,6 +39,12 @@ export function SidebarCliente({ currentPath }: SidebarClienteProps) {
       href: '/cliente/favoritos',
       icon: Heart,
       current: currentPath?.startsWith('/cliente/favoritos')
+    },
+    {
+      name: 'Meus Endereços',
+      href: '/cliente/enderecos',
+      icon: MapPin,
+      current: currentPath?.startsWith('/cliente/enderecos')
     },
     {
       name: 'Meu Perfil',

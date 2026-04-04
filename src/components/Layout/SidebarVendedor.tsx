@@ -58,6 +58,12 @@ export function SidebarVendedor({ currentPath }: SidebarVendedorProps) {
       current: currentPath?.startsWith('/vendedor/pedidos')
     },
     {
+      name: 'Cupons',
+      href: '/vendedor/cupons',
+      icon: Tag,
+      current: currentPath?.startsWith('/vendedor/cupons')
+    },
+    {
       name: 'Meu Plano',
       href: '/vendedor/plano',
       icon: CreditCard,

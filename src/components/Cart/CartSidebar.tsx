@@ -12,12 +12,8 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import { useCart } from '@/hooks/useCart'
-import { useCheckout } from '@/hooks/useCheckout'
-import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
-import { CheckoutModal } from '@/components/Checkout/CheckoutModal'
-import { buildImageUrl } from '@/lib/utils'
-import { formatPrice } from '@/lib/utils'
+import { buildImageUrl, formatPrice } from '@/lib/utils'
 
 interface CartSidebarProps {
   isOpen: boolean
@@ -28,8 +24,6 @@ interface CartSidebarProps {
 }
 
 export function CartSidebar({ isOpen, onClose, storeId, storeSlug, currentPath }: CartSidebarProps) {
-  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false)
-  const { isAuthenticated } = useAuth()
   const router = useRouter()
   
   const {
@@ -45,9 +39,7 @@ export function CartSidebar({ isOpen, onClose, storeId, storeSlug, currentPath }
     isUpdatingCartItem,
     isClearingCart
   } = useCart(storeId)
-  
-  const {  isCheckoutLoading } = useCheckout()
-  
+
   const hasItems = Array.isArray(cartItems) && cartItems.length > 0
 
   const handleUpdateQuantity = (itemId: number, newQuantity: number) => {
@@ -66,44 +58,11 @@ export function CartSidebar({ isOpen, onClose, storeId, storeSlug, currentPath }
     clearCart()
   }
 
-  const handleCheckout = async () => {
-    if (!sessionId || !storeId) {
-      return
-    }
-    
-    // Verificar se o usuário está logado
-    if (!isAuthenticated) {
-      // Verificar se storeSlug existe
-      if (!storeSlug) {
-        console.error('storeSlug não encontrado!')
-        router.push('/login')
-        return
-      }
-      
-      // Usar currentPath se disponível, senão usar a URL da loja
-      const redirectUrl = currentPath || `/loja/${storeSlug}`
-      
-      // Salvar dados do checkout no localStorage para recuperar após login
-      localStorage.setItem('checkout-data', JSON.stringify({
-        sessionId,
-        storeId,
-        storeSlug,
-        redirectUrl,
-        checkoutData: {
-          customer_name: '',
-          customer_email: '',
-          customer_phone: '',
-          notes: ''
-        }
-      }))
-      
-      // Redirecionar para login com a URL específica onde estava
-      router.push(`/login?redirect=${encodeURIComponent(redirectUrl)}`)
-      return
-    }
-    
-    // Se estiver logado, abrir o modal para preencher telefone e notas
-    setIsCheckoutModalOpen(true)
+  const handleCheckout = () => {
+    if (!storeSlug) return
+    // Redireciona para a página de checkout dedicada (suporta guest e usuário logado)
+    router.push(`/loja/${storeSlug}/checkout`)
+    onClose()
   }
 
   return (
@@ -309,7 +268,6 @@ export function CartSidebar({ isOpen, onClose, storeId, storeSlug, currentPath }
                   <Button 
                     className="w-full h-12 text-md"
                     onClick={handleCheckout}
-                    disabled={isCheckoutLoading}
                   >
                     Finalizar Compra
                   </Button>
@@ -329,17 +287,6 @@ export function CartSidebar({ isOpen, onClose, storeId, storeSlug, currentPath }
         </div>
       </div>
 
-      {/* Checkout Modal */}
-      {sessionId && storeId && (
-        <CheckoutModal
-          isOpen={isCheckoutModalOpen}
-          onClose={() => setIsCheckoutModalOpen(false)}
-          sessionId={sessionId}
-          storeId={storeId}
-          storeSlug={storeSlug}
-          totalPrice={totalPrice}
-        />
-      )}
     </>
   )
 }
