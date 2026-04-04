@@ -23,7 +23,6 @@ export interface CouponResult {
 export interface AddressFormData {
   label: string
   name: string
-  phone: string
   street: string
   number: string
   complement: string
@@ -37,7 +36,6 @@ export interface AddressFormData {
 export const emptyAddressForm: AddressFormData = {
   label: '',
   name: '',
-  phone: '',
   street: '',
   number: '',
   complement: '',

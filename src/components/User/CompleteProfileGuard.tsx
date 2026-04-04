@@ -8,10 +8,7 @@ import type { CustomerProfile } from '@/types/customer'
 
 function isProfileIncomplete(data: CustomerProfile | null | undefined): boolean {
   if (!data) return true
-  const hasPhone = !!(data.phone && data.phone.replace(/\D/g, '').length >= 8)
-  const hasAddress =
-    !!(data.address_street?.trim() && data.address_city?.trim())
-  return !hasPhone || !hasAddress
+  return !(data.phone && data.phone.replace(/\D/g, '').length >= 8)
 }
 
 export function CompleteProfileGuard({ children }: { children: React.ReactNode }) {
