@@ -20,7 +20,6 @@ interface DashboardDateRangeFilterProps {
   dateToInput: string
   hasDateFilter: boolean
   onRangeSelect: (range: { dateFrom: string; dateTo: string } | null) => void
-  onQuickRange: (days: number) => void
   onClear: () => void
   className?: string
 }
@@ -36,6 +35,7 @@ export function DashboardDateRangeFilter({
   const [open, setOpen] = React.useState(false)
   /** Range em seleção: só aplicamos o filtro quando from e to estiverem definidos */
   const [pendingRange, setPendingRange] = React.useState<DateRange | undefined>(undefined)
+  const [activeQuickDays, setActiveQuickDays] = React.useState<number | null>(null)
 
   const selectedRange: DateRange | undefined = React.useMemo(() => {
     if (!dateFromInput) return undefined
@@ -46,16 +46,21 @@ export function DashboardDateRangeFilter({
   }, [dateFromInput, dateToInput])
 
   React.useEffect(() => {
-    if (open) setPendingRange(selectedRange)
+    if (open) {
+      setPendingRange(selectedRange)
+      setActiveQuickDays(null)
+    }
   }, [open])
 
   const handleSelect = (range: DateRange | undefined) => {
     if (!range?.from) {
       setPendingRange(undefined)
+      setActiveQuickDays(null)
       onRangeSelect(null)
       return
     }
     setPendingRange(range)
+    setActiveQuickDays(null)
     // Não aplica nem fecha aqui — o filtro só é aplicado ao clicar em "Aplicar" ou nos atalhos (7/30/90 dias).
   }
 
@@ -73,6 +78,7 @@ export function DashboardDateRangeFilter({
     const from = new Date(to)
     from.setDate(from.getDate() - days)
     setPendingRange({ from, to })
+    setActiveQuickDays(days)
   }
 
   const label =
@@ -121,33 +127,18 @@ export function DashboardDateRangeFilter({
           />
           <div className="flex flex-wrap items-center justify-between gap-2 p-2 border-t">
             <div className="flex gap-1">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-8 text-xs"
-                onClick={() => setQuickRangeInCalendar(7)}
-              >
-                7 dias
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-8 text-xs"
-                onClick={() => setQuickRangeInCalendar(30)}
-              >
-                30 dias
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-8 text-xs"
-                onClick={() => setQuickRangeInCalendar(90)}
-              >
-                90 dias
-              </Button>
+              {[7, 30, 90].map((days) => (
+                <Button
+                  key={days}
+                  type="button"
+                  variant={activeQuickDays === days ? 'default' : 'ghost'}
+                  size="sm"
+                  className="h-8 text-xs"
+                  onClick={() => setQuickRangeInCalendar(days)}
+                >
+                  {days} dias
+                </Button>
+              ))}
             </div>
             {pendingRange?.from != null && (
               <Button
