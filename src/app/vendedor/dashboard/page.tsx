@@ -23,6 +23,7 @@ export default function DashboardPage() {
     clearFilter,
     setQuickRange,
     hasDateFilter,
+    isViewingToday,
     revenueValue,
   } = useDashboardPage()
 
@@ -57,13 +58,17 @@ export default function DashboardPage() {
           <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
             Acompanhe suas vendas, pedidos e produtos em tempo real
           </p>
+          {isViewingToday && (
+            <p className="text-xs text-blue-600 font-medium mt-1">
+              Visualizando dados de hoje.
+            </p>
+          )}
         </div>
         <DashboardDateRangeFilter
           dateFromInput={dateFromInput}
           dateToInput={dateToInput}
           hasDateFilter={hasDateFilter}
           onRangeSelect={onRangeSelect}
-          onQuickRange={setQuickRange}
           onClear={clearFilter}
         />
       </div>

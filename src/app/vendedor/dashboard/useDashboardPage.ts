@@ -3,10 +3,12 @@
 import { useMemo, useState, useCallback } from 'react'
 import { useDashboard } from '@/hooks/useDashboard'
 
+const today = new Date().toISOString().slice(0, 10)
+
 export function useDashboardPage() {
-  const [dateRange, setDateRange] = useState<{ dateFrom: string; dateTo: string } | null>(null)
-  const [inputFrom, setInputFrom] = useState('')
-  const [inputTo, setInputTo] = useState('')
+  const [dateRange, setDateRange] = useState<{ dateFrom: string; dateTo: string } | null>({ dateFrom: today, dateTo: today })
+  const [inputFrom, setInputFrom] = useState(today)
+  const [inputTo, setInputTo] = useState(today)
 
   const dateFilter = useMemo(() => {
     if (!dateRange) return undefined
@@ -100,6 +102,7 @@ export function useDashboardPage() {
     onRangeSelect,
     setQuickRange,
     hasDateFilter: !!dateRange,
+    isViewingToday: dateRange?.dateFrom === today && dateRange?.dateTo === today,
     // Valores derivados para os cards
     revenueValue,
   }
