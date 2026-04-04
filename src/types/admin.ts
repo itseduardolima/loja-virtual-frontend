@@ -71,10 +71,16 @@ export interface AdminUser {
   profile?: { name: string; identifier: string }
 }
 
+export interface PaginatedMeta {
+  total: number
+  lastPage: number
+  currentPage: number
+  perPage: number
+  prev: number | null
+  next: number | null
+}
+
 export interface PaginatedResponse<T> {
   data: T[]
-  total: number
-  page: number
-  limit: number
-  totalPages: number
+  meta: PaginatedMeta
 }

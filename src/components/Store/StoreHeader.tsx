@@ -16,6 +16,7 @@ import { Product, ProductsResponse } from '@/types/product'
 import { formatPrice, buildImageUrl } from '@/lib/utils'
 import { CustomerOrdersDrawer } from './CustomerOrdersDrawer'
 import { CustomerFavoritesDrawer } from './CustomerFavoritesDrawer'
+import { CustomerAddressesDrawer } from './CustomerAddressesDrawer'
 import { CustomerProfileMenuDrawer } from './CustomerProfileMenuDrawer'
 import { UpdateProfileDrawer } from './UpdateProfileDrawer'
 import { VendorSettingsDrawer } from './VendorSettingsDrawer'
@@ -47,6 +48,7 @@ export function StoreHeader({
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const [isOrdersDrawerOpen, setIsOrdersDrawerOpen] = useState(false)
   const [isFavoritesDrawerOpen, setIsFavoritesDrawerOpen] = useState(false)
+  const [isAddressesDrawerOpen, setIsAddressesDrawerOpen] = useState(false)
   const [isUpdateProfileOpen, setIsUpdateProfileOpen] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
@@ -336,6 +338,7 @@ export function StoreHeader({
                   onUpdateProfile={() => setIsUpdateProfileOpen(true)}
                   onViewOrders={() => setIsOrdersDrawerOpen(true)}
                   onViewFavorites={() => setIsFavoritesDrawerOpen(true)}
+                  onViewAddresses={() => setIsAddressesDrawerOpen(true)}
                 />
 
                 {/* Drawer de Atualização de Perfil - montado só ao abrir para evitar peso no header */}
@@ -356,6 +359,12 @@ export function StoreHeader({
                 <CustomerFavoritesDrawer
                   isOpen={isFavoritesDrawerOpen}
                   onClose={() => setIsFavoritesDrawerOpen(false)}
+                />
+
+                {/* Drawer de Endereços */}
+                <CustomerAddressesDrawer
+                  isOpen={isAddressesDrawerOpen}
+                  onClose={() => setIsAddressesDrawerOpen(false)}
                 />
               </>
             )}

@@ -22,7 +22,6 @@ export { ProfileInfo } from './Layout/ProfileInfo'
 export { SidebarVendedor } from './Layout/SidebarVendedor'
 export { SidebarAdmin } from './Layout/SidebarAdmin'
 export { UserHeader } from './Layout/UserHeader'
-export { SidebarCliente } from './Layout/SidebarCliente'
 export { UserHeaderCliente } from './Layout/UserHeaderCliente'
 
 // Product Components

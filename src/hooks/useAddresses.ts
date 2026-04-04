@@ -6,7 +6,6 @@ export interface Address {
   id: number
   label?: string
   name: string
-  phone?: string
   street: string
   number?: string
   complement?: string
@@ -20,7 +19,6 @@ export interface Address {
 export interface CreateAddressData {
   label?: string
   name: string
-  phone?: string
   street: string
   number?: string
   complement?: string

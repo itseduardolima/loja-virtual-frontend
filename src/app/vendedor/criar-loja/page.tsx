@@ -258,7 +258,7 @@ export default function CriarLojaPage() {
           <div className="mt-2">
             <PhoneCountryInput
               id="whatsapp"
-              value={hookData.formData.whatsapp}
+              value={hookData.formData.whatsapp ?? ''}
               onValueChange={(val) =>
                 hookData.handleInputChange("whatsapp", val)
               }

@@ -1,6 +1,6 @@
 'use client'
 
-import { X, User, Package, LogOut, Settings, Heart } from 'lucide-react'
+import { X, User, Package, LogOut, Heart, MapPin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -10,6 +10,7 @@ interface CustomerProfileMenuDrawerProps {
   onUpdateProfile: () => void
   onViewOrders: () => void
   onViewFavorites: () => void
+  onViewAddresses: () => void
 }
 
 export function CustomerProfileMenuDrawer({
@@ -18,6 +19,7 @@ export function CustomerProfileMenuDrawer({
   onUpdateProfile,
   onViewOrders,
   onViewFavorites,
+  onViewAddresses,
 }: CustomerProfileMenuDrawerProps) {
   const { user, logout } = useAuth()
 
@@ -31,7 +33,7 @@ export function CustomerProfileMenuDrawer({
   return (
     <>
       {/* Overlay */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/50 z-40"
         onClick={onClose}
       />
@@ -73,22 +75,16 @@ export function CustomerProfileMenuDrawer({
               <Button
                 variant="ghost"
                 className="w-full justify-start gap-3 h-12 text-left"
-                onClick={() => {
-                  onUpdateProfile()
-                  onClose()
-                }}
+                onClick={() => { onUpdateProfile(); onClose() }}
               >
-                <Settings className="w-5 h-5" />
+                <User className="w-5 h-5" />
                 <span>Atualizar Cadastro</span>
               </Button>
 
               <Button
                 variant="ghost"
                 className="w-full justify-start gap-3 h-12 text-left"
-                onClick={() => {
-                  onViewOrders()
-                  onClose()
-                }}
+                onClick={() => { onViewOrders(); onClose() }}
               >
                 <Package className="w-5 h-5" />
                 <span>Meus Pedidos</span>
@@ -97,13 +93,19 @@ export function CustomerProfileMenuDrawer({
               <Button
                 variant="ghost"
                 className="w-full justify-start gap-3 h-12 text-left"
-                onClick={() => {
-                  onViewFavorites()
-                  onClose()
-                }}
+                onClick={() => { onViewFavorites(); onClose() }}
               >
                 <Heart className="w-5 h-5" />
                 <span>Meus Favoritos</span>
+              </Button>
+
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-3 h-12 text-left"
+                onClick={() => { onViewAddresses(); onClose() }}
+              >
+                <MapPin className="w-5 h-5" />
+                <span>Meus Endereços</span>
               </Button>
 
               <div className="border-t border-gray-200 my-2" />
@@ -123,4 +125,3 @@ export function CustomerProfileMenuDrawer({
     </>
   )
 }
-
