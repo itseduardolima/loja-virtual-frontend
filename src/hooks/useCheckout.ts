@@ -9,6 +9,8 @@ interface CheckoutRequest {
   customer_email: string
   customer_phone?: string
   notes?: string
+  coupon_code?: string
+  delivery_address?: string
 }
 
 interface CheckoutResponse {
@@ -21,6 +23,8 @@ interface CheckoutResponse {
       customer_phone: string
       customer_email: string
       notes: string
+      coupon_code?: string
+      coupon_discount?: string
       created_at: string
     }
     items: Array<{
@@ -41,7 +45,7 @@ interface CheckoutResponse {
 
 export function useCheckout() {
   const { toast } = useToastContext()
-  const { isAuthenticated, user } = useAuth()
+  const { isAuthenticated } = useAuth()
   const router = useRouter()
   const queryClient = useQueryClient()
 
@@ -100,27 +104,8 @@ export function useCheckout() {
     }
   })
 
+  // Guest checkout: não exige login — qualquer pessoa pode finalizar pedido com nome/email/telefone
   const handleCheckout = async (sessionId: string, storeId: number, checkoutData: CheckoutRequest, storeSlug?: string) => {
-    // Verificar se o usuário está logado
-    if (!isAuthenticated) {
-      // Salvar dados do checkout no localStorage para recuperar após login
-      localStorage.setItem('checkout-data', JSON.stringify({
-        sessionId,
-        storeId,
-        checkoutData,
-        storeSlug
-      }))
-      
-      // Redirecionar para login com a URL da loja específica
-      if (storeSlug) {
-        router.push(`/login?redirect=${encodeURIComponent(`/loja/${storeSlug}`)}`)
-      } else {
-        router.push('/login')
-      }
-      return
-    }
-
-    // Se estiver logado, prosseguir com o checkout
     await checkoutMutation.mutateAsync({ sessionId, storeId, checkoutData, storeSlug })
   }
 

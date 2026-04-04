@@ -55,6 +55,7 @@ export function useWishlist() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customer-wishlist'] })
+      queryClient.invalidateQueries({ queryKey: ['customer-wishlist-items'] })
     },
   })
 
@@ -65,6 +66,7 @@ export function useWishlist() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customer-wishlist'] })
+      queryClient.invalidateQueries({ queryKey: ['customer-wishlist-items'] })
     },
   })
 

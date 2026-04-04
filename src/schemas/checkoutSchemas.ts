@@ -23,7 +23,7 @@ export const checkoutFormSchema = yup.object({
       }
     )
     .trim(),
-  notes: yup.string().optional().trim()
+  notes: yup.string().optional().trim(),
 })
 
 export type CheckoutFormData = yup.InferType<typeof checkoutFormSchema>
