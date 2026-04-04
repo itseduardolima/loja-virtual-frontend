@@ -11,6 +11,12 @@ import { formatDate, formatPrice } from '@/lib/utils'
 import { type Column } from '@/components/Table/Table'
 
 const PANEL_ORDERS_LIMIT = 100
+const COLUMN_PAGE_SIZE = 10
+const DEFAULT_COLUMN_LIMITS: Record<number, number> = { 1: COLUMN_PAGE_SIZE, 2: COLUMN_PAGE_SIZE, 3: COLUMN_PAGE_SIZE, 4: COLUMN_PAGE_SIZE, 5: COLUMN_PAGE_SIZE }
+
+const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0)
+const endOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999)
+const today = new Date().toISOString().slice(0, 10)
 
 export function useOrdersPage() {
   const router = useRouter()
@@ -23,17 +29,28 @@ export function useOrdersPage() {
   })
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearchTerm = useDebounce(searchTerm, 1000)
+  const [dateRange, setDateRange] = useState<{ dateFrom: string; dateTo: string } | null>({ dateFrom: today, dateTo: today })
+  const [columnLimits, setColumnLimits] = useState<Record<number, number>>(DEFAULT_COLUMN_LIMITS)
 
   const { data, isLoading, error } = useOrders({
     ...filters,
     search: debouncedSearchTerm || undefined
   })
 
+  const activeDateRange = useMemo((): { date_from?: string; date_to?: string } => {
+    if (!dateRange) return {}
+    return {
+      date_from: startOfDay(new Date(dateRange.dateFrom + 'T12:00:00')).toISOString(),
+      date_to: endOfDay(new Date(dateRange.dateTo + 'T12:00:00')).toISOString(),
+    }
+  }, [dateRange])
+
   const { data: panelData } = useOrders({
     page: 1,
     limit: PANEL_ORDERS_LIMIT,
     sort: 'DATE_DESC',
-    search: debouncedSearchTerm || undefined
+    search: debouncedSearchTerm || undefined,
+    ...activeDateRange,
   })
 
   useEffect(() => {
@@ -50,6 +67,11 @@ export function useOrdersPage() {
     setFilters(prev => ({ ...prev, page: 1 }))
   }, [debouncedSearchTerm])
 
+  // Reset column limits when filters change
+  useEffect(() => {
+    setColumnLimits(DEFAULT_COLUMN_LIMITS)
+  }, [dateRange, debouncedSearchTerm])
+
   const handleFilterChange = (key: keyof OrdersFilters, value: any) => {
     setFilters(prev => ({
       ...prev,
@@ -62,6 +84,17 @@ export function useOrdersPage() {
     setFilters(prev => ({ ...prev, page }))
   }
 
+  const handleRangeSelect = (range: { dateFrom: string; dateTo: string } | null) => {
+    setDateRange(range)
+  }
+
+  const handleShowMore = (status: number) => {
+    setColumnLimits(prev => ({
+      ...prev,
+      [status]: (prev[status] ?? COLUMN_PAGE_SIZE) + COLUMN_PAGE_SIZE,
+    }))
+  }
+
   const getStatusInfo = (status: number) => {
     return ORDER_STATUS[status as keyof typeof ORDER_STATUS] || ORDER_STATUS[1]
   }
@@ -71,6 +104,7 @@ export function useOrdersPage() {
   const hasFilters = !!debouncedSearchTerm || !!filters.status
 
   const panelOrders = panelData?.data || []
+  const panelTotal = panelData?.meta?.total ?? 0
   const ordersByStatus = useMemo(() => {
     const grouped: Record<number, Order[]> = { 1: [], 2: [], 3: [], 4: [], 5: [] }
     panelOrders.forEach((order) => {
@@ -79,6 +113,22 @@ export function useOrdersPage() {
     })
     return grouped
   }, [panelOrders])
+
+  const visibleOrdersByStatus = useMemo(() => {
+    const result: Record<number, Order[]> = {}
+    for (const s of [1, 2, 3, 4, 5]) {
+      result[s] = ordersByStatus[s].slice(0, columnLimits[s] ?? COLUMN_PAGE_SIZE)
+    }
+    return result
+  }, [ordersByStatus, columnLimits])
+
+  const columnHasMore = useMemo(() => {
+    const result: Record<number, boolean> = {}
+    for (const s of [1, 2, 3, 4, 5]) {
+      result[s] = ordersByStatus[s].length > (columnLimits[s] ?? COLUMN_PAGE_SIZE)
+    }
+    return result
+  }, [ordersByStatus, columnLimits])
 
   const columns: Column<any>[] = useMemo(() => [
     {
@@ -152,7 +202,18 @@ export function useOrdersPage() {
     selectedOrderId,
     setSelectedOrderId,
     panelOrders,
+    panelTotal,
     ordersByStatus,
+    visibleOrdersByStatus,
+    columnHasMore,
+    handleShowMore,
+    // Date filter
+    dateRange,
+    handleRangeSelect,
+    hasDateFilter: !!dateRange,
+    isViewingToday: dateRange?.dateFrom === today && dateRange?.dateTo === today,
+    dateFromInput: dateRange?.dateFrom ?? '',
+    dateToInput: dateRange?.dateTo ?? '',
     // Filters
     filters,
     searchTerm,
@@ -175,4 +236,3 @@ export function useOrdersPage() {
     router,
   }
 }
-

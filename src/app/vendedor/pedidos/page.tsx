@@ -26,6 +26,7 @@ import { STATUS_ORDER, STATUS_HEADER_COLORS } from '@/lib/orderPanelUtils'
 import { useUpdateOrderStatus } from '@/hooks/useUpdateOrderStatus'
 import type { OrdersResponse } from '@/types/order'
 import { Search, X } from 'lucide-react'
+import { DashboardDateRangeFilter } from '@/components/Dashboard/DashboardDateRangeFilter'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
@@ -38,12 +39,20 @@ export default function OrdersPage() {
     user,
     searchTerm,
     setSearchTerm,
-    ordersByStatus,
+    visibleOrdersByStatus,
     panelOrders,
+    panelTotal,
     isLoading,
     error,
     selectedOrderId,
     setSelectedOrderId,
+    columnHasMore,
+    handleShowMore,
+    hasDateFilter,
+    isViewingToday,
+    dateFromInput,
+    dateToInput,
+    handleRangeSelect,
     ORDER_STATUS: STATUS_MAP,
   } = useOrdersPage()
 
@@ -51,9 +60,7 @@ export default function OrdersPage() {
   const { mutate: updateOrderStatus } = useUpdateOrderStatus()
   const [activeOrderId, setActiveOrderId] = useState<number | null>(null)
 
-  const totalCount = useMemo(() => {
-    return STATUS_ORDER.reduce((acc, s) => acc + (ordersByStatus[s]?.length ?? 0), 0)
-  }, [ordersByStatus])
+  const totalCount = panelTotal
 
   const orderById = useMemo(() => {
     const map = new Map<number, (typeof panelOrders)[0]>()
@@ -160,7 +167,7 @@ export default function OrdersPage() {
       {/* View mobile — visível apenas em telas pequenas */}
       <div className="lg:hidden w-full">
         <MobileOrdersView
-          ordersByStatus={ordersByStatus}
+          ordersByStatus={visibleOrdersByStatus}
           totalCount={totalCount}
           selectedOrderId={selectedOrderId}
           onSelectOrder={setSelectedOrderId}
@@ -175,9 +182,17 @@ export default function OrdersPage() {
         <div className="p-4 border-b border-gray-100">
           <h1 className="text-xl font-bold text-gray-900 font-integral">Quadro de pedidos</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            {totalCount} pedido{totalCount !== 1 ? 's' : ''} — Arraste os cards para alterar o status
+            {panelTotal} pedido{panelTotal !== 1 ? 's' : ''} — Arraste os cards para alterar o status
           </p>
-          <div className="relative mt-4 flex-1 max-w-md">
+          {isViewingToday && (
+            <p className="text-xs text-blue-600 font-medium mt-1">
+              Visualizando pedidos de hoje.
+            </p>
+          )}
+
+          <div className="flex items-center gap-3 mt-4">
+            {/* Campo de busca */}
+            <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5 z-10" />
             <Input
               type="text"
@@ -201,6 +216,18 @@ export default function OrdersPage() {
                 <X className="h-4 w-4" />
               </Button>
             )}
+            </div>
+
+            {/* Filtro de data */}
+            <div className="ml-auto shrink-0">
+              <DashboardDateRangeFilter
+                dateFromInput={dateFromInput}
+                dateToInput={dateToInput}
+                hasDateFilter={hasDateFilter}
+                onRangeSelect={handleRangeSelect}
+                onClear={() => handleRangeSelect(null)}
+              />
+            </div>
           </div>
         </div>
 
@@ -210,9 +237,9 @@ export default function OrdersPage() {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
-            <div className="flex gap-4 min-w-max pb-2">
+            <div className="flex gap-4 w-full pb-2">
               {STATUS_ORDER.map((statusKey) => {
-                const orders = ordersByStatus[statusKey] ?? []
+                const orders = visibleOrdersByStatus[statusKey] ?? []
                 const label = STATUS_MAP[statusKey as keyof typeof STATUS_MAP]?.label ?? 'Pedidos'
                 const colors = STATUS_HEADER_COLORS[statusKey] ?? STATUS_HEADER_COLORS[1]
                 return (
@@ -224,6 +251,8 @@ export default function OrdersPage() {
                     colors={colors}
                     selectedOrderId={selectedOrderId}
                     onSelectOrder={setSelectedOrderId}
+                    hasMore={columnHasMore[statusKey]}
+                    onShowMore={() => handleShowMore(statusKey)}
                   />
                 )
               })}
