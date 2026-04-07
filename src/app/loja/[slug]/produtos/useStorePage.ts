@@ -48,7 +48,8 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
     niche_id: filters.nicheId,
     category_id: filters.categoryId,
     dynamic_filters: filters.dynamicFilters,
-    search: debouncedSearch || undefined
+    search: debouncedSearch || undefined,
+    min_rating: filters.minRating
   })
 
   // Garantir que products seja sempre um array
@@ -191,6 +192,7 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
       niche_id: newFilters.nicheId,
       category_id: newFilters.categoryId,
       dynamic_filters: newFilters.dynamicFilters,
+      min_rating: newFilters.minRating,
       page: 1
     })
   }
@@ -207,6 +209,7 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
       niche_id: undefined,
       category_id: undefined,
       dynamic_filters: undefined,
+      min_rating: undefined,
       search: undefined,
       page: 1
     })

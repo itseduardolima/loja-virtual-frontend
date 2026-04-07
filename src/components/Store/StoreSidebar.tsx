@@ -59,6 +59,7 @@ export function StoreSidebar({
   const [localSize, setLocalSize] = useState<string | undefined>(filterProps.activeFilters.size)
   const [localSort, setLocalSort] = useState<string>(filterProps.sortValue)
   const [localSortField, setLocalSortField] = useState<string>(filterProps.sortFieldValue)
+  const [localMinRating, setLocalMinRating] = useState<number | undefined>(filterProps.activeFilters.minRating)
   // Usar nome do campo como chave (não slug) para unificar campos com mesmo nome
   const [dynamicFieldValues, setDynamicFieldValues] = useState<Record<string, string | string[]>>({})
   const [isPriceCollapsed, setIsPriceCollapsed] = useState(false) // Expandido por padrão
@@ -128,6 +129,7 @@ export function StoreSidebar({
     localCategoryId,
     localColor,
     localSize,
+    localMinRating,
     priceRange[0] > 0 || priceRange[1] < 200,
     Object.keys(dynamicFieldValues).length > 0
   ].filter(Boolean).length
@@ -166,6 +168,7 @@ export function StoreSidebar({
     setLocalCategoryId(filterProps.activeFilters.categoryId)
     setLocalColor(filterProps.activeFilters.color)
     setLocalSize(filterProps.activeFilters.size)
+    setLocalMinRating(filterProps.activeFilters.minRating)
     setLocalSort(filterProps.sortValue)
     setLocalSortField(filterProps.sortFieldValue)
   }, [
@@ -176,6 +179,7 @@ export function StoreSidebar({
     filterProps.activeFilters.categoryId,
     filterProps.activeFilters.color,
     filterProps.activeFilters.size,
+    filterProps.activeFilters.minRating,
     filterProps.sortValue,
     filterProps.sortFieldValue
   ])
@@ -218,7 +222,8 @@ export function StoreSidebar({
       size: localSize,
       minPrice: priceRange[0] > 0 ? priceRange[0] : undefined,
       maxPrice: priceRange[1] < 200 ? priceRange[1] : undefined,
-      dynamicFilters: Object.keys(dynamicFilters).length > 0 ? dynamicFilters : undefined
+      dynamicFilters: Object.keys(dynamicFilters).length > 0 ? dynamicFilters : undefined,
+      minRating: localMinRating,
     })
   }
   
@@ -230,6 +235,7 @@ export function StoreSidebar({
     setLocalCategoryId(undefined)
     setLocalColor(undefined)
     setLocalSize(undefined)
+    setLocalMinRating(undefined)
     setLocalSort('DESC')
     setLocalSortField('created_at')
     setDynamicFieldValues({})
@@ -452,6 +458,7 @@ export function StoreSidebar({
                   <SelectItem value="created_at-ASC">Mais antigos</SelectItem>
                   <SelectItem value="price-DESC">Maiores preços</SelectItem>
                   <SelectItem value="price-ASC">Menores preços</SelectItem>
+                  <SelectItem value="average_rating-DESC">Mais avaliados</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -646,6 +653,7 @@ export function StoreSidebar({
                 <SelectItem value="created_at-ASC">Mais antigos</SelectItem>
                 <SelectItem value="price-DESC">Maiores preços</SelectItem>
                 <SelectItem value="price-ASC">Menores preços</SelectItem>
+                <SelectItem value="average_rating-DESC">Mais avaliados</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -740,6 +748,27 @@ export function StoreSidebar({
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Avaliação Mínima */}
+          <div className="space-y-2">
+            <Label className="text-sm font-bold text-gray-900 cursor-pointer block">Avaliação mínima</Label>
+            <Select
+              value={localMinRating?.toString() ?? 'all'}
+              onValueChange={(v) => setLocalMinRating(v === 'all' ? undefined : Number(v))}
+            >
+              <SelectTrigger className="w-full h-10 sm:h-11 text-sm">
+                <SelectValue placeholder="Todas as avaliações" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as avaliações</SelectItem>
+                <SelectItem value="1">⭐ 1 estrela ou mais</SelectItem>
+                <SelectItem value="2">⭐⭐ 2 estrelas ou mais</SelectItem>
+                <SelectItem value="3">⭐⭐⭐ 3 estrelas ou mais</SelectItem>
+                <SelectItem value="4">⭐⭐⭐⭐ 4 estrelas ou mais</SelectItem>
+                <SelectItem value="5">⭐⭐⭐⭐⭐ Somente 5 estrelas</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Campos Dinâmicos - exibe apenas quando uma categoria está aplicada e há campos disponíveis */}

@@ -31,6 +31,7 @@ import { ProductImageZoom } from '@/components/Product/ProductImageZoom'
 import { RecentlyViewedSection } from '@/components/Product/RecentlyViewedSection'
 import { ProductQuestions } from '@/components/Product/ProductQuestions'
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed'
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs'
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -159,6 +160,20 @@ export default function ProductDetailPage() {
         onSearchSubmit={handleSearchSubmit}
         onCartClick={() => setIsCartOpen(true)}
       />
+
+      {/* Breadcrumbs */}
+      <div className="max-w-[1380px] mx-auto px-4 pt-3 pb-1">
+        <Breadcrumbs
+          items={[
+            { label: storeInfo?.name || 'Loja', href: `/loja/${slug}` },
+            {
+              label: product.category?.name || 'Categoria',
+              href: `/loja/${slug}/produtos?category=${product.category?.id}`,
+            },
+            { label: product.name },
+          ]}
+        />
+      </div>
 
       {/* Main Content */}
       <div className="max-w-[1380px] mx-auto px-4 py-4 sm:py-6 lg:py-12">

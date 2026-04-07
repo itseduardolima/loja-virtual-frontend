@@ -12,6 +12,7 @@ import { useStoreInfo } from '@/hooks/useStoreInfo'
 import { useStoreCategories } from '@/hooks/useStoreCategories'
 import { useNiches, useStoreFields } from '@/hooks/useNiches'
 import { useCart } from '@/hooks/useCart'
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs'
 
 export default function StorePage() {
   const params = useParams()
@@ -158,6 +159,16 @@ export default function StorePage() {
         onSearchSubmit={handleSearchSubmit}
         onCartClick={() => setIsCartOpen(true)}
       />
+
+      {/* Breadcrumbs */}
+      <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-1">
+        <Breadcrumbs
+          items={[
+            { label: storeInfo?.name || 'Loja', href: `/loja/${slug}` },
+            { label: getPageTitle() },
+          ]}
+        />
+      </div>
 
       {/* Mobile Filter Button */}
       {isMobile && (
