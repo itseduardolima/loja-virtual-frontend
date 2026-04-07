@@ -160,50 +160,51 @@ export default function StorePage() {
         onCartClick={() => setIsCartOpen(true)}
       />
 
-      {/* Breadcrumbs */}
-      <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-1">
-        <Breadcrumbs
-          items={[
-            { label: 'Início', href: `/loja/${slug}` },
-            { label: getPageTitle() },
-          ]}
-        />
-      </div>
+      <div className="px-4 sm:px-6 lg:px-20">
+        {/* Breadcrumbs */}
+        <div className="pt-3 pb-1">
+          <Breadcrumbs
+            items={[
+              { label: 'Início', href: `/loja/${slug}` },
+              { label: getPageTitle() },
+            ]}
+          />
+        </div>
 
-      {/* Mobile Filter Button */}
-      {isMobile && (
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.3 }}
-          className="sticky top-0 z-30 px-4 lg:hidden"
-        >
-          <div className="flex items-center justify-between gap-3">
-            <Button
-              onClick={() => setIsSidebarOpen(true)}
-              variant="outline"
-              className="flex-1 justify-center gap-2 h-10"
-            >
-              <Filter className="w-4 h-4" />
-              Filtros
-            </Button>
-            <AnimatePresence>
-              {(filters.nicheId || filters.categoryId || filters.color || filters.size || filters.featured || filters.minPrice || filters.maxPrice) && (
-                <motion.div
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Badge variant="secondary" className="bg-primary/10 text-primary">
-                    {Object.values(filters).filter(v => v !== undefined && v !== false).length} ativo(s)
-                  </Badge>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </motion.div>
-      )}
+        {/* Mobile Filter Button */}
+        {isMobile && (
+          <motion.div
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="sticky top-0 z-30 lg:hidden py-2"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <Button
+                onClick={() => setIsSidebarOpen(true)}
+                variant="outline"
+                className="flex-1 justify-center gap-2 h-10"
+              >
+                <Filter className="w-4 h-4" />
+                Filtros
+              </Button>
+              <AnimatePresence>
+                {(filters.nicheId || filters.categoryId || filters.color || filters.size || filters.featured || filters.minPrice || filters.maxPrice) && (
+                  <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Badge variant="secondary" className="bg-primary/10 text-primary">
+                      {Object.values(filters).filter(v => v !== undefined && v !== false).length} ativo(s)
+                    </Badge>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        )}
 
       <div className="flex gap-0 lg:gap-6">
         {/* Sidebar de Filtros - Desktop (sempre visível) / Mobile (drawer) */}
@@ -284,7 +285,7 @@ export default function StorePage() {
           </>
         ) : (
           /* Desktop Sidebar */
-          <aside className="hidden lg:block w-full max-w-md flex-shrink-0 pl-4 xl:pl-4">
+          <aside className="hidden lg:block w-full max-w-md flex-shrink-0">
             <div className="relative top-8">
               <StoreSidebar
                 isOpen={isSidebarOpen}
@@ -312,7 +313,7 @@ export default function StorePage() {
 
         {/* Conteúdo Principal */}
         <main className="flex-1 min-w-0">
-          <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+          <div className="py-4 sm:py-6 lg:py-8">
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <LoadingPage />
@@ -544,6 +545,7 @@ export default function StorePage() {
               )}
           </div>
         </main>
+      </div>
       </div>
 
       {/* Cart Sidebar */}

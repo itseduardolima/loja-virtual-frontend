@@ -55,7 +55,7 @@ export function ProductQuestions({
   };
 
   return (
-    <div className="max-w-[1380px] mt-8 mx-auto sm:px-6 lg:px-8 py-8 sm:py-12" id="perguntas">
+    <div className="mt-2 md:mt-8 px-4 sm:px-6 lg:px-20 py-8 sm:py-12" id="perguntas">
       <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
         Perguntas e Respostas{" "}
         {meta && <span>({meta.total})</span>}

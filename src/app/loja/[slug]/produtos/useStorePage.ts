@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useStoreProducts } from '@/hooks/useStoreProducts'
 import { useDebounce } from '@/hooks/useDebounce'
 import { Product } from '@/types/product'
@@ -14,6 +15,7 @@ interface UseStorePageProps {
 }
 
 export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): UseStorePageReturn {
+  const router = useRouter()
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<SortOrder>('DESC')
   const [sortField, setSortField] = useState('created_at')
@@ -224,12 +226,10 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
   }
 
 
-  const handleAddToFavorites = (product: Product) => {
-    console.log('Adicionar aos favoritos:', product)
-  }
+  const handleAddToFavorites = (_product: Product) => {}
 
   const handleViewDetails = (product: Product) => {
-    window.location.href = `/loja/${slug}/produto/${product.id}`
+    router.push(`/loja/${slug}/produto/${product.id}`)
   }
 
   return {
