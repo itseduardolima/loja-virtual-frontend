@@ -45,6 +45,7 @@ export function useStoreProducts(params: StoreProductsParams): UseStoreProductsR
       if (params.category_id) queryParams.append('category_id', params.category_id.toString())
       if (params.niche_id) queryParams.append('niche_id', params.niche_id.toString())
       if (params.search) queryParams.append('search', params.search)
+      if (params.min_rating) queryParams.append('min_rating', params.min_rating.toString())
       if (params.dynamic_filters) {
         // Enviar dynamic_filters como string JSON na query string
         const filtersString = typeof params.dynamic_filters === 'string' 

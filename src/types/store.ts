@@ -65,6 +65,7 @@ export interface StoreProductsParams {
   niche_id?: number
   search?: string
   dynamic_filters?: Record<string, string> | string
+  min_rating?: number
 }
 
 export interface UseStoreProductsReturn {

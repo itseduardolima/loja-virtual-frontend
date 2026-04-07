@@ -10,6 +10,7 @@ export interface StoreFilters {
   nicheId?: number
   categoryId?: number
   dynamicFilters?: Record<string, string>
+  minRating?: number
 }
 
 // Tipos para as categorias da loja
@@ -117,7 +118,7 @@ export interface StorePaginationProps {
 }
 
 // Tipos para as opções de ordenação
-export type SortField = 'created_at' | 'name' | 'price' | 'stock'
+export type SortField = 'created_at' | 'name' | 'price' | 'stock' | 'average_rating'
 export type SortOrder = 'ASC' | 'DESC'
 
 // Tipos para as opções de itens por página
