@@ -143,7 +143,7 @@ function ReviewCard({ review, currentUserId, onEdit, isUpdating }: ReviewCardPro
   }
 
   return (
-    <Card className="rounded-xl border-0 bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] overflow-hidden">
+    <Card className="rounded-2xl border bg-white overflow-hidden">
       <CardContent className="p-6">
         <div className="flex items-start justify-between gap-2 mb-3">
           <StarRating rating={review.rating} />
@@ -419,8 +419,8 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
   }
 
   return (
-    <div className="mt-8 bg-white">
-      <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <div className="mt-2 md:mt-8 bg-white">
+      <div className="px-4 sm:px-6 lg:px-20 py-8 sm:py-12">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">

@@ -162,13 +162,15 @@ export default function ProductDetailPage() {
       />
 
       {/* Breadcrumbs */}
-      <div className="max-w-[1380px] mx-auto px-4 pt-3 pb-1">
+      <div className="px-4 sm:px-6 lg:px-20 pt-3 pb-1">
         <Breadcrumbs
           items={[
             { label: 'Início', href: `/loja/${slug}` },
             {
               label: product.category?.name || 'Categoria',
-              href: `/loja/${slug}/produtos?category=${product.category?.id}`,
+              href: product.category?.id
+                ? `/loja/${slug}/produtos?category=${product.category.id}`
+                : `/loja/${slug}/produtos`,
             },
             { label: product.name },
           ]}
@@ -176,7 +178,7 @@ export default function ProductDetailPage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-[1380px] mx-auto px-4 py-4 sm:py-6 lg:py-12">
+      <div className="px-4 sm:px-6 lg:px-20 py-4 sm:py-6 lg:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-16">
           {/* Product Images */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
@@ -474,7 +476,7 @@ export default function ProductDetailPage() {
 
       {/* Abas: Especificações, Avaliações, Perguntas */}
       <div className="bg-white">
-        <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="px-4 sm:px-6 lg:px-20">
           {/* Tab bar */}
           <div className="flex border-b border-gray-200">
             {[

@@ -21,7 +21,7 @@ export function RecentlyViewedSection({ currentProductId, storeSlug }: RecentlyV
 
   return (
     <section className="border-t bg-white">
-      <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="px-4 sm:px-6 lg:px-20 py-8">
         <h2 className="text-lg sm:text-xl font-bold text-primary mb-5">Vistos recentemente</h2>
         <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin scrollbar-thumb-gray-200">
           {items.map((product) => {

@@ -23,22 +23,6 @@ export interface StoreCategory {
   }
 }
 
-// Tipos para os parâmetros de busca da loja
-export interface StoreSearchParams {
-  slug: string
-  page?: number
-  limit?: number
-  sort?: 'ASC' | 'DESC'
-  sort_field?: string
-  featured?: boolean
-  color?: string
-  size?: string
-  max_price?: number
-  min_price?: number
-  category_id?: number
-  search?: string
-}
-
 // Tipos para os dados processados da loja
 export interface ProcessedStoreData {
   categories: Array<{ id: number; name: string }>
