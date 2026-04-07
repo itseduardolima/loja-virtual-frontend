@@ -165,7 +165,7 @@ export default function ProductDetailPage() {
       <div className="max-w-[1380px] mx-auto px-4 pt-3 pb-1">
         <Breadcrumbs
           items={[
-            { label: storeInfo?.name || 'Loja', href: `/loja/${slug}` },
+            { label: 'Início', href: `/loja/${slug}` },
             {
               label: product.category?.name || 'Categoria',
               href: `/loja/${slug}/produtos?category=${product.category?.id}`,

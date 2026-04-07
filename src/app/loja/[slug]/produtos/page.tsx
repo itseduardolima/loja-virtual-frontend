@@ -164,7 +164,7 @@ export default function StorePage() {
       <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-1">
         <Breadcrumbs
           items={[
-            { label: storeInfo?.name || 'Loja', href: `/loja/${slug}` },
+            { label: 'Início', href: `/loja/${slug}` },
             { label: getPageTitle() },
           ]}
         />
