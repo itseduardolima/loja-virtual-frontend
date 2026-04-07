@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button'
 import { useStoreReviews } from '@/hooks/useStoreReviews'
 import { StoreReviewsCarousel } from '@/components/Store/StoreReviewsCarousel'
 import { AppFooter } from '@/components/Layout/AppFooter'
+import { WhatsAppChatWidget } from '@/components/Store/WhatsAppChatWidget'
 
 export default function StoreHomePage() {
   const params = useParams()
@@ -181,6 +182,8 @@ export default function StoreHomePage() {
         storeSlug={slug}
         currentPath={`/loja/${slug}`}
       />
+
+      <WhatsAppChatWidget whatsapp={storeInfo?.whatsapp} storeName={storeInfo?.name} />
     </div>
   )
 }
