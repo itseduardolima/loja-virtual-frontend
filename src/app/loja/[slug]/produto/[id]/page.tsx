@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { Button, Badge, LoadingSpinner, ErrorState, CartSidebar, StoreHeader, ProductReviews } from '@/components'
+import { useProductQuestionsCount } from '@/hooks/useProductQuestions'
 import {
   Star,
   Plus,
@@ -23,10 +24,12 @@ import { getColorHex } from '@/schemas'
 import { useAddToCartAnimation } from '@/hooks/useAddToCartAnimation'
 import { AddToCartAnimation } from '@/components/Animation/AddToCartAnimation'
 import { AppFooter } from '@/components/Layout/AppFooter'
+import { WhatsAppChatWidget } from '@/components/Store/WhatsAppChatWidget'
 import { WishlistButton } from '@/components/Product/WishlistButton'
 import { ShareButtons } from '@/components/Product/ShareButtons'
 import { ProductImageZoom } from '@/components/Product/ProductImageZoom'
 import { RecentlyViewedSection } from '@/components/Product/RecentlyViewedSection'
+import { ProductQuestions } from '@/components/Product/ProductQuestions'
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed'
 
 export default function ProductDetailPage() {
@@ -63,7 +66,9 @@ export default function ProductDetailPage() {
   } = useProductDetailPage(slug, productId)
 
   const { summary: reviewsSummary } = useProductReviews(slug, productId)
+  const questionsTotal = useProductQuestionsCount(slug, productId)
   const { addRecentlyViewed } = useRecentlyViewed()
+  const [activeTab, setActiveTab] = useState<'specs' | 'reviews' | 'questions'>('specs')
 
   // Registrar produto visto recentemente
   useEffect(() => {
@@ -452,42 +457,96 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* Description and Specifications (Bottom Section) */}
-      {(product.description || product.specifications) && (
-        <div className="border-t bg-white">
-          <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
-            {/* Description - Mobile only */}
-            {product.description && (
-              <div className="sm:hidden mb-6">
-                <h2 className="text-lg font-bold text-primary mb-3">Descrição</h2>
-                <p className="text-primary/60 text-sm leading-relaxed break-words">
-                  {product.description}
-                </p>
-              </div>
-            )}
-            
-            {/* Specifications */}
-            {product.specifications && (
-              <>
-                <h2 className="text-lg sm:text-xl font-bold text-primary mb-3">
-                  {product.description ? 'Especificações' : 'Especificações'}
-                </h2>
-                <div
-                  className="text-primary/60 text-sm sm:text-base leading-relaxed prose prose-sm lg:max-w-1/2 prose-headings:text-primary/80 prose-p:text-primary/60 prose-ul:text-primary/60 prose-ol:text-primary/60 prose-strong:text-primary/80 break-words"
-                  dangerouslySetInnerHTML={{ __html: product.specifications }}
-                />
-              </>
-            )}
+      {/* Abas: Especificações, Avaliações, Perguntas */}
+      <div className="bg-white">
+        <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Tab bar */}
+          <div className="flex border-b border-gray-200">
+            {[
+              {
+                key: 'specs' as const,
+                label: 'Especificações',
+                show: !!(product.description || product.specifications),
+              },
+              {
+                key: 'reviews' as const,
+                label: 'Avaliações',
+                badge: reviewsSummary?.total_reviews ?? 0,
+                show: true,
+              },
+              {
+                key: 'questions' as const,
+                label: 'Perguntas',
+                badge: questionsTotal,
+                show: true,
+              },
+            ]
+              .filter((t) => t.show)
+              .map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                    activeTab === tab.key
+                      ? 'border-gray-900 text-gray-900'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {tab.label}
+                  {!!tab.badge && (
+                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                      {tab.badge}
+                    </span>
+                  )}
+                </button>
+              ))}
           </div>
-        </div>
-      )}
 
-      {/* Avaliações - abaixo das Especificações */}
-      <ProductReviews
-        slug={slug}
-        productId={productId}
-        productName={product.name}
-      />
+          {/* Especificações */}
+          {activeTab === 'specs' && (
+            <div className="py-6 sm:py-10">
+              {product.description && (
+                <div className="mb-6">
+                  <h2 className="text-base font-semibold text-primary mb-2">Descrição</h2>
+                  <p className="text-primary/60 text-sm leading-relaxed break-words">
+                    {product.description}
+                  </p>
+                </div>
+              )}
+              {product.specifications && (
+                <div>
+                  {product.description && (
+                    <h2 className="text-base font-semibold text-primary mb-2">Especificações</h2>
+                  )}
+                  <div
+                    className="text-primary/60 text-sm leading-relaxed prose prose-sm prose-headings:text-primary/80 prose-p:text-primary/60 prose-ul:text-primary/60 prose-ol:text-primary/60 prose-strong:text-primary/80 break-words max-w-none"
+                    dangerouslySetInnerHTML={{ __html: product.specifications }}
+                  />
+                </div>
+              )}
+              {!product.description && !product.specifications && (
+                <p className="text-sm text-gray-400 py-8 text-center">
+                  Nenhuma especificação disponível para este produto.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Avaliações */}
+        {activeTab === 'reviews' && (
+          <ProductReviews
+            slug={slug}
+            productId={productId}
+            productName={product.name}
+          />
+        )}
+
+        {/* Perguntas */}
+        {activeTab === 'questions' && (
+          <ProductQuestions slug={slug} productId={productId} />
+        )}
+      </div>
 
       {/* Cart Sidebar */}
       <CartSidebar
@@ -512,6 +571,8 @@ export default function ProductDetailPage() {
       <RecentlyViewedSection currentProductId={product.id} storeSlug={slug} />
 
       <AppFooter />
+
+      <WhatsAppChatWidget whatsapp={storeInfo?.whatsapp} storeName={storeInfo?.name} />
     </div>
   )
 }

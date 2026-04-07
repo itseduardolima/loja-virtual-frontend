@@ -3,17 +3,18 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { 
-  Store, 
-  Package, 
-  Tag, 
-  FileText, 
-  TrendingUp, 
+import {
+  Store,
+  Package,
+  Tag,
+  FileText,
+  TrendingUp,
   Menu,
   X,
   BarChart3,
   Home,
-  CreditCard
+  CreditCard,
+  MessageCircle
 } from 'lucide-react'
 import { useStore } from '@/hooks/useStore'
 
@@ -62,6 +63,12 @@ export function SidebarVendedor({ currentPath }: SidebarVendedorProps) {
       href: '/vendedor/cupons',
       icon: Tag,
       current: currentPath?.startsWith('/vendedor/cupons')
+    },
+    {
+      name: 'Perguntas',
+      href: '/vendedor/perguntas',
+      icon: MessageCircle,
+      current: currentPath?.startsWith('/vendedor/perguntas')
     },
     {
       name: 'Meu Plano',
