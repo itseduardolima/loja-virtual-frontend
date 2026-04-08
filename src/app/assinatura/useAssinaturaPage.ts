@@ -7,6 +7,7 @@ import { useMySubscription } from "@/hooks/useMySubscription";
 import { useSyncSubscription } from "@/hooks/useSyncSubscription";
 import { BillingType } from "@/types/subscription";
 import { formatCPF, formatCNPJ } from "@/lib/utils";
+import toast from "react-hot-toast";
 
 export type Step = "select" | "processing" | "payment" | "success" | "completed";
 
@@ -164,7 +165,7 @@ export function useAssinaturaPage() {
     // Validação para PIX e BOLETO
     if (selectedMethod === "PIX" || selectedMethod === "BOLETO") {
       if (!documentType) {
-        alert("Por favor, selecione CPF ou CNPJ para continuar.");
+        toast.error("Por favor, selecione CPF ou CNPJ para continuar.");
         return;
       }
 
@@ -172,12 +173,12 @@ export function useAssinaturaPage() {
       const cnpjClean = cnpj.replace(/\D/g, "");
 
       if (documentType === "cpf" && !cpfClean) {
-        alert("Por favor, preencha o CPF para continuar.");
+        toast.error("Por favor, preencha o CPF para continuar.");
         return;
       }
 
       if (documentType === "cnpj" && !cnpjClean) {
-        alert("Por favor, preencha o CNPJ para continuar.");
+        toast.error("Por favor, preencha o CNPJ para continuar.");
         return;
       }
     }
@@ -223,7 +224,7 @@ export function useAssinaturaPage() {
       }
     } catch (error) {
       setStep("select");
-      alert("Erro ao processar assinatura. Tente novamente.");
+      toast.error("Erro ao processar assinatura. Tente novamente.");
     }
   };
 

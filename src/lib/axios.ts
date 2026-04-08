@@ -27,6 +27,14 @@ const processQueue = (error: any) => {
   failedQueue = []
 }
 
+api.interceptors.request.use((config) => {
+  // FormData: deixar o navegador definir Content-Type com boundary correto
+  if (config.data instanceof FormData && config.headers) {
+    delete config.headers['Content-Type']
+  }
+  return config
+})
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
