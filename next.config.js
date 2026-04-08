@@ -10,27 +10,14 @@ const parseApiUrl = (url) => {
       hostname: urlObj.hostname,
       port: urlObj.port || '',
     }
-  } catch (error) {
-    // Fallback para localhost:3000 se houver erro ao parsear
-    return {
-      protocol: 'http',
-      hostname: 'localhost',
-      port: '3000',
-    }
+  } catch {
+    return { protocol: 'http', hostname: 'localhost', port: '3000' }
   }
 }
 
 const apiConfig = parseApiUrl(apiUrl)
 
 const nextConfig = {
-  async rewrites() {
-    return [
-      {
-        source: '/files/:path*',
-        destination: `${apiUrl}/files/:path*`,
-      },
-    ]
-  },
   images: {
     remotePatterns: [
       {
@@ -39,8 +26,6 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
-      // Configuração dinâmica para a API (funciona com localhost ou ngrok)
-      // O hostname será extraído automaticamente do NEXT_PUBLIC_API_URL
       {
         protocol: apiConfig.protocol === 'https' ? 'https' : 'http',
         hostname: apiConfig.hostname,
