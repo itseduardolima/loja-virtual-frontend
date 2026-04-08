@@ -9,6 +9,7 @@ import { ToastProvider } from '@/contexts/ToastContext'
 import { ToastContainer } from '@/components/Toast/ToastContainer'
 import { CompleteProfileGuard } from '@/components/User/CompleteProfileGuard'
 import { AppFooter } from '@/components/Layout/AppFooter'
+import { HotToastProvider } from '@/providers/HotToastProvider'
 
 const satoshi = localFont({
   src: '../../public/fonts/Satoshi-Variable.ttf',
@@ -51,10 +52,12 @@ export default function RootLayout({
           <AuthProvider>
             <CompleteProfileGuard>
               <ToastProvider>
-                <div className="flex min-h-screen flex-col">
-                  <main className="flex-1">{children}</main>
-                </div>
-                <ToastContainer />
+                <HotToastProvider>
+                  <div className="flex min-h-screen flex-col">
+                    <main className="flex-1">{children}</main>
+                  </div>
+                  <ToastContainer />
+                </HotToastProvider>
               </ToastProvider>
             </CompleteProfileGuard>
           </AuthProvider>
