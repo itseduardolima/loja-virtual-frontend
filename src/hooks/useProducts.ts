@@ -89,7 +89,7 @@ export function useUpdateProduct() {
 
 export function useUpdateProductStatus() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async ({ id, status }: { id: string | number, status: number }) => {
       const response = await api.patch(`/products/${id}/status`, { status })
@@ -99,5 +99,19 @@ export function useUpdateProductStatus() {
       queryClient.invalidateQueries({ queryKey: ['products'] })
       queryClient.invalidateQueries({ queryKey: ['product'] })
     }
+  })
+}
+
+export function useDuplicateProduct() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string | number) => {
+      const response = await api.post(`/products/${id}/duplicate`)
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+    },
   })
 }

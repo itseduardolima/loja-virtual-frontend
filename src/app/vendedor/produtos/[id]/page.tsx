@@ -19,6 +19,7 @@ import { useRouter, useParams } from 'next/navigation'
 import Image from 'next/image'
 import { useProductDetailPage } from './useProductDetailPage'
 import { buildImageUrl, formatPrice } from '@/lib/utils'
+import { sanitizeHtml } from '@/lib/sanitize'
 import LoadingPage from '@/components/Layout/LoadingPage'
 import { getColorHex } from '@/schemas'
 
@@ -516,7 +517,7 @@ export default function ProductDetailPage() {
                 </h2>
                 <div
                   className="text-primary/60 text-sm sm:text-base leading-relaxed prose prose-sm max-w-none prose-headings:text-primary/80 prose-p:text-primary/60 prose-ul:text-primary/60 prose-ol:text-primary/60 prose-strong:text-primary/80 break-words"
-                  dangerouslySetInnerHTML={{ __html: product.specifications }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.specifications) }}
                 />
               </>
             )}

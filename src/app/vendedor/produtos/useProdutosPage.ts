@@ -1,11 +1,14 @@
 import { useState } from 'react'
-import { useProducts, useUpdateProductStatus } from '@/hooks/useProducts'
+import { useProducts, useUpdateProductStatus, useDuplicateProduct } from '@/hooks/useProducts'
 import { useDebounce } from '@/hooks/useDebounce'
 import { formatPrice } from '@/lib/utils'
 import { useToastContext } from '@/contexts/ToastContext'
+import { useRouter } from 'next/navigation'
 
 export function useProdutosPage() {
+  const router = useRouter()
   const updateStatusMutation = useUpdateProductStatus()
+  const duplicateMutation = useDuplicateProduct()
   const { success: showSuccess, error: showError } = useToastContext()
 
   const [filters, setFilters] = useState({
@@ -22,9 +25,9 @@ export function useProdutosPage() {
     limit: 10
   })
 
-  const debouncedSearch = useDebounce(filters.search, 2000)
-  const debouncedMinPrice = useDebounce(filters.min_price, 2000)
-  const debouncedMaxPrice = useDebounce(filters.max_price, 2000)
+  const debouncedSearch = useDebounce(filters.search, 400)
+  const debouncedMinPrice = useDebounce(filters.min_price, 400)
+  const debouncedMaxPrice = useDebounce(filters.max_price, 400)
   
   const debouncedFilters = {
     ...filters,
@@ -56,11 +59,12 @@ export function useProdutosPage() {
   )).filter(Boolean).sort()
 
   const stats = {
-    total: apiStats?.total,
-    active: apiStats?.total_active,
-    inactive: products.filter(p => p.status === 0).length,
-    featured: apiStats?.total_featured,
-    totalStock: apiStats?.total_in_stock,
+    total: apiStats?.total ?? 0,
+    active: apiStats?.total_active ?? 0,
+    // Aproximação: todos os não-ativos (inativos + rascunhos). Calculado via API para não ser limitado pela página atual.
+    inactive: apiStats ? (apiStats.total - apiStats.total_active) : 0,
+    featured: apiStats?.total_featured ?? 0,
+    totalStock: apiStats?.total_in_stock ?? 0,
     averagePrice: products.length > 0
       ? products.reduce((sum, p) => sum + parseFloat(p.price), 0) / products.length
       : 0
@@ -82,14 +86,23 @@ export function useProdutosPage() {
 
   const handleToggleStatus = async (productId: number, currentStatus: number) => {
     try {
-      const newStatus = currentStatus === 1 ? 0 : 1
+      // Rascunho (2) → publicado (1); ativo (1) → inativo (0); inativo (0) → ativo (1)
+      const newStatus = currentStatus === 2 ? 1 : currentStatus === 1 ? 0 : 1
       await updateStatusMutation.mutateAsync({ id: productId, status: newStatus })
-      showSuccess(
-        newStatus === 1 ? 'Produto disponibilizado!' : 'Produto esgotado!', 
-        'Status atualizado'
-      )
+      const label = newStatus === 1 ? 'Produto publicado!' : 'Produto desativado!'
+      showSuccess(label, 'Status atualizado')
     } catch (error) {
       showError('Erro ao atualizar status do produto', 'Erro')
+    }
+  }
+
+  const handleDuplicate = async (productId: number) => {
+    try {
+      const result = await duplicateMutation.mutateAsync(productId)
+      showSuccess('Produto duplicado com sucesso!', 'Duplicado')
+      router.push(`/vendedor/produtos/editar/${result.data.id}`)
+    } catch (error) {
+      showError('Erro ao duplicar produto', 'Erro')
     }
   }
 
@@ -108,6 +121,8 @@ export function useProdutosPage() {
     handleLimitChange,
     isSearching,
     handleToggleStatus,
-    isUpdatingStatus: updateStatusMutation.isPending
+    isUpdatingStatus: updateStatusMutation.isPending,
+    handleDuplicate,
+    isDuplicating: duplicateMutation.isPending
   }
 }

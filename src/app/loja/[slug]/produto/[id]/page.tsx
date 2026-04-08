@@ -32,6 +32,7 @@ import { RecentlyViewedSection } from '@/components/Product/RecentlyViewedSectio
 import { ProductQuestions } from '@/components/Product/ProductQuestions'
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed'
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs'
+import { sanitizeHtml } from '@/lib/sanitize'
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -52,7 +53,7 @@ export default function ProductDetailPage() {
     selectedSize,
     selectedColor,
     quantity,
-    colorMap,
+    currentStock,
     currentImages,
     buildImageUrls,
     selectImage,
@@ -118,7 +119,7 @@ export default function ProductDetailPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <ErrorState
           message="Erro ao carregar produto"
-          onRetry={() => window.location.reload()}
+          onRetry={() => router.refresh()}
           retryText="Tentar novamente"
         />
       </div>
@@ -137,8 +138,13 @@ export default function ProductDetailPage() {
     )
   }
 
-  const isOutOfStock = product.stock === 0
-  const canAddToCart = !isOutOfStock && selectedSize && selectedColor && quantity > 0
+  const hasColors = !!(product.color || product.dynamic_fields?.find(f => f.field_name.toLowerCase() === 'cor'))
+  const hasSizes = !!product.dynamic_fields?.find(f => f.field_name.toLowerCase() === 'tamanho')
+  const isOutOfStock = currentStock === 0
+  const canAddToCart = !isOutOfStock &&
+    (!hasColors || !!selectedColor) &&
+    (!hasSizes || !!selectedSize) &&
+    quantity > 0
 
   // Rating médio das avaliações (ou 0 se não houver)
   const rating = reviewsSummary?.average_rating ?? 0
@@ -309,7 +315,7 @@ export default function ProductDetailPage() {
             <div className="flex items-center gap-2 text-primary font-integral text-sm sm:text-base">
               <span className="font-integral tracking-wide">Estoque:</span>
               <span>
-                {product.stock > 0 ? `${product.stock} unidade${product.stock > 1 ? 's' : ''}` : 'Sem estoque'}
+                {currentStock > 0 ? `${currentStock} unidade${currentStock > 1 ? 's' : ''}` : 'Sem estoque'}
               </span>
             </div>
 
@@ -431,7 +437,7 @@ export default function ProductDetailPage() {
                 <span className="px-3 sm:px-4 py-2 font-medium min-w-[2.5rem] text-center text-primary text-sm sm:text-base">{quantity}</span>
                 <button
                   onClick={increaseQuantity}
-                  disabled={quantity >= product.stock}
+                  disabled={quantity >= currentStock}
                   className="p-2 disabled:opacity-50 disabled:cursor-not-allowed rounded-r-full active:bg-gray-200 touch-manipulation flex items-center justify-center"
                   aria-label="Aumentar quantidade"
                 >
@@ -464,9 +470,9 @@ export default function ProductDetailPage() {
 
             {!canAddToCart && !isOutOfStock && (
               <p className="text-xs sm:text-sm text-gray-500 text-center mt-1 sm:mt-2 px-2">
-                {!selectedSize && !selectedColor && 'Selecione o tamanho e a cor'}
-                {!selectedSize && selectedColor && 'Selecione o tamanho'}
-                {selectedSize && !selectedColor && 'Selecione a cor'}
+                {hasSizes && !selectedSize && hasColors && !selectedColor && 'Selecione o tamanho e a cor'}
+                {hasSizes && !selectedSize && (!hasColors || !!selectedColor) && 'Selecione o tamanho'}
+                {hasColors && !selectedColor && (!hasSizes || !!selectedSize) && 'Selecione a cor'}
               </p>
             )}
 
@@ -537,7 +543,7 @@ export default function ProductDetailPage() {
                   )}
                   <div
                     className="text-primary/60 text-sm leading-relaxed prose prose-sm prose-headings:text-primary/80 prose-p:text-primary/60 prose-ul:text-primary/60 prose-ol:text-primary/60 prose-strong:text-primary/80 break-words max-w-none"
-                    dangerouslySetInnerHTML={{ __html: product.specifications }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.specifications) }}
                   />
                 </div>
               )}
