@@ -9,6 +9,7 @@ import SubscriptionBlocked from '@/components/Layout/SubscriptionBlocked'
 import { useEffect, useState } from 'react'
 import { useValidateToken } from '@/hooks/useValidateToken'
 import { useMySubscription } from '@/hooks/useMySubscription'
+import { useOrderNotifications } from '@/hooks/useOrderNotifications'
 
 export default function VendedorLayout({
   children,
@@ -34,6 +35,14 @@ export default function VendedorLayout({
   const { data: subscription, isLoading: isLoadingSubscription } = useMySubscription({
     enabled: shouldCheckSubscription,
   })
+
+  const {
+    notifications: orderNotifications,
+    markAllAsRead: markOrderNotificationsRead,
+    markAsRead: markOrderNotificationAsRead,
+    dismiss: dismissOrderNotification,
+    clearAll: clearAllOrderNotifications,
+  } = useOrderNotifications(isReady)
   
   // Não mostrar sidebar na página de criar loja
 
@@ -178,7 +187,14 @@ export default function VendedorLayout({
     <div className="flex h-screen overflow-hidden">
       <SidebarVendedor currentPath={pathname} />
       <div className="flex-1 lg:ml-0 flex flex-col overflow-hidden">
-        <UserHeader currentPath={pathname} />
+        <UserHeader
+          currentPath={pathname}
+          notifications={orderNotifications}
+          onMarkAllAsRead={markOrderNotificationsRead}
+          onMarkAsRead={markOrderNotificationAsRead}
+          onDismiss={dismissOrderNotification}
+          onClearAll={clearAllOrderNotifications}
+        />
         <div className="flex-1 overflow-y-auto bg-[#FAFAFB]">
           <div className="px-4 py-8">
             {children}

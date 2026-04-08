@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useOrders } from '@/hooks/useOrders'
 import { useDebounce } from '@/hooks/useDebounce'
 import { ORDER_STATUS, SORT_OPTIONS, type OrdersFilters, type Order } from '@/types/order'
@@ -20,8 +20,12 @@ const today = new Date().toISOString().slice(0, 10)
 
 export function useOrdersPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { isAuthenticated, user, isLoading: authLoading } = useAuth()
-  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null)
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(() => {
+    const id = searchParams.get('orderId')
+    return id ? Number(id) : null
+  })
   const [filters, setFilters] = useState<OrdersFilters>({
     page: 1,
     limit: 10,
@@ -62,6 +66,17 @@ export function useOrdersPage() {
       }
     }
   }, [isAuthenticated, user, router, authLoading])
+
+  // Remove ?orderId da URL após abrir o drawer, sem causar novo render
+  useEffect(() => {
+    if (searchParams.get('orderId')) {
+      const params = new URLSearchParams(searchParams.toString())
+      params.delete('orderId')
+      const newUrl = params.size > 0 ? `?${params.toString()}` : window.location.pathname
+      router.replace(newUrl, { scroll: false })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     setFilters(prev => ({ ...prev, page: 1 }))
