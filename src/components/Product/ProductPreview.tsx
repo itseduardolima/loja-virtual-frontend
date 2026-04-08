@@ -1,11 +1,10 @@
 'use client'
 
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Package, Star, Eye, Save } from 'lucide-react'
+import { Star, Eye, Save } from 'lucide-react'
 import { EmptyImageState } from './EmptyImageState'
-import { formatPrice } from '@/lib/utils'
+import { formatPrice, buildImageUrl } from '@/lib/utils'
 
 interface ProductPreviewProps {
   name: string
@@ -45,19 +44,16 @@ export function ProductPreview({
   // Filtrar imagens existentes que não foram removidas
   const remainingExistingImages = existingImages.filter((_, index) => !removedExistingImages.includes(index))
   
-  // Obter primeira imagem disponível (prioridade: imagens por cor > selectedImages > existingImages)
+  // Obter primeira imagem disponível (prioridade: novas por cor > novas simples > existentes)
+  const allNewByColor = Object.values(imagesByColor || {}).flat()
   let previewImage: string | null = null
-  
-  // Verificar imagens por cor primeiro
-  if (imagesByColor && Object.keys(imagesByColor).length > 0) {
-    const allImagesByColor = Object.values(imagesByColor).flat()
-    if (allImagesByColor.length > 0) {
-      previewImage = URL.createObjectURL(allImagesByColor[0])
-    }
+
+  if (allNewByColor.length > 0) {
+    previewImage = URL.createObjectURL(allNewByColor[0])
   } else if (selectedImages.length > 0) {
     previewImage = URL.createObjectURL(selectedImages[0])
   } else if (remainingExistingImages.length > 0) {
-    previewImage = `${process.env.NEXT_PUBLIC_API_URL}${remainingExistingImages[0]}`
+    previewImage = buildImageUrl(remainingExistingImages[0])
   }
 
   return (
