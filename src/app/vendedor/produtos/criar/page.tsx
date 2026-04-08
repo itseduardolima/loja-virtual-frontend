@@ -3,8 +3,9 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { Input, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Card, ErrorState, ImageUpload, ImageUploadByColor, ProductPreview, CreateCategoryModal, Button, ProductSteps, ConfirmDialog } from '@/components'
 import { RichTextEditor } from '@/components/ui/rich-text-editor'
+import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { DynamicFields } from '@/components/Form/DynamicFields'
-import { Package, X, Star, Plus, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Package, X, Star, Plus, ChevronLeft, ChevronRight, Tag, Search, Calendar, Layers, ChevronDown } from 'lucide-react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useCreateProductPage } from './useCreateProductPage'
 import { useStore } from '@/hooks/useStore'
@@ -44,6 +45,9 @@ export default function CreateProductPage() {
     selectedNicheId,
     dynamicFieldValues,
     availableColors,
+    availableSizes,
+    variantStocks,
+    setVariantStocks,
     isLoading,
     error,
     handleImageChange,
@@ -54,7 +58,11 @@ export default function CreateProductPage() {
     onSubmit
   } = useCreateProductPage(user)
 
-  const { register, handleSubmit, formState: { errors }, setValue, watch, trigger } = form
+  const [tagInput, setTagInput] = useState('')
+  const [bulkStockValue, setBulkStockValue] = useState('')
+  const [showPromo, setShowPromo] = useState(false)
+
+  const { register, handleSubmit, formState: { errors }, setValue, watch, trigger, resetField } = form
 
   const formatBRL = (cents: number) =>
     (cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -66,13 +74,66 @@ export default function CreateProductPage() {
     return isNaN(num) ? undefined : num
   }
 
-  const handleCurrencyInput = (field: 'price' | 'discount_price') =>
+  const handleCurrencyInput = (field: 'price' | 'discount_price' | 'promo_price') =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const digits = e.target.value.replace(/\D/g, '')
       const cents = parseInt(digits, 10) || 0
       if (cents > 99999999) return
       setValue(field, cents > 0 ? cents / 100 : undefined, { shouldValidate: digits.length > 0 })
     }
+
+  const currentTags = watch('tags') || []
+  const categoryIdValue = watch('category_id')
+
+  const handleAddTag = () => {
+    const tag = tagInput.trim()
+    if (tag && !currentTags.includes(tag)) {
+      setValue('tags', [...currentTags, tag])
+    }
+    setTagInput('')
+  }
+
+  const handleRemoveTag = (tag: string) => {
+    setValue('tags', (currentTags as string[]).filter((t) => t !== tag))
+  }
+
+  const handleVariantStockChange = (color: string, size: string, stock: number) => {
+    setVariantStocks(prev => {
+      const existing = prev.findIndex(v => v.color === color && v.size === size)
+      if (existing >= 0) {
+        const updated = [...prev]
+        updated[existing] = { color, size, stock }
+        return updated
+      }
+      return [...prev, { color, size, stock }]
+    })
+  }
+
+  const getVariantStock = (color: string, size: string) =>
+    variantStocks.find(v => v.color === color && v.size === size)?.stock ?? 0
+
+  const handleBulkStockFill = () => {
+    const value = parseInt(bulkStockValue, 10)
+    if (isNaN(value) || value < 0) return
+    const combinations: {color: string, size: string, stock: number}[] = []
+    if (availableColors.length > 0 && availableSizes.length > 0) {
+      for (const color of availableColors) {
+        for (const size of availableSizes) {
+          combinations.push({ color, size, stock: value })
+        }
+      }
+    } else if (availableColors.length > 0) {
+      for (const color of availableColors) {
+        combinations.push({ color, size: '', stock: value })
+      }
+    } else {
+      for (const size of availableSizes) {
+        combinations.push({ color: '', size, stock: value })
+      }
+    }
+    setVariantStocks(combinations)
+    setBulkStockValue('')
+  }
 
   const handleCategoryCreated = (categoryId: number) => {
     setValue('category_id', categoryId)
@@ -92,9 +153,9 @@ export default function CreateProductPage() {
         return true
       case 3:
         if (availableColors.length > 0) {
-          return availableColors.every(color => (orderedImagesByColor[color]?.length || 0) >= 4)
+          return availableColors.every(color => (orderedImagesByColor[color]?.length || 0) >= 2)
         }
-        return selectedImages.length >= 4 || Object.values(orderedImagesByColor).reduce((sum, items) => sum + items.length, 0) >= 4
+        return selectedImages.length >= 2 || Object.values(orderedImagesByColor).reduce((sum, items) => sum + items.length, 0) >= 2
       case 4:
         // Etapa 4 é opcional (especificações)
         return true
@@ -313,9 +374,9 @@ export default function CreateProductPage() {
     let hasImages = false
     
     if (availableColors.length > 0) {
-      hasImages = availableColors.every(color => (orderedImagesByColor[color]?.length || 0) >= 4)
+      hasImages = availableColors.every(color => (orderedImagesByColor[color]?.length || 0) >= 2)
     } else {
-      hasImages = selectedImages.length >= 4 || Object.values(orderedImagesByColor).reduce((sum, items) => sum + items.length, 0) >= 4
+      hasImages = selectedImages.length >= 2 || Object.values(orderedImagesByColor).reduce((sum, items) => sum + items.length, 0) >= 2
     }
 
     return !!(
@@ -332,6 +393,7 @@ export default function CreateProductPage() {
       case 1:
         return !nameValue || nameValue.trim().length < 3 || !priceValue || priceValue <= 0
       case 2:
+        if (!categoryIdValue) return true
         if (!selectedNicheId || nicheFields.length === 0) return false
         return nicheFields.some(field => {
           if (field.required !== 1) return false
@@ -341,13 +403,13 @@ export default function CreateProductPage() {
         })
       case 3:
         if (availableColors.length > 0) {
-          return !availableColors.every(color => (orderedImagesByColor[color]?.length || 0) >= 4)
+          return !availableColors.every(color => (orderedImagesByColor[color]?.length || 0) >= 2)
         }
-        return selectedImages.length < 4 && Object.values(orderedImagesByColor).reduce((sum, items) => sum + items.length, 0) < 4
+        return selectedImages.length < 2 && Object.values(orderedImagesByColor).reduce((sum, items) => sum + items.length, 0) < 2
       default:
         return false
     }
-  }, [currentStep, nameValue, priceValue, selectedNicheId, nicheFields, dynamicFieldValues, availableColors, orderedImagesByColor, selectedImages])
+  }, [currentStep, nameValue, priceValue, selectedNicheId, categoryIdValue, nicheFields, dynamicFieldValues, availableColors, orderedImagesByColor, selectedImages])
 
   if (authLoading || storeLoading) {
     return <LoadingPage />
@@ -396,11 +458,25 @@ export default function CreateProductPage() {
               Cancelar
             </Button>
             <Button
+              type="button"
+              variant="outline"
+              disabled={!nameValue || nameValue.trim().length < 3 || !priceValue || priceValue <= 0 || isLoading}
+              onClick={() => {
+                setValue('save_as_draft', true)
+                setIsSubmitting(true)
+                setAllowNavigation(true)
+                handleSubmit(onSubmit as any)()
+              }}
+              className="flex items-center justify-center gap-2 flex-1 sm:flex-initial"
+            >
+              {isLoading ? 'Salvando...' : 'Salvar rascunho'}
+            </Button>
+            <Button
               type="submit"
               disabled={!isFormValid || isLoading}
               className="flex items-center justify-center gap-2 flex-1 sm:flex-initial"
             >
-              {isLoading ? 'Salvando...' : 'Criar Produto'}
+              {isLoading ? 'Salvando...' : 'Publicar'}
             </Button>
           </>
         )}
@@ -491,7 +567,7 @@ export default function CreateProductPage() {
                       onChange={handleCurrencyInput('price')}
                       placeholder="0,00"
                       value={priceValue ? formatBRL(Math.round(priceValue * 100)) : ''}
-                      className={`h-11 sm:h-12 pl-7 sm:pl-8 text-base sm:text-lg ${errors.price ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
+                      className={`h-11 sm:h-12 pl-7 sm:pl-9 text-base sm:text-lg ${errors.price ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
                     />
                   </div>
                   {errors.price && (
@@ -516,7 +592,7 @@ export default function CreateProductPage() {
                       onChange={handleCurrencyInput('discount_price')}
                       placeholder="0,00"
                       value={watch('discount_price') ? formatBRL(Math.round(watch('discount_price')! * 100)) : ''}
-                      className={`h-11 sm:h-12 pl-7 sm:pl-8 text-base sm:text-lg ${errors.discount_price ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
+                      className={`h-11 sm:h-12 pl-7 sm:pl-9 text-base sm:text-lg ${errors.discount_price ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
                     />
                   </div>
                   {errors.discount_price && (
@@ -527,43 +603,84 @@ export default function CreateProductPage() {
                   )}
                 </div>
 
-                <div className="sm:col-span-2 lg:col-span-1">
-                  <Label htmlFor="stock" className="text-sm font-semibold text-gray-700 mb-2 block">
-                    Quantidade em Estoque
-                  </Label>
-                  <Input
-                    id="stock"
-                    type="number"
-                    min="0"
-                    max="999999"
-                    {...register('stock', { valueAsNumber: true })}
-                    onKeyDown={(e) => {
-                      if (e.ctrlKey || e.metaKey) return
-                      if (!/^\d$/.test(e.key)) return
-                      const input = e.currentTarget
-                      const start = input.selectionStart ?? input.value.length
-                      const end = input.selectionEnd ?? input.value.length
-                      const simulated = input.value.slice(0, start) + e.key + input.value.slice(end)
-                      if (parseInt(simulated, 10) > 999999) e.preventDefault()
-                    }}
-                    onPaste={(e) => {
-                      e.preventDefault()
-                      const num = Math.min(parseInt(e.clipboardData.getData('text'), 10), 999999)
-                      if (!isNaN(num)) setValue('stock', num, { shouldValidate: true })
-                    }}
-                    placeholder="0"
-                    value={watch('stock') || ''}
-                    className={`h-11 sm:h-12 text-base sm:text-lg [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${errors.stock ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
-                  />
-                  {errors.stock && (
-                    <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                      <X className="h-3 w-3" />
-                      {errors.stock.message}
-                    </p>
-                  )}
-                </div>
 
 
+              </div>
+
+              {/* Promoção Agendada */}
+              <div className="border border-gray-200 rounded-xl overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setShowPromo(prev => !prev)}
+                  className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-primary flex-shrink-0" />
+                    <h3 className="text-sm font-semibold text-gray-700">Promoção Agendada <span className="text-gray-400 font-normal">(opcional)</span></h3>
+                  </div>
+                  <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${showPromo ? 'rotate-180' : ''}`} />
+                </button>
+
+                {showPromo && (
+                  <div className="px-4 pb-4 space-y-4 border-t border-gray-100">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600 mb-1 block">Preço Promocional</Label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">R$</span>
+                          <Input
+                            type="text"
+                            inputMode="numeric"
+                            {...register('promo_price', { setValueAs: (v: any) => {
+                              if (!v) return undefined
+                              const num = parseFloat(String(v).replace(/\./g, '').replace(',', '.'))
+                              return isNaN(num) ? undefined : num
+                            }})}
+                            onChange={handleCurrencyInput('promo_price')}
+                            placeholder="0,00"
+                            value={watch('promo_price') ? formatBRL(Math.round((watch('promo_price') as number) * 100)) : ''}
+                            className='pl-8'
+                          
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600 mb-1 block">Início da promoção</Label>
+                        <DateTimePicker
+                          value={watch('promo_starts_at')}
+                          onChange={(v) => setValue('promo_starts_at', v)}
+                          placeholder="Selecionar data"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600 mb-1 block">Fim da promoção</Label>
+                        <DateTimePicker
+                          value={watch('promo_ends_at')}
+                          onChange={(v) => setValue('promo_ends_at', v)}
+                          placeholder="Selecionar data"
+                        />
+                        {errors.promo_ends_at && (
+                          <p className="text-red-500 text-xs mt-1">{errors.promo_ends_at.message}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex justify-end">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-gray-500 h-8"
+                        onClick={() => {
+                          setValue('promo_price', undefined)
+                          setValue('promo_starts_at', null)
+                          setValue('promo_ends_at', null)
+                        }}
+                      >
+                        Limpar promoção
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Destaque */}
@@ -602,43 +719,40 @@ export default function CreateProductPage() {
               </div>
 
               <div className="space-y-4 sm:space-y-6">
-                {/* Seleção de Nicho */}
-                <div className="w-full sm:w-1/2 lg:w-1/3">
-                  <Label htmlFor="niche" className="text-sm font-semibold text-gray-700 mb-2 block">
-                    Tipo de Produto<span className="text-gray-400 font-normal">(opcional)</span>
-                  </Label>
-                  <Select
-                    value={selectedNicheId?.toString() || 'none'}
-                    onValueChange={(value) => {
-                      handleNicheChange(value === 'none' ? null : parseInt(value))
-                      // Limpar categoria quando mudar o nicho
-                      if (value === 'none') {
-                        setValue('category_id', undefined)
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="h-11 sm:h-12 text-sm sm:text-base border-gray-200">
-                      <SelectValue placeholder="Selecione um nicho" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Nenhum tipo selecionado</SelectItem>
-                      {niches.map((niche: any) => (
-                        <SelectItem key={niche.id} value={niche.id.toString()}>
-                          {niche.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Categoria - Filtrada pelo Nicho */}
-                {selectedNicheId && (
+                {/* Tipo de Produto + Categoria na mesma linha */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Seleção de Nicho */}
                   <div>
+                    <Label htmlFor="niche" className="text-sm font-semibold text-gray-700 mb-2 block">
+                      Tipo de Produto <span className="text-red-500">*</span>
+                    </Label>
+                    <Select
+                      value={selectedNicheId?.toString() || ''}
+                      onValueChange={(value) => {
+                        handleNicheChange(parseInt(value))
+                        resetField('category_id')
+                      }}
+                    >
+                      <SelectTrigger className="h-11 sm:h-12 text-sm sm:text-base border-gray-200">
+                        <SelectValue placeholder="Selecione um tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {niches.map((niche: any) => (
+                          <SelectItem key={niche.id} value={niche.id.toString()}>
+                            {niche.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Categoria */}
+                  {selectedNicheId && <div>
                     <Label htmlFor="category_id" className="text-sm font-semibold text-gray-700 mb-2 block">
-                      Categoria <span className="text-gray-400 font-normal">(opcional)</span>
+                      Categoria <span className="text-red-500">*</span>
                     </Label>
                     {Array.isArray(categories) && categories.length > 0 ? (
-                      <Select 
+                      <Select
                         value={watch('category_id')?.toString() || ''}
                         onValueChange={(value) => setValue('category_id', parseInt(value))}
                       >
@@ -654,21 +768,18 @@ export default function CreateProductPage() {
                         </SelectContent>
                       </Select>
                     ) : (
-                      <div className="space-y-3">
-                        <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center">
-                          <p className="text-gray-500 text-sm mb-3">
-                            Nenhuma categoria disponível para este tipo de produto
-                          </p>
-                          <Button
-                            type="button"
-                            variant="default"
-                            onClick={() => setIsCreateCategoryModalOpen(true)}
-                            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors"
-                          >
-                            <Plus className="h-4 w-4" />
-                            Nova Categoria
-                          </Button>
-                        </div>
+                      <div className="p-3 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-between gap-3">
+                        <p className="text-gray-500 text-sm">Nenhuma categoria disponível</p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setIsCreateCategoryModalOpen(true)}
+                          className="flex-shrink-0 text-xs"
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          Nova
+                        </Button>
                       </div>
                     )}
                     {errors.category_id && (
@@ -677,8 +788,8 @@ export default function CreateProductPage() {
                         {errors.category_id.message}
                       </p>
                     )}
-                  </div>
-                )}
+                  </div>}
+                </div>
 
                 {/* Campos Dinâmicos */}
                 {selectedNicheId && (
@@ -687,6 +798,167 @@ export default function CreateProductPage() {
                     fieldValues={dynamicFieldValues}
                     onFieldChange={handleDynamicFieldChange}
                   />
+                )}
+
+                {/* Grade de estoque por variação */}
+                {(availableColors.length > 0 || availableSizes.length > 0) ? (() => {
+                  const hasColors = availableColors.length > 0
+                  const hasSizes = availableSizes.length > 0
+                  const totalVariantStock = variantStocks.reduce((sum, v) => sum + (v.stock || 0), 0)
+
+                  return (
+                    <div className="border border-indigo-200 bg-indigo-50/40 rounded-xl p-4 space-y-4">
+                      {/* Header */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                          <Layers className="h-4 w-4 text-indigo-500 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <h3 className="text-sm font-semibold text-gray-800">Estoque por variação</h3>
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              {hasColors && hasSizes
+                                ? 'Defina o estoque para cada combinação de cor e tamanho'
+                                : hasColors
+                                  ? 'Defina o estoque disponível por cor'
+                                  : 'Defina o estoque disponível por tamanho'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-xs text-gray-400">Total em estoque</p>
+                          <p className="text-xl font-bold text-indigo-600 leading-tight">{totalVariantStock}</p>
+                        </div>
+                      </div>
+
+                      {/* Preencher todos */}
+                      <div className="flex items-center gap-2 bg-white rounded-lg border border-indigo-100 px-3 py-2">
+                        <span className="text-xs text-gray-500 whitespace-nowrap">Preencher todos com:</span>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="999999"
+                          placeholder="qtd"
+                          value={bulkStockValue}
+                          onChange={(e) => setBulkStockValue(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleBulkStockFill())}
+                          className="h-8 text-sm w-20 text-center border-gray-200 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={handleBulkStockFill}
+                          className="h-8 px-3 text-xs border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                        >
+                          Aplicar
+                        </Button>
+                      </div>
+
+                      {/* Tabela: cores × tamanhos */}
+                      {hasColors && hasSizes && (
+                        <div className="overflow-x-auto rounded-lg border border-indigo-100 bg-white">
+                          <table className="text-sm w-full border-collapse">
+                            <thead>
+                              <tr className="bg-gray-50">
+                                <th className="text-left text-xs text-gray-500 font-medium py-2 px-3 border-b border-gray-100">
+                                  Cor / Tamanho
+                                </th>
+                                {availableSizes.map(size => (
+                                  <th key={size} className="text-center text-xs text-gray-500 font-medium py-2 border-b border-gray-100 w-20">
+                                    {size}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {availableColors.map((color, ci) => (
+                                <tr key={color} className={ci > 0 ? 'border-t border-gray-100' : ''}>
+                                  <td className="py-2 px-3 whitespace-nowrap">
+                                    <span className="text-xs font-medium text-gray-700">{color}</span>
+                                  </td>
+                                  {availableSizes.map(size => (
+                                    <td key={size} className="py-1.5 w-20 text-center">
+                                      <Input
+                                        type="number"
+                                        min="0"
+                                        max="999999"
+                                        value={getVariantStock(color, size) || ''}
+                                        placeholder="0"
+                                        onChange={(e) => {
+                                          const val = e.target.value === '' ? 0 : parseInt(e.target.value, 10)
+                                          handleVariantStockChange(color, size, isNaN(val) ? 0 : val)
+                                        }}
+                                        className="h-9 text-center text-sm w-full border-gray-200 focus:border-indigo-400 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                                      />
+                                    </td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+
+                      {/* Lista simples: apenas cores */}
+                      {hasColors && !hasSizes && (
+                        <div className="space-y-2">
+                          {availableColors.map(color => (
+                            <div key={color} className="flex items-center justify-between bg-white rounded-lg border border-indigo-100 px-3 py-2">
+                              <span className="text-sm font-medium text-gray-700">{color}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-400">Estoque</span>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  max="999999"
+                                  value={getVariantStock(color, '') || ''}
+                                  placeholder="0"
+                                  onChange={(e) => {
+                                    const val = e.target.value === '' ? 0 : parseInt(e.target.value, 10)
+                                    handleVariantStockChange(color, '', isNaN(val) ? 0 : val)
+                                  }}
+                                  className="h-9 text-center text-sm w-24 border-gray-200 focus:border-indigo-400 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Lista simples: apenas tamanhos */}
+                      {!hasColors && hasSizes && (
+                        <div className="space-y-2">
+                          {availableSizes.map(size => (
+                            <div key={size} className="flex items-center justify-between bg-white rounded-lg border border-indigo-100 px-3 py-2">
+                              <span className="text-sm font-medium text-gray-700">{size}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-400">Estoque</span>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  max="999999"
+                                  value={getVariantStock('', size) || ''}
+                                  placeholder="0"
+                                  onChange={(e) => {
+                                    const val = e.target.value === '' ? 0 : parseInt(e.target.value, 10)
+                                    handleVariantStockChange('', size, isNaN(val) ? 0 : val)
+                                  }}
+                                  className="h-9 text-center text-sm w-24 border-gray-200 focus:border-indigo-400 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                    </div>
+                  )
+                })() : selectedNicheId && (
+                  <div className="flex items-start gap-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                    <Layers className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-gray-500">
+                      Preencha os campos <strong>Cor</strong> e/ou <strong>Tamanho</strong> acima para habilitar o controle de estoque por variação.
+                    </p>
+                  </div>
                 )}
               </div>
 
@@ -706,7 +978,7 @@ export default function CreateProductPage() {
         // Função helper para verificar quais cores têm menos de 4 imagens
         const getColorsWithoutMinImages = () => {
           if (availableColors.length === 0) return []
-          return availableColors.filter(color => (orderedImagesByColor[color]?.length || 0) < 4)
+          return availableColors.filter(color => (orderedImagesByColor[color]?.length || 0) < 2)
         }
 
         const colorsWithoutMinImages = getColorsWithoutMinImages()
@@ -726,12 +998,12 @@ export default function CreateProductPage() {
                       <X className="h-4 w-4 sm:h-5 sm:w-5 text-red-600 flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="text-xs sm:text-sm font-semibold text-red-900 mb-1">
-                          Cada cor precisa de no mínimo 5 imagens
+                          Cada cor precisa de no mínimo 2 imagens
                         </p>
                         <p className="text-xs sm:text-sm text-red-700">
                           {colorsWithoutMinImages.map(color => {
                             const count = orderedImagesByColor[color]?.length || 0
-                            return `${color} (${count}/4)`
+                            return `${color} (${count}/5)`
                           }).join(', ')}
                         </p>
                       </div>
@@ -785,6 +1057,86 @@ export default function CreateProductPage() {
                     <X className="h-3 w-3" />
                     {errors.specifications.message}
                   </p>
+                )}
+              </div>
+
+              {/* Tags */}
+              <div className="border border-gray-200 rounded-xl p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Tag className="h-4 w-4 text-primary flex-shrink-0" />
+                  <h3 className="text-sm font-semibold text-gray-700">Tags <span className="text-gray-400 font-normal">(opcional)</span></h3>
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag() } }}
+                    placeholder="Digite uma tag e pressione Enter"
+                    className="h-9 text-sm border-gray-200 flex-1"
+                  />
+                  <Button type="button" variant="outline" onClick={handleAddTag} className="h-9 px-3 text-sm">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                {currentTags.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {(currentTags as string[]).map((tag) => (
+                      <span key={tag} className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full">
+                        {tag}
+                        <button type="button" onClick={() => handleRemoveTag(tag)} className="hover:text-red-500">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* SEO */}
+              <div className="border border-gray-200 rounded-xl p-4 space-y-4">
+                <div className="flex items-center gap-2">
+                  <Search className="h-4 w-4 text-primary flex-shrink-0" />
+                  <h3 className="text-sm font-semibold text-gray-700">SEO <span className="text-gray-400 font-normal">(opcional)</span></h3>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-gray-600 mb-1 block">
+                    Título SEO <span className="text-gray-400">({(watch('meta_title') || '').length}/200)</span>
+                  </Label>
+                  <Input
+                    {...register('meta_title')}
+                    maxLength={200}
+                    placeholder="Título para mecanismos de busca"
+                    className="h-9 text-sm border-gray-200"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-gray-600 mb-1 block">
+                    Descrição SEO <span className="text-gray-400">({(watch('meta_description') || '').length}/500)</span>
+                  </Label>
+                  <Textarea
+                    {...register('meta_description')}
+                    maxLength={500}
+                    rows={3}
+                    placeholder="Descrição para mecanismos de busca (ideal: 150-160 caracteres)"
+                    className="text-sm border-gray-200 resize-none"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-gray-600 mb-1 block">Palavras-chave</Label>
+                  <Input
+                    {...register('meta_keywords')}
+                    maxLength={300}
+                    placeholder="Ex: camiseta, algodão, feminina (separadas por vírgula)"
+                    className="h-9 text-sm border-gray-200"
+                  />
+                </div>
+                {(watch('meta_title') || watch('meta_description')) && (
+                  <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                    <p className="text-xs text-gray-400 mb-1">Prévia no Google</p>
+                    <p className="text-sm text-blue-700 font-medium truncate">{watch('meta_title') || watch('name') || 'Título do produto'}</p>
+                    <p className="text-xs text-green-700 truncate">sualoja.com/produto/...</p>
+                    <p className="text-xs text-gray-600 line-clamp-2">{watch('meta_description') || watch('description') || 'Descrição do produto'}</p>
+                  </div>
                 )}
               </div>
             </div>

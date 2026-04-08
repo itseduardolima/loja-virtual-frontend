@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import { Upload, X, Image as ImageIcon, GripVertical } from 'lucide-react'
 import { getColorHex } from '@/schemas'
+import { buildImageUrl } from '@/lib/utils'
 
 export type OrderedImage =
   | { type: 'existing'; url: string }
@@ -28,7 +29,6 @@ export function ImageUploadByColor({
   availableColors = [],
   title = "Imagens do Produto por Cor",
   description = "Adicione fotos organizadas por cor",
-  maxFilesPerColor = 10,
   maxSize = 5,
   acceptedFormats = "JPEG, PNG, JPG, WEBP"
 }: ImageUploadByColorProps) {
@@ -38,6 +38,14 @@ export function ImageUploadByColor({
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const [dragColor, setDragColor] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const objectUrlCacheRef = useRef<Map<File, string>>(new Map())
+
+  useEffect(() => {
+    return () => {
+      objectUrlCacheRef.current.forEach(url => URL.revokeObjectURL(url))
+      objectUrlCacheRef.current.clear()
+    }
+  }, [])
 
   const allColors = Array.from(new Set([...availableColors, ...Object.keys(orderedImagesByColor)]))
 
@@ -61,7 +69,7 @@ export function ImageUploadByColor({
     }
   }
 
-  const MIN_IMAGES = 5
+  const MIN_IMAGES = 2
   const MAX_IMAGES_PER_COLOR = 5
 
   const currentColorCount = selectedColor ? (orderedImagesByColor[selectedColor]?.length || 0) : 0
@@ -76,10 +84,7 @@ export function ImageUploadByColor({
   }
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!selectedColor) {
-      alert('Por favor, selecione uma cor primeiro')
-      return
-    }
+    if (!selectedColor) return
     addFiles(Array.from(e.target.files || []))
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
@@ -100,10 +105,7 @@ export function ImageUploadByColor({
     if (!e.dataTransfer.types.includes('Files')) return
     e.preventDefault()
     setIsDragOver(false)
-    if (!selectedColor) {
-      alert('Por favor, selecione uma cor primeiro')
-      return
-    }
+    if (!selectedColor) return
     addFiles(Array.from(e.dataTransfer.files))
   }
 
@@ -153,10 +155,13 @@ export function ImageUploadByColor({
     setDragColor(null)
   }
 
-  const getImageSrc = (item: OrderedImage): string => {
-    if (item.type === 'existing') return `${process.env.NEXT_PUBLIC_API_URL}${item.url}`
-    return URL.createObjectURL(item.file)
-  }
+  const getImageSrc = useCallback((item: OrderedImage): string => {
+    if (item.type === 'existing') return buildImageUrl(item.url)
+    if (!objectUrlCacheRef.current.has(item.file)) {
+      objectUrlCacheRef.current.set(item.file, URL.createObjectURL(item.file))
+    }
+    return objectUrlCacheRef.current.get(item.file)!
+  }, [])
 
   return (
     <Card className="p-4 sm:p-6 lg:p-8 bg-white border-gray-200 shadow-sm">
@@ -240,11 +245,7 @@ export function ImageUploadByColor({
             onDragLeave={currentColorCount >= MAX_IMAGES_PER_COLOR ? undefined : handleAreaDragLeave}
             onDrop={currentColorCount >= MAX_IMAGES_PER_COLOR ? undefined : handleAreaDrop}
             onClick={() => {
-              if (currentColorCount >= MAX_IMAGES_PER_COLOR) return
-              if (!selectedColor) {
-                alert('Por favor, selecione uma cor primeiro')
-                return
-              }
+              if (currentColorCount >= MAX_IMAGES_PER_COLOR || !selectedColor) return
               fileInputRef.current?.click()
             }}
           >

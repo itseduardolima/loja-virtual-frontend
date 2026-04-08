@@ -9,6 +9,12 @@ export interface DeliveryInfo {
   delivery_time: string
 }
 
+export interface StockVariant {
+  color: string
+  size: string
+  stock: number
+}
+
 export interface Product {
   id: number
   name: string
@@ -17,6 +23,14 @@ export interface Product {
   discount_price?: string | null
   final_price?: number
   discount_percentage?: number
+  promo_price?: number | null
+  promo_starts_at?: string | null
+  promo_ends_at?: string | null
+  promo_active?: boolean
+  meta_title?: string | null
+  meta_description?: string | null
+  meta_keywords?: string | null
+  tags?: string[]
   images: string[] | Record<string, string[]>
   images_by_color?: Record<string, string[]>
   stock: number
@@ -33,6 +47,7 @@ export interface Product {
   sizes?: string[]
   color?: string
   specifications?: string
+  stock_variants?: StockVariant[]
   category?: {
     id: number
     name: string
@@ -91,6 +106,7 @@ export interface ProductDetail {
   sizes: string[]
   colors: string[]
   stock: number
+  variant_stocks?: Array<{ color: string; size: string; stock: number }>
   featured: boolean
   created_at: string
   updated_at: string

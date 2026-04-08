@@ -29,6 +29,7 @@ export function useEditProductPage(productId: string, user: any) {
   const [isInitialized, setIsInitialized] = useState(false)
   const [selectedNicheId, setSelectedNicheId] = useState<number | null>(null)
   const [dynamicFieldValues, setDynamicFieldValues] = useState<Record<string, NicheFieldValue>>({})
+  const [variantStocks, setVariantStocks] = useState<{color: string, size: string, stock: number}[]>([])
 
   const { data: storeData } = useStore()
   const storeId = storeData?.id || null
@@ -74,7 +75,14 @@ export function useEditProductPage(productId: string, user: any) {
       discount_price: undefined,
       category_id: undefined,
       featured: false,
-      specifications: undefined
+      specifications: undefined,
+      tags: [],
+      promo_price: undefined,
+      promo_starts_at: null,
+      promo_ends_at: null,
+      meta_title: '',
+      meta_description: '',
+      meta_keywords: '',
     }
   })
 
@@ -99,6 +107,16 @@ export function useEditProductPage(productId: string, user: any) {
       form.setValue('discount_price', product.discount_price ? parseFloat(product.discount_price) : undefined)
       form.setValue('category_id', product.category_id || undefined)
       form.setValue('featured', product.featured === 1)
+      form.setValue('promo_price', product.promo_price ? parseFloat(String(product.promo_price)) : undefined)
+      form.setValue('promo_starts_at', product.promo_starts_at ? product.promo_starts_at.slice(0, 16) : null)
+      form.setValue('promo_ends_at', product.promo_ends_at ? product.promo_ends_at.slice(0, 16) : null)
+      form.setValue('meta_title', product.meta_title || '')
+      form.setValue('meta_description', product.meta_description || '')
+      form.setValue('meta_keywords', product.meta_keywords || '')
+      form.setValue('tags', Array.isArray(product.tags) ? product.tags : [])
+      if (product.stock_variants && product.stock_variants.length > 0) {
+        setVariantStocks(product.stock_variants)
+      }
 
       // Initialize ordered images from product.images_by_color
       const imagesByColorRaw = product.images_by_color ||
@@ -182,7 +200,7 @@ export function useEditProductPage(productId: string, user: any) {
   const onSubmit = (data: CreateProductFormData) => {
     const hasColorImages = Object.values(orderedImagesByColor).some(items => items.length > 0)
 
-    // Validate image count (min 4, max 10)
+    // Validate image count (min 2, max 5)
     let totalImages: number
     if (hasColorImages) {
       totalImages = Object.values(orderedImagesByColor).reduce((sum, items) => sum + items.length, 0)
@@ -195,12 +213,12 @@ export function useEditProductPage(productId: string, user: any) {
 
     if (hasColorImages) {
       for (const [color, items] of Object.entries(orderedImagesByColor)) {
-        if (items.length < 5) { showError(`A cor "${color}" deve ter exatamente 5 imagens`, 'Validação'); return }
-        if (items.length > 5) { showError(`A cor "${color}" deve ter exatamente 5 imagens`, 'Validação'); return }
+        if (items.length < 2) { showError(`A cor "${color}" deve ter no mínimo 2 imagens`, 'Validação'); return }
+        if (items.length > 5) { showError(`A cor "${color}" pode ter no máximo 5 imagens`, 'Validação'); return }
       }
     } else {
-      if (totalImages < 5) { showError('O produto deve ter exatamente 5 imagens', 'Validação'); return }
-      if (totalImages > 5) { showError('O produto deve ter exatamente 5 imagens', 'Validação'); return }
+      if (totalImages < 2) { showError('O produto deve ter no mínimo 2 imagens', 'Validação'); return }
+      if (totalImages > 5) { showError('O produto pode ter no máximo 5 imagens', 'Validação'); return }
     }
 
     const formData = new FormData()
@@ -210,7 +228,10 @@ export function useEditProductPage(productId: string, user: any) {
       formData.append('description', data.description.trim())
     }
     formData.append('price', (data.price || 0).toString())
-    formData.append('stock', (data.stock || 0).toString())
+    const stockTotal = variantStocks.length > 0
+      ? variantStocks.reduce((sum, v) => sum + (v.stock || 0), 0)
+      : (data.stock || 0)
+    formData.append('stock', stockTotal.toString())
     if (data.discount_price !== undefined && data.discount_price !== null && data.discount_price > 0) {
       formData.append('discount_price', data.discount_price.toString())
     }
@@ -222,6 +243,14 @@ export function useEditProductPage(productId: string, user: any) {
     if (data.specifications !== undefined) {
       formData.append('specifications', data.specifications.trim() || '')
     }
+    if (data.promo_price) formData.append('promo_price', data.promo_price.toString())
+    if (data.promo_starts_at) formData.append('promo_starts_at', data.promo_starts_at)
+    if (data.promo_ends_at) formData.append('promo_ends_at', data.promo_ends_at)
+    if (data.meta_title?.trim()) formData.append('meta_title', data.meta_title.trim())
+    if (data.meta_description?.trim()) formData.append('meta_description', data.meta_description.trim())
+    if (data.meta_keywords?.trim()) formData.append('meta_keywords', data.meta_keywords.trim())
+    if (data.tags && data.tags.length > 0) formData.append('tags', JSON.stringify(data.tags))
+    if (variantStocks.length > 0) formData.append('variant_stocks', JSON.stringify(variantStocks))
 
     if (selectedNicheId && Object.keys(dynamicFieldValues).length > 0) {
       const dynamicFields = Object.values(dynamicFieldValues).map((fieldValue) => ({
@@ -310,6 +339,20 @@ export function useEditProductPage(productId: string, user: any) {
     return []
   }, [dynamicFieldValues, nicheFields])
 
+  const availableSizes = useMemo(() => {
+    if (!nicheFields || nicheFields.length === 0) return []
+    const sizeField = nicheFields.find(f =>
+      f.name.toLowerCase() === 'tamanho' || f.name.toLowerCase() === 'tamanhos'
+    )
+    if (!sizeField) return []
+    const sizeFieldValue = dynamicFieldValues[sizeField.id.toString()]
+    if (!sizeFieldValue) return []
+    const value = sizeFieldValue.value
+    if (Array.isArray(value)) return value
+    if (typeof value === 'string') return value.split(',').map(s => s.trim()).filter(Boolean)
+    return []
+  }, [dynamicFieldValues, nicheFields])
+
   return {
     form,
     product,
@@ -322,6 +365,9 @@ export function useEditProductPage(productId: string, user: any) {
     selectedNicheId,
     dynamicFieldValues,
     availableColors,
+    availableSizes,
+    variantStocks,
+    setVariantStocks,
     removedExistingImages,
     isInitialized,
     isLoading: productLoading || updateProductMutation.isPending,
