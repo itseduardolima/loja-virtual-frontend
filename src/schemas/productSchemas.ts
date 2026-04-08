@@ -52,9 +52,30 @@ export const createProductSchema = yup.object({
   category_id: yup
     .number()
     .transform(normalizeNumber)
-    .optional()
-    .typeError('Categoria deve ser um número válido'),
-  featured: yup.boolean().optional()
+    .required('Categoria é obrigatória')
+    .typeError('Categoria é obrigatória'),
+  featured: yup.boolean().optional(),
+  save_as_draft: yup.boolean().optional(),
+  promo_price: yup.number().transform(normalizeNumber).optional().nullable().min(0.01).max(999999.99)
+    .test('less-than-price', 'Preço promocional deve ser menor que o preço original', function (value) {
+      if (!value) return true
+      const { price } = this.parent
+      return !price || value < price
+    }),
+  promo_starts_at: yup.string().optional().nullable(),
+  promo_ends_at: yup.string().optional().nullable()
+    .test('after-start', 'Data de fim deve ser após a data de início', function (value) {
+      const { promo_starts_at } = this.parent
+      if (!value || !promo_starts_at) return true
+      return new Date(value) > new Date(promo_starts_at)
+    }),
+  meta_title: yup.string().optional().max(200),
+  meta_description: yup.string().optional().max(500),
+  meta_keywords: yup.string().optional().max(300),
+  tags: yup.array().of(yup.string()).optional(),
+  variant_stocks: yup.array().of(
+    yup.object({ color: yup.string().required(), size: yup.string().required(), stock: yup.number().min(0).required() })
+  ).optional(),
 })
 
 export const updateProductSchema = yup.object({
@@ -90,8 +111,29 @@ export const updateProductSchema = yup.object({
   category_id: yup
     .number()
     .transform(normalizeNumber)
-    .typeError('Categoria deve ser um número válido'),
-  featured: yup.boolean()
+    .required('Categoria é obrigatória')
+    .typeError('Categoria é obrigatória'),
+  featured: yup.boolean(),
+  promo_price: yup.number().transform(normalizeNumber).optional().nullable().min(0.01).max(999999.99)
+    .test('less-than-price', 'Preço promocional deve ser menor que o preço original', function (value) {
+      if (!value) return true
+      const { price } = this.parent
+      return !price || value < price
+    }),
+  promo_starts_at: yup.string().optional().nullable(),
+  promo_ends_at: yup.string().optional().nullable()
+    .test('after-start', 'Data de fim deve ser após a data de início', function (value) {
+      const { promo_starts_at } = this.parent
+      if (!value || !promo_starts_at) return true
+      return new Date(value) > new Date(promo_starts_at)
+    }),
+  meta_title: yup.string().optional().max(200),
+  meta_description: yup.string().optional().max(500),
+  meta_keywords: yup.string().optional().max(300),
+  tags: yup.array().of(yup.string()).optional(),
+  variant_stocks: yup.array().of(
+    yup.object({ color: yup.string().required(), size: yup.string().required(), stock: yup.number().min(0).required() })
+  ).optional(),
 })
 
 export type CreateProductFormData = yup.InferType<typeof createProductSchema>
@@ -114,7 +156,7 @@ export const COLOR_OPTIONS = [
   // Marrons e Terrosos
   'Marrom', 'Marrom Claro', 'Marrom Escuro', 'Caramelo', 'Café', 'Chocolate', 'Cobre', 'Terracota',
   // Metálicos e Especiais
-  'Dourado', 'Prata', 'Bronze', 'Cobre', 'Platina',
+  'Dourado', 'Prata', 'Bronze', 'Platina',
   // Outras cores
   'Turquesa', 'Ciano', 'Índigo', 'Violeta', 'Púrpura', 'Creme', 'Off White', 'Nude', 'Camel'
 ]

@@ -22,6 +22,7 @@ export function useCreateProductPage(user: any) {
   const [orderedImagesByColor, setOrderedImagesByColor] = useState<Record<string, OrderedImage[]>>({})
   const [selectedNicheId, setSelectedNicheId] = useState<number | null>(null)
   const [dynamicFieldValues, setDynamicFieldValues] = useState<Record<string, NicheFieldValue>>({})
+  const [variantStocks, setVariantStocks] = useState<{color: string, size: string, stock: number}[]>([])
 
   const { data: storeData } = useStore()
   const storeId = storeData?.id || null
@@ -39,10 +40,18 @@ export function useCreateProductPage(user: any) {
       stock: undefined,
       discount_price: undefined,
       featured: false,
+      save_as_draft: false,
       sizes: [],
       colors: [],
       specifications: '',
-      category_id: undefined
+      category_id: undefined,
+      tags: [],
+      promo_price: undefined,
+      promo_starts_at: null,
+      promo_ends_at: null,
+      meta_title: '',
+      meta_description: '',
+      meta_keywords: '',
     }
   })
 
@@ -76,17 +85,17 @@ export function useCreateProductPage(user: any) {
       const hasSimpleImages = selectedImages.length > 0
 
       if (!hasColorImages && !hasSimpleImages) {
-        throw new Error('O produto deve ter exatamente 5 imagens por cor')
+        throw new Error('O produto deve ter no mínimo 2 imagens por cor')
       }
 
       if (hasColorImages) {
         for (const [color, items] of Object.entries(orderedImagesByColor)) {
-          if (items.length < 5) throw new Error(`A cor "${color}" deve ter exatamente 5 imagens`)
-          if (items.length > 5) throw new Error(`A cor "${color}" deve ter exatamente 5 imagens`)
+          if (items.length < 2) throw new Error(`A cor "${color}" deve ter no mínimo 2 imagens`)
+          if (items.length > 5) throw new Error(`A cor "${color}" pode ter no máximo 5 imagens`)
         }
       } else {
-        if (selectedImages.length < 5) throw new Error('O produto deve ter exatamente 5 imagens')
-        if (selectedImages.length > 5) throw new Error('O produto deve ter exatamente 5 imagens')
+        if (selectedImages.length < 2) throw new Error('O produto deve ter no mínimo 2 imagens')
+        if (selectedImages.length > 5) throw new Error('O produto pode ter no máximo 5 imagens')
       }
 
       const formData = new FormData()
@@ -96,7 +105,11 @@ export function useCreateProductPage(user: any) {
         formData.append('description', data.description.trim())
       }
       formData.append('price', (data.price || 0).toString())
-      formData.append('stock', (data.stock || 0).toString())
+      // Se há variações, o estoque total é a soma das variações
+      const stockTotal = variantStocks.length > 0
+        ? variantStocks.reduce((sum, v) => sum + (v.stock || 0), 0)
+        : (data.stock || 0)
+      formData.append('stock', stockTotal.toString())
       if (data.discount_price !== undefined && data.discount_price !== null && data.discount_price > 0) {
         formData.append('discount_price', data.discount_price.toString())
       }
@@ -104,10 +117,19 @@ export function useCreateProductPage(user: any) {
         formData.append('category_id', data.category_id.toString())
       }
       formData.append('featured', data.featured ? 'true' : 'false')
+      if (data.save_as_draft) formData.append('save_as_draft', 'true')
 
       if (data.specifications && data.specifications.trim()) {
         formData.append('specifications', data.specifications.trim())
       }
+      if (data.promo_price) formData.append('promo_price', data.promo_price.toString())
+      if (data.promo_starts_at) formData.append('promo_starts_at', data.promo_starts_at)
+      if (data.promo_ends_at) formData.append('promo_ends_at', data.promo_ends_at)
+      if (data.meta_title?.trim()) formData.append('meta_title', data.meta_title.trim())
+      if (data.meta_description?.trim()) formData.append('meta_description', data.meta_description.trim())
+      if (data.meta_keywords?.trim()) formData.append('meta_keywords', data.meta_keywords.trim())
+      if (data.tags && data.tags.length > 0) formData.append('tags', JSON.stringify(data.tags))
+      if (variantStocks.length > 0) formData.append('variant_stocks', JSON.stringify(variantStocks))
 
       if (selectedNicheId && Object.keys(dynamicFieldValues).length > 0) {
         const dynamicFields = Object.values(dynamicFieldValues).map((fieldValue) => ({
@@ -202,6 +224,20 @@ export function useCreateProductPage(user: any) {
     return []
   }, [dynamicFieldValues, nicheFields])
 
+  const availableSizes = useMemo(() => {
+    if (!nicheFields || nicheFields.length === 0) return []
+    const sizeField = nicheFields.find(f =>
+      f.name.toLowerCase() === 'tamanho' || f.name.toLowerCase() === 'tamanhos'
+    )
+    if (!sizeField) return []
+    const sizeFieldValue = dynamicFieldValues[sizeField.id.toString()]
+    if (!sizeFieldValue) return []
+    const value = sizeFieldValue.value
+    if (Array.isArray(value)) return value
+    if (typeof value === 'string') return value.split(',').map(s => s.trim()).filter(Boolean)
+    return []
+  }, [dynamicFieldValues, nicheFields])
+
   return {
     form,
     selectedImages,
@@ -213,6 +249,9 @@ export function useCreateProductPage(user: any) {
     selectedNicheId,
     dynamicFieldValues,
     availableColors,
+    availableSizes,
+    variantStocks,
+    setVariantStocks,
     isLoading: createProductMutation.isPending,
     error: createProductMutation.error,
     handleImageChange,
