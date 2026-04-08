@@ -6,7 +6,6 @@ import { Controller } from "react-hook-form";
 function clampInput(
   e: React.FormEvent<HTMLInputElement>,
   max: number,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setVal: (name: any, value: number) => void,
   field: string,
 ) {

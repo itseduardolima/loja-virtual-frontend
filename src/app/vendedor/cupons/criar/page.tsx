@@ -32,7 +32,6 @@ const CODE_MAX = 20;
 function clampInput(
   e: React.FormEvent<HTMLInputElement>,
   max: number,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setVal: (name: any, value: number) => void,
   field: string,
 ) {
