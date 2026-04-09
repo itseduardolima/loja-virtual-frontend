@@ -14,7 +14,8 @@ import {
   BarChart3,
   Home,
   CreditCard,
-  MessageCircle
+  MessageCircle,
+  Plug,
 } from 'lucide-react'
 import { useStore } from '@/hooks/useStore'
 
@@ -75,6 +76,12 @@ export function SidebarVendedor({ currentPath }: SidebarVendedorProps) {
       href: '/vendedor/plano',
       icon: CreditCard,
       current: currentPath?.startsWith('/vendedor/plano')
+    },
+    {
+      name: 'Integrações',
+      href: '/vendedor/configuracoes/integracao-bling',
+      icon: Plug,
+      current: currentPath?.startsWith('/vendedor/configuracoes/integracao-bling')
     },
     {
       name: 'Ver minha loja',

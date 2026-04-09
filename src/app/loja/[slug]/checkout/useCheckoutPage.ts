@@ -63,6 +63,7 @@ export function useCheckoutPage() {
     customer_name: '',
     customer_email: '',
     customer_phone: '',
+    customer_document: '',
     notes: '',
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -249,6 +250,7 @@ export function useCheckoutPage() {
         customer_name: formData.customer_name.trim(),
         customer_email: formData.customer_email.trim(),
         customer_phone: formData.customer_phone.trim(),
+        customer_document: formData.customer_document.replace(/\D/g, '') || undefined,
         notes: formData.notes.trim() || undefined,
         coupon_code: couponResult?.coupon_code,
         delivery_address: deliveryAddress,

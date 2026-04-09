@@ -29,11 +29,11 @@ export default function InformacoesBasicasPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Informações Básicas</h1>
-        <p className="text-gray-600">
+      <div className="mb-3 sm:mb-4 md:mb-6 lg:mb-8">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-1 sm:mb-2">Informações Básicas</h1>
+        <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
           Configure o nome, descrição, imagens e nichos da sua loja
         </p>
       </div>

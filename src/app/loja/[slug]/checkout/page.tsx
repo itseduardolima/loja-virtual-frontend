@@ -186,6 +186,24 @@ export default function CheckoutPage() {
                   )}
                 </div>
                 <div>
+                  <Label htmlFor="customer_document">CPF/CNPJ *</Label>
+                  <Input
+                    id="customer_document"
+                    type="text"
+                    value={formData.customer_document}
+                    onChange={(e) =>
+                      handleInput("customer_document", e.target.value.replace(/\D/g, '').slice(0, 14))
+                    }
+                    placeholder="000.000.000-00"
+                    className={errors.customer_document ? "border-red-500" : ""}
+                  />
+                  {errors.customer_document && (
+                    <p className="text-xs text-red-600 mt-1">
+                      {errors.customer_document}
+                    </p>
+                  )}
+                </div>
+                <div>
                   <Label htmlFor="notes">Observações (opcional)</Label>
                   <Textarea
                     id="notes"
@@ -753,7 +771,8 @@ export default function CheckoutPage() {
                   isCheckoutLoading ||
                   !formData.customer_name.trim() ||
                   !formData.customer_email.trim() ||
-                  !formData.customer_phone.trim()
+                  !formData.customer_phone.trim() ||
+                  !formData.customer_document.trim()
                 }
               >
                 {isCheckoutLoading ? "Processando..." : "Finalizar Pedido"}

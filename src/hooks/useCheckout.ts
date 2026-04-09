@@ -8,6 +8,7 @@ interface CheckoutRequest {
   customer_name: string
   customer_email: string
   customer_phone?: string
+  customer_document?: string
   notes?: string
   coupon_code?: string
   delivery_address?: string
