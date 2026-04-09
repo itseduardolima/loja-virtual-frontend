@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -12,13 +13,17 @@ import {
   MapPin,
   PhoneCall,
   Tag,
+  Printer,
+  CheckCircle,
 } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { useOrderDetail } from '@/hooks/useOrderDetail'
 import { type Order } from '@/types/order'
 import { formatDate, formatPrice } from '@/lib/utils'
 import { buildImageUrl } from '@/lib/imageUtils'
 import { OrderTrackingTimeline } from '@/components/Order/OrderTrackingTimeline'
 import { WhatsappIcon } from '@/assets/icons/WhatsappIcon'
+import { OrderPrintModal } from '@/components/Order/OrderPrintModal'
 
 function renderDeliveryAddress(order: Order) {
   let deliveryAddr: Record<string, string> | null = null
@@ -113,6 +118,7 @@ interface OrderDetailPanelProps {
 
 export function OrderDetailPanel({ orderId, onStatusUpdate }: OrderDetailPanelProps) {
   const { data: order, isLoading, error } = useOrderDetail(orderId ?? 0)
+  const [isPrintOpen, setIsPrintOpen] = useState(false)
 
 
   if (isLoading) {
@@ -161,8 +167,15 @@ export function OrderDetailPanel({ orderId, onStatusUpdate }: OrderDetailPanelPr
       </div>
 
       <div className="text-sm text-gray-600 break-words flex flex-col gap-2">
-       <p>Pedido <span className="font-bold text-gray-900">#{order.order_code}</span></p>
-       
+        <div className="flex items-center gap-2 flex-wrap">
+          <p>Pedido <span className="font-bold text-gray-900">#{order.order_code}</span></p>
+          {order.bling_sync?.status === 'synced' && (
+            <Badge variant="outline" className="gap-1 text-green-700 border-green-200 bg-green-50 text-xs">
+              <CheckCircle className="h-3 w-3" />
+              Bling
+            </Badge>
+          )}
+        </div>
         <p>Feito às <span className="font-bold text-gray-900">{formatDate(order.created_at)}</span></p>
       </div>
 
@@ -181,6 +194,10 @@ export function OrderDetailPanel({ orderId, onStatusUpdate }: OrderDetailPanelPr
         <Button variant="outline" size="sm" onClick={handleEmailContact} className="gap-1.5 flex-1 min-w-0 sm:flex-initial">
           <Mail className="h-4 w-4 shrink-0" />
           <span className="truncate">Email</span>
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setIsPrintOpen(true)} className="gap-1.5 flex-1 min-w-0 sm:flex-initial">
+          <Printer className="h-4 w-4 shrink-0" />
+          <span className="truncate">Imprimir</span>
         </Button>
       </div>
 
@@ -308,7 +325,11 @@ export function OrderDetailPanel({ orderId, onStatusUpdate }: OrderDetailPanelPr
         </CardContent>
       </Card>
 
-
+      <OrderPrintModal
+        order={order}
+        isOpen={isPrintOpen}
+        onClose={() => setIsPrintOpen(false)}
+      />
     </div>
   )
 }
