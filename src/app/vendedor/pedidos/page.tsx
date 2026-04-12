@@ -49,7 +49,6 @@ export default function OrdersPage() {
     columnHasMore,
     handleShowMore,
     hasDateFilter,
-    isViewingToday,
     dateFromInput,
     dateToInput,
     handleRangeSelect,
@@ -184,11 +183,6 @@ export default function OrdersPage() {
           <p className="text-sm text-gray-500 mt-0.5">
             {panelTotal} pedido{panelTotal !== 1 ? 's' : ''} — Arraste os cards para alterar o status
           </p>
-          {isViewingToday && (
-            <p className="text-xs text-blue-600 font-medium mt-1">
-              Visualizando pedidos de hoje.
-            </p>
-          )}
 
           <div className="flex items-center gap-3 mt-4">
             {/* Campo de busca */}

@@ -48,7 +48,15 @@ export function DashboardDateRangeFilter({
   React.useEffect(() => {
     if (open) {
       setPendingRange(selectedRange)
-      setActiveQuickDays(null)
+      // Detecta se o range atual corresponde a um atalho (7/30/90 dias)
+      if (selectedRange?.from && selectedRange?.to) {
+        const diffMs = selectedRange.to.getTime() - selectedRange.from.getTime()
+        const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24))
+        const match = [7, 30, 90].find((d) => diffDays === d - 1) ?? null
+        setActiveQuickDays(match)
+      } else {
+        setActiveQuickDays(null)
+      }
     }
   }, [open])
 

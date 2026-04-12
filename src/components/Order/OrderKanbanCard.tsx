@@ -39,6 +39,8 @@ export function OrderKanbanCard({
     data: { order },
   })
 
+  const isUnread = order.read === 0
+
   return (
     <div
       ref={setNodeRef}
@@ -46,13 +48,19 @@ export function OrderKanbanCard({
       {...attributes}
       onClick={onClick}
       className={cn(
-        'rounded-xl border border-gray-200 bg-white p-3 shadow-sm cursor-grab active:cursor-grabbing transition-shadow outline-none focus:outline-none focus-visible:outline-none',
-        !isDragging && columnColor,
+        'rounded-xl border bg-white p-3 shadow-sm cursor-grab active:cursor-grabbing transition-shadow outline-none focus:outline-none focus-visible:outline-none',
+        isUnread ? 'border-blue-100' : 'border-gray-200',
+        !isDragging && !isUnread && columnColor,
         isSelected && !isDragging && 'ring-2 ring-gray-900 ring-offset-2',
         isDragging && 'opacity-0 pointer-events-none border-gray-200 ring-0'
       )}
     >
-      <p className="font-bold text-sm text-gray-900 truncate">#{order.order_code}</p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-bold text-sm text-gray-900 truncate">#{order.order_code}</p>
+        {isUnread && (
+          <span className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-500" title="Não lido" />
+        )}
+      </div>
       <p className="text-sm text-gray-600 truncate mt-0.5">{order.customer_name}</p>
       <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
         <span>{formatDate(order.created_at)}</span>
@@ -70,14 +78,22 @@ export function OrderKanbanCardPreview({
   order: Order
   columnColor?: string
 }) {
+  const isUnread = order.read === 0
+
   return (
     <div
       className={cn(
-        'rounded-xl border border-gray-200 bg-white p-3 shadow-lg cursor-grabbing w-[280px] outline-none ring-0',
-        columnColor
+        'rounded-xl border bg-white p-3 shadow-lg cursor-grabbing w-[280px] outline-none ring-0',
+        isUnread ? 'border-blue-100' : 'border-gray-200',
+        !isUnread && columnColor,
       )}
     >
-      <p className="font-bold text-sm text-gray-900 truncate">#{order.order_code}</p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-bold text-sm text-gray-900 truncate">#{order.order_code}</p>
+        {isUnread && (
+          <span className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-500" />
+        )}
+      </div>
       <p className="text-sm text-gray-600 truncate mt-0.5">{order.customer_name}</p>
       <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
         <span>{formatDate(order.created_at)}</span>

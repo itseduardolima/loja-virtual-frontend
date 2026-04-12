@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useOrders } from '@/hooks/useOrders'
 import { useDebounce } from '@/hooks/useDebounce'
+import { useMarkOrderAsRead } from '@/hooks/useMarkOrderAsRead'
 import { ORDER_STATUS, SORT_OPTIONS, type OrdersFilters, type Order } from '@/types/order'
 import { useAuth } from '@/contexts/AuthContext'
 import { EyeIcon } from 'lucide-react'
@@ -16,16 +17,19 @@ const DEFAULT_COLUMN_LIMITS: Record<number, number> = { 1: COLUMN_PAGE_SIZE, 2: 
 
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0)
 const endOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999)
-const today = new Date().toISOString().slice(0, 10)
+
 
 export function useOrdersPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { isAuthenticated, user, isLoading: authLoading } = useAuth()
-  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(() => {
+  const { mutate: markAsRead } = useMarkOrderAsRead()
+
+  const [selectedOrderId, setSelectedOrderIdRaw] = useState<number | null>(() => {
     const id = searchParams.get('orderId')
     return id ? Number(id) : null
   })
+
   const [filters, setFilters] = useState<OrdersFilters>({
     page: 1,
     limit: 10,
@@ -33,7 +37,15 @@ export function useOrdersPage() {
   })
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearchTerm = useDebounce(searchTerm, 1000)
-  const [dateRange, setDateRange] = useState<{ dateFrom: string; dateTo: string } | null>({ dateFrom: today, dateTo: today })
+  const [dateRange, setDateRange] = useState<{ dateFrom: string; dateTo: string } | null>(() => {
+    const to = new Date()
+    const from = new Date()
+    from.setDate(from.getDate() - 6)
+    return {
+      dateFrom: from.toISOString().slice(0, 10),
+      dateTo: to.toISOString().slice(0, 10),
+    }
+  })
   const [columnLimits, setColumnLimits] = useState<Record<number, number>>(DEFAULT_COLUMN_LIMITS)
 
   const { data, isLoading, error } = useOrders({
@@ -49,6 +61,7 @@ export function useOrdersPage() {
     }
   }, [dateRange])
 
+  // Query principal do painel — sempre últimos 7 dias (ou filtro manual)
   const { data: panelData } = useOrders({
     page: 1,
     limit: PANEL_ORDERS_LIMIT,
@@ -56,6 +69,15 @@ export function useOrdersPage() {
     search: debouncedSearchTerm || undefined,
     ...activeDateRange,
   })
+
+  // Marcar como lido ao selecionar pedido (só chama se ainda não lido)
+  const setSelectedOrderId = (id: number | null) => {
+    setSelectedOrderIdRaw(id)
+    if (id !== null) {
+      const order = panelOrders.find((o) => o.id === id)
+      if (order?.read === 0) markAsRead(id)
+    }
+  }
 
   useEffect(() => {
     if (!authLoading) {
@@ -126,6 +148,10 @@ export function useOrdersPage() {
       const status = order.status as 1 | 2 | 3 | 4 | 5
       if (status >= 1 && status <= 5) grouped[status].push(order)
     })
+    // Não lidos aparecem primeiro em cada coluna
+    for (const s of [1, 2, 3, 4, 5]) {
+      grouped[s].sort((a, b) => (a.read === 0 ? -1 : 1) - (b.read === 0 ? -1 : 1))
+    }
     return grouped
   }, [panelOrders])
 
@@ -226,7 +252,6 @@ export function useOrdersPage() {
     dateRange,
     handleRangeSelect,
     hasDateFilter: !!dateRange,
-    isViewingToday: dateRange?.dateFrom === today && dateRange?.dateTo === today,
     dateFromInput: dateRange?.dateFrom ?? '',
     dateToInput: dateRange?.dateTo ?? '',
     // Filters
