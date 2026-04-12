@@ -217,7 +217,7 @@ export function CartSidebar({ isOpen, onClose, storeId, storeSlug, currentPath }
                         <div className="flex flex-col items-end justify-end">
                           {/* Unit Price */}
                           <p className="text-xs text-gray-500 mb-3">
-                            {formatPrice(parseFloat(item.product.price))} cada
+                            {formatPrice(item.product.final_price ?? parseFloat(item.product.price))} cada
                           </p>
 
                           {/* Quantity Controls */}

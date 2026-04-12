@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Button, ErrorState, StorePagination, ProductCard } from '@/components'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
   Package,
@@ -262,9 +263,9 @@ export default function ProdutosPage() {
                 {/* Badge rascunho */}
                 {product.status === 2 && (
                   <div className="absolute top-2 left-2 z-10 pointer-events-none">
-                    <span className="px-2 py-0.5 text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-300 rounded-full">
+                    <Badge className="bg-gray-100 text-gray-600 border border-gray-300 rounded-full text-xs font-semibold px-2 py-0.5">
                       Rascunho
-                    </span>
+                    </Badge>
                   </div>
                 )}
 

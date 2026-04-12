@@ -460,10 +460,14 @@ export default function ProductDetailPage() {
               >
                 {isAddingToCart ? (
                   <LoadingSpinner size="sm" />
+                ) : hasSizes && !selectedSize ? (
+                  'Selecione o tamanho'
+                ) : hasColors && !selectedColor ? (
+                  'Selecione a cor'
+                ) : isOutOfStock ? (
+                  'Produto Esgotado'
                 ) : (
-                  <>
-                    {isOutOfStock ? 'Produto Esgotado' : 'Adicionar ao Carrinho'}
-                  </>
+                  'Adicionar ao Carrinho'
                 )}
               </Button>
             </div>
