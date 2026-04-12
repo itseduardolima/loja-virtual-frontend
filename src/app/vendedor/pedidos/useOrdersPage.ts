@@ -270,6 +270,13 @@ export function useOrdersPage() {
     columns,
     hasFilters,
     getStatusInfo,
+    // Export
+    exportFilters: {
+      search: debouncedSearchTerm || undefined,
+      ...activeDateRange,
+      status: filters.status,
+      sort: filters.sort,
+    },
     // Utils
     ORDER_STATUS,
     SORT_OPTIONS,
