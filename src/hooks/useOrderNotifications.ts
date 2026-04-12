@@ -111,6 +111,7 @@ export function useOrderNotifications(enabled: boolean) {
 
     socket.on('new_order', () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY })
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
     })
 
     return () => {

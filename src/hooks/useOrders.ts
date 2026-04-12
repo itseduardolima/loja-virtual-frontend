@@ -11,6 +11,7 @@ export function useOrders(filters: OrdersFilters = {}) {
     sort = 'DATE_DESC',
     date_from,
     date_to,
+    unread,
   } = filters
 
   return useQuery({
@@ -25,6 +26,7 @@ export function useOrders(filters: OrdersFilters = {}) {
       if (sort) params.append('sort', sort)
       if (date_from) params.append('date_from', date_from)
       if (date_to) params.append('date_to', date_to)
+      if (unread) params.append('unread', 'true')
 
       const response = await api.get<OrdersResponse>('/orders', {
         params: Object.fromEntries(params)

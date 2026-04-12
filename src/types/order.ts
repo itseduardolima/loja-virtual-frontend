@@ -41,6 +41,7 @@ export interface Order {
   customer_name: string
   customer_phone: string
   customer_email: string
+  read: number
   whatsapp_sent: number
   whatsapp_sent_at: string | null
   created_at: string
@@ -81,6 +82,7 @@ export interface OrdersFilters {
   sort?: string
   date_from?: string
   date_to?: string
+  unread?: boolean
 }
 
 export const ORDER_STATUS = {
