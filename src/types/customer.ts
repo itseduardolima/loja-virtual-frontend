@@ -32,6 +32,8 @@ export interface CustomerOrder {
   customer_email: string
   whatsapp_sent: number
   whatsapp_sent_at: string | null
+  cancellation_requested: number
+  cancellation_request_reason: string | null
   created_at: string
   updated_at: string
   store_id: number

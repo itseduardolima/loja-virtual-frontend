@@ -15,9 +15,13 @@ import {
   Tag,
   Printer,
   CheckCircle,
+  AlertTriangle,
+  X,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { useOrderDetail } from '@/hooks/useOrderDetail'
+import { useAcceptCancellationRequest } from '@/hooks/useAcceptCancellationRequest'
+import { useDenyCancellationRequest } from '@/hooks/useDenyCancellationRequest'
 import { type Order } from '@/types/order'
 import { formatDate, formatPrice } from '@/lib/utils'
 import { buildImageUrl } from '@/lib/imageUtils'
@@ -119,6 +123,8 @@ interface OrderDetailPanelProps {
 export function OrderDetailPanel({ orderId, onStatusUpdate }: OrderDetailPanelProps) {
   const { data: order, isLoading, error } = useOrderDetail(orderId ?? 0)
   const [isPrintOpen, setIsPrintOpen] = useState(false)
+  const { mutate: acceptRequest, isPending: isAccepting } = useAcceptCancellationRequest()
+  const { mutate: denyRequest, isPending: isDenying } = useDenyCancellationRequest()
 
 
   if (isLoading) {
@@ -178,6 +184,43 @@ export function OrderDetailPanel({ orderId, onStatusUpdate }: OrderDetailPanelPr
         </div>
         <p>Feito às <span className="font-bold text-gray-900">{formatDate(order.created_at)}</span></p>
       </div>
+
+      {/* Solicitação de cancelamento pelo cliente */}
+      {order.cancellation_requested === 1 && (
+        <div className="rounded-xl border border-orange-200 bg-orange-50 p-3 space-y-2.5">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-orange-600 shrink-0" />
+            <p className="text-sm font-bold text-orange-800">Cancelamento solicitado pelo cliente</p>
+          </div>
+          {order.cancellation_request_reason && (
+            <p className="text-sm text-orange-700 bg-white/60 rounded-lg px-2.5 py-2 break-words">
+              {order.cancellation_request_reason}
+            </p>
+          )}
+          <div className="flex gap-2 pt-0.5">
+            <Button
+              size="sm"
+              variant="destructive"
+              disabled={isAccepting || isDenying}
+              onClick={() => acceptRequest(order.id)}
+              className="flex-1 gap-1.5"
+            >
+              <CheckCircle className="h-3.5 w-3.5" />
+              {isAccepting ? 'Aceitando...' : 'Aceitar'}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={isAccepting || isDenying}
+              onClick={() => denyRequest(order.id)}
+              className="flex-1 gap-1.5 border-orange-200 text-orange-700 hover:bg-orange-50"
+            >
+              <X className="h-3.5 w-3.5" />
+              {isDenying ? 'Recusando...' : 'Recusar'}
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Contato rápido */}
       <div className="flex flex-wrap gap-2">

@@ -9,6 +9,7 @@ export interface TrackOrderStatusHistory {
 }
 
 export interface TrackOrderData {
+  id: number
   order_code: string
   order_number: string
   status: number

@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
+import { Textarea } from '@/components/ui/textarea'
 import { useTrackOrder } from '@/hooks/useTrackOrder'
+import { useCancelOrder } from '@/hooks/useCancelOrder'
+import { useAuth } from '@/contexts/AuthContext'
 import { buildImageUrl, formatDate, formatPrice } from '@/lib/utils'
 import {
   Search,
@@ -15,7 +17,16 @@ import {
   Truck,
   XCircle,
   Store,
+  AlertTriangle,
 } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
 
 const STATUS_CONFIG: Record<number, { label: string; color: string; icon: React.ReactNode }> = {
   1: {
@@ -74,6 +85,13 @@ export default function RastrearPedidoPage() {
 
   const [inputCode, setInputCode] = useState(codeFromUrl ?? '')
   const [searchCode, setSearchCode] = useState<string | null>(codeFromUrl ?? null)
+  const [showCancelDialog, setShowCancelDialog] = useState(false)
+  const [cancelReason, setCancelReason] = useState('')
+  const [cancelResult, setCancelResult] = useState<'cancelled' | 'requested' | null>(null)
+
+  const { isAuthenticated } = useAuth()
+  const { data, isLoading, error } = useTrackOrder(searchCode)
+  const { mutate: cancelOrder, isPending: isCancelling } = useCancelOrder()
 
   useEffect(() => {
     if (codeFromUrl) {
@@ -82,13 +100,12 @@ export default function RastrearPedidoPage() {
     }
   }, [codeFromUrl])
 
-  const { data, isLoading, error } = useTrackOrder(searchCode)
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    const trimmed = inputCode.trim()
+    const trimmed = inputCode.trim().replace(/^#+/, '')
     if (trimmed) {
       setSearchCode(trimmed)
+      setCancelResult(null)
     }
   }
 
@@ -199,6 +216,35 @@ export default function RastrearPedidoPage() {
                   <p className="text-sm font-medium text-gray-700">{formatDate(order.created_at)}</p>
                 </div>
               </div>
+
+              {/* Solicitar cancelamento — apenas logado e status cancelável */}
+              {isAuthenticated && (order.status === 1 || order.status === 2) && (
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  {cancelResult === 'cancelled' ? (
+                    <div className="flex items-center justify-center gap-2 py-2 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-xl">
+                      <XCircle className="h-4 w-4" />
+                      Pedido cancelado
+                    </div>
+                  ) : cancelResult === 'requested' ? (
+                    <div className="flex items-center justify-center gap-2 py-2 text-sm font-medium text-orange-700 bg-orange-50 border border-orange-200 rounded-xl">
+                      <AlertTriangle className="h-4 w-4" />
+                      Solicitação de cancelamento enviada
+                    </div>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 gap-2"
+                      onClick={() => {
+                        setCancelReason('')
+                        setShowCancelDialog(true)
+                      }}
+                    >
+                      <AlertTriangle className="h-4 w-4" />
+                      Solicitar cancelamento
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Timeline de histórico */}
@@ -256,6 +302,70 @@ export default function RastrearPedidoPage() {
           </div>
         )}
       </div>
+
+      {/* Dialog de cancelamento */}
+      <Dialog
+        open={showCancelDialog}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowCancelDialog(false)
+            setCancelReason('')
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Solicitar cancelamento</DialogTitle>
+            <DialogDescription>
+              Informe o motivo para cancelar este pedido. A loja analisará sua solicitação.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-1">
+            <Textarea
+              placeholder="Descreva o motivo do cancelamento..."
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              maxLength={500}
+              rows={4}
+              className="resize-none"
+              autoFocus
+            />
+            <p className="text-xs text-gray-400 mt-1.5 text-right">
+              {cancelReason.length}/500
+            </p>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setShowCancelDialog(false)
+                setCancelReason('')
+              }}
+            >
+              Voltar
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={!cancelReason.trim() || isCancelling || !order?.id}
+              onClick={() => {
+                if (!order?.id || !cancelReason.trim()) return
+                cancelOrder(
+                  { orderId: order.id, data: { reason: cancelReason.trim() } },
+                  {
+                    onSuccess: (res: any) => {
+                      setShowCancelDialog(false)
+                      setCancelReason('')
+                      setCancelResult(res?.type === 'cancelled' ? 'cancelled' : 'requested')
+                    },
+                  }
+                )
+              }}
+            >
+              {isCancelling ? 'Cancelando...' : 'Confirmar cancelamento'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
