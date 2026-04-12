@@ -25,12 +25,13 @@ import { parseStatusFromDroppableId } from '@/components/Order/KanbanColumn'
 import { STATUS_ORDER, STATUS_HEADER_COLORS } from '@/lib/orderPanelUtils'
 import { useUpdateOrderStatus } from '@/hooks/useUpdateOrderStatus'
 import type { OrdersResponse } from '@/types/order'
-import { Search, X } from 'lucide-react'
+import { Search, X, FileDown } from 'lucide-react'
 import { DashboardDateRangeFilter } from '@/components/Dashboard/DashboardDateRangeFilter'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { MobileOrdersView } from '@/components/Order/MobileOrdersView'
+import { useExportOrders } from '@/hooks/useExportOrders'
 
 export default function OrdersPage() {
   const {
@@ -52,8 +53,11 @@ export default function OrdersPage() {
     dateFromInput,
     dateToInput,
     handleRangeSelect,
+    exportFilters,
     ORDER_STATUS: STATUS_MAP,
   } = useOrdersPage()
+
+  const { exportOrders, isExporting } = useExportOrders()
 
   const queryClient = useQueryClient()
   const { mutate: updateOrderStatus } = useUpdateOrderStatus()
@@ -213,7 +217,7 @@ export default function OrdersPage() {
             </div>
 
             {/* Filtro de data */}
-            <div className="ml-auto shrink-0">
+            <div className="ml-auto shrink-0 flex items-center gap-2">
               <DashboardDateRangeFilter
                 dateFromInput={dateFromInput}
                 dateToInput={dateToInput}
@@ -221,6 +225,20 @@ export default function OrdersPage() {
                 onRangeSelect={handleRangeSelect}
                 onClear={() => handleRangeSelect(null)}
               />
+
+              <Button
+                variant="outline"
+                disabled={isExporting}
+                onClick={() => exportOrders(exportFilters)}
+                className="shrink-0 gap-2 h-12 rounded-xl"
+              >
+                {isExporting ? (
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                ) : (
+                  <FileDown className="h-4 w-4" />
+                )}
+                {isExporting ? 'Exportando...' : 'Exportar Excel'}
+              </Button>
             </div>
           </div>
         </div>
