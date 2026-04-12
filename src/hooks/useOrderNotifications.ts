@@ -114,6 +114,10 @@ export function useOrderNotifications(enabled: boolean) {
       queryClient.invalidateQueries({ queryKey: ['orders'] })
     })
 
+    socket.on('cancellation_request', () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+    })
+
     return () => {
       socket.disconnect()
       socketRef.current = null

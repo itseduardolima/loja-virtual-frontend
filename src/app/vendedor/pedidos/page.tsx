@@ -24,8 +24,10 @@ import {
 import { parseStatusFromDroppableId } from '@/components/Order/KanbanColumn'
 import { STATUS_ORDER, STATUS_HEADER_COLORS } from '@/lib/orderPanelUtils'
 import { useUpdateOrderStatus } from '@/hooks/useUpdateOrderStatus'
+import { useAcceptCancellationRequest } from '@/hooks/useAcceptCancellationRequest'
+import { useDenyCancellationRequest } from '@/hooks/useDenyCancellationRequest'
 import type { OrdersResponse } from '@/types/order'
-import { Search, X, FileDown } from 'lucide-react'
+import { Search, X, FileDown, MessageCircle, User } from 'lucide-react'
 import { DashboardDateRangeFilter } from '@/components/Dashboard/DashboardDateRangeFilter'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -70,11 +72,12 @@ export default function OrdersPage() {
 
   const queryClient = useQueryClient()
   const { mutate: updateOrderStatus } = useUpdateOrderStatus()
+  const { mutate: acceptRequest, isPending: isAccepting } = useAcceptCancellationRequest()
+  const { mutate: denyRequest, isPending: isDenying } = useDenyCancellationRequest()
   const [activeOrderId, setActiveOrderId] = useState<number | null>(null)
   const [pendingCancel, setPendingCancel] = useState<{ orderId: number } | null>(null)
   const [cancellationReason, setCancellationReason] = useState('')
-
-  const totalCount = panelTotal
+  const [cancelRequestOrder, setCancelRequestOrder] = useState<(typeof panelOrders)[0] | null>(null)
 
   const orderById = useMemo(() => {
     const map = new Map<number, (typeof panelOrders)[0]>()
@@ -112,6 +115,11 @@ export default function OrdersPage() {
   }
 
   const handleMoveOrder = (orderId: number, newStatus: number) => {
+    const order = orderById.get(orderId)
+    if (order?.cancellation_requested === 1) {
+      setCancelRequestOrder(order)
+      return
+    }
     if (newStatus === 5) {
       setPendingCancel({ orderId })
       setCancellationReason('')
@@ -136,6 +144,11 @@ export default function OrdersPage() {
     if (newStatus == null) return
     const order = orderById.get(orderId)
     if (!order || order.status === newStatus) return
+
+    if (order.cancellation_requested === 1) {
+      setCancelRequestOrder(order)
+      return
+    }
 
     if (newStatus === 5) {
       setPendingCancel({ orderId })
@@ -183,7 +196,7 @@ export default function OrdersPage() {
       <div className="lg:hidden w-full">
         <MobileOrdersView
           ordersByStatus={visibleOrdersByStatus}
-          totalCount={totalCount}
+          totalCount={panelTotal}
           selectedOrderId={selectedOrderId}
           onSelectOrder={setSelectedOrderId}
           onMoveOrder={handleMoveOrder}
@@ -312,6 +325,86 @@ export default function OrdersPage() {
           </div>
         </div>
       )}
+
+      {/* Dialog de solicitação de cancelamento pelo cliente */}
+      <Dialog
+        open={!!cancelRequestOrder}
+        onOpenChange={(open) => {
+          if (!open) setCancelRequestOrder(null)
+        }}
+      >
+        <DialogContent className="sm:max-w-md p-0 overflow-hidden">
+          {/* Header */}
+          <div className="px-6 pt-6 pb-4 border-b border-gray-100">
+            <DialogTitle className="text-base font-bold text-gray-900">
+              Solicitação de cancelamento
+            </DialogTitle>
+            <div className="flex items-center gap-2 mt-2">
+              <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
+                <User className="h-3.5 w-3.5 text-gray-500" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-gray-900 truncate">
+                  {cancelRequestOrder?.customer_name}
+                </p>
+                <p className="text-xs text-gray-400">Pedido #{cancelRequestOrder?.order_code}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Mensagem do cliente */}
+          <div className="px-6 py-5">
+            {cancelRequestOrder?.cancellation_request_reason ? (
+              <div className="flex items-end gap-2.5">
+                <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center shrink-0 mb-0.5">
+                  <User className="h-3.5 w-3.5 text-gray-500" />
+                </div>
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <div className="bg-gray-100 rounded-2xl rounded-bl-sm px-4 py-3 max-w-[90%]">
+                    <p className="text-sm text-gray-800 break-words whitespace-pre-wrap leading-relaxed" style={{ overflowWrap: 'anywhere' }}>
+                      {cancelRequestOrder.cancellation_request_reason}
+                    </p>
+                  </div>
+                  <p className="text-[11px] text-gray-400 mt-1 ml-1">Motivo informado pelo cliente</p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 py-2 text-sm text-gray-400">
+                <MessageCircle className="h-4 w-4 shrink-0" />
+                Nenhum motivo informado pelo cliente.
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="px-6 pb-6 flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
+            <Button
+              variant="outline"
+              disabled={isAccepting || isDenying}
+              onClick={() => {
+                if (!cancelRequestOrder) return
+                denyRequest(cancelRequestOrder.id, {
+                  onSuccess: () => setCancelRequestOrder(null),
+                })
+              }}
+            >
+              {isDenying ? 'Recusando...' : 'Recusar solicitação'}
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={isAccepting || isDenying}
+              onClick={() => {
+                if (!cancelRequestOrder) return
+                acceptRequest(cancelRequestOrder.id, {
+                  onSuccess: () => setCancelRequestOrder(null),
+                })
+              }}
+            >
+              {isAccepting ? 'Cancelando pedido...' : 'Aceitar e cancelar pedido'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Dialog de motivo de cancelamento */}
       <Dialog

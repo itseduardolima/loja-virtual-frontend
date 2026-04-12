@@ -1,13 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Package, Truck, Clock, CheckCircle, XCircle, Search, ChevronRight, MapPin, Phone, Mail, Instagram, Facebook, Store, ExternalLink } from 'lucide-react'
+import { X, Package, Truck, Clock, CheckCircle, XCircle, Search, ChevronRight, MapPin, Phone, Mail, Instagram, Facebook, Store, ExternalLink, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { useCustomerOrders } from '@/hooks/useCustomerOrders'
 import { useCustomerOrder } from '@/hooks/useCustomerOrder'
 import { useStoreInfoById } from '@/hooks/useStoreInfoById'
+import { useCancelOrder } from '@/hooks/useCancelOrder'
 import { CUSTOMER_ORDER_STATUS } from '@/types/customer'
 import { formatDate, formatPrice, buildImageUrl } from '@/lib/utils'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -17,6 +19,14 @@ import { ErrorState } from '@/components/Layout/ErrorState'
 import { LoadingSpinner } from '../Layout/LoadingSpinner'
 import { WhatsappIcon } from '@/assets/icons/WhatsappIcon'
 import { OrderTrackingTimeline } from '@/components/Order/OrderTrackingTimeline'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
 
 interface CustomerOrdersDrawerProps {
   isOpen: boolean
@@ -28,6 +38,10 @@ export function CustomerOrdersDrawer({ isOpen, onClose }: CustomerOrdersDrawerPr
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<number | 'all'>('all')
   const debouncedSearch = useDebounce(searchTerm, 500)
+  const [showCancelDialog, setShowCancelDialog] = useState(false)
+  const [cancelReason, setCancelReason] = useState('')
+
+  const { mutate: cancelOrder, isPending: isCancelling } = useCancelOrder()
 
   const { data: ordersData, isLoading, error } = useCustomerOrders({
     page: 1,
@@ -233,6 +247,30 @@ export function CustomerOrdersDrawer({ isOpen, onClose }: CustomerOrdersDrawerPr
                       })}
                     </div>
                   </div>
+
+                  {/* Solicitar cancelamento / solicitação pendente */}
+                  {(selectedOrder.status === 1 || selectedOrder.status === 2) && (
+                    <div className="border-t pt-6">
+                      {selectedOrder.cancellation_requested === 1 ? (
+                        <div className="flex items-center gap-2 p-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-600">
+                          <AlertTriangle className="h-4 w-4 shrink-0" />
+                          <span>Solicitação de cancelamento enviada. Aguardando aprovação da loja.</span>
+                        </div>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 gap-2"
+                          onClick={() => {
+                            setCancelReason('')
+                            setShowCancelDialog(true)
+                          }}
+                        >
+                          <AlertTriangle className="h-4 w-4" />
+                          Solicitar cancelamento
+                        </Button>
+                      )}
+                    </div>
+                  )}
 
                   {/* Informações da Loja */}
                   {selectedOrder.store && (
@@ -511,6 +549,72 @@ export function CustomerOrdersDrawer({ isOpen, onClose }: CustomerOrdersDrawerPr
           </div>
         </div>
       </div>
+      {/* Dialog de cancelamento */}
+      <Dialog
+        open={showCancelDialog}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowCancelDialog(false)
+            setCancelReason('')
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedOrder?.status === 1 ? 'Cancelar pedido' : 'Solicitar cancelamento'}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedOrder?.status === 1
+                ? 'O pedido ainda não foi confirmado. Ao cancelar, a ação é imediata.'
+                : 'O pagamento já foi confirmado. Sua solicitação será enviada para a loja aprovar.'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-1">
+            <Textarea
+              placeholder="Descreva o motivo do cancelamento..."
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              maxLength={500}
+              rows={4}
+              className="resize-none"
+              autoFocus
+            />
+            <p className="text-xs text-gray-400 mt-1.5 text-right">
+              {cancelReason.length}/500
+            </p>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setShowCancelDialog(false)
+                setCancelReason('')
+              }}
+            >
+              Voltar
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={!cancelReason.trim() || isCancelling}
+              onClick={() => {
+                if (!selectedOrderId || !cancelReason.trim()) return
+                cancelOrder(
+                  { orderId: selectedOrderId, data: { reason: cancelReason.trim() } },
+                  {
+                    onSuccess: () => {
+                      setShowCancelDialog(false)
+                      setCancelReason('')
+                    },
+                  }
+                )
+              }}
+            >
+              {isCancelling ? 'Cancelando...' : 'Confirmar cancelamento'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

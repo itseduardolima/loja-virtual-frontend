@@ -40,6 +40,7 @@ export function OrderKanbanCard({
   })
 
   const isUnread = order.read === 0
+  const hasCancelRequest = order.cancellation_requested === 1
 
   return (
     <div
@@ -49,17 +50,24 @@ export function OrderKanbanCard({
       onClick={onClick}
       className={cn(
         'rounded-xl border bg-white p-3 shadow-sm cursor-grab active:cursor-grabbing transition-shadow outline-none focus:outline-none focus-visible:outline-none',
-        isUnread ? 'border-blue-100' : 'border-gray-200',
-        !isDragging && !isUnread && columnColor,
+        hasCancelRequest ? 'border-orange-200' : isUnread ? 'border-blue-100' : 'border-gray-200',
+        !isDragging && !hasCancelRequest && !isUnread && columnColor,
         isSelected && !isDragging && 'ring-2 ring-gray-900 ring-offset-2',
         isDragging && 'opacity-0 pointer-events-none border-gray-200 ring-0'
       )}
     >
       <div className="flex items-center justify-between gap-2">
         <p className="font-bold text-sm text-gray-900 truncate">#{order.order_code}</p>
-        {isUnread && (
-          <span className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-500" title="Não lido" />
-        )}
+        <div className="flex items-center gap-1 shrink-0">
+          {hasCancelRequest && (
+            <span className="text-[10px] font-semibold bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full leading-none">
+              Cancelamento
+            </span>
+          )}
+          {isUnread && !hasCancelRequest && (
+            <span className="w-2 h-2 rounded-full bg-blue-500" title="Não lido" />
+          )}
+        </div>
       </div>
       <p className="text-sm text-gray-600 truncate mt-0.5">{order.customer_name}</p>
       <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
