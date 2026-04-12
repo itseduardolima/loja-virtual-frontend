@@ -92,7 +92,9 @@ export function ProductCard({
           {/* Badges */}
           <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
             {product.featured === 1 && (
-              <Star className="h-4 w-4 sm:h-5 sm:w-5 fill-yellow-400 text-yellow-400 drop-shadow-sm" />
+              <Badge >
+                Em destaque
+              </Badge>
             )}
           </div>
 
