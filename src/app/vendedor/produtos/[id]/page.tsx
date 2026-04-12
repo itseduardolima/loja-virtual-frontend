@@ -319,8 +319,8 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Stock */}
-            <div className="flex items-center gap-2 text-primary font-integral text-sm sm:text-base">
-              <span className="font-integral tracking-wide">Estoque:</span>
+            <div className="flex items-center gap-2 text-primary font-bold text-sm sm:text-base">
+              <span>Estoque:</span>
               <span>
                 {product.stock > 0 ? `${product.stock} unidade${product.stock > 1 ? 's' : ''}` : 'Sem estoque'}
               </span>
