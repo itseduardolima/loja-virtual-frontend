@@ -29,9 +29,18 @@ import { Search, X, FileDown } from 'lucide-react'
 import { DashboardDateRangeFilter } from '@/components/Dashboard/DashboardDateRangeFilter'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { MobileOrdersView } from '@/components/Order/MobileOrdersView'
 import { useExportOrders } from '@/hooks/useExportOrders'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
 
 export default function OrdersPage() {
   const {
@@ -62,6 +71,8 @@ export default function OrdersPage() {
   const queryClient = useQueryClient()
   const { mutate: updateOrderStatus } = useUpdateOrderStatus()
   const [activeOrderId, setActiveOrderId] = useState<number | null>(null)
+  const [pendingCancel, setPendingCancel] = useState<{ orderId: number } | null>(null)
+  const [cancellationReason, setCancellationReason] = useState('')
 
   const totalCount = panelTotal
 
@@ -84,7 +95,7 @@ export default function OrdersPage() {
     if (id != null) setActiveOrderId(id)
   }
 
-  const handleMoveOrder = (orderId: number, newStatus: number) => {
+  const doMoveOrder = (orderId: number, newStatus: number, cancellation_reason?: string) => {
     queryClient.setQueriesData(
       { queryKey: ['orders'] },
       (old: OrdersResponse | undefined) => {
@@ -97,41 +108,42 @@ export default function OrdersPage() {
         }
       }
     )
-    updateOrderStatus({ orderId, status: newStatus })
+    updateOrderStatus({ orderId, status: newStatus, cancellation_reason })
+  }
+
+  const handleMoveOrder = (orderId: number, newStatus: number) => {
+    if (newStatus === 5) {
+      setPendingCancel({ orderId })
+      setCancellationReason('')
+      return
+    }
+    doMoveOrder(orderId, newStatus)
+  }
+
+  const handleConfirmCancel = () => {
+    if (!pendingCancel || !cancellationReason.trim()) return
+    doMoveOrder(pendingCancel.orderId, 5, cancellationReason.trim())
+    setPendingCancel(null)
+    setCancellationReason('')
   }
 
   const handleDragEnd = (event: DragEndEvent) => {
     const orderId = parseOrderIdFromDraggableId(String(event.active.id))
     const overId = event.over?.id
-    if (orderId == null || overId == null) {
-      setActiveOrderId(null)
-      return
-    }
+    setActiveOrderId(null)
+    if (orderId == null || overId == null) return
     const newStatus = parseStatusFromDroppableId(String(overId))
-    if (newStatus == null) {
-      setActiveOrderId(null)
-      return
-    }
+    if (newStatus == null) return
     const order = orderById.get(orderId)
-    if (!order || order.status === newStatus) {
-      setActiveOrderId(null)
+    if (!order || order.status === newStatus) return
+
+    if (newStatus === 5) {
+      setPendingCancel({ orderId })
+      setCancellationReason('')
       return
     }
 
-    queryClient.setQueriesData(
-      { queryKey: ['orders'] },
-      (old: OrdersResponse | undefined) => {
-        if (!old?.data) return old
-        return {
-          ...old,
-          data: old.data.map((o) =>
-            o.id === orderId ? { ...o, status: newStatus } : o
-          ),
-        }
-      }
-    )
-    setActiveOrderId(null)
-    updateOrderStatus({ orderId, status: newStatus })
+    doMoveOrder(orderId, newStatus)
   }
 
   if (authLoading) {
@@ -300,6 +312,58 @@ export default function OrdersPage() {
           </div>
         </div>
       )}
+
+      {/* Dialog de motivo de cancelamento */}
+      <Dialog
+        open={!!pendingCancel}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPendingCancel(null)
+            setCancellationReason('')
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Motivo do cancelamento</DialogTitle>
+            <DialogDescription>
+              Informe o motivo para cancelar este pedido. Este registro ficará visível nos detalhes do pedido.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-1">
+            <Textarea
+              placeholder="Descreva o motivo do cancelamento..."
+              value={cancellationReason}
+              onChange={(e) => setCancellationReason(e.target.value)}
+              maxLength={500}
+              rows={4}
+              className="resize-none"
+              autoFocus
+            />
+            <p className="text-xs text-gray-400 mt-1.5 text-right">
+              {cancellationReason.length}/500
+            </p>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setPendingCancel(null)
+                setCancellationReason('')
+              }}
+            >
+              Voltar
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={!cancellationReason.trim()}
+              onClick={handleConfirmCancel}
+            >
+              Confirmar cancelamento
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -51,6 +51,7 @@ export interface Order {
   coupon_code: string | null
   coupon_discount: string | null
   delivery_address: string | null
+  cancellation_reason: string | null
   items: OrderItem[]
   user: OrderBuyer | null
   bling_sync?: OrderBlingSync | null
