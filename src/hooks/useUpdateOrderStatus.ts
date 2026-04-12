@@ -7,8 +7,8 @@ export function useUpdateOrderStatus() {
   const { toast } = useToast()
 
   return useMutation({
-    mutationFn: async ({ orderId, status }: { orderId: number; status: number }) => {
-      const response = await api.patch(`/orders/${orderId}/status`, { status })
+    mutationFn: async ({ orderId, status, cancellation_reason }: { orderId: number; status: number; cancellation_reason?: string }) => {
+      const response = await api.patch(`/orders/${orderId}/status`, { status, cancellation_reason })
       return response.data
     },
     onSuccess: (data, variables) => {

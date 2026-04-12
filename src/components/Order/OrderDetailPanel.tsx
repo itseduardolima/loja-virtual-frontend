@@ -278,6 +278,25 @@ export function OrderDetailPanel({ orderId, onStatusUpdate }: OrderDetailPanelPr
       {/* Endereço de entrega */}
       {renderDeliveryAddress(order)}
 
+      {/* Motivo de cancelamento */}
+      {order.status === 5 && (
+        <Card className="border-red-100">
+          <CardHeader className="py-2 px-3">
+            <CardTitle className="flex items-center gap-2 text-sm font-bold text-red-700">
+              <FileText className="h-4 w-4 shrink-0" />
+              Motivo do cancelamento
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-2 px-3 pb-3">
+            {order.cancellation_reason ? (
+              <p className="text-sm text-red-800 bg-red-50 rounded-lg p-2.5 break-words">{order.cancellation_reason}</p>
+            ) : (
+              <p className="text-xs text-gray-400 italic">Motivo não informado</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Observações */}
       {order.notes && (
         <Card>
