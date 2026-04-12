@@ -353,6 +353,7 @@ export function StoreHeader({
                 <CustomerOrdersDrawer
                   isOpen={isOrdersDrawerOpen}
                   onClose={() => setIsOrdersDrawerOpen(false)}
+                  onOpenCart={onCartClick}
                 />
 
                 {/* Drawer de Favoritos */}

@@ -182,11 +182,6 @@ export function useCart(storeId?: number) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart-items'] })
-      toast({
-        title: 'Carrinho limpo!',
-        description: 'Todos os itens foram removidos do carrinho',
-        variant: 'success'
-      })
     },
     onError: () => {
       toast({

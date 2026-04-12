@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Package, Truck, Clock, CheckCircle, XCircle, Search, ChevronRight, MapPin, Phone, Mail, Instagram, Facebook, Store, ExternalLink, AlertTriangle } from 'lucide-react'
+import { X, Package, Truck, Clock, CheckCircle, XCircle, Search, ChevronRight, MapPin, Phone, Mail, Instagram, Facebook, Store, ExternalLink, AlertTriangle, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -10,8 +10,9 @@ import { useCustomerOrders } from '@/hooks/useCustomerOrders'
 import { useCustomerOrder } from '@/hooks/useCustomerOrder'
 import { useStoreInfoById } from '@/hooks/useStoreInfoById'
 import { useCancelOrder } from '@/hooks/useCancelOrder'
+import { useRepeatOrder } from '@/hooks/useRepeatOrder'
 import { CUSTOMER_ORDER_STATUS } from '@/types/customer'
-import { formatDate, formatPrice, buildImageUrl } from '@/lib/utils'
+import { cn, formatDate, formatPrice, buildImageUrl } from '@/lib/utils'
 import { useDebounce } from '@/hooks/useDebounce'
 import Image from 'next/image'
 
@@ -31,9 +32,10 @@ import {
 interface CustomerOrdersDrawerProps {
   isOpen: boolean
   onClose: () => void
+  onOpenCart?: () => void
 }
 
-export function CustomerOrdersDrawer({ isOpen, onClose }: CustomerOrdersDrawerProps) {
+export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOrdersDrawerProps) {
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<number | 'all'>('all')
@@ -42,6 +44,7 @@ export function CustomerOrdersDrawer({ isOpen, onClose }: CustomerOrdersDrawerPr
   const [cancelReason, setCancelReason] = useState('')
 
   const { mutate: cancelOrder, isPending: isCancelling } = useCancelOrder()
+  const { mutate: repeatOrder, isPending: isRepeating } = useRepeatOrder()
 
   const { data: ordersData, isLoading, error } = useCustomerOrders({
     page: 1,
@@ -103,25 +106,32 @@ export function CustomerOrdersDrawer({ isOpen, onClose }: CustomerOrdersDrawerPr
       />
 
       {/* Drawer */}
-      <div className={`fixed top-0 right-0 h-full w-full max-w-2xl bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'
+      <div className={`fixed top-0 right-0 h-full w-full max-w-3xl bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}>
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
             <div className="flex items-center gap-3">
               {selectedOrderId && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleBackToList}
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 -ml-1"
                 >
                   <ChevronRight className="h-4 w-4 rotate-180" />
                 </Button>
               )}
-              <h2 className="text-lg font-semibold text-gray-900">
-                {selectedOrderId ? 'Detalhes do Pedido' : 'Meus Pedidos'}
-              </h2>
+              <div>
+                <h2 className="text-base font-semibold text-gray-900">
+                  {selectedOrderId ? 'Detalhes do Pedido' : 'Meus Pedidos'}
+                </h2>
+                {!selectedOrderId && meta?.total !== undefined && (
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {meta.total} {meta.total === 1 ? 'pedido encontrado' : 'pedidos encontrados'}
+                  </p>
+                )}
+              </div>
             </div>
             <Button
               variant="ghost"
@@ -172,6 +182,15 @@ export function CustomerOrdersDrawer({ isOpen, onClose }: CustomerOrdersDrawerPr
                         <p className="font-medium text-lg">{formatPrice(parseFloat(selectedOrder.total))}</p>
                       </div>
                     </div>
+
+                    <Button
+                      className="w-full gap-2"
+                      disabled={isRepeating}
+                      onClick={() => repeatOrder(selectedOrder.id, { onSuccess: () => { onClose(); onOpenCart?.() } })}
+                    >
+                      <RotateCcw className={`h-4 w-4 ${isRepeating ? 'animate-spin' : ''}`} />
+                      {isRepeating ? 'Adicionando ao carrinho...' : 'Repetir Pedido'}
+                    </Button>
                   </div>
 
                   {/* Timeline de Rastreio */}
@@ -399,16 +418,23 @@ export function CustomerOrdersDrawer({ isOpen, onClose }: CustomerOrdersDrawerPr
                                 <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
                                   <MapPin className="w-5 h-5 text-red-600" />
                                 </div>
-                                <div className="flex-1 min-w-0 text-sm text-gray-700">
+                                <div className="flex-1 min-w-0 text-sm text-gray-700 space-y-0.5">
                                   {storeInfo.data.address && (
-                                    <p className="font-medium mb-1">{storeInfo.data.address}</p>
+                                    <p className="font-medium">
+                                      {storeInfo.data.address}
+                                      {storeInfo.data.number && `, ${storeInfo.data.number}`}
+                                      {storeInfo.data.complement && ` - ${storeInfo.data.complement}`}
+                                    </p>
+                                  )}
+                                  {storeInfo.data.neighborhood && (
+                                    <p className="text-gray-600">{storeInfo.data.neighborhood}</p>
                                   )}
                                   {(storeInfo.data.city || storeInfo.data.state) && (
                                     <p className="text-gray-600">
                                       {storeInfo.data.city}
                                       {storeInfo.data.city && storeInfo.data.state && ', '}
                                       {storeInfo.data.state}
-                                      {storeInfo.data.zipcode && ` - ${storeInfo.data.zipcode}`}
+                                      {storeInfo.data.zipcode && ` — CEP ${storeInfo.data.zipcode}`}
                                     </p>
                                   )}
                                 </div>
@@ -449,43 +475,51 @@ export function CustomerOrdersDrawer({ isOpen, onClose }: CustomerOrdersDrawerPr
               )
             ) : (
               // Lista de pedidos
-              <div className="p-4">
+              <div className="p-4 sm:p-5">
                 {/* Filtros */}
-                <div className="space-y-3 mb-4">
+                <div className="space-y-3 mb-5">
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
                       type="text"
                       placeholder="Buscar por código do pedido..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-9"
+                      className="pl-9 h-10 rounded-lg"
                     />
                   </div>
-                  <div className="flex gap-2 overflow-x-auto pb-2">
-                    <Button
-                      variant={statusFilter === 'all' ? 'default' : 'outline'}
-                      size="sm"
+                  <div className="flex gap-2 overflow-x-auto pb-1">
+                    <button
                       onClick={() => setStatusFilter('all')}
+                      className={cn(
+                        'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors',
+                        statusFilter === 'all'
+                          ? 'bg-primary text-white'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      )}
                     >
                       Todos
-                    </Button>
+                    </button>
                     {Object.entries(CUSTOMER_ORDER_STATUS).map(([key, status]) => (
-                      <Button
+                      <button
                         key={key}
-                        variant={statusFilter === parseInt(key) ? 'default' : 'outline'}
-                        size="sm"
                         onClick={() => setStatusFilter(parseInt(key))}
+                        className={cn(
+                          'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap',
+                          statusFilter === parseInt(key)
+                            ? 'bg-primary text-white'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        )}
                       >
                         {status.label}
-                      </Button>
+                      </button>
                     ))}
                   </div>
                 </div>
 
                 {/* Lista de Pedidos */}
                 {isLoading ? (
-                  <div className="flex items-center justify-center py-12">
+                  <div className="flex items-center justify-center py-16">
                     <LoadingSpinner />
                   </div>
                 ) : error ? (
@@ -493,53 +527,127 @@ export function CustomerOrdersDrawer({ isOpen, onClose }: CustomerOrdersDrawerPr
                     <ErrorState message="Erro ao carregar pedidos" />
                   </div>
                 ) : orders.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <Package className="w-12 h-12 text-gray-400 mb-4" />
-                    <p className="text-gray-500 font-medium">Nenhum pedido encontrado</p>
-                    <p className="text-sm text-gray-400 mt-2">
-                      {searchTerm || statusFilter !== 'all' ? 'Tente ajustar os filtros' : 'Você ainda não fez nenhum pedido'}
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                      <Package className="w-8 h-8 text-gray-300" />
+                    </div>
+                    <p className="text-gray-700 font-semibold">Nenhum pedido encontrado</p>
+                    <p className="text-sm text-gray-400 mt-1.5 max-w-xs">
+                      {searchTerm || statusFilter !== 'all'
+                        ? 'Tente ajustar os filtros de busca'
+                        : 'Você ainda não fez nenhum pedido'}
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {orders.map((order) => {
                       const statusInfo = getStatusInfo(order.status)
+                      const firstItem = order.items[0]
+                      const extraItems = order.items.length - 1
+
+                      const getFirstItemImage = (): string | null => {
+                        if (!firstItem) return null
+                        const images = firstItem.product.images
+                        if (images && typeof images === 'object' && !Array.isArray(images)) {
+                          const obj = images as Record<string, string[]>
+                          if (firstItem.color && obj[firstItem.color]?.length) return obj[firstItem.color][0]
+                          const firstKey = Object.keys(obj)[0]
+                          if (firstKey && obj[firstKey]?.length) return obj[firstKey][0]
+                        }
+                        if (Array.isArray(images) && images.length > 0) return images[0]
+                        return null
+                      }
+
+                      const firstImage = getFirstItemImage()
+
                       return (
-                        <button
+                        <div
                           key={order.id}
-                          onClick={() => handleOrderClick(order.id)}
-                          className="w-full text-left p-4 border border-gray-200 rounded-xl hover:border-primary hover:shadow-md transition-all"
+                          className="rounded-2xl border border-gray-200 overflow-hidden hover:border-primary/50 hover:shadow-md transition-all flex flex-col group"
                         >
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <p className="font-semibold">{order.order_code}</p>
-                                <Badge
-                                  className={`${statusInfo.color === 'yellow' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                                      statusInfo.color === 'blue' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                        statusInfo.color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                                          statusInfo.color === 'green' ? 'bg-green-50 text-green-700 border-green-200' :
-                                            'bg-red-50 text-red-700 border-red-200'
-                                    }`}
-                                >
-                                  {statusInfo.label}
-                                </Badge>
+                          {/* Corpo clicável */}
+                          <div
+                            className="p-4 flex-1 cursor-pointer"
+                            onClick={() => handleOrderClick(order.id)}
+                          >
+                            {/* Status + Data */}
+                            <div className="flex items-center justify-between mb-3">
+                              <Badge className={cn(
+                                'gap-1 text-xs font-medium',
+                                statusInfo.color === 'yellow' && 'bg-amber-50 text-amber-700 border-amber-200',
+                                statusInfo.color === 'blue' && 'bg-blue-50 text-blue-700 border-blue-200',
+                                statusInfo.color === 'purple' && 'bg-purple-50 text-purple-700 border-purple-200',
+                                statusInfo.color === 'green' && 'bg-green-50 text-green-700 border-green-200',
+                                statusInfo.color === 'red' && 'bg-red-50 text-red-700 border-red-200',
+                              )}>
+                                {statusInfo.label}
+                              </Badge>
+                              <span className="text-xs text-gray-400">{formatDate(order.created_at)}</span>
+                            </div>
+
+                            {/* Foto + Nome do primeiro produto */}
+                            <div className="flex items-center gap-3 mb-4">
+                              <div className="relative w-14 h-14 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                                {firstImage ? (
+                                  <Image
+                                    src={buildImageUrl(firstImage)}
+                                    alt={firstItem?.product.name ?? ''}
+                                    fill
+                                    className="object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <Package className="w-5 h-5 text-gray-300" />
+                                  </div>
+                                )}
                               </div>
-                              <p className="text-sm text-gray-500 mb-1">{order.store?.name || 'Loja'}</p>
-                              <div className="flex items-center gap-4 text-sm text-gray-400">
-                                <span className="flex items-center gap-1">
-                                  {getStatusIcon(order.status)}
-                                  {statusInfo.description}
-                                </span>
-                                <span>{formatDate(order.created_at)}</span>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-sm text-gray-900 group-hover:text-primary transition-colors line-clamp-2">
+                                  {firstItem?.product.name ?? 'Produto'}
+                                </p>
+                                {extraItems > 0 && (
+                                  <p className="text-xs text-gray-400 mt-0.5">
+                                    + {extraItems} {extraItems === 1 ? 'item' : 'itens'}
+                                  </p>
+                                )}
                               </div>
                             </div>
-                            <div className="text-right">
-                              <p className="font-semibold text-lg">{formatPrice(parseFloat(order.total))}</p>
-                              <ChevronRight className="w-5 h-5 text-gray-400 mt-1 ml-auto" />
+
+                            {/* Total */}
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-gray-400">{order.store?.name || 'Loja'}</span>
+                              <span className="font-bold text-base text-gray-900">
+                                {formatPrice(parseFloat(order.total))}
+                              </span>
                             </div>
                           </div>
-                        </button>
+
+                          {/* Ações */}
+                          <div
+                            className="px-3 pb-3 grid grid-cols-2 gap-2"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="gap-1 text-xs h-8"
+                              onClick={() => handleOrderClick(order.id)}
+                            >
+                              Ver detalhes
+                              <ChevronRight className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="gap-1 text-xs h-8 text-primary border-primary/30 hover:bg-primary/5"
+                              disabled={isRepeating}
+                              onClick={() => repeatOrder(order.id, { onSuccess: () => { onClose(); onOpenCart?.() } })}
+                            >
+                              <RotateCcw className={cn('w-3 h-3', isRepeating && 'animate-spin')} />
+                              Repetir
+                            </Button>
+                          </div>
+                        </div>
                       )
                     })}
                   </div>
