@@ -3,20 +3,11 @@
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatPrice, buildImageUrl } from '@/lib/utils'
+import { getFirstProductImage } from '@/lib/imageUtils'
 import { RecentOrder } from '@/hooks/useDashboard'
 import Image from 'next/image'
 import { Package, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-
-/** Retorna a primeira URL de imagem seja array ou objeto por cor (ex: { "Preto": ["url"] }) */
-function getFirstImageUrl(images: string[] | Record<string, string[]> | undefined): string | null {
-  if (!images) return null
-  if (Array.isArray(images)) return images[0] ?? null
-  const firstKey = Object.keys(images)[0]
-  if (!firstKey) return null
-  const arr = images[firstKey]
-  return Array.isArray(arr) && arr.length > 0 ? arr[0] : null
-}
 
 interface DashboardRecentOrdersProps {
   orders: RecentOrder[]
@@ -66,7 +57,7 @@ export function DashboardRecentOrders({ orders }: DashboardRecentOrdersProps) {
             {displayedOrdersMobile.map((order, index) => {
               const firstItem = order.items && order.items.length > 0 ? order.items[0] : null
               const totalQuantity = order.items?.reduce((sum, item) => sum + item.quantity, 0) || 0
-              const firstImageUrl = firstItem ? getFirstImageUrl(firstItem.images) : null
+              const firstImageUrl = firstItem ? getFirstProductImage(firstItem.images) : null
 
               return (
                 <div
@@ -159,29 +150,17 @@ export function DashboardRecentOrders({ orders }: DashboardRecentOrdersProps) {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-xs font-bold text-gray-600 uppercase tracking-wider">
-                    <div className="flex items-center gap-1">
-                      Nome do Produto
-
-                    </div>
+                  <th className="text-left py-3 px-4 text-xs font-bold text-gray-600 uppercase tracking-wider w-[45%] max-w-0">
+                    Produto
                   </th>
-                  <th className="text-left py-3 px-4 text-xs font-bold text-gray-600 uppercase tracking-wider">
-                    <div className="flex items-center gap-1">
-                      Preço
-
-                    </div>
+                  <th className="text-left py-3 px-4 text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                    Preço
                   </th>
-                  <th className="text-left py-3 px-4 text-xs font-bold text-gray-600 uppercase tracking-wider">
-                    <div className="flex items-center gap-1">
-                      Total de Pedidos
-
-                    </div>
+                  <th className="text-center py-3 px-4 text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                    Qtd.
                   </th>
-                  <th className="text-left py-3 px-4 text-xs font-bold text-gray-600 uppercase tracking-wider">
-                    <div className="flex items-center gap-1">
-                      Valor Total
-
-                    </div>
+                  <th className="text-left py-3 px-4 text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                    Total
                   </th>
                 </tr>
               </thead>
@@ -189,19 +168,19 @@ export function DashboardRecentOrders({ orders }: DashboardRecentOrdersProps) {
                 {orders.map((order, index) => {
                   const firstItem = order.items && order.items.length > 0 ? order.items[0] : null
                   const totalQuantity = order.items?.reduce((sum, item) => sum + item.quantity, 0) || 0
-                  const firstImageUrl = firstItem ? getFirstImageUrl(firstItem.images) : null
+                  const firstImageUrl = firstItem ? getFirstProductImage(firstItem.images) : null
                   const bgColor = index % 2 === 0 ? 'bg-white' : 'bg-[#FAFAFB]'
 
                   return (
                     <tr
                       key={order.id}
-                      className={` border-gray-100 ${bgColor}`}
+                      className={`border-gray-100 ${bgColor}`}
                     >
-                      <td className="p-4 rounded-xl">
+                      <td className="p-4 rounded-xl max-w-0 w-[45%]">
                         {firstItem ? (
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2 overflow-hidden">
                             {firstImageUrl ? (
-                              <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                              <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                                 <Image
                                   src={buildImageUrl(firstImageUrl)}
                                   alt={firstItem.product_name}
@@ -210,11 +189,11 @@ export function DashboardRecentOrders({ orders }: DashboardRecentOrdersProps) {
                                 />
                               </div>
                             ) : (
-                              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                                <Package className="h-5 w-5 text-gray-400" />
+                              <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                <Package className="h-4 w-4 text-gray-400" />
                               </div>
                             )}
-                            <span className="text-sm text-primary">
+                            <span className="text-sm text-primary truncate min-w-0">
                               {firstItem.product_name}
                             </span>
                           </div>

@@ -23,3 +23,16 @@ export function buildImageUrl(imagePath: string): string {
 export function buildImageUrls(imagePaths: string[]): string[] {
   return imagePaths.map(buildImageUrl)
 }
+
+/**
+ * Retorna a primeira URL de imagem de um produto.
+ * Suporta dois formatos: array simples ou objeto por cor { "Preto": ["url"] }.
+ */
+export function getFirstProductImage(images: string[] | Record<string, string[]> | undefined): string | null {
+  if (!images) return null
+  if (Array.isArray(images)) return images[0] ?? null
+  const firstKey = Object.keys(images)[0]
+  if (!firstKey) return null
+  const arr = images[firstKey]
+  return Array.isArray(arr) && arr.length > 0 ? arr[0] : null
+}
