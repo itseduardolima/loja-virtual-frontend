@@ -12,19 +12,27 @@ import Link from 'next/link'
 
 interface DashboardTopProductsProps {
   products: TopProduct[]
+  hasDateFilter?: boolean
+  isViewingToday?: boolean
 }
 
 const RANK_LABELS = ['🥇', '🥈', '🥉']
 
-export function DashboardTopProducts({ products }: DashboardTopProductsProps) {
+export function DashboardTopProducts({ products, hasDateFilter, isViewingToday }: DashboardTopProductsProps) {
   const [showAllMobile, setShowAllMobile] = useState(false)
   const initialMobileLimit = 4
   const displayedMobile = showAllMobile ? products : products.slice(0, initialMobileLimit)
   const hasMore = products.length > initialMobileLimit
 
+  const emptyMessage = isViewingToday
+    ? 'Nenhuma venda hoje'
+    : hasDateFilter
+      ? 'Nenhuma venda no período selecionado'
+      : 'Nenhum produto vendido ainda'
+
   if (products.length === 0) {
     return (
-      <Card className="border-0 hidden md:block">
+      <Card className="border-0 shadow-sm rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-2xl font-bold text-primary">
             Produtos Mais Vendidos
@@ -33,7 +41,7 @@ export function DashboardTopProducts({ products }: DashboardTopProductsProps) {
         <CardContent>
           <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-center">
             <Package className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mb-4" />
-            <p className="text-sm sm:text-base text-gray-500">Nenhum produto vendido ainda</p>
+            <p className="text-sm sm:text-base text-gray-500">{emptyMessage}</p>
           </div>
         </CardContent>
       </Card>
@@ -43,64 +51,64 @@ export function DashboardTopProducts({ products }: DashboardTopProductsProps) {
   return (
     <>
       {/* Mobile */}
-      <Card className="border-0 block md:hidden bg-transparent">
-        <CardHeader className="flex flex-row items-center justify-between pb-3 sm:pb-4 px-0">
-          <CardTitle className="text-lg sm:text-xl font-bold text-primary">
-            Produtos Mais Vendidos
-          </CardTitle>
+      <Card className="border-0 shadow-sm rounded-2xl block md:hidden">
+        <CardHeader className="pb-3 pt-5 px-4">
+          <CardTitle className="text-lg font-bold text-primary">Produtos Mais Vendidos</CardTitle>
         </CardHeader>
-        <CardContent
-          className="h-auto overflow-y-auto scrollbar-thin pb-2 p-0"
-          style={{ scrollbarWidth: 'thin', scrollbarColor: '#D1D5DB transparent' }}
-        >
-          <div className="space-y-3">
-            {displayedMobile.map((product, index) => {
-              const imageUrl = getFirstProductImage(product.images)
-              return (
-                <Link key={product.product_id} href={`/vendedor/produtos/${product.product_id}`} className="block">
-                  <div className="rounded-xl p-3 sm:p-4 bg-white border border-gray-100">
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className="text-lg w-7 text-center flex-shrink-0">
-                        {index < 3 ? RANK_LABELS[index] : <span className="text-sm text-gray-500">#{index + 1}</span>}
-                      </span>
-                      {imageUrl ? (
-                        <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                          <Image src={buildImageUrl(imageUrl)} alt={product.product_name} fill className="object-cover" />
-                        </div>
-                      ) : (
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-                          <Package className="h-5 w-5 sm:h-6 sm:w-6 text-gray-400" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm sm:text-base font-semibold text-primary truncate">
-                          {product.product_name}
-                        </p>
-                        <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
-                          {product.total_sold} un. · {product.total_orders} pedidos
-                        </p>
-                      </div>
+        <CardContent className="px-4 pb-4 space-y-2">
+          {displayedMobile.map((product, index) => {
+            const imageUrl = getFirstProductImage(product.images)
+            return (
+              <Link key={product.product_id} href={`/vendedor/produtos/${product.product_id}`} className="block">
+                <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-3">
+                  {/* Rank */}
+                  <span className="text-lg w-7 text-center flex-shrink-0 leading-none">
+                    {index < 3
+                      ? RANK_LABELS[index]
+                      : <span className="text-xs font-bold text-gray-400">#{index + 1}</span>
+                    }
+                  </span>
+
+                  {/* Imagem */}
+                  {imageUrl ? (
+                    <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-gray-200 flex-shrink-0">
+                      <Image src={buildImageUrl(imageUrl)} alt={product.product_name} fill className="object-cover" />
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-600">Receita gerada</span>
-                      <span className="text-sm font-bold text-primary">{formatPrice(product.revenue)}</span>
+                  ) : (
+                    <div className="w-12 h-12 rounded-xl bg-gray-200 flex items-center justify-center flex-shrink-0">
+                      <Package className="h-5 w-5 text-gray-400" />
                     </div>
+                  )}
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-primary truncate leading-tight">
+                      {product.product_name}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {product.total_sold} vendidos · {product.total_orders} pedidos
+                    </p>
                   </div>
-                </Link>
-              )
-            })}
-          </div>
+
+                  {/* Receita */}
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-sm font-bold text-green-600">{formatPrice(product.revenue)}</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">receita</p>
+                  </div>
+                </div>
+              </Link>
+            )
+          })}
+
           {hasMore && (
-            <div className="pt-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowAllMobile(!showAllMobile)}
-                className="w-full flex items-center justify-center gap-2 text-sm"
-              >
-                {showAllMobile ? 'Exibir menos' : 'Exibir mais'}
-                <ChevronDown className={`h-4 w-4 transition-transform ${showAllMobile ? 'rotate-180' : ''}`} />
-              </Button>
-            </div>
+            <Button
+              variant="ghost"
+              onClick={() => setShowAllMobile(!showAllMobile)}
+              className="w-full h-9 text-sm text-gray-500 gap-1"
+            >
+              {showAllMobile ? 'Ver menos' : 'Ver mais'}
+              <ChevronDown className={`h-4 w-4 transition-transform ${showAllMobile ? 'rotate-180' : ''}`} />
+            </Button>
           )}
         </CardContent>
       </Card>
@@ -140,7 +148,7 @@ export function DashboardTopProducts({ products }: DashboardTopProductsProps) {
                   const bgColor = index % 2 === 0 ? 'bg-white' : 'bg-[#FAFAFB]'
                   return (
                     <tr key={product.product_id} className={`border-gray-100 ${bgColor}`}>
-                      <td className="p-4 rounded-xl max-w-0 w-[50%]">
+                      <td className="p-4 max-w-0 w-[50%]">
                         <Link href={`/vendedor/produtos/${product.product_id}`}>
                           <div className="flex items-center gap-3 overflow-hidden">
                             <span className="text-base w-6 text-center flex-shrink-0">

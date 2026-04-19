@@ -20,8 +20,8 @@ interface DashboardDateRangeFilterProps {
   dateToInput: string
   hasDateFilter: boolean
   onRangeSelect: (range: { dateFrom: string; dateTo: string } | null) => void
-  onClear: () => void
   className?: string
+  compact?: boolean
 }
 
 export function DashboardDateRangeFilter({
@@ -29,8 +29,8 @@ export function DashboardDateRangeFilter({
   dateToInput,
   hasDateFilter,
   onRangeSelect,
-  onClear,
   className,
+  compact = false,
 }: DashboardDateRangeFilterProps) {
   const [open, setOpen] = React.useState(false)
   const [isMobile, setIsMobile] = React.useState(false)
@@ -89,33 +89,35 @@ export function DashboardDateRangeFilter({
     setOpen(false)
   }
 
-  /** Atalho: só preenche o intervalo no calendário; o usuário precisa clicar em Aplicar para filtrar. */
   const setQuickRangeInCalendar = (days: number) => {
     const to = new Date()
     const from = new Date(to)
     from.setDate(from.getDate() - days)
     setPendingRange({ from, to })
     setActiveQuickDays(days)
+    applyRange(from, to)
   }
 
+  const datePattern = compact ? 'dd/MM' : 'dd/MM/yyyy'
   const label =
     dateFromInput && dateToInput
-      ? `${format(new Date(dateFromInput + 'T12:00:00'), 'dd/MM/yyyy', { locale: ptBR })} - ${format(new Date(dateToInput + 'T12:00:00'), 'dd/MM/yyyy', { locale: ptBR })}`
-      : 'Selecionar período'
+      ? `${format(new Date(dateFromInput + 'T12:00:00'), datePattern, { locale: ptBR })} - ${format(new Date(dateToInput + 'T12:00:00'), datePattern, { locale: ptBR })}`
+      : compact ? 'Período' : 'Selecionar período'
 
   return (
-    <div className={cn('flex items-center gap-2 sm:gap-3 w-full sm:w-auto', className)}>
+    <div className={cn('flex items-center gap-2 sm:gap-3', compact ? 'w-auto' : 'w-full sm:w-auto', className)}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
             size="sm"
             className={cn(
-              'h-10 sm:h-12 justify-start text-left font-normal w-full sm:w-auto sm:min-w-[240px] rounded-xl relative pr-9',
+              'justify-start text-left font-normal rounded-xl relative pr-9',
+              compact ? 'h-10 flex-1' : 'h-10 sm:h-12 w-full sm:w-auto sm:min-w-[240px]',
               !dateFromInput && 'text-muted-foreground'
             )}
           >
-            <CalendarIcon className="mr-2 sm:mr-4 h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+            <CalendarIcon className={cn('shrink-0', compact ? 'mr-1.5 h-4 w-4' : 'mr-2 sm:mr-4 h-4 w-4 sm:h-5 sm:w-5')} />
             <span className="flex-1 truncate text-left text-sm">{label}</span>
             {hasDateFilter && (
               <button
@@ -125,7 +127,7 @@ export function DashboardDateRangeFilter({
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
-                  onClear()
+                  onRangeSelect(null)
                 }}
               >
                 <X className="h-4 w-4" />

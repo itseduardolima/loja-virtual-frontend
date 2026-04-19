@@ -38,6 +38,8 @@ export function useOrdersPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearchTerm = useDebounce(searchTerm, 1000)
   const [dateRange, setDateRange] = useState<{ dateFrom: string; dateTo: string } | null>(() => {
+    // Se veio de um redirect com orderId, remove o filtro de data para garantir que o pedido apareça
+    if (searchParams.get('orderId')) return null
     const to = new Date()
     const from = new Date()
     from.setDate(from.getDate() - 6)

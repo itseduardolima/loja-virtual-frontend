@@ -202,6 +202,12 @@ export default function OrdersPage() {
           onMoveOrder={handleMoveOrder}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
+          dateFromInput={dateFromInput}
+          dateToInput={dateToInput}
+          hasDateFilter={hasDateFilter}
+          onRangeSelect={handleRangeSelect}
+          onExport={() => exportOrders(exportFilters)}
+          isExporting={isExporting}
         />
       </div>
 
@@ -248,7 +254,6 @@ export default function OrdersPage() {
                 dateToInput={dateToInput}
                 hasDateFilter={hasDateFilter}
                 onRangeSelect={handleRangeSelect}
-                onClear={() => handleRangeSelect(null)}
               />
 
               <Button
@@ -290,6 +295,7 @@ export default function OrdersPage() {
                     onSelectOrder={setSelectedOrderId}
                     hasMore={columnHasMore[statusKey]}
                     onShowMore={() => handleShowMore(statusKey)}
+                    hasDateFilter={hasDateFilter}
                   />
                 )
               })}
