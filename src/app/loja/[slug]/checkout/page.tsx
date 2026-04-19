@@ -149,12 +149,12 @@ export default function CheckoutPage() {
                     type="email"
                     value={formData.customer_email}
                     onChange={(e) =>
-                      handleInput("customer_email", e.target.value.slice(0, 150))
+                      handleInput("customer_email", e.target.value.slice(0, 100))
                     }
                     onFocus={() => setFocusedField("customer_email")}
                     onBlur={() => setFocusedField(null)}
                     placeholder="seu@email.com"
-                    maxLength={150}
+                    maxLength={100}
                     className={errors.customer_email ? "border-red-500" : ""}
                   />
                   {errors.customer_email ? (
@@ -163,7 +163,7 @@ export default function CheckoutPage() {
                     </p>
                   ) : focusedField === "customer_email" && (
                     <p className="text-xs text-gray-400 mt-0.5">
-                      {formData.customer_email.length}/150
+                      {formData.customer_email.length}/100
                     </p>
                   )}
                 </div>
@@ -208,19 +208,17 @@ export default function CheckoutPage() {
                   <Textarea
                     id="notes"
                     value={formData.notes}
-                    onChange={(e) => handleInput("notes", e.target.value.slice(0, 500))}
+                    onChange={(e) => handleInput("notes", e.target.value.slice(0, 230))}
                     onFocus={() => setFocusedField("notes")}
                     onBlur={() => setFocusedField(null)}
                     placeholder="Alguma observação sobre o pedido?"
                     rows={3}
-                    maxLength={500}
+                    maxLength={230}
                     className="resize-none"
                   />
-                  {focusedField === "notes" && (
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      {formData.notes.length}/500
-                    </p>
-                  )}
+                  <p className={`text-xs mt-0.5 ${formData.notes.length >= 210 ? 'text-orange-500' : 'text-gray-400'}`}>
+                    {formData.notes.length}/230
+                  </p>
                 </div>
               </div>
             </div>
@@ -772,7 +770,7 @@ export default function CheckoutPage() {
                   !formData.customer_name.trim() ||
                   !formData.customer_email.trim() ||
                   !formData.customer_phone.trim() ||
-                  !formData.customer_document.trim()
+                  formData.customer_document.length < 11
                 }
               >
                 {isCheckoutLoading ? "Processando..." : "Finalizar Pedido"}

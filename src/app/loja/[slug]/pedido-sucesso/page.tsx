@@ -52,14 +52,14 @@ export default function PedidoSucessoPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col">
       <StoreHeader
         storeInfo={storeInfo}
         slug={slug}
         onCartClick={() => setIsCartOpen(true)}
       />
 
-      <main className="flex-1 mx-auto w-full max-w-7xl py-8 sm:py-12">
+      <main className="flex-1 w-full px-4 sm:px-6 lg:px-20 py-8 sm:py-12">
         {/* Sucesso */}
         <section className="text-center mb-10 sm:mb-14">
           <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-green-100 text-green-600 mb-4 sm:mb-6">
@@ -87,7 +87,7 @@ export default function PedidoSucessoPage() {
                 Próximos passos
               </h2>
               <p className="text-amber-800 text-sm sm:text-base">
-                As questões de <strong>pagamento e entrega</strong> devem ser alinhadas diretamente com o vendedor pelo WhatsApp. 
+                As questões de <strong>pagamento e entrega</strong> devem ser alinhadas diretamente com o vendedor pelo WhatsApp.
                 Responda à conversa que abrimos para você e combine a forma de pagamento e o envio do pedido.
               </p>
             </div>

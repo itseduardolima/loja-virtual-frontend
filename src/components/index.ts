@@ -74,6 +74,7 @@ export { DashboardStatsCard } from './Dashboard/DashboardStatsCard'
 export { DashboardRevenueChart } from './Dashboard/DashboardRevenueChart'
 export { DashboardRecentOrders } from './Dashboard/DashboardRecentOrders'
 export { DashboardTopProducts } from './Dashboard/DashboardTopProducts'
+export { DashboardCartConversion } from './Dashboard/DashboardCartConversion'
 export {
   ChartContainer,
   ChartTooltip,

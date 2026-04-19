@@ -12,7 +12,7 @@ export interface CustomerOrderItem {
     id: number
     name: string
     price: string
-    images: string[]
+    images: string[] | Record<string, string[]>
     dynamic_fields?: Array<{
       field_name: string
       value: string
@@ -97,6 +97,7 @@ export interface UpdateCustomerProfileDto {
   name?: string
   email?: string
   phone?: string
+  document?: string
 }
 
 export interface CustomerProfile {
@@ -104,6 +105,7 @@ export interface CustomerProfile {
   name: string
   email: string
   phone: string | null
+  document: string | null
   updated_at: string
 }
 

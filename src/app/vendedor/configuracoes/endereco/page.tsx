@@ -3,6 +3,7 @@
 import { useEndereco } from './useEndereco'
 import { Card, CardContent, Input, Label, Button, LoadingSpinner } from '@/components'
 import LoadingPage from '@/components/Layout/LoadingPage'
+import { Loader2 } from 'lucide-react'
 
 export default function EnderecoPage() {
   const {
@@ -11,6 +12,9 @@ export default function EnderecoPage() {
     formData,
     errors,
     isFormValid,
+    isFetchingCep,
+    cepError,
+    handleZipcodeChange,
     handleInputChange,
     handleSave
   } = useEndereco()
@@ -85,14 +89,23 @@ export default function EnderecoPage() {
                 <Label htmlFor="zipcode" className="text-sm font-medium text-gray-700">
                   CEP
                 </Label>
-                <Input
-                  id="zipcode"
-                  value={formData.zipcode}
-                  onChange={(e) => handleInputChange('zipcode', e.target.value)}
-                  placeholder="Digite o CEP"
-                  className={`mt-2 ${errors.zipcode ? 'border-red-500 focus:ring-red-500' : ''}`}
-                />
-                {errors.zipcode && (
+                <div className="relative mt-2">
+                  <Input
+                    id="zipcode"
+                    value={formData.zipcode}
+                    onChange={(e) => handleZipcodeChange(e.target.value)}
+                    placeholder="00000-000"
+                    maxLength={9}
+                    className={`${errors.zipcode || cepError ? 'border-red-500' : ''} ${isFetchingCep ? 'pr-10' : ''}`}
+                  />
+                  {isFetchingCep && (
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-gray-400" />
+                  )}
+                </div>
+                {cepError && (
+                  <p className="mt-1 text-sm text-red-600">{cepError}</p>
+                )}
+                {errors.zipcode && !cepError && (
                   <p className="mt-1 text-sm text-red-600">{errors.zipcode}</p>
                 )}
               </div>

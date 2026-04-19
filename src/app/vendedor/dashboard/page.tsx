@@ -6,7 +6,8 @@ import { DashboardStatsCard } from '@/components/Dashboard/DashboardStatsCard'
 import { DashboardRevenueChart } from '@/components/Dashboard/DashboardRevenueChart'
 import { DashboardRecentOrders } from '@/components/Dashboard/DashboardRecentOrders'
 import { DashboardTopProducts } from '@/components/Dashboard/DashboardTopProducts'
-import { AlertTriangle, BarChart3, FileText, Tag, Users } from 'lucide-react'
+import { DashboardCartConversion } from '@/components/Dashboard/DashboardCartConversion'
+import { AlertTriangle, BarChart3, FileText, Tag } from 'lucide-react'
 import LoadingPage from '@/components/Layout/LoadingPage'
 
 export default function DashboardPage() {
@@ -91,12 +92,7 @@ export default function DashboardPage() {
           icon={Tag}
           variant="green"
         />
-        <DashboardStatsCard
-          title="Novos Clientes"
-          value={summary?.today?.new_customers || 0}
-          icon={Users}
-          variant="purple"
-        />
+        <DashboardCartConversion data={summary?.cart_conversion} />
       </div>
 
       {/* Gráficos e Listas */}

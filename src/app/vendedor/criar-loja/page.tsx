@@ -24,181 +24,107 @@ import {
   Instagram,
   Facebook,
   Mail,
-  MapPin,
-  Clock,
-  CreditCard,
-  AlertCircle,
-  ChevronDown,
+  Info,
 } from "lucide-react";
 import Image from "next/image";
 
 export default function CriarLojaPage() {
-  const hookData = useCreateStorePage();
+  const h = useCreateStorePage();
 
-  // Função auxiliar para acessar erros de forma segura
-  const getError = (step: 1 | 2 | 3 | 4, field: string): string | undefined => {
-    const errors: { [key: string]: string } | undefined = step === 1 ? hookData.step1Errors : 
-                   step === 2 ? hookData.step2Errors :
-                   step === 3 ? hookData.step3Errors : hookData.step4Errors;
-    return errors?.[field];
-  };
+  const err = (step: 1 | 2 | 3, field: string): string | undefined =>
+    (h.stepErrors[step - 1] as Record<string, string>)[field];
 
-  if (hookData.loading) {
-    return <LoadingPage />;
-  }
+  if (h.loading) return <LoadingPage />;
 
-  // Se o usuário já possui uma loja, mostrar mensagem
-  if (hookData.hasStore) {
+  if (h.hasStore) {
     return (
-      <div className="min-h-[calc(100vh-200px)] flex items-center justify-center px-3 sm:px-4">
-        <div className="max-w-7xl mx-auto w-full py-6 sm:py-10">
-          <div className="max-w-2xl mx-auto">
-            <Card className="border-0">
-              <CardContent className="p-6 sm:p-12 text-center">
-                <div className="mb-6 sm:mb-8">
-                  <div className="mx-auto w-20 h-20 sm:w-24 sm:h-24 bg-green-100 rounded-full flex items-center justify-center mb-4 sm:mb-6">
-                    <Store className="h-10 w-10 sm:h-12 sm:w-12 text-green-600" />
-                  </div>
-                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
-                    Você já possui uma loja!
-                  </h1>
-                  <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 break-words">
-                    Você já tem uma loja cadastrada:{" "}
-                    <strong>{hookData.store?.name}</strong>
-                  </p>
-                </div>
-
-                <Button
-                  onClick={() => hookData.router?.push("/vendedor")}
-                  className="w-full sm:w-auto px-6 sm:px-8 py-3 flex items-center justify-center gap-2 mx-auto"
-                >
-                  Ir para página inicial
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+      <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 flex items-center justify-center min-h-[60vh]">
+        <Card className="max-w-lg w-full border-0">
+          <CardContent className="p-8 text-center">
+            <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
+              <Store className="h-10 w-10 text-green-600" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-3">
+              Você já possui uma loja!
+            </h1>
+            <p className="text-gray-600 mb-8">
+              Loja cadastrada: <strong>{h.store?.name}</strong>
+            </p>
+            <Button onClick={() => h.router?.push("/vendedor")} className="w-full sm:w-auto px-8">
+              Ir para página inicial
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
+  /* ─── Step 1: Informações Básicas ─── */
   const renderStep1 = () => (
     <div className="space-y-6">
       <div>
-        <Label htmlFor="name" className="text-base font-semibold">
+        <Label htmlFor="name" className="text-sm font-semibold">
           Nome da Loja *
         </Label>
         <Input
           id="name"
-          value={hookData.formData.name}
-          onChange={(e) => hookData.handleInputChange("name", e.target.value)}
+          value={h.formData.name}
+          onChange={(e) => h.handleInputChange("name", e.target.value)}
           placeholder="Digite o nome da sua loja"
-          className={`mt-2 ${getError(1, 'name') ? 'border-red-500 focus:ring-red-500' : ''}`}
+          className={`mt-2 ${err(1, "name") ? "border-red-500" : ""}`}
         />
-        {getError(1, 'name') && (
-          <p className="mt-1 text-sm text-red-600">{getError(1, 'name')}</p>
+        {err(1, "name") && (
+          <p className="mt-1 text-sm text-red-600">{err(1, "name")}</p>
         )}
       </div>
 
       <div>
-        <Label htmlFor="description" className="text-base font-semibold">
-          Descrição da Loja
+        <Label htmlFor="description" className="text-sm font-semibold">
+          Descrição{" "}
+          <span className="text-gray-400 font-normal">(opcional)</span>
         </Label>
         <Textarea
           id="description"
-          value={hookData.formData.description}
-          onChange={(e) =>
-            hookData.handleInputChange("description", e.target.value)
-          }
-          placeholder="Digite a descrição da sua loja"
-          className={`mt-2 ${getError(1, 'description') ? 'border-red-500 focus:ring-red-500' : ''}`}
+          value={h.formData.description}
+          onChange={(e) => h.handleInputChange("description", e.target.value)}
+          placeholder="Descreva sua loja em poucas palavras"
+          className="mt-2"
           rows={3}
           maxLength={170}
         />
-        {getError(1, 'description') && (
-          <p className="mt-1 text-sm text-red-600">{getError(1, 'description')}</p>
-        )}
-      </div>
-
-      <div>
-        <Label className="text-base font-semibold">Nichos da Loja *</Label>
-        <p className="text-sm text-gray-600 mt-1 mb-4">
-          Selecione os nichos que melhor descrevem sua loja
+        <p className="mt-1 text-xs text-gray-400">
+          {h.formData.description?.length || 0}/170
         </p>
-        {hookData.nichesLoading ? (
-          <div className="flex justify-center py-8">
-            <LoadingSpinner size="sm" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {hookData.nichesData?.data.map((niche: any) => (
-              <div
-                key={niche.id}
-                onClick={() => hookData.handleNicheToggle(niche.id.toString())}
-                className="flex items-center gap-3 p-3 rounded-lg border border-secondary hover:border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer"
-              >
-                <Checkbox
-                  id={niche.id.toString()}
-                  checked={hookData.formData.niche_ids.includes(
-                    niche.id.toString()
-                  )}
-                  onCheckedChange={() =>
-                    hookData.handleNicheToggle(niche.id.toString())
-                  }
-                />
-                <div className="flex-1">
-                  <label
-                    htmlFor={niche.id.toString()}
-                    className="block cursor-pointer"
-                  >
-                    <span className="font-medium text-gray-900">
-                      {niche.name}
-                    </span>
-                    {niche.description && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        {niche.description}
-                      </p>
-                    )}
-                  </label>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        {getError(1, 'niche_ids') && (
-          <p className="mt-2 text-sm text-red-600">{getError(1, 'niche_ids')}</p>
-        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <Label className="text-base font-semibold">Logo da Loja</Label>
-          <p className="text-sm text-gray-600 mt-1 mb-4">
-            Adicione o logo da sua loja (opcional)
-          </p>
-          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+          <Label className="text-sm font-semibold">
+            Logo <span className="text-gray-400 font-normal">(opcional)</span>
+          </Label>
+          <div className="flex flex-wrap items-center gap-3 mt-3">
             <input
               type="file"
               accept="image/*"
               onChange={(e) =>
-                hookData.handleFileChange("logo", e.target.files?.[0] || null)
+                h.handleFileChange("logo", e.target.files?.[0] || null)
               }
               className="hidden"
               id="logo-upload"
             />
             <label
               htmlFor="logo-upload"
-              className="px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 transition-colors shrink-0"
+              className="px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary transition-colors text-sm"
             >
               Escolher Logo
             </label>
-            {hookData.logoPreview && (
-              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden border shrink-0">
+            {h.logoPreview && (
+              <div className="w-14 h-14 rounded-lg overflow-hidden border">
                 <Image
-                  src={hookData.logoPreview}
-                  alt="Logo preview"
-                  width={64}
-                  height={64}
+                  src={h.logoPreview}
+                  alt="Logo"
+                  width={56}
+                  height={56}
                   className="object-cover w-full h-full"
                 />
               </div>
@@ -207,33 +133,32 @@ export default function CriarLojaPage() {
         </div>
 
         <div>
-          <Label className="text-base font-semibold">Banner da Loja</Label>
-          <p className="text-sm text-gray-600 mt-1 mb-4">
-            Adicione um banner para sua loja (opcional)
-          </p>
-          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+          <Label className="text-sm font-semibold">
+            Banner <span className="text-gray-400 font-normal">(opcional)</span>
+          </Label>
+          <div className="flex flex-wrap items-center gap-3 mt-3">
             <input
               type="file"
               accept="image/*"
               onChange={(e) =>
-                hookData.handleFileChange("banner", e.target.files?.[0] || null)
+                h.handleFileChange("banner", e.target.files?.[0] || null)
               }
               className="hidden"
               id="banner-upload"
             />
             <label
               htmlFor="banner-upload"
-              className="px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 transition-colors shrink-0"
+              className="px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary transition-colors text-sm"
             >
               Escolher Banner
             </label>
-            {hookData.bannerPreview && (
-              <div className="w-28 h-14 sm:w-32 sm:h-16 rounded-lg overflow-hidden border shrink-0">
+            {h.bannerPreview && (
+              <div className="w-28 h-14 rounded-lg overflow-hidden border">
                 <Image
-                  src={hookData.bannerPreview}
-                  alt="Banner preview"
-                  width={128}
-                  height={64}
+                  src={h.bannerPreview}
+                  alt="Banner"
+                  width={112}
+                  height={56}
                   className="object-cover w-full h-full"
                 />
               </div>
@@ -244,13 +169,71 @@ export default function CriarLojaPage() {
     </div>
   );
 
+  /* ─── Step 2: Nicho ─── */
   const renderStep2 = () => (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">
+        Selecione os nichos que melhor descrevem sua loja
+      </p>
+
+      {h.nichesLoading ? (
+        <div className="flex justify-center py-10">
+          <LoadingSpinner size="sm" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {h.nichesData?.data.map((niche: any) => {
+            const selected = h.formData.niche_ids.includes(niche.id.toString());
+            return (
+              <div
+                key={niche.id}
+                onClick={() => h.handleNicheToggle(niche.id.toString())}
+                className={`flex items-center gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
+                  selected
+                    ? "border-primary bg-primary/5"
+                    : "border-secondary hover:border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                <Checkbox
+                  id={`niche-${niche.id}`}
+                  checked={selected}
+                  onCheckedChange={() =>
+                    h.handleNicheToggle(niche.id.toString())
+                  }
+                />
+                <label
+                  htmlFor={`niche-${niche.id}`}
+                  className="flex-1 cursor-pointer"
+                >
+                  <span className="font-medium text-sm text-gray-900 block">
+                    {niche.name}
+                  </span>
+                  {niche.description && (
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {niche.description}
+                    </p>
+                  )}
+                </label>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {err(2, "niche_ids") && (
+        <p className="text-sm text-red-600">{err(2, "niche_ids")}</p>
+      )}
+    </div>
+  );
+
+  /* ─── Step 3: Contato ─── */
+  const renderStep3 = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <Label
             htmlFor="whatsapp"
-            className="text-base font-semibold flex items-center gap-2"
+            className="text-sm font-semibold flex items-center gap-2"
           >
             <Phone className="h-4 w-4" />
             WhatsApp *
@@ -258,76 +241,28 @@ export default function CriarLojaPage() {
           <div className="mt-2">
             <PhoneCountryInput
               id="whatsapp"
-              value={hookData.formData.whatsapp ?? ''}
-              onValueChange={(val) =>
-                hookData.handleInputChange("whatsapp", val)
-              }
-              placeholder="Digite seu WhatsApp"
+              value={h.formData.whatsapp ?? ""}
+              onValueChange={(val) => h.handleInputChange("whatsapp", val)}
+              placeholder="Número do WhatsApp"
               minLength={8}
               maxLength={15}
               required
-              selectedCountry={hookData.selectedCountry}
-              onSelectedCountryChange={hookData.setSelectedCountry}
-              countriesData={hookData.countriesData}
-              countriesLoading={hookData.countriesLoading}
-              inputClassName={`flex-1 min-w-0 h-12 ${getError(2, 'whatsapp') ? 'border-red-500 focus:ring-red-500' : ''}`}
+              selectedCountry={h.selectedCountry}
+              onSelectedCountryChange={h.setSelectedCountry}
+              countriesData={h.countriesData}
+              countriesLoading={h.countriesLoading}
+              inputClassName={`flex-1 min-w-0 h-12 ${err(3, "whatsapp") ? "border-red-500" : ""}`}
             />
           </div>
-          {getError(2, 'whatsapp') && (
-            <p className="mt-1 text-sm text-red-600">{getError(2, 'whatsapp')}</p>
-          )}
-        </div>
-
-        <div>
-          <Label
-            htmlFor="instagram"
-            className="text-base font-semibold flex items-center gap-2"
-          >
-            <Instagram className="h-4 w-4" />
-            Instagram *
-          </Label>
-          <Input
-            id="instagram"
-            type="url"
-            value={hookData.formData.instagram}
-            onChange={(e) =>
-              hookData.handleInputChange("instagram", e.target.value)
-            }
-            placeholder="https://instagram.com/minhaloja"
-            className={`mt-2 ${getError(2, 'instagram') ? 'border-red-500 focus:ring-red-500' : ''}`}
-          />
-          {getError(2, 'instagram') && (
-            <p className="mt-1 text-sm text-red-600">{getError(2, 'instagram')}</p>
-          )}
-        </div>
-
-        <div>
-          <Label
-            htmlFor="facebook"
-            className="text-base font-semibold flex items-center gap-2"
-          >
-            <Facebook className="h-4 w-4" />
-            Facebook *
-          </Label>
-          <Input
-            id="facebook"
-            type="url"
-            value={hookData.formData.facebook}
-            onChange={(e) =>
-              hookData.handleInputChange("facebook", e.target.value)
-            }
-            placeholder="https://facebook.com/minhaloja"
-            className={`mt-2 ${getError(2, 'facebook') ? 'border-red-500 focus:ring-red-500' : ''}`}
-          />
-          {getError(2, 'facebook') && (
-            <p className="mt-1 text-sm text-red-600">{getError(2, 'facebook')}</p>
+          {err(3, "whatsapp") && (
+            <p className="mt-1 text-sm text-red-600">{err(3, "whatsapp")}</p>
           )}
         </div>
 
         <div>
           <Label
             htmlFor="email"
-            className="text-base font-semibold flex items-center gap-2"
+            className="text-sm font-semibold flex items-center gap-2"
           >
             <Mail className="h-4 w-4" />
             Email *
@@ -335,445 +270,183 @@ export default function CriarLojaPage() {
           <Input
             id="email"
             type="email"
-            value={hookData.formData.email}
-            onChange={(e) =>
-              hookData.handleInputChange("email", e.target.value)
-            }
-            placeholder="Digite seu e-mail ou email da sua loja"
-            className={`mt-2 ${getError(2, 'email') ? 'border-red-500 focus:ring-red-500' : ''}`}
+            value={h.formData.email}
+            onChange={(e) => h.handleInputChange("email", e.target.value)}
+            placeholder="email@suaempresa.com.br"
+            className={`mt-2 ${err(3, "email") ? "border-red-500" : ""}`}
           />
-          {getError(2, 'email') && (
-            <p className="mt-1 text-sm text-red-600">{getError(2, 'email')}</p>
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-        <div>
-          <Label htmlFor="cnpj" className="text-base font-semibold">
-            CNPJ
-          </Label>
-          <Input
-            id="cnpj"
-            value={hookData.formData.cnpj}
-            onChange={(e) =>
-              hookData.handleInputChange("cnpj", e.target.value)
-            }
-            placeholder="Digite seu CNPJ"
-            className={`mt-2 ${getError(2, 'cnpj') ? 'border-red-500 focus:ring-red-500' : ''}`}
-          />
-          {getError(2, 'cnpj') && (
-            <p className="mt-1 text-sm text-red-600">{getError(2, 'cnpj')}</p>
-          )}
-        </div>
-
-        <div>
-          <Label htmlFor="cpf" className="text-base font-semibold">
-            CPF
-          </Label>
-          <Input
-            id="cpf"
-            value={hookData.formData.cpf}
-            onChange={(e) =>
-              hookData.handleInputChange("cpf", e.target.value)
-            }
-            placeholder="Digite seu CPF"
-            className={`mt-2 ${getError(2, 'cpf') ? 'border-red-500 focus:ring-red-500' : ''}`}
-          />
-          {getError(2, 'cpf') && (
-            <p className="mt-1 text-sm text-red-600">{getError(2, 'cpf')}</p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderStep3 = () => (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-      <div>
-          <Label htmlFor="zipcode" className="text-base font-semibold">
-            CEP *
-          </Label>
-          <Input
-            id="zipcode"
-            value={hookData.formData.zipcode}
-            onChange={(e) =>
-              hookData.handleInputChange("zipcode", e.target.value)
-            }
-            placeholder="Digite seu CEP"
-            className={`mt-2 ${getError(3, 'zipcode') ? 'border-red-500 focus:ring-red-500' : ''}`}
-          />
-          {getError(3, 'zipcode') && (
-            <p className="mt-1 text-sm text-red-600">{getError(3, 'zipcode')}</p>
-          )}
-        </div>
-
-        <div>
-          <Label htmlFor="neighborhood" className="text-base font-semibold">
-            Bairro *
-          </Label>
-          <Input
-            id="neighborhood"
-            value={hookData.formData.neighborhood}
-            onChange={(e) =>
-              hookData.handleInputChange("neighborhood", e.target.value)
-            }
-            placeholder="Digite seu bairro"
-            className={`mt-2 ${getError(3, 'neighborhood') ? 'border-red-500 focus:ring-red-500' : ''}`}
-          />
-          {getError(3, 'neighborhood') && (
-            <p className="mt-1 text-sm text-red-600">{getError(3, 'neighborhood')}</p>
-          )}
-        </div>
-        <div className="md:col-span-2">
-          <Label
-            htmlFor="address"
-            className="text-base font-semibold flex items-center gap-2"
-          >
-            <MapPin className="h-4 w-4" />
-            Endereço *
-          </Label>
-          <Input
-            id="address"
-            value={hookData.formData.address}
-            onChange={(e) =>
-              hookData.handleInputChange("address", e.target.value)
-            }
-            placeholder="Digite seu endereço"
-            className={`mt-2 ${getError(3, 'address') ? 'border-red-500 focus:ring-red-500' : ''}`}
-          />
-          {getError(3, 'address') && (
-            <p className="mt-1 text-sm text-red-600">{getError(3, 'address')}</p>
-          )}
-        </div>
-
-        <div>
-          <Label htmlFor="city" className="text-base font-semibold">
-            Cidade *
-          </Label>
-          <Input
-            id="city"
-            value={hookData.formData.city}
-            onChange={(e) => hookData.handleInputChange("city", e.target.value)}
-            placeholder="Digite sua cidade"
-            className={`mt-2 ${getError(3, 'city') ? 'border-red-500 focus:ring-red-500' : ''}`}
-          />
-          {getError(3, 'city') && (
-            <p className="mt-1 text-sm text-red-600">{getError(3, 'city')}</p>
-          )}
-        </div>
-
-        <div>
-          <Label htmlFor="state" className="text-base font-semibold">
-            Estado (UF) *
-          </Label>
-          <Input
-            id="state"
-            value={hookData.formData.state}
-            onChange={(e) =>
-              hookData.handleInputChange("state", e.target.value)
-            }
-            placeholder="Digite seu estado (UF)"
-            className={`mt-2 ${getError(3, 'state') ? 'border-red-500 focus:ring-red-500' : ''}`}
-          />
-          {getError(3, 'state') && (
-            <p className="mt-1 text-sm text-red-600">{getError(3, 'state')}</p>
-          )}
-        </div>
-
-       
-
-        <div>
-          <Label htmlFor="number" className="text-base font-semibold">
-            Número *
-          </Label>
-          <Input
-            id="number"
-            value={hookData.formData.number}
-            onChange={(e) =>
-              hookData.handleInputChange("number", e.target.value)
-            }
-            placeholder="Digite o número"
-            className={`mt-2 ${getError(3, 'number') ? 'border-red-500 focus:ring-red-500' : ''}`}
-          />
-          {getError(3, 'number') && (
-            <p className="mt-1 text-sm text-red-600">{getError(3, 'number')}</p>
-          )}
-        </div>
-
-        <div>
-          <Label htmlFor="complement" className="text-base font-semibold">
-            Complemento
-          </Label>
-          <Input
-            id="complement"
-            value={hookData.formData.complement}
-            onChange={(e) =>
-              hookData.handleInputChange("complement", e.target.value)
-            }
-            placeholder="Digite o complemento"
-            className={`mt-2 ${getError(3, 'complement') ? 'border-red-500 focus:ring-red-500' : ''}`}
-          />
-          {getError(3, 'complement') && (
-            <p className="mt-1 text-sm text-red-600">{getError(3, 'complement')}</p>
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <Label htmlFor="delivery_fee" className="text-base font-semibold">
-            Taxa de Entrega (R$)
-          </Label>
-          <Input
-            id="delivery_fee"
-            type="text"
-            value={hookData.formData.delivery_fee}
-            onChange={(e) =>
-              hookData.handleInputChange("delivery_fee", e.target.value)
-            }
-            placeholder="Digite a taxa de entrega"
-            className={`mt-2 ${getError(3, 'delivery_fee') ? 'border-red-500 focus:ring-red-500' : ''}`}
-          />
-          {getError(3, 'delivery_fee') && (
-            <p className="mt-1 text-sm text-red-600">{getError(3, 'delivery_fee')}</p>
+          {err(3, "email") && (
+            <p className="mt-1 text-sm text-red-600">{err(3, "email")}</p>
           )}
         </div>
 
         <div>
           <Label
-            htmlFor="free_delivery_min"
-            className="text-base font-semibold"
+            htmlFor="instagram"
+            className="text-sm font-semibold flex items-center gap-2"
           >
-            Valor Mínimo para Entrega Grátis (R$)
+            <Instagram className="h-4 w-4" />
+            Instagram{" "}
+            <span className="text-gray-400 font-normal text-xs">(opcional)</span>
           </Label>
           <Input
-            id="free_delivery_min"
-            type="text"
-            value={hookData.formData.free_delivery_min}
-            onChange={(e) =>
-              hookData.handleInputChange("free_delivery_min", e.target.value)
-            }
-            placeholder="Digite o valor mínimo para entrega grátis"
-            className={`mt-2 ${getError(3, 'free_delivery_min') ? 'border-red-500 focus:ring-red-500' : ''}`}
+            id="instagram"
+            type="url"
+            value={h.formData.instagram}
+            onChange={(e) => h.handleInputChange("instagram", e.target.value)}
+            placeholder="https://instagram.com/minhaloja"
+            className={`mt-2 ${err(3, "instagram") ? "border-red-500" : ""}`}
           />
-          {getError(3, 'free_delivery_min') && (
-            <p className="mt-1 text-sm text-red-600">{getError(3, 'free_delivery_min')}</p>
+          {err(3, "instagram") && (
+            <p className="mt-1 text-sm text-red-600">{err(3, "instagram")}</p>
           )}
         </div>
 
-        <div className="md:col-span-2">
+        <div>
           <Label
-            htmlFor="delivery_time"
-            className="text-base font-semibold flex items-center gap-2"
+            htmlFor="facebook"
+            className="text-sm font-semibold flex items-center gap-2"
           >
-            <Clock className="h-4 w-4" />
-            Tempo de Entrega
+            <Facebook className="h-4 w-4" />
+            Facebook{" "}
+            <span className="text-gray-400 font-normal text-xs">(opcional)</span>
           </Label>
           <Input
-            id="delivery_time"
-            value={hookData.formData.delivery_time}
-            onChange={(e) =>
-              hookData.handleInputChange("delivery_time", e.target.value)
-            }
-            placeholder="Digite o tempo de entrega"
-            className={`mt-2 ${getError(3, 'delivery_time') ? 'border-red-500 focus:ring-red-500' : ''}`}
+            id="facebook"
+            type="url"
+            value={h.formData.facebook}
+            onChange={(e) => h.handleInputChange("facebook", e.target.value)}
+            placeholder="https://facebook.com/minhaloja"
+            className={`mt-2 ${err(3, "facebook") ? "border-red-500" : ""}`}
           />
-          {getError(3, 'delivery_time') && (
-            <p className="mt-1 text-sm text-red-600">{getError(3, 'delivery_time')}</p>
+          {err(3, "facebook") && (
+            <p className="mt-1 text-sm text-red-600">{err(3, "facebook")}</p>
           )}
         </div>
       </div>
-    </div>
-  );
 
-  const renderStep4 = () => (
-    <div className="space-y-6">
-      <div>
-        <Label className="text-base font-semibold flex items-center gap-2">
-          <CreditCard className="h-4 w-4" />
-          Métodos de Pagamento
-        </Label>
-        <p className="text-sm text-gray-600 mt-1 mb-4">
-          Selecione os métodos de pagamento que você aceita
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+        <Info className="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
+        <p className="text-sm text-blue-700">
+          Endereço, documentos, métodos de pagamento e horários podem ser
+          configurados depois em <strong>Configurações</strong>.
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {hookData.PAYMENT_METHODS.map((method) => (
-            <div
-              key={method}
-              onClick={() => hookData.handlePaymentMethodToggle(method)}
-              className="flex items-center gap-3 p-3 rounded-lg border border-secondary hover:border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer"
-            >
-              <Checkbox
-                id={method}
-                checked={
-                  hookData.formData.payment_methods?.includes(method) || false
-                }
-                onCheckedChange={() =>
-                  hookData.handlePaymentMethodToggle(method)
-                }
-              />
-              <div className="flex-1">
-                <label htmlFor={method} className="block cursor-pointer">
-                  <span className="font-medium text-gray-900">{method}</span>
-                </label>
-              </div>
-            </div>
-          ))}
-        </div>
-        {getError(4, 'payment_methods') && (
-          <p className="mt-2 text-sm text-red-600">{getError(4, 'payment_methods')}</p>
-        )}
-      </div>
-
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
-          <div>
-            <h4 className="font-semibold text-yellow-800">
-              Informações Opcionais
-            </h4>
-            <p className="text-sm text-yellow-700 mt-1">
-              Você pode preencher essas informações agora ou depois, através da
-              edição da loja.
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   );
 
-  const renderCurrentStep = () => {
-    switch (hookData.currentStep) {
-      case 1:
-        return renderStep1();
-      case 2:
-        return renderStep2();
-      case 3:
-        return renderStep3();
-      case 4:
-        return renderStep4();
-      default:
-        return null;
-    }
+  const steps: Record<number, () => JSX.Element> = {
+    1: renderStep1,
+    2: renderStep2,
+    3: renderStep3,
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-20 via-blue-20 to-indigo-20">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
-        {/* Header */}
-        <div className="flex flex-row items-center justify-between gap-4 mb-6 sm:mb-8">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-2xl sm:text-3xl font-bold truncate">Criar Nova Loja</h1>
-            <p className="text-gray-600 mt-1 text-sm sm:text-base">
-              Configure sua loja online em poucos passos
-            </p>
-          </div>
-          <div className="hidden sm:block text-right min-w-0 max-w-[120px] lg:max-w-none shrink-0">
-            <p className="font-semibold text-gray-900 truncate text-sm">
-              {hookData.user?.name || "Usuário"}
-            </p>
-            <p className="text-xs text-gray-500 truncate">
-              {hookData.user?.profile || "Perfil não informado"}
-            </p>
-          </div>
-        </div>
+    <div className="max-w-[1380px] mx-auto px-4 sm:px-6 py-4 sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
+      {/* Header */}
+      <div className="mb-3 sm:mb-4 md:mb-6 lg:mb-8">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-1 sm:mb-2">
+          Criar Nova Loja
+        </h1>
+        <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
+          Preencha as informações essenciais para começar
+        </p>
+      </div>
 
-        {/* Progress Steps: em telas grandes usa largura total; em mobile scroll horizontal */}
-        <div className="mb-6 sm:mb-8 overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
-          <div className="flex items-center w-full min-w-[280px] max-w-3xl lg:max-w-none mx-auto">
-            {hookData.STEPS.map((step, index) => (
-              <div key={step.id} className="flex items-center flex-1 min-w-0 last:flex-none last:min-w-0">
-                {/* Círculo da etapa */}
-                <div className="flex items-center shrink-0">
-                  <div
-                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold shrink-0 ${hookData.currentStep >= step.id
-                        ? "bg-primary text-white hover:bg-primary/80"
-                        : "bg-secondary text-primary"
-                      }`}
-                  >
-                    {hookData.currentStep > step.id ? (
-                      <Check className="h-4 w-4 sm:h-5 sm:w-5" />
-                    ) : (
-                      step.id
-                    )}
-                  </div>
-                  <div className="ml-2 sm:ml-3 hidden sm:block max-w-[72px] md:max-w-[100px] lg:max-w-none">
-                    <p
-                      className={`text-xs sm:text-sm font-semibold truncate lg:whitespace-normal ${hookData.currentStep >= step.id
-                          ? "text-primary"
-                          : "text-gray-600"
-                        }`}
-                    >
-                      {step.title}
-                    </p>
-                    <p className="text-xs text-gray-500 truncate lg:whitespace-normal">{step.description}</p>
-                  </div>
+      {/* Steps indicator */}
+      <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 py-4 sm:py-6">
+        <div className="flex items-center w-full min-w-[260px]">
+          {h.STEPS.map((step, index) => (
+            <div
+              key={step.id}
+              className="flex items-center flex-1 min-w-0 last:flex-none"
+            >
+              <div className="flex items-center shrink-0">
+                <div
+                  className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
+                    h.currentStep >= step.id
+                      ? "bg-primary text-white"
+                      : "bg-secondary text-primary"
+                  }`}
+                >
+                  {h.currentStep > step.id ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    step.id
+                  )}
                 </div>
-                {/* Linha centralizada entre os números */}
-                {index < hookData.STEPS.length - 1 && (
-                  <div className="flex-1 flex items-center min-w-[12px] sm:min-w-[16px] lg:min-w-[24px] px-1 sm:px-2 lg:px-4">
-                    <div
-                      className={`w-full h-0.5 rounded-full ${hookData.currentStep > step.id
-                          ? "bg-primary"
-                          : "bg-secondary"
-                        }`}
-                    />
-                  </div>
-                )}
+                <div className="ml-2 sm:ml-3 hidden sm:block">
+                  <p
+                    className={`text-xs sm:text-sm font-semibold ${
+                      h.currentStep >= step.id ? "text-primary" : "text-gray-400"
+                    }`}
+                  >
+                    {step.title}
+                  </p>
+                  <p className="text-xs text-gray-400">{step.description}</p>
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Form Content */}
-        <Card>
-          <CardHeader className="px-4 sm:px-6 md:px-8 pt-4 sm:pt-6 pb-2 sm:pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
-              {hookData.STEPS[hookData.currentStep - 1].title}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6 md:p-8">{renderCurrentStep()}</CardContent>
-        </Card>
-
-        {/* Navigation */}
-        <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-0 sm:justify-between mt-6 sm:mt-8">
-          <Button
-            variant="outline"
-            onClick={hookData.prevStep}
-            disabled={hookData.currentStep === 1}
-            className="flex items-center justify-center gap-2 w-full sm:w-auto order-2 sm:order-1"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Anterior
-          </Button>
-
-          {hookData.currentStep < hookData.STEPS.length ? (
-            <Button
-              onClick={hookData.nextStep}
-              disabled={!hookData.isStepValid}
-              className="flex items-center justify-center gap-2 w-full sm:w-auto order-1 sm:order-2"
-            >
-              Próximo
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          ) : (
-            <Button
-              onClick={hookData.handleSubmit}
-              disabled={!hookData.isStepValid || hookData.isCreating}
-              className="flex items-center justify-center gap-2 w-full sm:w-auto order-1 sm:order-2"
-            >
-              {hookData.isCreating ? (
-                <LoadingSpinner size="sm" />
-              ) : (
-                <Check className="h-4 w-4" />
+              {index < h.STEPS.length - 1 && (
+                <div className="flex-1 flex items-center px-6 sm:px-10 md:px-16">
+                  <div
+                    className={`w-full h-0.5 rounded-full transition-colors ${
+                      h.currentStep > step.id ? "bg-primary" : "bg-secondary"
+                    }`}
+                  />
+                </div>
               )}
-              {hookData.isCreating ? "Criando Loja..." : "Criar Loja"}
-            </Button>
-          )}
+            </div>
+          ))}
         </div>
+      </div>
+
+      {/* Form card */}
+      <Card className="shadow-sm">
+        <CardHeader className="px-4 sm:px-6 md:px-8 pt-4 sm:pt-6 pb-2">
+          <CardTitle className="text-lg sm:text-xl">
+            {h.STEPS[h.currentStep - 1].title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 sm:p-6 md:p-8">
+          {steps[h.currentStep]?.()}
+        </CardContent>
+      </Card>
+
+      {/* Navigation */}
+      <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-0 sm:justify-between pt-2">
+        <Button
+          variant="outline"
+          onClick={h.prevStep}
+          disabled={h.currentStep === 1}
+          className="flex items-center justify-center gap-2 w-full sm:w-auto"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Anterior
+        </Button>
+
+        {h.currentStep < h.STEPS.length ? (
+          <Button
+            onClick={h.nextStep}
+            disabled={!h.isStepValid}
+            className="flex items-center justify-center gap-2 w-full sm:w-auto"
+          >
+            Próximo
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button
+            onClick={h.handleSubmit}
+            disabled={!h.isStepValid || h.isCreating}
+            className="flex items-center justify-center gap-2 w-full sm:w-auto"
+          >
+            {h.isCreating ? (
+              <LoadingSpinner size="sm" />
+            ) : (
+              <Check className="h-4 w-4" />
+            )}
+            {h.isCreating ? "Criando Loja..." : "Criar Loja"}
+          </Button>
+        )}
       </div>
     </div>
   );

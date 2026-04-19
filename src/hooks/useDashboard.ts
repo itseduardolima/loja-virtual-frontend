@@ -1,12 +1,18 @@
 import { useQuery } from '@tanstack/react-query'
-import { api } from '@/lib/axios'
+import { api } from '@/lib/api'
+
+export interface CartConversionStats {
+  total_sessions: number
+  converted_sessions: number
+  abandoned_sessions: number
+  conversion_rate: number
+}
 
 export interface DashboardSummary {
   today: {
     orders: number
     revenue: number
     products_sold: number
-    new_customers: number
   }
   week: {
     orders: number
@@ -27,6 +33,7 @@ export interface DashboardSummary {
   revenue: {
     total: number
   }
+  cart_conversion?: CartConversionStats
 }
 
 export interface RecentOrder {
@@ -87,23 +94,7 @@ export function useDashboard(dateFilter?: DashboardDateFilter) {
     queryFn: async (): Promise<DashboardSummary> => {
       const response = await api.get('/dashboard/summary', { params })
       
-      // Verifica se a resposta tem a estrutura esperada
-      if (response.data?.data?.summary) {
-        return response.data.data.summary
-      }
-      
-      // Se não tiver summary dentro de data.data, tenta diretamente
-      if (response.data?.summary) {
-        return response.data.summary
-      }
-      
-      // Se não tiver data.data, tenta response.data diretamente
-      if (response.data?.today) {
-        return response.data as DashboardSummary
-      }
-      
-      // Retorna o que vier em data.data
-      return response.data.data || response.data
+      return response.data.data.summary
     },
     staleTime: 30000, // 30 segundos
   })

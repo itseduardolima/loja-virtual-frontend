@@ -61,32 +61,34 @@ function StoreFooterContent({ slug }: { slug: string }) {
 
         <div className="grid grid-cols-1 md:grid-cols-4 space-y-8 md:space-y-0">
 
-          <div><div className="flex items-center gap-4">
-            {storeInfo.logo ? (
-              <Link href={`/loja/${slug}`} className="flex-shrink-0">
-                <Image
-                  src={buildImageUrl(storeInfo.logo)}
-                  alt={storeInfo.name}
-                  width={56}
-                  height={56}
-                  className="rounded-lg object-cover border border-gray-200"
-                />
-              </Link>
-            ) : null}
-            <div>
-              <Link
-                href={`/loja/${slug}`}
-                className="text-xl md:text-2xl font-bold text-gray-900 hover:text-gray-700"
-              >
-                {storeInfo.name}
-              </Link>
-              {storeInfo.description ? (
-                <p className="text-sm text-gray-600 mt-0.5  max-w-md">
-                  {storeInfo.description}
-                </p>
+          <div className="min-w-0">
+            <div className="flex items-start gap-3">
+              {storeInfo.logo ? (
+                <Link href={`/loja/${slug}`} className="flex-shrink-0">
+                  <Image
+                    src={buildImageUrl(storeInfo.logo)}
+                    alt={storeInfo.name}
+                    width={56}
+                    height={56}
+                    className="rounded-lg object-cover border border-gray-200"
+                  />
+                </Link>
               ) : null}
+              <div className="min-w-0">
+                <Link
+                  href={`/loja/${slug}`}
+                  className="text-xl md:text-2xl font-bold text-gray-900 hover:text-gray-700"
+                >
+                  {storeInfo.name}
+                </Link>
+                {storeInfo.description ? (
+                  <p className="text-sm text-gray-600 mt-1 break-words">
+                    {storeInfo.description}
+                  </p>
+                ) : null}
+              </div>
             </div>
-          </div></div>
+          </div>
           {hasLocationInfo ? (<div className="flex md:mx-auto flex-col">
             <p className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">
               Endereço
