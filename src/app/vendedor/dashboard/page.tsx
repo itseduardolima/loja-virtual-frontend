@@ -20,7 +20,6 @@ export default function DashboardPage() {
     dateFromInput,
     dateToInput,
     onRangeSelect,
-    clearFilter,
     setQuickRange,
     hasDateFilter,
     isViewingToday,
@@ -69,7 +68,6 @@ export default function DashboardPage() {
           dateToInput={dateToInput}
           hasDateFilter={hasDateFilter}
           onRangeSelect={onRangeSelect}
-          onClear={clearFilter}
         />
       </div>
 
@@ -104,10 +102,10 @@ export default function DashboardPage() {
       {/* Gráficos e Listas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
         <div>
-          <DashboardRecentOrders orders={recentOrders} />
+          <DashboardRecentOrders orders={recentOrders} hasDateFilter={hasDateFilter} isViewingToday={isViewingToday} />
         </div>
         <div>
-          <DashboardTopProducts products={topProducts} />
+          <DashboardTopProducts products={topProducts} hasDateFilter={hasDateFilter} isViewingToday={isViewingToday} />
         </div>
       </div>
 

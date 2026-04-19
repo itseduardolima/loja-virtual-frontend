@@ -5,10 +5,15 @@ import { useDashboard } from '@/hooks/useDashboard'
 import { formatPrice } from '@/lib/utils'
 
 const today = new Date().toISOString().slice(0, 10)
+const sevenDaysAgo = (() => {
+  const d = new Date()
+  d.setDate(d.getDate() - 6)
+  return d.toISOString().slice(0, 10)
+})()
 
 export function useDashboardPage() {
-  const [dateRange, setDateRange] = useState<{ dateFrom: string; dateTo: string } | null>({ dateFrom: today, dateTo: today })
-  const [inputFrom, setInputFrom] = useState(today)
+  const [dateRange, setDateRange] = useState<{ dateFrom: string; dateTo: string } | null>({ dateFrom: sevenDaysAgo, dateTo: today })
+  const [inputFrom, setInputFrom] = useState(sevenDaysAgo)
   const [inputTo, setInputTo] = useState(today)
 
   const dateFilter = useMemo(() => {

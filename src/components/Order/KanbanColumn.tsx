@@ -28,6 +28,7 @@ interface KanbanColumnProps {
   onSelectOrder: (orderId: number) => void
   hasMore?: boolean
   onShowMore?: () => void
+  hasDateFilter?: boolean
 }
 
 export function KanbanColumn({
@@ -39,6 +40,7 @@ export function KanbanColumn({
   onSelectOrder,
   hasMore,
   onShowMore,
+  hasDateFilter,
 }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: getStatusDroppableId(statusKey),
@@ -64,8 +66,8 @@ export function KanbanColumn({
       </div>
       <div className="flex-1 min-h-[120px] p-3 space-y-2">
         {orders.length === 0 ? (
-          <div className="flex items-center justify-center h-24 text-sm text-gray-400">
-            Nenhum pedido
+          <div className="flex items-center justify-center h-24 text-sm text-gray-400 text-center px-2">
+            {hasDateFilter ? 'Nenhum pedido no período' : 'Nenhum pedido'}
           </div>
         ) : (
           orders.map((order) => (

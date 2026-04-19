@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { type Order } from '@/types/order'
-import { ORDER_STATUS } from '@/types/order'
+import { type Order, ORDER_STATUS } from '@/types/order'
 import { formatDate, formatPrice, cn } from '@/lib/utils'
 import {
   STATUS_ORDER,
@@ -11,9 +10,10 @@ import {
   getStatusIcon,
 } from '@/lib/orderPanelUtils'
 import { OrderDetailPanel } from './OrderDetailPanel'
-import { ArrowRight, ChevronLeft, Search, X } from 'lucide-react'
+import { ArrowRight, ChevronLeft, FileDown, Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { DashboardDateRangeFilter } from '@/components/Dashboard/DashboardDateRangeFilter'
 
 interface MobileOrdersViewProps {
   ordersByStatus: Record<number, Order[]>
@@ -23,6 +23,12 @@ interface MobileOrdersViewProps {
   onMoveOrder: (orderId: number, newStatus: number) => void
   searchTerm: string
   setSearchTerm: (v: string) => void
+  dateFromInput: string
+  dateToInput: string
+  hasDateFilter: boolean
+  onRangeSelect: (range: { dateFrom: string; dateTo: string } | null) => void
+  onExport: () => void
+  isExporting: boolean
 }
 
 export function MobileOrdersView({
@@ -33,6 +39,12 @@ export function MobileOrdersView({
   onMoveOrder,
   searchTerm,
   setSearchTerm,
+  dateFromInput,
+  dateToInput,
+  hasDateFilter,
+  onRangeSelect,
+  onExport,
+  isExporting,
 }: MobileOrdersViewProps) {
   const [activeTab, setActiveTab] = useState<number>(1)
 
@@ -70,6 +82,32 @@ export function MobileOrdersView({
         <p className="text-sm text-gray-500 mt-0.5">
           {totalCount} pedido{totalCount !== 1 ? 's' : ''}
         </p>
+
+        {/* Filtro de data + Exportar */}
+        <div className="flex items-center justify-end gap-2 mt-3">
+          <DashboardDateRangeFilter
+            dateFromInput={dateFromInput}
+            dateToInput={dateToInput}
+            hasDateFilter={hasDateFilter}
+            onRangeSelect={onRangeSelect}
+            compact
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={isExporting}
+            onClick={onExport}
+            className="shrink-0 gap-1.5 h-10 rounded-xl px-3"
+          >
+            {isExporting ? (
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            ) : (
+              <FileDown className="h-4 w-4" />
+            )}
+            {isExporting ? 'Exportando...' : 'Exportar Excel'}
+          </Button>
+        </div>
+
         <div className="relative mt-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 z-10" />
           <Input
@@ -137,7 +175,7 @@ export function MobileOrdersView({
       <div className="flex-1 p-3 space-y-2">
         {orders.length === 0 ? (
           <div className="flex items-center justify-center h-32 text-sm text-gray-400">
-            Nenhum pedido neste status
+            {hasDateFilter ? 'Nenhum pedido no período' : 'Nenhum pedido neste status'}
           </div>
         ) : (
           orders.map((order) => {
