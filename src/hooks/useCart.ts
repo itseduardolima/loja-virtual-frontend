@@ -8,36 +8,41 @@ export function useCart(storeId?: number) {
   const { toast } = useToastContext()
   const queryClient = useQueryClient()
 
-  // Buscar ou criar sessão do carrinho
-  const { data: sessionId } = useQuery({
+  // Recuperar sessão existente do localStorage (não cria nova aqui)
+  const { data: sessionId, refetch: refetchSession } = useQuery({
     queryKey: ['cart-session', storeId],
     queryFn: async () => {
-      if (!storeId) throw new Error('ID da loja é obrigatório')
-      
+      if (!storeId) return null
+
       const storedSessionId = localStorage.getItem(`cart-session-${storeId}`)
-      
-      if (storedSessionId) {
-        try {
-          await api.get('/cart', {
-            params: { session_id: storedSessionId, store_id: storeId }
-          })
-          return storedSessionId
-        } catch {
-          localStorage.removeItem(`cart-session-${storeId}`)
-        }
+      if (!storedSessionId) return null
+
+      try {
+        await api.get('/cart', {
+          params: { session_id: storedSessionId, store_id: storeId }
+        })
+        return storedSessionId
+      } catch {
+        localStorage.removeItem(`cart-session-${storeId}`)
+        return null
       }
-      
-      const response = await api.post('/cart/session', {}, {
-        params: { store_id: storeId }
-      })
-      
-      const newSessionId = response.data.data.session_id
-      localStorage.setItem(`cart-session-${storeId}`, newSessionId)
-      return newSessionId
     },
     enabled: !!storeId,
     staleTime: 1000 * 60 * 30,
   })
+
+  // Cria sessão no backend e salva no localStorage
+  const ensureSession = async (finalStoreId: number): Promise<string> => {
+    const stored = localStorage.getItem(`cart-session-${finalStoreId}`)
+    if (stored) return stored
+
+    const response = await api.post('/cart/session', {}, {
+      params: { store_id: finalStoreId }
+    })
+    const newSessionId = response.data.data.session_id
+    localStorage.setItem(`cart-session-${finalStoreId}`, newSessionId)
+    return newSessionId
+  }
 
   // Buscar itens do carrinho
   const { data: cartItems = [], isLoading: isLoadingCart } = useQuery({
@@ -75,8 +80,7 @@ export function useCart(storeId?: number) {
       const finalStoreId = paramStoreId || storeId
       if (!finalStoreId) throw new Error('ID da loja é obrigatório')
 
-      const currentSessionId = localStorage.getItem(`cart-session-${finalStoreId}`) || sessionId
-      if (!currentSessionId) throw new Error('Sessão do carrinho não encontrada')
+      const currentSessionId = await ensureSession(finalStoreId)
 
       const response = await api.post<AddToCartResponse>('/cart', {
         product_id: productId,
@@ -91,6 +95,7 @@ export function useCart(storeId?: number) {
       return response.data
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cart-session', storeId] })
       queryClient.invalidateQueries({ queryKey: ['cart-items'] })
     },
     onError: (error: any) => {

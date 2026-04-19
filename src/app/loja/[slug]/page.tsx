@@ -145,15 +145,21 @@ export default function StoreHomePage() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 sm:py-16 px-4">
-                <Package className="w-14 h-14 text-gray-300 mx-auto mb-4" />
-                <h2 className="text-lg font-medium text-gray-900 mb-2">Nenhum produto encontrado</h2>
-                <p className="text-gray-600 mb-4">
-                  {search ? 'Tente outro termo de busca.' : 'Esta loja ainda não tem produtos.'}
+              <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+                <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-5">
+                  <Package className="w-9 h-9 text-gray-400" />
+                </div>
+                <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                  {search ? 'Nenhum resultado encontrado' : 'Em breve, novidades!'}
+                </h2>
+                <p className="text-gray-500 text-sm max-w-xs leading-relaxed">
+                  {search
+                    ? `Não encontramos produtos para "${search}". Tente outro termo.`
+                    : 'Esta loja está preparando seus produtos. Volte em breve para conferir!'}
                 </p>
                 {search && (
-                  <Button variant="outline" onClick={() => setSearch('')}>
-                    Limpar busca
+                  <Button variant="outline" className="mt-5" onClick={() => setSearch('')}>
+                    Ver todos os produtos
                   </Button>
                 )}
               </div>

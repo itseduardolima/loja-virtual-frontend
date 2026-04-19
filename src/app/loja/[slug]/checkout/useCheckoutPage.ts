@@ -111,6 +111,7 @@ export function useCheckoutPage() {
               customer_name: data.name || prev.customer_name,
               customer_email: data.email || prev.customer_email,
               customer_phone: data.phone || prev.customer_phone,
+              customer_document: data.document || prev.customer_document,
             }))
           }
         })
@@ -124,7 +125,7 @@ export function useCheckoutPage() {
       const def = addresses.find(a => a.is_default === 1)
       setSelectedAddressId(def?.id ?? addresses[0].id)
     }
-  }, [addresses])
+  }, [addresses, selectedAddressId])
 
   const handleZipcodeChange = async (value: string) => {
     const formatted = value.slice(0, 9)
@@ -134,8 +135,12 @@ export function useCheckoutPage() {
     const digits = formatted.replace(/\D/g, '')
     if (digits.length === 8) {
       setIsFetchingCep(true)
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), 5000)
       try {
-        const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`)
+        const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`, { signal: controller.signal })
+        clearTimeout(timer)
+        if (!res.ok) throw new Error('CEP inválido')
         const data = await res.json()
         if (data.erro) {
           setCepError('CEP não encontrado')
@@ -149,8 +154,9 @@ export function useCheckoutPage() {
             state: data.uf || p.state,
           }))
         }
-      } catch {
-        setCepError('Erro ao consultar o CEP')
+      } catch (err: any) {
+        clearTimeout(timer)
+        setCepError(err.name === 'AbortError' ? 'Tempo limite de consulta excedido' : 'Erro ao consultar o CEP')
       } finally {
         setIsFetchingCep(false)
       }
@@ -243,6 +249,12 @@ export function useCheckoutPage() {
 
     if (!sessionId || !storeId) return
 
+    const cleanDocument = formData.customer_document.replace(/\D/g, '') || undefined
+
+    if (isAuthenticated && cleanDocument) {
+      api.patch('/customers/profile', { document: cleanDocument }).catch(() => {})
+    }
+
     await checkout(
       sessionId,
       storeId,
@@ -250,7 +262,7 @@ export function useCheckoutPage() {
         customer_name: formData.customer_name.trim(),
         customer_email: formData.customer_email.trim(),
         customer_phone: formData.customer_phone.trim(),
-        customer_document: formData.customer_document.replace(/\D/g, '') || undefined,
+        customer_document: cleanDocument,
         notes: formData.notes.trim() || undefined,
         coupon_code: couponResult?.coupon_code,
         delivery_address: deliveryAddress,

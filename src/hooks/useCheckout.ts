@@ -84,7 +84,8 @@ export function useCheckout() {
         window.open(data.data.whatsapp_link, '_blank')
       }
 
-      // Invalida carrinho para refletir que foi finalizado
+      // Limpa sessão do carrinho antes de redirecionar para que a página de sucesso não encontre sessão antiga
+      localStorage.removeItem(`cart-session-${variables.storeId}`)
       queryClient.invalidateQueries({ queryKey: ['cart-items'] })
       queryClient.invalidateQueries({ queryKey: ['cart-session', variables.storeId] })
 
