@@ -1,16 +1,9 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/axios'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import {
   ChartContainer,
   ChartTooltip,
@@ -31,7 +24,6 @@ interface RevenueData {
 }
 
 interface DashboardRevenueChartProps {
-  data?: RevenueData[]
   dateFrom?: string
   dateTo?: string
 }
@@ -43,59 +35,40 @@ const chartConfig = {
   },
 } satisfies Record<string, { label: string; color: string }>
 
-export function DashboardRevenueChart({ data: initialData, dateFrom, dateTo }: DashboardRevenueChartProps) {
-  const [period, setPeriod] = useState<'day' | 'week' | 'month'>('month')
+function formatPeriodLabel(period: string): string {
+  const parts = period.split('-')
+  if (parts.length === 3) return `${parts[2]}/${parts[1]}`   // YYYY-MM-DD → DD/MM
+  if (parts.length === 2) return `${parts[1]}/${parts[0]}`   // YYYY-MM → MM/YYYY
+  return period
+}
 
-  const params = new URLSearchParams({ period })
+export function DashboardRevenueChart({ dateFrom, dateTo }: DashboardRevenueChartProps) {
+  const params = new URLSearchParams()
   if (dateFrom) params.set('dateFrom', dateFrom)
   if (dateTo) params.set('dateTo', dateTo)
 
   const { data: revenueData = [], isLoading } = useQuery({
-    queryKey: ['dashboard', 'revenue', period, dateFrom, dateTo],
+    queryKey: ['dashboard', 'revenue', 'auto', dateFrom, dateTo],
     queryFn: async (): Promise<RevenueData[]> => {
       const response = await api.get(`/dashboard/revenue?${params.toString()}`)
       return response.data.data || []
     },
     staleTime: 30000,
-    enabled: true,
   })
 
-  const data = revenueData.length > 0 ? revenueData : (initialData || [])
-
   const chartData = useMemo(() => {
-    const formatPeriod = (period: string) => {
-      if (period.includes('-')) {
-        const [year, month] = period.split('-')
-        return `${month}/${year}`
-      }
-      return period
-    }
-
-    return data.map(item => ({
-      period: formatPeriod(item.period),
+    return revenueData.map(item => ({
+      period: formatPeriodLabel(item.period),
       receita: item.revenue,
     }))
-  }, [data])
+  }, [revenueData])
 
   return (
     <Card className="border-0 shadow-sm rounded-2xl">
-      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 pb-3 sm:pb-4">
+      <CardHeader className="pb-3 sm:pb-4">
         <CardTitle className="text-base sm:text-lg font-semibold text-gray-900">
           Receita por Período
         </CardTitle>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <label className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">Período:</label>
-          <Select value={period} onValueChange={(value) => setPeriod(value as 'day' | 'week' | 'month')}>
-            <SelectTrigger className="w-full sm:w-[140px] text-xs sm:text-sm">
-              <SelectValue placeholder="Selecione o período" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="day">Dia</SelectItem>
-              <SelectItem value="week">Semana</SelectItem>
-              <SelectItem value="month">Mês</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
       </CardHeader>
       <CardContent className="pt-4 sm:pt-6 md:pt-10">
         {isLoading ? (

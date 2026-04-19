@@ -54,6 +54,7 @@ export interface TopProduct {
   product_name: string
   total_sold: number
   total_orders: number
+  revenue: number
   price: number
   stock: number
   images: string[]

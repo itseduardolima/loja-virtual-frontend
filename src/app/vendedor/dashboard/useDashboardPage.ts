@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useCallback } from 'react'
 import { useDashboard } from '@/hooks/useDashboard'
+import { formatPrice } from '@/lib/utils'
 
 const today = new Date().toISOString().slice(0, 10)
 
@@ -77,10 +78,7 @@ export function useDashboardPage() {
   }, [dateRange])
 
   const revenueValue = useMemo(() => {
-    const revenue = summary?.today?.revenue || 0
-    if (revenue >= 1000000) return `R$ ${(revenue / 1000000).toFixed(1)}M`
-    if (revenue >= 1000) return `R$ ${(revenue / 1000).toFixed(1)}k`
-    return `R$ ${revenue.toFixed(0)}`
+    return formatPrice(summary?.today?.revenue || 0)
   }, [summary?.today?.revenue])
 
   return {
