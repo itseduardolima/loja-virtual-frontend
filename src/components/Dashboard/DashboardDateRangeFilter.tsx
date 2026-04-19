@@ -33,6 +33,15 @@ export function DashboardDateRangeFilter({
   className,
 }: DashboardDateRangeFilterProps) {
   const [open, setOpen] = React.useState(false)
+  const [isMobile, setIsMobile] = React.useState(false)
+
+  React.useEffect(() => {
+    const mq = window.matchMedia('(max-width: 639px)')
+    setIsMobile(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
   /** Range em seleção: só aplicamos o filtro quando from e to estiverem definidos */
   const [pendingRange, setPendingRange] = React.useState<DateRange | undefined>(undefined)
   const [activeQuickDays, setActiveQuickDays] = React.useState<number | null>(null)
@@ -95,19 +104,19 @@ export function DashboardDateRangeFilter({
       : 'Selecionar período'
 
   return (
-    <div className={cn('flex flex-wrap items-center gap-2 sm:gap-3', className)}>
+    <div className={cn('flex items-center gap-2 sm:gap-3 w-full sm:w-auto', className)}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
             size="sm"
             className={cn(
-              'h-12 justify-start text-left font-normal min-w-[200px] sm:min-w-[240px] rounded-xl relative pr-9',
+              'h-10 sm:h-12 justify-start text-left font-normal w-full sm:w-auto sm:min-w-[240px] rounded-xl relative pr-9',
               !dateFromInput && 'text-muted-foreground'
             )}
           >
-            <CalendarIcon className="mr-4 h-5 w-5 shrink-0" />
-            <span className="flex-1 truncate text-left">{label}</span>
+            <CalendarIcon className="mr-2 sm:mr-4 h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+            <span className="flex-1 truncate text-left text-sm">{label}</span>
             {hasDateFilter && (
               <button
                 type="button"
@@ -124,13 +133,17 @@ export function DashboardDateRangeFilter({
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="end">
+        <PopoverContent
+          className="w-auto max-w-[calc(100vw-1rem)] p-0"
+          align={isMobile ? 'center' : 'end'}
+          sideOffset={8}
+        >
           <Calendar
             mode="range"
             defaultMonth={pendingRange?.from ?? selectedRange?.from ?? new Date()}
             selected={pendingRange ?? selectedRange}
             onSelect={handleSelect}
-            numberOfMonths={2}
+            numberOfMonths={isMobile ? 1 : 2}
             locale={ptBR}
           />
           <div className="flex flex-wrap items-center justify-between gap-2 p-2 border-t">
@@ -144,7 +157,7 @@ export function DashboardDateRangeFilter({
                   className="h-8 text-xs"
                   onClick={() => setQuickRangeInCalendar(days)}
                 >
-                  {days} dias
+                  {days}d
                 </Button>
               ))}
             </div>
