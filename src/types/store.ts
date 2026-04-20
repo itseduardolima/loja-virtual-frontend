@@ -54,6 +54,7 @@ export interface StoreProductsParams {
   slug: string
   page?: number
   limit?: number
+  cursor?: number
   sort?: 'ASC' | 'DESC'
   sort_field?: string
   featured?: boolean
@@ -71,7 +72,9 @@ export interface StoreProductsParams {
 export interface UseStoreProductsReturn {
   products: import('./product').Product[]
   loading: boolean
+  isFetchingMore: boolean
   error: string | null
+  loadMoreError: string | null
   meta: {
     total: number
     lastPage: number
@@ -80,8 +83,10 @@ export interface UseStoreProductsReturn {
     prev: number | null
     next: number | null
   } | null
+  nextCursor: number | null
   refetch: () => void
   updateParams: (newParams: Partial<StoreProductsParams>) => void
+  loadMore: () => void
 }
 
 export interface UseStoreInfoReturn {

@@ -28,9 +28,7 @@ import { WhatsAppChatWidget } from '@/components/Store/WhatsAppChatWidget'
 import { WishlistButton } from '@/components/Product/WishlistButton'
 import { ShareButtons } from '@/components/Product/ShareButtons'
 import { ProductImageZoom } from '@/components/Product/ProductImageZoom'
-import { RecentlyViewedSection } from '@/components/Product/RecentlyViewedSection'
 import { ProductQuestions } from '@/components/Product/ProductQuestions'
-import { useRecentlyViewed } from '@/hooks/useRecentlyViewed'
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs'
 import { sanitizeHtml } from '@/lib/sanitize'
 
@@ -69,24 +67,7 @@ export default function ProductDetailPage() {
 
   const { summary: reviewsSummary } = useProductReviews(slug, productId)
   const questionsTotal = useProductQuestionsCount(slug, productId)
-  const { addRecentlyViewed } = useRecentlyViewed()
   const [activeTab, setActiveTab] = useState<'specs' | 'reviews' | 'questions'>('specs')
-
-  // Registrar produto visto recentemente
-  useEffect(() => {
-    if (product) {
-      const images = Array.isArray(product.images)
-        ? product.images
-        : Object.values(product.images as Record<string, string[]>).flat()
-      addRecentlyViewed({
-        id: product.id,
-        name: product.name,
-        price: product.final_price?.toString() ?? product.price,
-        images,
-        storeSlug: slug,
-      })
-    }
-  }, [product?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Suporte a navegação por teclado
   useEffect(() => {
@@ -593,9 +574,6 @@ export default function ProductDetailPage() {
           onComplete={onAnimationComplete}
         />
       )}
-
-      {/* Vistos Recentemente */}
-      <RecentlyViewedSection currentProductId={product.id} storeSlug={slug} />
 
       <AppFooter />
 
