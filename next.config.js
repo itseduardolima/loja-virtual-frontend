@@ -17,6 +17,8 @@ const parseApiUrl = (url) => {
 
 const apiConfig = parseApiUrl(apiUrl)
 
+const r2Hostname = process.env.NEXT_PUBLIC_R2_HOSTNAME || ''
+
 const nextConfig = {
   images: {
     remotePatterns: [
@@ -32,6 +34,12 @@ const nextConfig = {
         port: apiConfig.port,
         pathname: '/**',
       },
+      ...(r2Hostname ? [{
+        protocol: 'https',
+        hostname: r2Hostname,
+        port: '',
+        pathname: '/**',
+      }] : []),
     ],
   },
   // Previne loops infinitos de recompilação

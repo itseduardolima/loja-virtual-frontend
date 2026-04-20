@@ -56,7 +56,9 @@ export interface StorePageState {
 export interface StorePageApiData {
   products: Product[]
   loading: boolean
+  isFetchingMore: boolean
   error: string | null
+  loadMoreError: string | null
   meta: {
     total: number
     lastPage: number
@@ -65,6 +67,8 @@ export interface StorePageApiData {
     prev: number | null
     next: number | null
   } | null
+  nextCursor: number | null
+  loadMore: () => void
 }
 
 // Tipo principal do hook useStorePage

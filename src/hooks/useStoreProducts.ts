@@ -1,65 +1,71 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { api } from '@/lib/api'
-import { Product, ProductsResponse } from '@/types/product'
+import { Product } from '@/types/product'
 import { StoreProductsParams, UseStoreProductsReturn } from '@/types/store'
 
 export function useStoreProducts(params: StoreProductsParams): UseStoreProductsReturn {
   const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true) // Iniciar como true para mostrar loader na primeira renderização
+  const [loading, setLoading] = useState(true)
+  const [isFetchingMore, setIsFetchingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [loadMoreError, setLoadMoreError] = useState<string | null>(null)
   const [meta, setMeta] = useState<UseStoreProductsReturn['meta']>(null)
+  const [nextCursor, setNextCursor] = useState<number | null>(null)
   const [currentParams, setCurrentParams] = useState(params)
   const paramsRef = useRef(currentParams)
 
-  // Atualiza a ref quando os params mudam
   useEffect(() => {
     paramsRef.current = currentParams
   }, [currentParams])
 
-  // Serializa os params para comparação
-  const paramsKey = useMemo(() => {
-    return JSON.stringify(currentParams)
-  }, [currentParams])
+  const paramsKey = useMemo(() => JSON.stringify(currentParams), [currentParams])
+
+  const buildQuery = (p: StoreProductsParams, cursorOverride?: number): URLSearchParams => {
+    const q = new URLSearchParams()
+    if (cursorOverride !== undefined) {
+      q.append('cursor', cursorOverride.toString())
+    } else if (p.cursor !== undefined) {
+      q.append('cursor', p.cursor.toString())
+    } else if (p.page) {
+      q.append('page', p.page.toString())
+    }
+    if (p.limit) q.append('limit', p.limit.toString())
+    if (p.sort) q.append('sort', p.sort)
+    if (p.sort_field) q.append('sort_field', p.sort_field)
+    if (p.featured) q.append('featured', 'true')
+    if (p.color) q.append('color', p.color)
+    if (p.size) q.append('size', p.size)
+    if (p.max_price) q.append('max_price', p.max_price.toString())
+    if (p.min_price) q.append('min_price', p.min_price.toString())
+    if (p.category_id) q.append('category_id', p.category_id.toString())
+    if (p.niche_id) q.append('niche_id', p.niche_id.toString())
+    if (p.search) q.append('search', p.search)
+    if (p.min_rating) q.append('min_rating', p.min_rating.toString())
+    if (p.dynamic_filters) {
+      q.append(
+        'dynamic_filters',
+        typeof p.dynamic_filters === 'string' ? p.dynamic_filters : JSON.stringify(p.dynamic_filters),
+      )
+    }
+    return q
+  }
 
   const fetchProducts = async () => {
-    const params = paramsRef.current
-    if (!params.slug) return
+    const p = paramsRef.current
+    if (!p.slug) return
 
     setLoading(true)
     setError(null)
+    setNextCursor(null)
 
     try {
-      const queryParams = new URLSearchParams()
-      
-      if (params.page) queryParams.append('page', params.page.toString())
-      if (params.limit) queryParams.append('limit', params.limit.toString())
-      if (params.sort) queryParams.append('sort', params.sort)
-      if (params.sort_field) queryParams.append('sort_field', params.sort_field)
-      if (params.featured !== undefined && params.featured) {
-        queryParams.append('featured', 'true')
-      }
-      if (params.color) queryParams.append('color', params.color)
-      if (params.size) queryParams.append('size', params.size)
-      if (params.max_price) queryParams.append('max_price', params.max_price.toString())
-      if (params.min_price) queryParams.append('min_price', params.min_price.toString())
-      if (params.category_id) queryParams.append('category_id', params.category_id.toString())
-      if (params.niche_id) queryParams.append('niche_id', params.niche_id.toString())
-      if (params.search) queryParams.append('search', params.search)
-      if (params.min_rating) queryParams.append('min_rating', params.min_rating.toString())
-      if (params.dynamic_filters) {
-        // Enviar dynamic_filters como string JSON na query string
-        const filtersString = typeof params.dynamic_filters === 'string' 
-          ? params.dynamic_filters 
-          : JSON.stringify(params.dynamic_filters)
-        queryParams.append('dynamic_filters', filtersString)
-      }
-
-      const response = await api.get<ProductsResponse>(
-        `/catalog/store/${params.slug}/products?${queryParams.toString()}`
+      const response = await api.get<{ data: Product[]; nextCursor?: number | null; meta?: UseStoreProductsReturn['meta'] }>(
+        `/catalog/store/${p.slug}/products?${buildQuery(p).toString()}`,
       )
-
-      setProducts(Array.isArray(response.data?.data) ? response.data.data : [])
-      setMeta(response.data?.meta || null)
+      const data = response.data
+      setProducts(Array.isArray(data?.data) ? data.data : [])
+      setMeta(data?.meta || null)
+      setNextCursor(data?.nextCursor ?? null)
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erro ao carregar produtos')
       setProducts([])
@@ -69,25 +75,46 @@ export function useStoreProducts(params: StoreProductsParams): UseStoreProductsR
     }
   }
 
+  const loadMore = useCallback(async () => {
+    const p = paramsRef.current
+    if (!p.slug || nextCursor === null || isFetchingMore) return
+
+    setIsFetchingMore(true)
+    setLoadMoreError(null)
+    try {
+      const response = await api.get<{ data: Product[]; nextCursor?: number | null }>(
+        `/catalog/store/${p.slug}/products?${buildQuery(p, nextCursor).toString()}`,
+      )
+      const data = response.data
+      setProducts((prev) => [...prev, ...(Array.isArray(data?.data) ? data.data : [])])
+      setNextCursor(data?.nextCursor ?? null)
+    } catch (err: any) {
+      setLoadMoreError(err.response?.data?.message || 'Erro ao carregar mais produtos')
+    } finally {
+      setIsFetchingMore(false)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nextCursor, isFetchingMore])
+
   useEffect(() => {
     fetchProducts()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paramsKey])
 
-  const refetch = () => {
-    fetchProducts()
-  }
-
   const updateParams = (newParams: Partial<StoreProductsParams>) => {
-    setCurrentParams(prev => ({ ...prev, ...newParams }))
+    setCurrentParams((prev) => ({ ...prev, ...newParams }))
   }
 
   return {
     products: Array.isArray(products) ? products : [],
     loading,
+    isFetchingMore,
     error,
+    loadMoreError,
     meta,
-    refetch,
-    updateParams
+    nextCursor,
+    refetch: fetchProducts,
+    updateParams,
+    loadMore,
   }
 }

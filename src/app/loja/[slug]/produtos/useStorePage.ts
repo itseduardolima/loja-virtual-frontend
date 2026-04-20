@@ -33,13 +33,17 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
   const {
     products: productsData,
     loading,
+    isFetchingMore,
     error,
+    loadMoreError,
     meta,
-    updateParams
+    nextCursor,
+    updateParams,
+    loadMore,
   } = useStoreProducts({
     slug,
-    page: 1,
-    limit: isNicheOnlyFilter ? 1000 : 20,
+    cursor: undefined,
+    limit: isNicheOnlyFilter ? 1000 : 12,
     sort,
     sort_field: sortField,
     featured: filters.featured,
@@ -239,8 +243,12 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
     filters,
     products,
     loading,
+    isFetchingMore,
     error,
+    loadMoreError,
     meta,
+    nextCursor,
+    loadMore,
     categories,
     availableColors,
     availableSizes,
@@ -253,6 +261,6 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
     handlePageChange,
     handleItemsPerPageChange,
     handleAddToFavorites,
-    handleViewDetails
+    handleViewDetails,
   }
 }

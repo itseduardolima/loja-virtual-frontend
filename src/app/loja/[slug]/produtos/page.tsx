@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ProductCard, StorePagination, StoreSidebar, ErrorState, CartSidebar, StoreHeader, LoadingPage } from '@/components'
+import { ProductCard, StoreSidebar, ErrorState, CartSidebar, StoreHeader, LoadingPage } from '@/components'
 import { Star, Package, Filter, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -50,8 +50,12 @@ export default function StorePage() {
     // Dados da API
     products,
     loading,
+    isFetchingMore,
     error,
+    loadMoreError,
     meta,
+    nextCursor,
+    loadMore,
 
     // Dados processados
     categories,
@@ -79,7 +83,7 @@ export default function StorePage() {
   const { data: allStoreFields } = useStoreFields(storeInfo?.id || null)
 
   // Mapa categoria → nicho, acumulativo para não perder dados ao aplicar filtros
-  const categoryNicheMapRef = useMemo(() => ({ current: {} as Record<number, number> }), [])
+  const categoryNicheMapRef = useRef<Record<number, number>>({})
 
   const categoryNicheMap = useMemo(() => {
     if (!allStoreFields?.length || !products?.length) return categoryNicheMapRef.current
@@ -105,7 +109,7 @@ export default function StorePage() {
     })
 
     return { ...categoryNicheMapRef.current }
-  }, [allStoreFields, products, categoryNicheMapRef])
+  }, [allStoreFields, products])
 
   // Filtro client-side por nicho: quando nicho selecionado sem categoria específica,
   // filtra produtos cujo category.id pertence ao nicho selecionado
@@ -478,22 +482,25 @@ export default function StorePage() {
                         </AnimatePresence>
                       </motion.div>
 
-                      {/* Paginação - oculta quando filtragem client-side por nicho está ativa */}
-                      {meta && meta.lastPage > 1 && !(filters.nicheId && !filters.categoryId) && (
+                      {/* Botão Carregar Mais - oculto quando filtragem client-side por nicho está ativa */}
+                      {nextCursor !== null && !(filters.nicheId && !filters.categoryId) && (
                         <motion.div
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.4, delay: 0.2 }}
-                          className="mt-6 sm:mt-8"
+                          className="mt-6 sm:mt-8 flex flex-col items-center gap-2"
                         >
-                          <StorePagination
-                            currentPage={meta.currentPage}
-                            totalPages={meta.lastPage}
-                            totalItems={meta.total}
-                            onPageChange={handlePageChange}
-                            hasNextPage={meta.next !== null}
-                            hasPrevPage={meta.prev !== null}
-                          />
+                          {loadMoreError && (
+                            <p className="text-sm text-red-500">{loadMoreError}</p>
+                          )}
+                          <Button
+                            variant="outline"
+                            onClick={loadMore}
+                            disabled={isFetchingMore}
+                            className="px-8 h-11"
+                          >
+                            {isFetchingMore ? 'Carregando...' : 'Carregar mais'}
+                          </Button>
                         </motion.div>
                       )}
                     </>
