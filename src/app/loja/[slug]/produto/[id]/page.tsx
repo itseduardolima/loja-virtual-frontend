@@ -24,6 +24,7 @@ import { getColorHex } from '@/schemas'
 import { useAddToCartAnimation } from '@/hooks/useAddToCartAnimation'
 import { AddToCartAnimation } from '@/components/Animation/AddToCartAnimation'
 import { AppFooter } from '@/components/Layout/AppFooter'
+import { RelatedProducts } from '@/components/Product/RelatedProducts'
 import { WhatsAppChatWidget } from '@/components/Store/WhatsAppChatWidget'
 import { WishlistButton } from '@/components/Product/WishlistButton'
 import { ShareButtons } from '@/components/Product/ShareButtons'
@@ -574,6 +575,12 @@ export default function ProductDetailPage() {
           onComplete={onAnimationComplete}
         />
       )}
+
+      <RelatedProducts
+        slug={slug}
+        currentProductId={product.id}
+        categoryId={product.category?.id}
+      />
 
       <AppFooter />
 
