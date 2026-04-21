@@ -23,8 +23,7 @@ test.describe('Rastreamento de Pedido', () => {
 
     // Aguarda API retornar e exibir "Pedido não encontrado"
     await expect(
-      page.getByRole('heading', { name: /pedido não encontrado/i })
-        .or(page.getByText(/verifique o código informado/i)),
+      page.getByRole('heading', { name: /pedido não encontrado/i }),
     ).toBeVisible({ timeout: 15000 })
   })
 
