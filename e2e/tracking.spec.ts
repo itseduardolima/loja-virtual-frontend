@@ -11,41 +11,32 @@ test.describe('Rastreamento de Pedido', () => {
   })
 
   test('exibe campo para inserir código do pedido', async ({ page }) => {
-    const input = page
-      .getByPlaceholder(/código|rastrear|pedido/i)
-      .or(page.getByLabel(/código|rastrear|pedido/i))
-      .or(page.locator('input[type="text"]').first())
-
+    // Placeholder real: "Ex: PED-20240001"
+    const input = page.getByPlaceholder(/PED|código/i).or(page.locator('input').first())
     await expect(input.first()).toBeVisible({ timeout: 5000 })
   })
 
   test('exibe erro para código inválido', async ({ page }) => {
-    const input = page
-      .getByPlaceholder(/código|rastrear|pedido/i)
-      .or(page.locator('input[type="text"]').first())
-
+    const input = page.getByPlaceholder(/PED|código/i).or(page.locator('input').first())
     await input.first().fill('PEDIDO_INVALIDO_XYZ')
 
-    const submitBtn = page.getByRole('button', { name: /rastrear|buscar|pesquisar/i })
-    await submitBtn.click()
+    await page.getByRole('button', { name: /buscar/i }).click()
 
-    const errorMsg = page.getByText(/não encontrado|inválido|erro|não existe/i)
-    await expect(errorMsg.first()).toBeVisible({ timeout: 8000 })
+    // Aguarda a resposta da API e verifica mensagem de não encontrado
+    await expect(
+      page.getByText(/não encontrado|verifique o código/i),
+    ).toBeVisible({ timeout: 10000 })
   })
 
   test('exibe validação para campo vazio', async ({ page }) => {
-    const submitBtn = page.getByRole('button', { name: /rastrear|buscar|pesquisar/i })
-    await submitBtn.click()
-
-    const validation = page.getByText(/obrigatório|preencha|required|informe/i)
-    await expect(validation.first()).toBeVisible({ timeout: 3000 })
+    // Botão fica desabilitado enquanto o campo estiver vazio
+    const submitBtn = page.getByRole('button', { name: /buscar/i })
+    await expect(submitBtn).toBeDisabled()
   })
 
   test('heading de rastreamento está presente', async ({ page }) => {
-    const heading = page
-      .getByRole('heading', { name: /rastrear|acompanhar|pedido/i })
-      .or(page.getByText(/rastrear seu pedido/i))
-
-    await expect(heading.first()).toBeVisible({ timeout: 5000 })
+    await expect(
+      page.getByRole('heading', { name: /rastrear pedido/i }),
+    ).toBeVisible({ timeout: 5000 })
   })
 })
