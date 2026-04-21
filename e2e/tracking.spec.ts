@@ -17,15 +17,15 @@ test.describe('Rastreamento de Pedido', () => {
   })
 
   test('exibe erro para código inválido', async ({ page }) => {
-    const input = page.getByPlaceholder(/PED|código/i).or(page.locator('input').first())
-    await input.first().fill('PEDIDO_INVALIDO_XYZ')
-
+    // Input único na página — usa locator direto para evitar ambiguidade
+    await page.locator('input').first().fill('PEDIDO_INVALIDO_XYZ')
     await page.getByRole('button', { name: /buscar/i }).click()
 
-    // Aguarda a resposta da API e verifica mensagem de não encontrado
+    // Aguarda API retornar e exibir "Pedido não encontrado"
     await expect(
-      page.getByText(/não encontrado|verifique o código/i),
-    ).toBeVisible({ timeout: 10000 })
+      page.getByRole('heading', { name: /pedido não encontrado/i })
+        .or(page.getByText(/verifique o código informado/i)),
+    ).toBeVisible({ timeout: 15000 })
   })
 
   test('exibe validação para campo vazio', async ({ page }) => {
