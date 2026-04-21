@@ -281,7 +281,7 @@ export default function ProductDetailPage() {
                 {formatPrice(product.final_price?.toString() || product.price)}
               </span>
               {/* Se houver desconto, mostrar preço original riscado e badge */}
-              {product.discount_price !== null && product.discount_percentage > 0 && (
+              {product.promo_active && product.discount_percentage > 0 && (
                 <>
                   <span className="text-lg sm:text-xl lg:text-2xl text-primary/30 line-through font-bold">
                     {formatPrice(product.price)}

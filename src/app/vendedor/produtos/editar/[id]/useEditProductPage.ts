@@ -72,17 +72,12 @@ export function useEditProductPage(productId: string, user: any) {
       description: '',
       price: undefined,
       stock: undefined,
-      discount_price: undefined,
       category_id: undefined,
       featured: false,
       specifications: undefined,
-      tags: [],
       promo_price: undefined,
       promo_starts_at: null,
       promo_ends_at: null,
-      meta_title: '',
-      meta_description: '',
-      meta_keywords: '',
     }
   })
 
@@ -104,16 +99,11 @@ export function useEditProductPage(productId: string, user: any) {
       form.setValue('specifications', specifications)
       form.setValue('price', product.price ? parseFloat(product.price) : 0)
       form.setValue('stock', product.stock || 0)
-      form.setValue('discount_price', product.discount_price ? parseFloat(product.discount_price) : undefined)
       form.setValue('category_id', product.category_id || undefined)
       form.setValue('featured', product.featured === 1)
       form.setValue('promo_price', product.promo_price ? parseFloat(String(product.promo_price)) : undefined)
       form.setValue('promo_starts_at', product.promo_starts_at ? product.promo_starts_at.slice(0, 16) : null)
       form.setValue('promo_ends_at', product.promo_ends_at ? product.promo_ends_at.slice(0, 16) : null)
-      form.setValue('meta_title', product.meta_title || '')
-      form.setValue('meta_description', product.meta_description || '')
-      form.setValue('meta_keywords', product.meta_keywords || '')
-      form.setValue('tags', Array.isArray(product.tags) ? product.tags : [])
       if (product.stock_variants && product.stock_variants.length > 0) {
         setVariantStocks(product.stock_variants)
       }
@@ -232,9 +222,6 @@ export function useEditProductPage(productId: string, user: any) {
       ? variantStocks.reduce((sum, v) => sum + (v.stock || 0), 0)
       : (data.stock || 0)
     formData.append('stock', stockTotal.toString())
-    if (data.discount_price !== undefined && data.discount_price !== null && data.discount_price > 0) {
-      formData.append('discount_price', data.discount_price.toString())
-    }
     if (data.category_id && data.category_id > 0) {
       formData.append('category_id', data.category_id.toString())
     }
@@ -246,10 +233,6 @@ export function useEditProductPage(productId: string, user: any) {
     if (data.promo_price) formData.append('promo_price', data.promo_price.toString())
     if (data.promo_starts_at) formData.append('promo_starts_at', data.promo_starts_at)
     if (data.promo_ends_at) formData.append('promo_ends_at', data.promo_ends_at)
-    if (data.meta_title?.trim()) formData.append('meta_title', data.meta_title.trim())
-    if (data.meta_description?.trim()) formData.append('meta_description', data.meta_description.trim())
-    if (data.meta_keywords?.trim()) formData.append('meta_keywords', data.meta_keywords.trim())
-    if (data.tags && data.tags.length > 0) formData.append('tags', JSON.stringify(data.tags))
     if (variantStocks.length > 0) formData.append('variant_stocks', JSON.stringify(variantStocks))
 
     if (selectedNicheId && Object.keys(dynamicFieldValues).length > 0) {

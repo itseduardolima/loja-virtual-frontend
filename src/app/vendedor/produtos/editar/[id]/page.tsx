@@ -5,7 +5,7 @@ import { Input, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigge
 import { RichTextEditor } from '@/components/ui/rich-text-editor'
 import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { DynamicFields } from '@/components/Form/DynamicFields'
-import { Package, X, Star, Plus, ChevronLeft, ChevronRight, Tag, Search, Calendar, Layers, ChevronDown } from 'lucide-react'
+import { Package, X, Star, Plus, ChevronLeft, ChevronRight, Calendar, Layers, ChevronDown } from 'lucide-react'
 import { useRouter, useParams, usePathname } from 'next/navigation'
 import { useEditProductPage } from './useEditProductPage'
 import { useStore } from '@/hooks/useStore'
@@ -64,7 +64,6 @@ export default function EditProductPage() {
     onSubmit
   } = useEditProductPage(productId, user)
 
-  const [tagInput, setTagInput] = useState('')
   const [bulkStockValue, setBulkStockValue] = useState('')
   const [showPromo, setShowPromo] = useState(false)
 
@@ -84,7 +83,7 @@ export default function EditProductPage() {
     return isNaN(num) ? undefined : num
   }
 
-  const handleCurrencyInput = (field: 'price' | 'discount_price' | 'promo_price') =>
+  const handleCurrencyInput = (field: 'price' | 'promo_price') =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const digits = e.target.value.replace(/\D/g, '')
       const cents = parseInt(digits, 10) || 0
@@ -92,19 +91,7 @@ export default function EditProductPage() {
       setValue(field, cents > 0 ? cents / 100 : undefined, { shouldValidate: digits.length > 0 })
     }
 
-  const currentTags = watch('tags') || []
 
-  const handleAddTag = () => {
-    const tag = tagInput.trim()
-    if (tag && !currentTags.includes(tag)) {
-      setValue('tags', [...currentTags, tag])
-    }
-    setTagInput('')
-  }
-
-  const handleRemoveTag = (tag: string) => {
-    setValue('tags', (currentTags as string[]).filter((t) => t !== tag))
-  }
 
   const handleVariantStockChange = (color: string, size: string, stock: number) => {
     setVariantStocks(prev => {
@@ -594,31 +581,6 @@ export default function EditProductPage() {
                   )}
                 </div>
 
-                <div>
-                  <Label htmlFor="discount_price" className="text-sm font-semibold text-gray-700 mb-2 block">
-                    Valor de Desconto <span className="text-gray-400 font-normal">(opcional)</span>
-                  </Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm sm:text-base">R$</span>
-                    <Input
-                      id="discount_price"
-                      type="text"
-                      inputMode="numeric"
-                      {...register('discount_price', { setValueAs: parseBRL })}
-                      onChange={handleCurrencyInput('discount_price')}
-                      placeholder="0,00"
-                      value={watch('discount_price') ? formatBRL(Math.round(watch('discount_price')! * 100)) : ''}
-                      className={`h-11 sm:h-12 pl-7 sm:pl-9 text-base sm:text-lg ${errors.discount_price ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
-                    />
-                  </div>
-                  {errors.discount_price && (
-                    <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                      <X className="h-3 w-3" />
-                      {errors.discount_price.message}
-                    </p>
-                  )}
-                </div>
-
               </div>
 
               {/* Promoção Agendada */}
@@ -1070,85 +1032,6 @@ export default function EditProductPage() {
                 )}
               </div>
 
-              {/* Tags */}
-              <div className="border border-gray-200 rounded-xl p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                  <Tag className="h-4 w-4 text-primary flex-shrink-0" />
-                  <h3 className="text-sm font-semibold text-gray-700">Tags <span className="text-gray-400 font-normal">(opcional)</span></h3>
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    value={tagInput}
-                    onChange={(e) => setTagInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag() } }}
-                    placeholder="Digite uma tag e pressione Enter"
-                    className="h-9 text-sm border-gray-200 flex-1"
-                  />
-                  <Button type="button" variant="outline" onClick={handleAddTag} className="h-9 px-3 text-sm">
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-                {currentTags.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {(currentTags as string[]).map((tag) => (
-                      <span key={tag} className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full">
-                        {tag}
-                        <button type="button" onClick={() => handleRemoveTag(tag)} className="hover:text-red-500">
-                          <X className="h-3 w-3" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* SEO */}
-              <div className="border border-gray-200 rounded-xl p-4 space-y-4">
-                <div className="flex items-center gap-2">
-                  <Search className="h-4 w-4 text-primary flex-shrink-0" />
-                  <h3 className="text-sm font-semibold text-gray-700">SEO <span className="text-gray-400 font-normal">(opcional)</span></h3>
-                </div>
-                <div>
-                  <Label className="text-xs font-medium text-gray-600 mb-1 block">
-                    Título SEO <span className="text-gray-400">({(watch('meta_title') || '').length}/200)</span>
-                  </Label>
-                  <Input
-                    {...register('meta_title')}
-                    maxLength={200}
-                    placeholder="Título para mecanismos de busca"
-                    className="h-9 text-sm border-gray-200"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs font-medium text-gray-600 mb-1 block">
-                    Descrição SEO <span className="text-gray-400">({(watch('meta_description') || '').length}/500)</span>
-                  </Label>
-                  <Textarea
-                    {...register('meta_description')}
-                    maxLength={500}
-                    rows={3}
-                    placeholder="Descrição para mecanismos de busca (ideal: 150-160 caracteres)"
-                    className="text-sm border-gray-200 resize-none"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs font-medium text-gray-600 mb-1 block">Palavras-chave</Label>
-                  <Input
-                    {...register('meta_keywords')}
-                    maxLength={300}
-                    placeholder="Ex: camiseta, algodão, feminina (separadas por vírgula)"
-                    className="h-9 text-sm border-gray-200"
-                  />
-                </div>
-                {(watch('meta_title') || watch('meta_description')) && (
-                  <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                    <p className="text-xs text-gray-400 mb-1">Prévia no Google</p>
-                    <p className="text-sm text-blue-700 font-medium truncate">{watch('meta_title') || watch('name') || 'Título do produto'}</p>
-                    <p className="text-xs text-green-700 truncate">sualoja.com/produto/...</p>
-                    <p className="text-xs text-gray-600 line-clamp-2">{watch('meta_description') || watch('description') || 'Descrição do produto'}</p>
-                  </div>
-                )}
-              </div>
             </div>
 
             {renderNavigationButtons()}

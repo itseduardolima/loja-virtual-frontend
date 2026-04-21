@@ -74,7 +74,7 @@ export function ProductCard({
     >
       <CardContent className="p-0 flex flex-col h-full shadow-none bg-transparent">
         {/* Container da Imagem */}
-        <div className="relative aspect-square overflow-hidden rounded-xl sm:rounded-2xl bg-gray-100">
+        <div className="relative aspect-[4/5] overflow-hidden rounded-xl sm:rounded-2xl bg-gray-100">
           {availableImages.length > 0 ? (
             <Image
               src={buildImageUrl(availableImages[currentImageIndex] || availableImages[0])}
@@ -169,7 +169,7 @@ export function ProductCard({
               {formatPrice((product.final_price?.toString() || product.price))}
             </span>
             {/* Se houver desconto, mostrar preço original riscado e badge */}
-            {product.discount_price !== null && product.discount_price !== undefined && product.discount_percentage && product.discount_percentage > 0 && (
+            {product.promo_active && product.discount_percentage && product.discount_percentage > 0 && (
               <>
                 <span className="text-xs sm:text-sm text-gray-400 line-through font-medium">
                   {formatPrice(product.price)}

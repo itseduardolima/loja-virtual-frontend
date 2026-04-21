@@ -102,7 +102,8 @@ export default function ProductDetailPage() {
     )
   }
 
-  const rating = product.average_rating ?? 0
+  const rating = Number(product.average_rating ?? 0)
+  const totalReviews = Number(product.total_reviews ?? 0)
   const fullStars = Math.floor(rating)
   const hasHalfStar = rating % 1 >= 0.5
 
@@ -286,16 +287,19 @@ export default function ProductDetailPage() {
                     <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 fill-yellow-400 text-yellow-400" />
                   ))}
                   {hasHalfStar && (
-                    <Star className="h-4 w-4 sm:h-5 sm:w-5 fill-yellow-400 text-yellow-400" style={{ clipPath: 'inset(0 50% 0 0)' }} />
+                    <div className="relative h-4 w-4 sm:h-5 sm:w-5">
+                      <Star className="absolute inset-0 h-4 w-4 sm:h-5 sm:w-5 text-gray-300" />
+                      <Star className="absolute inset-0 h-4 w-4 sm:h-5 sm:w-5 fill-yellow-400 text-yellow-400" style={{ clipPath: 'inset(0 50% 0 0)' }} />
+                    </div>
                   )}
                   {[...Array(5 - fullStars - (hasHalfStar ? 1 : 0))].map((_, i) => (
                     <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 text-gray-300" />
                   ))}
                 </div>
                 <span className="text-xs sm:text-sm text-primary/60">
-                  {product.total_reviews
-                    ? `(${rating.toFixed(1)}) · ${product.total_reviews} ${product.total_reviews === 1 ? 'avaliação' : 'avaliações'}`
-                    : 'Sem avaliações'}
+                  {totalReviews > 0
+                    ? `(${rating.toFixed(1)}) · ${totalReviews} ${totalReviews === 1 ? 'avaliação' : 'avaliações'}`
+                    : '(Sem avaliações)'}
                 </span>
               </div>
             </div>
@@ -306,7 +310,7 @@ export default function ProductDetailPage() {
                 {formatPrice(product.final_price?.toString() || product.price)}
               </span>
               {/* Se houver desconto, mostrar preço original riscado e badge */}
-              {product.discount_price !== null && product.discount_price !== undefined && product.discount_percentage && product.discount_percentage > 0 && (
+              {product.promo_active && product.discount_percentage && product.discount_percentage > 0 && (
                 <>
                   <span className="text-lg sm:text-xl lg:text-2xl text-primary/30 line-through font-bold">
                     {formatPrice(product.price)}
