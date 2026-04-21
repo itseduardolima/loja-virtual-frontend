@@ -20,17 +20,12 @@ export interface Product {
   name: string
   description: string
   price: string
-  discount_price?: string | null
   final_price?: number
   discount_percentage?: number
   promo_price?: number | null
   promo_starts_at?: string | null
   promo_ends_at?: string | null
   promo_active?: boolean
-  meta_title?: string | null
-  meta_description?: string | null
-  meta_keywords?: string | null
-  tags?: string[]
   images: string[] | Record<string, string[]>
   images_by_color?: Record<string, string[]>
   stock: number
@@ -98,7 +93,6 @@ export interface ProductDetail {
   name: string
   description: string
   price: string
-  discount_price: string | null
   final_price: number
   discount_percentage: number
   images: string[] | Record<string, string[]>

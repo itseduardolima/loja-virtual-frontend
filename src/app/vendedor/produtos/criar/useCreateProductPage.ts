@@ -38,20 +38,15 @@ export function useCreateProductPage(user: any) {
       description: '',
       price: undefined,
       stock: undefined,
-      discount_price: undefined,
       featured: false,
       save_as_draft: false,
       sizes: [],
       colors: [],
       specifications: '',
       category_id: undefined,
-      tags: [],
       promo_price: undefined,
       promo_starts_at: null,
       promo_ends_at: null,
-      meta_title: '',
-      meta_description: '',
-      meta_keywords: '',
     }
   })
 
@@ -110,9 +105,6 @@ export function useCreateProductPage(user: any) {
         ? variantStocks.reduce((sum, v) => sum + (v.stock || 0), 0)
         : (data.stock || 0)
       formData.append('stock', stockTotal.toString())
-      if (data.discount_price !== undefined && data.discount_price !== null && data.discount_price > 0) {
-        formData.append('discount_price', data.discount_price.toString())
-      }
       if (data.category_id && data.category_id > 0) {
         formData.append('category_id', data.category_id.toString())
       }
@@ -125,10 +117,6 @@ export function useCreateProductPage(user: any) {
       if (data.promo_price) formData.append('promo_price', data.promo_price.toString())
       if (data.promo_starts_at) formData.append('promo_starts_at', data.promo_starts_at)
       if (data.promo_ends_at) formData.append('promo_ends_at', data.promo_ends_at)
-      if (data.meta_title?.trim()) formData.append('meta_title', data.meta_title.trim())
-      if (data.meta_description?.trim()) formData.append('meta_description', data.meta_description.trim())
-      if (data.meta_keywords?.trim()) formData.append('meta_keywords', data.meta_keywords.trim())
-      if (data.tags && data.tags.length > 0) formData.append('tags', JSON.stringify(data.tags))
       if (variantStocks.length > 0) formData.append('variant_stocks', JSON.stringify(variantStocks))
 
       if (selectedNicheId && Object.keys(dynamicFieldValues).length > 0) {

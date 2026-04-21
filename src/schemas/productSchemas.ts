@@ -41,14 +41,6 @@ export const createProductSchema = yup.object({
     .min(0, 'Estoque não pode ser negativo')
     .max(999999, 'Estoque não pode ser maior que 999.999')
     .typeError('Estoque deve ser um número válido'),
-  discount_price: yup
-    .number()
-    .transform(normalizeNumber)
-    .optional()
-    .nullable()
-    .min(0.01, 'Valor de desconto deve ser maior que zero')
-    .max(999999.99, 'Valor de desconto não pode ser maior que R$ 999.999,99')
-    .typeError('Valor de desconto deve ser um número válido'),
   category_id: yup
     .number()
     .transform(normalizeNumber)
@@ -69,10 +61,6 @@ export const createProductSchema = yup.object({
       if (!value || !promo_starts_at) return true
       return new Date(value) > new Date(promo_starts_at)
     }),
-  meta_title: yup.string().optional().max(200),
-  meta_description: yup.string().optional().max(500),
-  meta_keywords: yup.string().optional().max(300),
-  tags: yup.array().of(yup.string()).optional(),
   variant_stocks: yup.array().of(
     yup.object({ color: yup.string().required(), size: yup.string().required(), stock: yup.number().min(0).required() })
   ).optional(),
@@ -100,14 +88,6 @@ export const updateProductSchema = yup.object({
     .min(0, 'Estoque não pode ser negativo')
     .max(999999, 'Estoque não pode ser maior que 999.999')
     .typeError('Estoque deve ser um número válido'),
-  discount_price: yup
-    .number()
-    .transform(normalizeNumber)
-    .optional()
-    .nullable()
-    .min(0.01, 'Valor de desconto deve ser maior que zero')
-    .max(999999.99, 'Valor de desconto não pode ser maior que R$ 999.999,99')
-    .typeError('Valor de desconto deve ser um número válido'),
   category_id: yup
     .number()
     .transform(normalizeNumber)
@@ -127,10 +107,6 @@ export const updateProductSchema = yup.object({
       if (!value || !promo_starts_at) return true
       return new Date(value) > new Date(promo_starts_at)
     }),
-  meta_title: yup.string().optional().max(200),
-  meta_description: yup.string().optional().max(500),
-  meta_keywords: yup.string().optional().max(300),
-  tags: yup.array().of(yup.string()).optional(),
   variant_stocks: yup.array().of(
     yup.object({ color: yup.string().required(), size: yup.string().required(), stock: yup.number().min(0).required() })
   ).optional(),

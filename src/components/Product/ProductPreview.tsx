@@ -71,7 +71,7 @@ export function ProductPreview({
         <Card className="group relative overflow-hidden bg-white transition-all duration-300 border-0 shadow-none">
           <CardContent className="p-0">
             {/* Container da Imagem */}
-            <div className="relative aspect-square overflow-hidden bg-white flex items-center justify-center rounded-2xl">
+            <div className="relative aspect-[4/5] overflow-hidden bg-white flex items-center justify-center rounded-2xl">
               {previewImage ? (
                 <img
                   src={previewImage}

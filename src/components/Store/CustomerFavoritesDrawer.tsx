@@ -16,7 +16,6 @@ interface WishlistProduct {
   product_id: number
   name: string
   price: number
-  discount_price: number | null
   images: Record<string, string[]> | string[] | null
   store_slug: string
   added_at: string
@@ -117,7 +116,6 @@ export function CustomerFavoritesDrawer({ isOpen, onClose }: CustomerFavoritesDr
               <div className="p-4 space-y-3">
                 {items.map((item) => {
                   const imageUrl = getFirstImage(item.images)
-                  const finalPrice = item.discount_price ?? item.price
 
                   return (
                     <div
@@ -157,13 +155,8 @@ export function CustomerFavoritesDrawer({ isOpen, onClose }: CustomerFavoritesDr
                         </button>
                         <div className="mt-1 flex items-baseline gap-2">
                           <span className="font-semibold text-primary text-sm">
-                            {formatPrice(finalPrice)}
+                            {formatPrice(item.price)}
                           </span>
-                          {item.discount_price && (
-                            <span className="text-xs text-gray-400 line-through">
-                              {formatPrice(item.price)}
-                            </span>
-                          )}
                         </div>
                       </div>
 

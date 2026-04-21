@@ -248,7 +248,7 @@ export function StoreHeader({
                             <p className="text-xs sm:text-sm font-semibold text-primary">
                               {formatPrice(product.final_price || product.price)}
                             </p>
-                            {product.discount_price && (
+                            {product.promo_active && (
                               <p className="text-[10px] sm:text-xs text-gray-400 line-through">
                                 {formatPrice(product.price)}
                               </p>
