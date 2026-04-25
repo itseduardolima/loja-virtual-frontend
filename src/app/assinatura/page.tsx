@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { LoadingPage, LoadingSpinner } from "@/components";
+import { LoadingPage } from "@/components";
 import { AlertCircle } from "lucide-react";
 import { useAssinaturaPage } from "./useAssinaturaPage";
 import {
@@ -47,66 +47,45 @@ export default function AssinaturaPage() {
     needsDocument,
   } = useAssinaturaPage();
 
-  // Wait for auth state before showing anything
-  if (isLoadingAuth) {
-    return <LoadingPage />;
-  }
+  if (isLoadingAuth) return <LoadingPage />;
 
-  // Plan loading/error is only blocking for authenticated steps
   if (step !== "register") {
-    if (isLoadingPlan) {
-      return <LoadingPage />;
-    }
+    if (isLoadingPlan) return <LoadingPage />;
 
     if (planError || !plan) {
       return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center py-12 sm:py-16">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-200 p-6 sm:p-8 max-w-md mx-4 text-center"
+            className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 max-w-md w-full text-center"
           >
-            <div className="mb-6">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <AlertCircle className="w-8 h-8 text-red-600" />
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
-                Plano não disponível
-              </h2>
-              <p className="text-gray-600 mb-6">
-                {planError
-                  ? "Erro ao carregar o plano. Tente novamente."
-                  : "Não há planos disponíveis no momento."}
-              </p>
+            <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-7 h-7 text-red-600" />
             </div>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-              <motion.button
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Plano não disponível
+            </h2>
+            <p className="text-gray-500 mb-6 text-sm">
+              {planError
+                ? "Erro ao carregar o plano. Tente novamente."
+                : "Não há planos disponíveis no momento."}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button
                 onClick={() => refetchPlan()}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-primary text-white px-6 py-3 rounded-xl hover:bg-black/80 transition-colors font-semibold shadow-lg hover:shadow-xl"
+                className="px-6 py-2.5 rounded-xl bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 transition-colors"
               >
                 Tentar Novamente
-              </motion.button>
-              <motion.button
+              </button>
+              <button
                 onClick={() => router.push("/")}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-gray-200 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-300 transition-colors font-semibold"
+                className="px-6 py-2.5 rounded-xl bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 transition-colors"
               >
                 Voltar para Home
-              </motion.button>
+              </button>
             </div>
-            {planError && (
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <p className="text-xs text-gray-500 font-mono">
-                  {planError instanceof Error
-                    ? planError.message
-                    : "Erro desconhecido"}
-                </p>
-              </div>
-            )}
           </motion.div>
         </div>
       );
@@ -119,6 +98,20 @@ export default function AssinaturaPage() {
       : plan.price || 0
     : undefined;
 
+  const planFeatures: string[] = (() => {
+    if (!plan?.features) return [];
+    try {
+      return typeof plan.features === "string"
+        ? JSON.parse(plan.features)
+        : plan.features;
+    } catch {
+      return [];
+    }
+  })();
+
+  // The select step has its own title/header built in
+  const showHeader = step !== "select";
+
   const pageTitle =
     step === "register" ? "Comece a vender online" : "Assinar Plano";
   const pageSubtitle =
@@ -127,22 +120,24 @@ export default function AssinaturaPage() {
       : "Escolha o método de pagamento para começar sua jornada como vendedor";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 sm:py-16 md:py-24">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12 sm:mb-16"
-        >
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            {pageTitle}
-          </h1>
-          <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
-            {pageSubtitle}
-          </p>
-        </motion.div>
+    <div className="min-h-screen bg-gray-50 py-12 sm:py-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {showHeader && (
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-12 sm:mb-16"
+          >
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              {pageTitle}
+            </h1>
+            <p className="text-lg sm:text-xl text-gray-500 max-w-2xl mx-auto">
+              {pageSubtitle}
+            </p>
+          </motion.div>
+        )}
 
         <AnimatePresence mode="wait">
           {step === "register" && (
@@ -159,6 +154,9 @@ export default function AssinaturaPage() {
 
           {step === "select" && (
             <SelectPaymentMethodStep
+              planPrice={planPriceNum}
+              planFeatures={planFeatures}
+              planName={plan?.name}
               selectedMethod={selectedMethod}
               documentType={documentType}
               cpf={cpf}
