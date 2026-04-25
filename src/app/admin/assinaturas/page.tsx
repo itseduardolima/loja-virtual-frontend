@@ -1,16 +1,26 @@
-﻿'use client'
+'use client'
 
-import { Receipt, Search } from 'lucide-react'
+import { Receipt, Search, RefreshCw } from 'lucide-react'
 import { Table, Column } from '@/components'
 import { AdminSubscription } from '@/types/admin'
-import { format } from 'date-fns'
+import { format, differenceInCalendarDays } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Button } from '@/components/ui/button'
 import { useAssinaturasPage } from './useAssinaturasPage'
 
+function getExpiryBadge(row: AdminSubscription): { label: string; color: string } | null {
+  if (row.status !== 'active' || !row.current_period_end) return null
+  const days = differenceInCalendarDays(new Date(row.current_period_end), new Date())
+  if (days < 0) return null
+  if (days === 0) return { label: 'Vence hoje', color: 'expires_today' }
+  if (days <= 7) return { label: `Vence em ${days}d`, color: 'expires_soon' }
+  return null
+}
+
 export default function AdminAssinaturasPage() {
-  const { subs, meta, isLoading, page, setPage, search, setSearch, statusFilter, setStatusFilter, statusMap } = useAssinaturasPage()
+  const { subs, meta, isLoading, page, setPage, search, setSearch, statusFilter, setStatusFilter, statusMap, handleSync, isSyncing } = useAssinaturasPage()
 
   const columns: Column<AdminSubscription>[] = [
     { key: 'user', header: 'Usuário', accessor: (row) => row.user?.name ?? '-' },
@@ -35,6 +45,18 @@ export default function AdminAssinaturasPage() {
       },
     },
     {
+      key: 'expiry',
+      header: 'Alerta',
+      accessor: (row) => getExpiryBadge(row),
+      type: 'badge',
+      options: {
+        badgeColors: {
+          expires_today: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200' },
+          expires_soon: { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-200' },
+        },
+      },
+    },
+    {
       key: 'period',
       header: 'Período',
       accessor: (row) => {
@@ -42,14 +64,25 @@ export default function AdminAssinaturasPage() {
         return `${format(new Date(row.current_period_start), 'dd/MM/yy', { locale: ptBR })} - ${format(new Date(row.current_period_end), 'dd/MM/yy', { locale: ptBR })}`
       },
     },
-    { key: 'provider', header: 'Provedor', accessor: 'payment_provider' },
   ]
 
   return (
     <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Assinaturas</h1>
-        <p className="text-gray-500 text-sm mt-1">Visão geral de todas as assinaturas</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Assinaturas</h1>
+          <p className="text-gray-500 text-sm mt-1">Visão geral de todas as assinaturas</p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleSync}
+          disabled={isSyncing}
+          className="shrink-0"
+        >
+          <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+          {isSyncing ? 'Sincronizando...' : 'Sincronizar'}
+        </Button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
