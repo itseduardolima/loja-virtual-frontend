@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscriptionPlans } from "@/hooks/useSubscriptionPlans";
 import { useCreateSubscription } from "@/hooks/useCreateSubscription";
@@ -15,6 +15,8 @@ export type Step = "register" | "plan" | "select" | "processing" | "payment" | "
 
 export function useAssinaturaPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const planoParam = searchParams.get("plano");
   const { isAuthenticated, isLoading: isLoadingAuth, login } = useAuth();
 
   const [step, setStep] = useState<Step>("select");
@@ -51,15 +53,27 @@ export function useAssinaturaPage() {
   });
   const hasCompletedRef = useRef(false);
 
-  // If not authenticated, show register step; if authenticated, show plan selection
+  // If not authenticated, show register step; if authenticated, resolve plan from param or show selection
   useEffect(() => {
     if (isLoadingAuth) return;
     if (!isAuthenticated) {
       setStep("register");
-    } else if (step === "select" && !selectedPlan) {
-      setStep("plan");
+      return;
     }
-  }, [isLoadingAuth, isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (step !== "select" || selectedPlan) return;
+
+    // If there's a plano param, wait for plans to load before deciding
+    if (planoParam && isLoadingPlan) return;
+
+    if (planoParam && plans?.length) {
+      const matched = plans.find((p) => p.slug === planoParam);
+      if (matched) {
+        setSelectedPlan(matched);
+        return; // keep step "select"
+      }
+    }
+    setStep("plan");
+  }, [isLoadingAuth, isAuthenticated, plans, isLoadingPlan]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const subscriptionStatus = mySubscription?.status;
   const subscriptionPayments = mySubscription?.payments;
@@ -132,6 +146,18 @@ export function useAssinaturaPage() {
     mySubscription,
   ]);
 
+  const resolveStepAfterAuth = () => {
+    if (planoParam && plans?.length) {
+      const matched = plans.find((p) => p.slug === planoParam);
+      if (matched) {
+        setSelectedPlan(matched);
+        setStep("select");
+        return;
+      }
+    }
+    setStep("plan");
+  };
+
   const handleRegisterAndContinue = async (
     name: string,
     email: string,
@@ -147,7 +173,7 @@ export function useAssinaturaPage() {
         ...(whatsapp && { whatsapp }),
       });
       await login({ login: email, password });
-      setStep("plan");
+      resolveStepAfterAuth();
     } catch (error: any) {
       const msg = error.response?.data?.message;
       toast.error(
@@ -162,7 +188,7 @@ export function useAssinaturaPage() {
     setIsSubmittingAuth(true);
     try {
       await login({ login: email, password });
-      setStep("plan");
+      resolveStepAfterAuth();
     } catch {
       toast.error("Email ou senha incorretos. Tente novamente.");
     } finally {
@@ -177,6 +203,11 @@ export function useAssinaturaPage() {
   const handleSelectPlan = (plan: SubscriptionPlan) => {
     setSelectedPlan(plan);
     setStep("select");
+  };
+
+  const handleBackToPlan = () => {
+    setSelectedPlan(null);
+    setStep("plan");
   };
 
   const handleSelectMethod = (method: BillingType) => {
@@ -312,6 +343,7 @@ export function useAssinaturaPage() {
 
     // Plan handlers
     handleSelectPlan,
+    handleBackToPlan,
 
     // Subscription handlers
     handleSelectMethod,

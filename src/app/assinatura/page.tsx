@@ -34,6 +34,7 @@ export default function AssinaturaPage() {
     isCreatingSubscription,
     planError,
     handleSelectPlan,
+    handleBackToPlan,
     handleSelectMethod,
     handleSelectDocumentType,
     handleCreateSubscription,
@@ -124,7 +125,7 @@ export default function AssinaturaPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 sm:py-16">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {showHeader && (
           <motion.div
             key={step}
@@ -183,6 +184,7 @@ export default function AssinaturaPage() {
               onCnpjChange={handleCnpjChange}
               onDocumentTypeReset={handleDocumentTypeReset}
               onCreateSubscription={handleCreateSubscription}
+              onBack={handleBackToPlan}
             />
           )}
 
