@@ -2,10 +2,10 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 
 interface CompletedStepProps {
-  onGoToLogin: () => void;
+  onGoToDashboard: () => void;
 }
 
-export function CompletedStep({ onGoToLogin }: CompletedStepProps) {
+export function CompletedStep({ onGoToDashboard }: CompletedStepProps) {
   return (
     <motion.div
       key="completed"
@@ -45,8 +45,7 @@ export function CompletedStep({ onGoToLogin }: CompletedStepProps) {
           transition={{ delay: 0.4 }}
           className="text-lg sm:text-xl text-gray-600 mb-6"
         >
-          Seu pagamento foi confirmado com sucesso e sua assinatura está
-          ativa!
+          Seu pagamento foi confirmado com sucesso e sua assinatura está ativa!
         </motion.p>
 
         <motion.div
@@ -59,8 +58,8 @@ export function CompletedStep({ onGoToLogin }: CompletedStepProps) {
             <strong>Próximos passos:</strong>
           </p>
           <p className="text-sm sm:text-base text-gray-600">
-            Agora você pode fazer login e começar a criar sua loja
-            virtual. Sua conta foi atualizada para o perfil de vendedor.
+            Sua conta foi atualizada para o perfil de vendedor. Crie sua loja e
+            comece a vender agora mesmo!
           </p>
         </motion.div>
 
@@ -71,16 +70,15 @@ export function CompletedStep({ onGoToLogin }: CompletedStepProps) {
           className="flex justify-center"
         >
           <motion.button
-            onClick={onGoToLogin}
+            onClick={onGoToDashboard}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="bg-primary text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-black/80 shadow-lg hover:shadow-xl transition-all"
           >
-            Ir para Login
+            Ir para Minha Loja
           </motion.button>
         </motion.div>
       </div>
     </motion.div>
   );
 }
-
