@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, LoginRequest, AuthContextType } from '@/types/auth'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -11,6 +12,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const queryClient = useQueryClient()
+  const router = useRouter()
 
   useEffect(() => {
     const processGoogleAuthCallback = () => {
@@ -39,18 +41,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             return true
           }
 
-          const baseUrl = window.location.origin
-          let targetPath = baseUrl + '/'
+          let targetPath = '/'
 
           if (userData.profile === 'Vendedor') {
-            targetPath = baseUrl + '/vendedor'
-          } else if (savedRedirectUrl && isRedirectAllowed(savedRedirectUrl)) {
-            targetPath = savedRedirectUrl.startsWith('http')
-              ? savedRedirectUrl
-              : baseUrl + (savedRedirectUrl.startsWith('/') ? savedRedirectUrl : '/' + savedRedirectUrl)
+            targetPath = '/vendedor'
+          } else if (userData.profile === 'Administrador') {
+            targetPath = '/admin'
+          } else {
+            // Cliente: última loja > redirect salvo > /
+            const lastStore = localStorage.getItem('last-store')
+            if (lastStore) {
+              targetPath = `/loja/${lastStore}`
+            } else if (savedRedirectUrl && isRedirectAllowed(savedRedirectUrl)) {
+              const normalized = savedRedirectUrl.replace(/^https?:\/\/[^/]+/, '')
+              targetPath = normalized.startsWith('/') ? normalized : '/' + normalized
+            }
           }
 
-          window.location.href = targetPath
+          router.replace(targetPath)
           return true
         } catch (error) {
           console.error('Erro ao processar callback do Google:', error)

@@ -1,5 +1,14 @@
-export const revalidate = 60
+'use client'
 
-export default function StoreLayout({ children }: { children: React.ReactNode }) {
+import { useEffect } from 'react'
+import { useParams } from 'next/navigation'
+
+export default function LojaLayout({ children }: { children: React.ReactNode }) {
+  const { slug } = useParams() as { slug: string }
+
+  useEffect(() => {
+    if (slug) localStorage.setItem('last-store', slug)
+  }, [slug])
+
   return <>{children}</>
 }

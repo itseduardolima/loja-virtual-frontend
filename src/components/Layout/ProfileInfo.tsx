@@ -33,8 +33,6 @@ export function ProfileInfo() {
           <p><strong>Email:</strong> {user.email}</p>
           <p><strong>Perfil:</strong> {user.profile}</p>
           <p><strong>ID do Perfil:</strong> {user.profile_id}</p>
-          <p><strong>Primeiro Acesso:</strong> {user.first_access ? 'Sim' : 'Não'}</p>
-          
           {/* Exemplo de uso do mapeamento */}
           <div className="mt-4 p-3 bg-gray-50 rounded-lg">
             <p className="text-xs text-gray-600 mb-2">Mapeamento de IDs:</p>

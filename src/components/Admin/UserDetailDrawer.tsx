@@ -77,10 +77,6 @@ export function UserDetailDrawer({ userId, open, onClose }: UserDetailDrawerProp
                     value={format(new Date(user.created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                   />
                 )}
-                <InfoItem
-                  label="Primeiro acesso"
-                  value={(user as any).first_access ? 'Pendente' : 'Concluído'}
-                />
               </div>
 
             </div>

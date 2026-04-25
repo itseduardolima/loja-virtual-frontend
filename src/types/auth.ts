@@ -5,7 +5,6 @@ export interface User {
   email: string
   name: string
   profile_id: number
-  first_access: number
   profile: UserProfile
   transactions: number[]
 }

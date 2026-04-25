@@ -7,7 +7,6 @@ interface ValidateTokenResponse {
   email: string
   profile_id: number | null
   profile: string | null
-  first_access: number
 }
 
 export function useValidateToken(enabled: boolean = true) {
