@@ -8,9 +8,9 @@ import {
   CreditCard,
   QrCode,
   FileText,
-  TrendingUp,
-  Users,
-  BarChart3,
+  Package,
+  Store,
+  RefreshCw,
   ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,9 @@ interface SelectPaymentMethodStepProps {
   planPrice?: number;
   planFeatures?: string[];
   planName?: string;
+  planMaxProducts?: number | null;
+  planMaxStores?: number;
+  planBillingCycle?: string;
   selectedMethod: BillingType | null;
   documentType: "cpf" | "cnpj" | null;
   cpf: string;
@@ -61,6 +64,9 @@ export function SelectPaymentMethodStep({
   planPrice = 0,
   planFeatures = [],
   planName,
+  planMaxProducts,
+  planMaxStores,
+  planBillingCycle,
   selectedMethod,
   documentType,
   cpf,
@@ -170,16 +176,28 @@ export function SelectPaymentMethodStep({
             <div className="border-t border-gray-100 pt-5">
               <div className="flex items-center justify-around">
                 <div className="flex flex-col items-center gap-1.5 text-gray-400">
-                  <TrendingUp className="w-5 h-5" />
-                  <span className="text-xs">Crescimento</span>
+                  <Package className="w-5 h-5" />
+                  <span className="text-xs">
+                    {planMaxProducts
+                      ? `${planMaxProducts} produtos`
+                      : "Produtos ilimitados"}
+                  </span>
                 </div>
                 <div className="flex flex-col items-center gap-1.5 text-gray-400">
-                  <Users className="w-5 h-5" />
-                  <span className="text-xs">Multi-usuário</span>
+                  <Store className="w-5 h-5" />
+                  <span className="text-xs">
+                    {planMaxStores === 1
+                      ? "1 loja incluída"
+                      : planMaxStores
+                      ? `${planMaxStores} lojas`
+                      : "1 loja incluída"}
+                  </span>
                 </div>
                 <div className="flex flex-col items-center gap-1.5 text-gray-400">
-                  <BarChart3 className="w-5 h-5" />
-                  <span className="text-xs">Relatórios</span>
+                  <RefreshCw className="w-5 h-5" />
+                  <span className="text-xs">
+                    {planBillingCycle === "yearly" ? "Renovação anual" : "Renovação mensal"}
+                  </span>
                 </div>
               </div>
             </div>
