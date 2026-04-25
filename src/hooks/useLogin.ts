@@ -28,13 +28,17 @@ export function useLogin() {
 
       const profile = data.user.profile
 
-      // Vendedor: redireciona direto para a página do vendedor (navegação completa evita passar por "/")
       if (profile === 'Vendedor') {
-        window.location.href = '/vendedor'
+        router.push('/vendedor')
         return
       }
 
-      // Cliente (ou outros perfis): checkout tem prioridade; depois última página válida
+      if (profile === 'Administrador') {
+        router.push('/admin')
+        return
+      }
+
+      // Cliente: checkout > ?redirect > última loja visitada > /
       const checkoutData = getCheckoutData()
       if (checkoutData) {
         clearCheckoutData()
@@ -51,6 +55,12 @@ export function useLogin() {
       const redirect = searchParams.get('redirect')
       if (redirect && isRedirectAllowed(redirect)) {
         router.push(redirect)
+        return
+      }
+
+      const lastStore = localStorage.getItem('last-store')
+      if (lastStore) {
+        router.push(`/loja/${lastStore}`)
         return
       }
 

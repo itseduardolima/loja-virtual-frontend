@@ -57,10 +57,8 @@ export default function VendedorLayout({
 
     // Se não está autenticado, redireciona para login
     if (!isAuthenticated) {
-      const redirectUrl = `/login?redirect=${encodeURIComponent(pathname)}`
-      // Evita redirecionamento duplicado
       if (window.location.pathname !== '/login') {
-        router.push(redirectUrl)
+        router.push('/login')
       }
       return
     }
