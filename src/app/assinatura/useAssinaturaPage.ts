@@ -4,7 +4,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSubscriptionPlan } from "@/hooks/useSubscriptionPlan";
 import { useCreateSubscription } from "@/hooks/useCreateSubscription";
 import { useMySubscription } from "@/hooks/useMySubscription";
-import { useSyncSubscription } from "@/hooks/useSyncSubscription";
 import { BillingType } from "@/types/subscription";
 import { formatCPF, formatCNPJ } from "@/lib/utils";
 import toast from "react-hot-toast";
@@ -45,7 +44,6 @@ export function useAssinaturaPage() {
     enabled: isAuthenticated && step !== "completed",
     refetchInterval: shouldPoll ? 5000 : false, // Polling a cada 5 segundos quando na tela de sucesso
   });
-  const syncSubscription = useSyncSubscription();
   const hasCompletedRef = useRef(false);
 
   // Redireciona para login se não estiver autenticado
