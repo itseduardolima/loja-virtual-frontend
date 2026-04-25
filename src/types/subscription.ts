@@ -71,6 +71,7 @@ export interface CreateSubscriptionRequest {
   billing_type: 'CREDIT_CARD' | 'PIX' | 'BOLETO'
   cpf?: string
   cnpj?: string
+  plan_slug?: string
 }
 
 export interface CreateSubscriptionResponse {

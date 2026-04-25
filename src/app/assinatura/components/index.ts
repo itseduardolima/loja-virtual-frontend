@@ -1,4 +1,5 @@
 export { RegisterStep } from "./RegisterStep";
+export { PlanSelectionStep } from "./PlanSelectionStep";
 export { SelectPaymentMethodStep } from "./SelectPaymentMethodStep";
 export { ProcessingStep } from "./ProcessingStep";
 export { PaymentStep } from "./PaymentStep";
