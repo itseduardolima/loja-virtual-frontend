@@ -3,15 +3,15 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSubscriptionPlan } from "@/hooks/useSubscriptionPlan";
+import { useSubscriptionPlans } from "@/hooks/useSubscriptionPlans";
 import { useCreateSubscription } from "@/hooks/useCreateSubscription";
 import { useMySubscription } from "@/hooks/useMySubscription";
-import { BillingType } from "@/types/subscription";
+import { BillingType, SubscriptionPlan } from "@/types/subscription";
 import { formatCPF, formatCNPJ } from "@/lib/utils";
 import { api } from "@/lib/api";
 import toast from "react-hot-toast";
 
-export type Step = "register" | "select" | "processing" | "payment" | "success" | "completed";
+export type Step = "register" | "plan" | "select" | "processing" | "payment" | "success" | "completed";
 
 export function useAssinaturaPage() {
   const router = useRouter();
@@ -20,6 +20,7 @@ export function useAssinaturaPage() {
   const [step, setStep] = useState<Step>("select");
   const [registerMode, setRegisterMode] = useState<"register" | "login">("register");
   const [isSubmittingAuth, setIsSubmittingAuth] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
 
   const [selectedMethod, setSelectedMethod] = useState<BillingType | null>("CREDIT_CARD");
   const [documentType, setDocumentType] = useState<"cpf" | "cnpj" | null>(null);
@@ -31,11 +32,11 @@ export function useAssinaturaPage() {
   } | null>(null);
 
   const {
-    data: plan,
+    data: plans,
     isLoading: isLoadingPlan,
     error: planError,
     refetch: refetchPlan,
-  } = useSubscriptionPlan();
+  } = useSubscriptionPlans();
 
   const createSubscription = useCreateSubscription();
 
@@ -50,13 +51,15 @@ export function useAssinaturaPage() {
   });
   const hasCompletedRef = useRef(false);
 
-  // If not authenticated, show register/login step instead of redirecting
+  // If not authenticated, show register step; if authenticated, show plan selection
   useEffect(() => {
     if (isLoadingAuth) return;
     if (!isAuthenticated) {
       setStep("register");
+    } else if (step === "select" && !selectedPlan) {
+      setStep("plan");
     }
-  }, [isLoadingAuth, isAuthenticated]);
+  }, [isLoadingAuth, isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const subscriptionStatus = mySubscription?.status;
   const subscriptionPayments = mySubscription?.payments;
@@ -65,6 +68,7 @@ export function useAssinaturaPage() {
     if (
       step === "completed" ||
       step === "register" ||
+      step === "plan" ||
       !isAuthenticated ||
       isLoadingAuth ||
       isLoadingSubscription ||
@@ -143,7 +147,7 @@ export function useAssinaturaPage() {
         ...(whatsapp && { whatsapp }),
       });
       await login({ login: email, password });
-      setStep("select");
+      setStep("plan");
     } catch (error: any) {
       const msg = error.response?.data?.message;
       toast.error(
@@ -158,7 +162,7 @@ export function useAssinaturaPage() {
     setIsSubmittingAuth(true);
     try {
       await login({ login: email, password });
-      setStep("select");
+      setStep("plan");
     } catch {
       toast.error("Email ou senha incorretos. Tente novamente.");
     } finally {
@@ -168,6 +172,11 @@ export function useAssinaturaPage() {
 
   const toggleRegisterMode = () => {
     setRegisterMode((prev) => (prev === "register" ? "login" : "register"));
+  };
+
+  const handleSelectPlan = (plan: SubscriptionPlan) => {
+    setSelectedPlan(plan);
+    setStep("select");
   };
 
   const handleSelectMethod = (method: BillingType) => {
@@ -219,7 +228,8 @@ export function useAssinaturaPage() {
         billing_type: BillingType;
         cpf?: string;
         cnpj?: string;
-      } = { billing_type: selectedMethod };
+        plan_slug?: string;
+      } = { billing_type: selectedMethod, ...(selectedPlan && { plan_slug: selectedPlan.slug }) };
 
       if (selectedMethod === "PIX" || selectedMethod === "BOLETO") {
         const cpfClean = cpf.replace(/\D/g, "");
@@ -280,7 +290,9 @@ export function useAssinaturaPage() {
     cpf,
     cnpj,
     paymentData,
-    plan,
+    plans,
+    selectedPlan,
+    plan: selectedPlan,
     mySubscription,
     subscriptionStatus,
     subscriptionPayments,
@@ -297,6 +309,9 @@ export function useAssinaturaPage() {
     // Errors
     planError,
     subscriptionError,
+
+    // Plan handlers
+    handleSelectPlan,
 
     // Subscription handlers
     handleSelectMethod,

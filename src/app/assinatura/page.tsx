@@ -7,6 +7,7 @@ import { AlertCircle } from "lucide-react";
 import { useAssinaturaPage } from "./useAssinaturaPage";
 import {
   RegisterStep,
+  PlanSelectionStep,
   SelectPaymentMethodStep,
   ProcessingStep,
   PaymentStep,
@@ -23,6 +24,7 @@ export default function AssinaturaPage() {
     cpf,
     cnpj,
     paymentData,
+    plans,
     plan,
     isPaymentConfirmed,
     registerMode,
@@ -31,6 +33,7 @@ export default function AssinaturaPage() {
     isLoadingPlan,
     isCreatingSubscription,
     planError,
+    handleSelectPlan,
     handleSelectMethod,
     handleSelectDocumentType,
     handleCreateSubscription,
@@ -52,7 +55,7 @@ export default function AssinaturaPage() {
   if (step !== "register") {
     if (isLoadingPlan) return <LoadingPage />;
 
-    if (planError || !plan) {
+    if (planError || !plans?.length) {
       return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
           <motion.div
@@ -65,11 +68,11 @@ export default function AssinaturaPage() {
               <AlertCircle className="w-7 h-7 text-red-600" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Plano não disponível
+              Planos não disponíveis
             </h2>
             <p className="text-gray-500 mb-6 text-sm">
               {planError
-                ? "Erro ao carregar o plano. Tente novamente."
+                ? "Erro ao carregar os planos. Tente novamente."
                 : "Não há planos disponíveis no momento."}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -109,8 +112,8 @@ export default function AssinaturaPage() {
     }
   })();
 
-  // The select step has its own title/header built in
-  const showHeader = step !== "select";
+  // These steps have their own title/header built in
+  const showHeader = step !== "select" && step !== "plan";
 
   const pageTitle =
     step === "register" ? "Comece a vender online" : "Assinar Plano";
@@ -149,6 +152,13 @@ export default function AssinaturaPage() {
               onSubmitRegister={handleRegisterAndContinue}
               onSubmitLogin={handleInlineLogin}
               onToggleMode={toggleRegisterMode}
+            />
+          )}
+
+          {step === "plan" && plans && (
+            <PlanSelectionStep
+              plans={plans}
+              onSelectPlan={handleSelectPlan}
             />
           )}
 
