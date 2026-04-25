@@ -79,7 +79,7 @@ export function RegisterStep({
       exit={{ opacity: 0, x: 20 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="max-w-lg mx-auto">
+      <div className="max-w-2xl mx-auto">
         {planPrice !== undefined && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
