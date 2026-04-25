@@ -41,7 +41,7 @@ export function PricingSection() {
             period="mês"
             features={basicFeatures}
             ctaText="Começar Agora"
-            ctaHref="/assinatura"
+            ctaHref="/assinatura?plano=plano-basico"
             featured={false}
           />
           <PricingCard
@@ -51,7 +51,7 @@ export function PricingSection() {
             period="mês"
             features={proFeatures}
             ctaText="Assinar Pro"
-            ctaHref="/assinatura"
+            ctaHref="/assinatura?plano=plano-pro"
             featured={true}
           />
           <PricingCard
@@ -61,7 +61,7 @@ export function PricingSection() {
             period="mês"
             features={maxFeatures}
             ctaText="Assinar Max"
-            ctaHref="/assinatura"
+            ctaHref="/assinatura?plano=plano-max"
             featured={false}
           />
         </div>

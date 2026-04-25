@@ -48,13 +48,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           } else if (userData.profile === 'Administrador') {
             targetPath = '/admin'
           } else {
-            // Cliente: última loja > redirect salvo > /
-            const lastStore = localStorage.getItem('last-store')
-            if (lastStore) {
-              targetPath = `/loja/${lastStore}`
-            } else if (savedRedirectUrl && isRedirectAllowed(savedRedirectUrl)) {
+            // Cliente: redirect salvo > última loja > /
+            if (savedRedirectUrl && isRedirectAllowed(savedRedirectUrl)) {
               const normalized = savedRedirectUrl.replace(/^https?:\/\/[^/]+/, '')
               targetPath = normalized.startsWith('/') ? normalized : '/' + normalized
+            } else {
+              const lastStore = localStorage.getItem('last-store')
+              if (lastStore) {
+                targetPath = `/loja/${lastStore}`
+              }
             }
           }
 

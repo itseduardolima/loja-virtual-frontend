@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Check, X, Zap, Flame, Star } from "lucide-react";
 import { SubscriptionPlan } from "@/types/subscription";
@@ -46,6 +48,10 @@ function parsePlanPrice(plan: SubscriptionPlan): number {
 const FEATURED_SLUG = "plano-pro";
 
 export function PlanSelectionStep({ plans, onSelectPlan }: PlanSelectionStepProps) {
+  const searchParams = useSearchParams();
+  const initialSlug = searchParams.get("plano") ?? FEATURED_SLUG;
+  const [selectedSlug, setSelectedSlug] = useState<string>(initialSlug);
+
   return (
     <motion.div
       key="plan"
@@ -70,6 +76,7 @@ export function PlanSelectionStep({ plans, onSelectPlan }: PlanSelectionStepProp
           const [priceInt, priceDec] = priceStr.split(",");
           const features = getPlanFeatures(plan);
           const isFeatured = plan.slug === FEATURED_SLUG;
+          const isSelected = plan.slug === selectedSlug;
           const icon = PLAN_ICONS[plan.slug] ?? <Zap className="w-4 h-4" />;
 
           return (
@@ -78,10 +85,11 @@ export function PlanSelectionStep({ plans, onSelectPlan }: PlanSelectionStepProp
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 + i * 0.07 }}
-              className={`relative flex flex-col rounded-2xl border p-6 ${
-                isFeatured
+              onClick={() => setSelectedSlug(plan.slug)}
+              className={`relative flex flex-col rounded-2xl border p-6 cursor-pointer transition-all ${
+                isSelected
                   ? "border-gray-900 bg-gray-900 text-white shadow-xl"
-                  : "border-gray-200 bg-white text-gray-900"
+                  : "border-gray-200 bg-white text-gray-900 hover:border-gray-300"
               }`}
             >
               {isFeatured && (
@@ -96,14 +104,14 @@ export function PlanSelectionStep({ plans, onSelectPlan }: PlanSelectionStepProp
               {/* Header */}
               <div className="mb-5">
                 <div className={`inline-flex items-center gap-2 text-xs font-semibold mb-3 px-2.5 py-1 rounded-full ${
-                  isFeatured ? "bg-white/15 text-white" : "bg-gray-100 text-gray-600"
+                  isSelected ? "bg-white/15 text-white" : "bg-gray-100 text-gray-600"
                 }`}>
                   {icon}
                   {plan.name}
                 </div>
 
                 <div className="flex items-start gap-0.5">
-                  <span className={`text-sm font-medium mt-1.5 ${isFeatured ? "text-gray-300" : "text-gray-500"}`}>
+                  <span className={`text-sm font-medium mt-1.5 ${isSelected ? "text-gray-300" : "text-gray-500"}`}>
                     R$
                   </span>
                   <span className="text-4xl font-bold leading-none tracking-tight">
@@ -111,13 +119,13 @@ export function PlanSelectionStep({ plans, onSelectPlan }: PlanSelectionStepProp
                   </span>
                   <div className="flex flex-col mt-1 ml-0.5">
                     <span className="text-lg font-bold leading-none">,{priceDec}</span>
-                    <span className={`text-xs mt-1 ${isFeatured ? "text-gray-400" : "text-gray-400"}`}>
+                    <span className={`text-xs mt-1 ${isSelected ? "text-gray-400" : "text-gray-400"}`}>
                       /mês
                     </span>
                   </div>
                 </div>
 
-                <p className={`text-xs mt-2 leading-relaxed ${isFeatured ? "text-gray-400" : "text-gray-500"}`}>
+                <p className={`text-xs mt-2 leading-relaxed ${isSelected ? "text-gray-400" : "text-gray-500"}`}>
                   {plan.description}
                 </p>
               </div>
@@ -128,7 +136,7 @@ export function PlanSelectionStep({ plans, onSelectPlan }: PlanSelectionStepProp
                   <div key={j} className="flex items-center gap-2.5">
                     {feat.included ? (
                       <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        isFeatured ? "bg-white/20" : "bg-gray-900"
+                        isSelected ? "bg-white/20" : "bg-gray-900"
                       }`}>
                         <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
                       </div>
@@ -139,7 +147,7 @@ export function PlanSelectionStep({ plans, onSelectPlan }: PlanSelectionStepProp
                     )}
                     <span className={`text-sm ${
                       feat.included
-                        ? isFeatured ? "text-gray-100" : "text-gray-700"
+                        ? isSelected ? "text-gray-100" : "text-gray-700"
                         : "text-gray-400 line-through"
                     }`}>
                       {feat.label}
@@ -151,9 +159,12 @@ export function PlanSelectionStep({ plans, onSelectPlan }: PlanSelectionStepProp
               {/* CTA */}
               <button
                 type="button"
-                onClick={() => onSelectPlan(plan)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectPlan(plan);
+                }}
                 className={`w-full h-11 rounded-xl font-semibold text-sm transition-all ${
-                  isFeatured
+                  isSelected
                     ? "bg-white text-gray-900 hover:bg-gray-100"
                     : "bg-gray-900 text-white hover:bg-gray-800"
                 }`}
@@ -164,6 +175,7 @@ export function PlanSelectionStep({ plans, onSelectPlan }: PlanSelectionStepProp
           );
         })}
       </div>
+
     </motion.div>
   );
 }

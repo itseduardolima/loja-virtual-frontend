@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { BillingType } from "@/types/subscription";
 import {
   Check,
+  ChevronLeft,
   ChevronRight,
   CreditCard,
   QrCode,
@@ -58,6 +59,7 @@ interface SelectPaymentMethodStepProps {
   onCnpjChange: (value: string) => void;
   onDocumentTypeReset: () => void;
   onCreateSubscription: () => void;
+  onBack: () => void;
 }
 
 export function SelectPaymentMethodStep({
@@ -80,6 +82,7 @@ export function SelectPaymentMethodStep({
   onCnpjChange,
   onDocumentTypeReset,
   onCreateSubscription,
+  onBack,
 }: SelectPaymentMethodStepProps) {
   const priceStr = planPrice.toFixed(2).replace(".", ",");
   const [priceInt, priceDec] = priceStr.split(",");
@@ -109,11 +112,15 @@ export function SelectPaymentMethodStep({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
-          >
-            <div className="inline-flex items-center gap-2 bg-gray-100 rounded-full px-3 py-1.5 text-sm font-medium text-gray-700 mb-5">
-              <span className="w-1.5 h-1.5 bg-gray-700 rounded-full" />
-              Oferta exclusiva
-            </div>
+            >
+            <button
+              type="button"
+              onClick={onBack}
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors mb-5"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Trocar plano
+            </button>
           </motion.div>
 
           <motion.div
@@ -123,9 +130,7 @@ export function SelectPaymentMethodStep({
             className="mb-6"
           >
             <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-3">
-              Assinar
-              <br />
-              Plano
+              Assinar Plano
             </h1>
             <p className="text-gray-500 text-base max-w-xs leading-relaxed">
               Escolha o método de pagamento para começar sua jornada como
@@ -138,19 +143,26 @@ export function SelectPaymentMethodStep({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="bg-white rounded-2xl border border-gray-200 p-6"
+            className="bg-gray-900 rounded-2xl border border-gray-900 p-6 text-white"
           >
+            {/* Plan name */}
+            {planName && (
+              <div className="inline-flex items-center gap-2 text-xs font-semibold mb-4 px-2.5 py-1 rounded-full bg-white/15 text-white">
+                {planName}
+              </div>
+            )}
+
             {/* Price */}
             <div className="mb-6">
               <div className="flex items-start gap-1">
-                <span className="text-gray-500 text-sm font-medium mt-2.5">
+                <span className="text-gray-300 text-sm font-medium mt-2.5">
                   R$
                 </span>
-                <span className="text-6xl font-bold text-gray-900 leading-none tracking-tight">
+                <span className="text-6xl font-bold text-white leading-none tracking-tight">
                   {priceInt}
                 </span>
                 <div className="flex flex-col mt-1.5 ml-0.5">
-                  <span className="text-xl font-bold text-gray-900 leading-none">
+                  <span className="text-xl font-bold text-white leading-none">
                     ,{priceDec}
                   </span>
                   <span className="text-xs text-gray-400 mt-1">por mês</span>
@@ -162,10 +174,10 @@ export function SelectPaymentMethodStep({
             <div className="space-y-3 mb-6">
               {features.map((feature, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <div className="w-5 h-5 bg-gray-900 rounded-full flex items-center justify-center flex-shrink-0">
+                  <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
                     <Check className="w-3 h-3 text-white" strokeWidth={3} />
                   </div>
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className="text-sm font-medium text-gray-100">
                     {feature}
                   </span>
                 </div>
@@ -173,7 +185,7 @@ export function SelectPaymentMethodStep({
             </div>
 
             {/* Stats row */}
-            <div className="border-t border-gray-100 pt-5">
+            <div className="border-t border-white/10 pt-5">
               <div className="flex items-center justify-around">
                 <div className="flex flex-col items-center gap-1.5 text-gray-400">
                   <Package className="w-5 h-5" />
