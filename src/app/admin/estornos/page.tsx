@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { RotateCcw, CheckCircle, XCircle, Search } from 'lucide-react'
 import { Table, Column, ConfirmDialog } from '@/components'
@@ -63,7 +63,7 @@ export default function AdminEstornosPage() {
   ]
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Estornos</h1>
         <p className="text-gray-500 text-sm mt-1">Pedidos de estorno aguardando revisão</p>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { ChevronLeft, CreditCard, Settings, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ export default function AdminEditarPlanoPage() {
     return <div className="text-center py-16 text-gray-400">Carregando...</div>;
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
       <Button
         variant="ghost"
         onClick={() => router.back()}

@@ -19,7 +19,7 @@ export default function AdminUsuarioDetailPage() {
   if (!user) return <div className="text-center py-16 text-gray-400">Usuário não encontrado.</div>
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4 mr-2" />

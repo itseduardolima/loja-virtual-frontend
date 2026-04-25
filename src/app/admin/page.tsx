@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { Users, Store, BarChart3, TrendingUp, DollarSign } from 'lucide-react'
 import { DashboardStatsCard } from '@/components'
@@ -10,7 +10,7 @@ export default function AdminPage() {
   const { stats, loadingStats, loadingRevenue, formatCurrency, chartData } = useAdminPage()
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Painel Administrativo</h1>
         <p className="text-gray-500 text-sm mt-1">Visão geral da plataforma</p>

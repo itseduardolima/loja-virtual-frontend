@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { Receipt, Search } from 'lucide-react'
 import { Table, Column } from '@/components'
@@ -46,7 +46,7 @@ export default function AdminAssinaturasPage() {
   ]
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Assinaturas</h1>
         <p className="text-gray-500 text-sm mt-1">Visão geral de todas as assinaturas</p>
