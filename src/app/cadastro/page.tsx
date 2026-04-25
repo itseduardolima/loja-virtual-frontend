@@ -113,8 +113,6 @@ export default function CadastroPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="pl-10 pr-10 h-11 border-slate-200 focus:border-slate-400 focus:ring-slate-400/20"
-                      minLength={8}
-                      maxLength={12}
                       required
                     />
                     <button

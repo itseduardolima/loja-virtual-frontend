@@ -42,15 +42,10 @@ export function useCadastro() {
 
   const passwordRequirements = useMemo((): PasswordRequirement[] => {
     const pwd = password
-    const hasLength = pwd.length >= 8 && pwd.length <= 12
-    const hasLetter = /[a-zA-Z]/.test(pwd)
-    const hasNumber = /\d/.test(pwd)
-    const hasSpecial = /[@$!%*?&]/.test(pwd)
     return [
-      { label: '8 a 12 caracteres', valid: hasLength },
-      { label: 'Pelo menos uma letra', valid: hasLetter },
-      { label: 'Pelo menos um número', valid: hasNumber },
-      { label: 'Um caractere especial (@$!%*?&)', valid: hasSpecial },
+      { label: 'Mínimo 8 caracteres', valid: pwd.length >= 8 },
+      { label: 'Pelo menos uma letra maiúscula', valid: /[A-Z]/.test(pwd) },
+      { label: 'Pelo menos um número', valid: /\d/.test(pwd) },
     ]
   }, [password])
 
