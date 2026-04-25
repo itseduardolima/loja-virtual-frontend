@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscriptionPlans } from "@/hooks/useSubscriptionPlans";
 import { useCreateSubscription } from "@/hooks/useCreateSubscription";
@@ -17,7 +18,8 @@ export function useAssinaturaPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const planoParam = searchParams.get("plano");
-  const { isAuthenticated, isLoading: isLoadingAuth, login } = useAuth();
+  const queryClient = useQueryClient();
+  const { isAuthenticated, isLoading: isLoadingAuth, login, refreshToken } = useAuth();
 
   const [step, setStep] = useState<Step>("select");
   const [registerMode, setRegisterMode] = useState<"register" | "login">("register");
@@ -62,6 +64,15 @@ export function useAssinaturaPage() {
     }
     if (step !== "select" || selectedPlan) return;
 
+    // Wait for subscription to load before deciding
+    if (isLoadingSubscription) return;
+
+    // Already has active subscription — send to dashboard
+    if (mySubscription?.status === "active") {
+      router.replace("/vendedor");
+      return;
+    }
+
     // If there's a plano param, wait for plans to load before deciding
     if (planoParam && isLoadingPlan) return;
 
@@ -73,7 +84,7 @@ export function useAssinaturaPage() {
       }
     }
     setStep("plan");
-  }, [isLoadingAuth, isAuthenticated, plans, isLoadingPlan]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isLoadingAuth, isAuthenticated, plans, isLoadingPlan, isLoadingSubscription, mySubscription]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const subscriptionStatus = mySubscription?.status;
   const subscriptionPayments = mySubscription?.payments;
@@ -100,7 +111,10 @@ export function useAssinaturaPage() {
 
     if (isActive || hasPaidPayment) {
       hasCompletedRef.current = true;
-      setStep("completed");
+      queryClient.removeQueries({ queryKey: ["validate-token"] });
+      refreshToken()
+        .catch(() => { console.warn("Token refresh failed after subscription confirmation") })
+        .finally(() => setStep("completed"));
     } else if (isPending && step === "select") {
       setStep("success");
     }
@@ -134,7 +148,10 @@ export function useAssinaturaPage() {
 
     if (isActive || hasPaidPayment) {
       hasCompletedRef.current = true;
-      setStep("completed");
+      queryClient.removeQueries({ queryKey: ["validate-token"] });
+      refreshToken()
+        .catch(() => { console.warn("Token refresh failed after subscription confirmation") })
+        .finally(() => setStep("completed"));
     }
   }, [
     step,
@@ -298,7 +315,7 @@ export function useAssinaturaPage() {
   const handleCpfChange = (value: string) => setCpf(formatCPF(value));
   const handleCnpjChange = (value: string) => setCnpj(formatCNPJ(value));
   const handleDocumentTypeReset = () => setDocumentType(null);
-  const handleGoToDashboard = () => router.push("/vendedor");
+  const handleGoToDashboard = () => router.push("/vendedor/criar-loja");
 
   const needsDocument = selectedMethod === "PIX" || selectedMethod === "BOLETO";
   const hasDocument =

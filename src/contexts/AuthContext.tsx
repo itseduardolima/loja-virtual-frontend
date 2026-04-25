@@ -15,7 +15,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
 
   useEffect(() => {
-    const processGoogleAuthCallback = () => {
+    const processGoogleAuthCallback = async () => {
       if (typeof window === 'undefined') return false
 
       const urlParams = new URLSearchParams(window.location.search)
@@ -32,7 +32,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           localStorage.removeItem('redirect-after-login')
 
           window.history.replaceState({}, '', window.location.pathname)
-          setIsLoading(false)
 
           const isRedirectAllowed = (path: string) => {
             const normalized = (path || '').replace(/^https?:\/\/[^/]+/, '').split('?')[0] || '/'
@@ -44,7 +43,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           let targetPath = '/'
 
           if (userData.profile === 'Vendedor') {
-            targetPath = '/vendedor'
+            try {
+              await api.get('/stores/my-store')
+              targetPath = '/vendedor'
+            } catch (err: any) {
+              const status = err?.response?.status
+              targetPath = status === 404 ? '/vendedor/criar-loja' : '/vendedor'
+            }
           } else if (userData.profile === 'Administrador') {
             targetPath = '/admin'
           } else {
@@ -61,6 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
 
           router.replace(targetPath)
+          setIsLoading(false)
           return true
         } catch (error) {
           console.error('Erro ao processar callback do Google:', error)
@@ -70,8 +76,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return false
     }
 
-    const loadAuthData = () => {
-      if (processGoogleAuthCallback()) return
+    const loadAuthData = async () => {
+      if (await processGoogleAuthCallback()) return
 
       const savedUser = localStorage.getItem('user-data')
       if (savedUser) {

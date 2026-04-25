@@ -5,6 +5,7 @@ import { LoginRequest } from '@/types/auth'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useToastContext } from '@/contexts/ToastContext'
 import { useCheckout } from './useCheckout'
+import { api } from '@/lib/api'
 
 export function useLogin() {
   const { login, isLoading } = useAuth()
@@ -29,7 +30,13 @@ export function useLogin() {
       const profile = data.user.profile
 
       if (profile === 'Vendedor') {
-        router.push('/vendedor')
+        try {
+          await api.get('/stores/my-store')
+          router.push('/vendedor')
+        } catch (err: any) {
+          const status = err?.response?.status
+          router.push(status === 404 ? '/vendedor/criar-loja' : '/vendedor')
+        }
         return
       }
 
