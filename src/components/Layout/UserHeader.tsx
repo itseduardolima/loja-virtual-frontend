@@ -265,7 +265,7 @@ export function UserHeader({
           </div>
           <div className="text-left">
             <p className="font-semibold text-gray-900">{user?.name}</p>
-            <p className="text-sm text-text-gray">Vendedor</p>
+            <p className="text-sm text-text-gray">{user?.profile}</p>
           </div>
           <ChevronRight className="h-4 w-4 text-gray-400" />
         </button>
@@ -300,35 +300,37 @@ export function UserHeader({
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">{user?.name}</h3>
-                <p className="text-sm text-text-gray">Vendedor</p>
+                <p className="text-sm text-text-gray">{user?.profile}</p>
               </div>
             </div>
           </div>
 
-          <div className="flex-1 p-6">
-            <h3 className="text-sm font-semibold text-gray-700 mb-4">Configurações da Loja</h3>
-            <div className="space-y-2">
-              {configItems.map((item) => {
-                const Icon = item.icon
-                return (
-                  <button
-                    key={item.name}
-                    onClick={() => handleNavigation(item.href)}
-                    className={`
-                      w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors
-                      ${item.current
-                        ? 'bg-primary text-primary-foreground border border-secondary'
-                        : 'text-text-gray hover:bg-secondary hover:text-primary'
-                      }
-                    `}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span className="font-medium">{item.name}</span>
-                  </button>
-                )
-              })}
+          {user?.profile !== 'Administrador' && (
+            <div className="flex-1 p-6">
+              <h3 className="text-sm font-semibold text-gray-700 mb-4">Configurações da Loja</h3>
+              <div className="space-y-2">
+                {configItems.map((item) => {
+                  const Icon = item.icon
+                  return (
+                    <button
+                      key={item.name}
+                      onClick={() => handleNavigation(item.href)}
+                      className={`
+                        w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors
+                        ${item.current
+                          ? 'bg-primary text-primary-foreground border border-secondary'
+                          : 'text-text-gray hover:bg-secondary hover:text-primary'
+                        }
+                      `}
+                    >
+                      <Icon className="h-5 w-5" />
+                      <span className="font-medium">{item.name}</span>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="p-6">
             <Button

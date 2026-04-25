@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { useAdminSubscriptions } from '@/hooks/useAdminSubscriptions'
+import { useAdminSubscriptions, useSyncAdminSubscriptions } from '@/hooks/useAdminSubscriptions'
+import toast from 'react-hot-toast'
 
 export function useAssinaturasPage() {
   const [page, setPage] = useState(1)
@@ -13,6 +14,20 @@ export function useAssinaturasPage() {
     status: statusFilter || undefined,
   })
 
+  const syncMutation = useSyncAdminSubscriptions()
+
+  const handleSync = async () => {
+    try {
+      const result = await syncMutation.mutateAsync()
+      const parts: string[] = []
+      if (result.migrated_plans > 0) parts.push(`${result.migrated_plans} plano(s) migrado(s)`)
+      if (result.expired_subs > 0) parts.push(`${result.expired_subs} assinatura(s) expirada(s)`)
+      toast.success(parts.length > 0 ? parts.join(', ') + '.' : 'Tudo já está sincronizado.')
+    } catch {
+      toast.error('Erro ao sincronizar assinaturas.')
+    }
+  }
+
   const statusMap: Record<string, { label: string; color: string }> = {
     active: { label: 'Ativa', color: 'active' },
     pending: { label: 'Pendente', color: 'pending' },
@@ -23,5 +38,18 @@ export function useAssinaturasPage() {
   const subs = data?.data ?? []
   const meta = data?.meta ?? null
 
-  return { subs, meta, isLoading, page, setPage, search, setSearch, statusFilter, setStatusFilter, statusMap }
+  return {
+    subs,
+    meta,
+    isLoading,
+    page,
+    setPage,
+    search,
+    setSearch,
+    statusFilter,
+    setStatusFilter,
+    statusMap,
+    handleSync,
+    isSyncing: syncMutation.isPending,
+  }
 }
