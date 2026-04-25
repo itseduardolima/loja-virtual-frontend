@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { CreditCard, Settings, Tag, ChevronLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -13,7 +13,7 @@ export default function AdminCriarPlanoPage() {
   const { register, handleSubmit, setValue, errors, isSubmitting, onSubmit, router } = useCriarPlanoPage()
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="sm" onClick={() => router.back()} className="shrink-0">
           <ChevronLeft className="h-4 w-4 mr-2" />
