@@ -157,6 +157,9 @@ export default function AssinaturaPage() {
               planPrice={planPriceNum}
               planFeatures={planFeatures}
               planName={plan?.name}
+              planMaxProducts={plan?.max_products}
+              planMaxStores={plan?.max_stores}
+              planBillingCycle={plan?.billing_cycle}
               selectedMethod={selectedMethod}
               documentType={documentType}
               cpf={cpf}
