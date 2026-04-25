@@ -75,7 +75,7 @@ export function CompletedStep({ onGoToDashboard }: CompletedStepProps) {
             whileTap={{ scale: 0.95 }}
             className="bg-primary text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-black/80 shadow-lg hover:shadow-xl transition-all"
           >
-            Ir para Minha Loja
+            Criar minha loja
           </motion.button>
         </motion.div>
       </div>
