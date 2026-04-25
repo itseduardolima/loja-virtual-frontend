@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,17 +8,20 @@ import { useCreateSubscription } from "@/hooks/useCreateSubscription";
 import { useMySubscription } from "@/hooks/useMySubscription";
 import { BillingType } from "@/types/subscription";
 import { formatCPF, formatCNPJ } from "@/lib/utils";
+import { api } from "@/lib/api";
 import toast from "react-hot-toast";
 
-export type Step = "select" | "processing" | "payment" | "success" | "completed";
+export type Step = "register" | "select" | "processing" | "payment" | "success" | "completed";
 
 export function useAssinaturaPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading: isLoadingAuth } = useAuth();
-  const [selectedMethod, setSelectedMethod] = useState<BillingType | null>(
-    "CREDIT_CARD"
-  );
+  const { isAuthenticated, isLoading: isLoadingAuth, login } = useAuth();
+
   const [step, setStep] = useState<Step>("select");
+  const [registerMode, setRegisterMode] = useState<"register" | "login">("register");
+  const [isSubmittingAuth, setIsSubmittingAuth] = useState(false);
+
+  const [selectedMethod, setSelectedMethod] = useState<BillingType | null>("CREDIT_CARD");
   const [documentType, setDocumentType] = useState<"cpf" | "cnpj" | null>(null);
   const [cpf, setCpf] = useState("");
   const [cnpj, setCnpj] = useState("");
@@ -31,37 +36,35 @@ export function useAssinaturaPage() {
     error: planError,
     refetch: refetchPlan,
   } = useSubscriptionPlan();
+
   const createSubscription = useCreateSubscription();
-  
-  // Usa polling quando estiver na tela de sucesso (não quando completed)
+
   const shouldPoll = step === "success" && isAuthenticated;
   const {
     data: mySubscription,
-    refetch: refetchSubscription,
     isLoading: isLoadingSubscription,
     error: subscriptionError,
   } = useMySubscription({
     enabled: isAuthenticated && step !== "completed",
-    refetchInterval: shouldPoll ? 5000 : false, // Polling a cada 5 segundos quando na tela de sucesso
+    refetchInterval: shouldPoll ? 5000 : false,
   });
   const hasCompletedRef = useRef(false);
 
-  // Redireciona para login se não estiver autenticado
+  // If not authenticated, show register/login step instead of redirecting
   useEffect(() => {
-    if (!isLoadingAuth && !isAuthenticated) {
-      const currentPath = window.location.pathname;
-      router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
+    if (isLoadingAuth) return;
+    if (!isAuthenticated) {
+      setStep("register");
     }
-  }, [isAuthenticated, isLoadingAuth, router]);
+  }, [isLoadingAuth, isAuthenticated]);
 
-  // Se a assinatura já está ativa ao carregar a página, mostra tela de sucesso final
   const subscriptionStatus = mySubscription?.status;
   const subscriptionPayments = mySubscription?.payments;
 
   useEffect(() => {
-    // Não executa se já está em completed, ou se não está autenticado
     if (
       step === "completed" ||
+      step === "register" ||
       !isAuthenticated ||
       isLoadingAuth ||
       isLoadingSubscription ||
@@ -77,13 +80,10 @@ export function useAssinaturaPage() {
     );
     const isPending = subscriptionStatus === "pending";
 
-    // Se estiver ativo ou tiver pagamento pago, mostra tela de sucesso final
     if (isActive || hasPaidPayment) {
       hasCompletedRef.current = true;
       setStep("completed");
-    } 
-    // Se estiver pending e ainda não estiver na tela de success, muda para success
-    else if (isPending && step === "select") {
+    } else if (isPending && step === "select") {
       setStep("success");
     }
   }, [
@@ -96,9 +96,7 @@ export function useAssinaturaPage() {
     mySubscription,
   ]);
 
-  // Verifica o status da assinatura quando estiver na tela de sucesso
   useEffect(() => {
-    // Só executa se estiver na tela de sucesso (não quando completed)
     if (
       step !== "success" ||
       !isAuthenticated ||
@@ -109,17 +107,13 @@ export function useAssinaturaPage() {
       return;
     }
 
-    // Se não tem subscription ainda, aguarda
-    if (!mySubscription) {
-      return;
-    }
+    if (!mySubscription) return;
 
     const isActive = subscriptionStatus === "active";
     const hasPaidPayment = subscriptionPayments?.some(
       (payment: any) => payment.status === "paid"
     );
 
-    // Se o status mudou para active, mostra tela de sucesso final
     if (isActive || hasPaidPayment) {
       hasCompletedRef.current = true;
       setStep("completed");
@@ -134,22 +128,61 @@ export function useAssinaturaPage() {
     mySubscription,
   ]);
 
+  const handleRegisterAndContinue = async (
+    name: string,
+    email: string,
+    password: string,
+    whatsapp: string
+  ) => {
+    setIsSubmittingAuth(true);
+    try {
+      await api.post("/user/register", {
+        name,
+        email,
+        password,
+        ...(whatsapp && { whatsapp }),
+      });
+      await login({ login: email, password });
+      setStep("select");
+    } catch (error: any) {
+      const msg = error.response?.data?.message;
+      toast.error(
+        Array.isArray(msg) ? msg[0] : msg || "Erro ao criar conta. Tente novamente."
+      );
+    } finally {
+      setIsSubmittingAuth(false);
+    }
+  };
+
+  const handleInlineLogin = async (email: string, password: string) => {
+    setIsSubmittingAuth(true);
+    try {
+      await login({ login: email, password });
+      setStep("select");
+    } catch {
+      toast.error("Email ou senha incorretos. Tente novamente.");
+    } finally {
+      setIsSubmittingAuth(false);
+    }
+  };
+
+  const toggleRegisterMode = () => {
+    setRegisterMode((prev) => (prev === "register" ? "login" : "register"));
+  };
+
   const handleSelectMethod = (method: BillingType) => {
     setSelectedMethod(method);
-    // Limpa os campos quando muda o método
     if (method === "CREDIT_CARD") {
       setCpf("");
       setCnpj("");
       setDocumentType(null);
     } else {
-      // Se mudar para PIX ou BOLETO, reseta o tipo de documento
       setDocumentType(null);
     }
   };
 
   const handleSelectDocumentType = (type: "cpf" | "cnpj") => {
     setDocumentType(type);
-    // Limpa o campo oposto quando troca o tipo
     if (type === "cpf") {
       setCnpj("");
     } else {
@@ -160,7 +193,6 @@ export function useAssinaturaPage() {
   const handleCreateSubscription = async () => {
     if (!selectedMethod) return;
 
-    // Validação para PIX e BOLETO
     if (selectedMethod === "PIX" || selectedMethod === "BOLETO") {
       if (!documentType) {
         toast.error("Por favor, selecione CPF ou CNPJ para continuar.");
@@ -187,21 +219,13 @@ export function useAssinaturaPage() {
         billing_type: BillingType;
         cpf?: string;
         cnpj?: string;
-      } = {
-        billing_type: selectedMethod,
-      };
+      } = { billing_type: selectedMethod };
 
-      // Adiciona CPF ou CNPJ apenas para PIX e BOLETO
       if (selectedMethod === "PIX" || selectedMethod === "BOLETO") {
         const cpfClean = cpf.replace(/\D/g, "");
         const cnpjClean = cnpj.replace(/\D/g, "");
-
-        if (cpfClean) {
-          payload.cpf = cpfClean;
-        }
-        if (cnpjClean) {
-          payload.cnpj = cnpjClean;
-        }
+        if (cpfClean) payload.cpf = cpfClean;
+        if (cnpjClean) payload.cnpj = cnpjClean;
       }
 
       const response = await createSubscription.mutateAsync(payload);
@@ -211,16 +235,13 @@ export function useAssinaturaPage() {
         qr_code: response.qr_code,
       });
 
-      // Se for PIX, mostra o QR code
       if (selectedMethod === "PIX" && response.qr_code) {
         setStep("payment");
       } else {
-        // Para outros métodos, abre payment_url em nova aba
         window.open(response.payment_url, "_blank");
-        // Muda para a tela de sucesso após abrir o link
         setStep("success");
       }
-    } catch (error) {
+    } catch {
       setStep("select");
       toast.error("Erro ao processar assinatura. Tente novamente.");
     }
@@ -229,28 +250,15 @@ export function useAssinaturaPage() {
   const handleRedirectToPayment = () => {
     if (paymentData?.payment_url) {
       window.open(paymentData.payment_url, "_blank");
-      // Muda para a tela de sucesso após abrir o link
       setStep("success");
     }
   };
 
-  const handleCpfChange = (value: string) => {
-    setCpf(formatCPF(value));
-  };
+  const handleCpfChange = (value: string) => setCpf(formatCPF(value));
+  const handleCnpjChange = (value: string) => setCnpj(formatCNPJ(value));
+  const handleDocumentTypeReset = () => setDocumentType(null);
+  const handleGoToDashboard = () => router.push("/vendedor");
 
-  const handleCnpjChange = (value: string) => {
-    setCnpj(formatCNPJ(value));
-  };
-
-  const handleDocumentTypeReset = () => {
-    setDocumentType(null);
-  };
-
-  const handleGoToLogin = () => {
-    router.push("/login");
-  };
-
-  // Validação para botão de continuar
   const needsDocument = selectedMethod === "PIX" || selectedMethod === "BOLETO";
   const hasDocument =
     (documentType === "cpf" && cpf.replace(/\D/g, "")) ||
@@ -260,13 +268,12 @@ export function useAssinaturaPage() {
     (!needsDocument || (documentType && hasDocument)) &&
     !createSubscription.isPending;
 
-  // Status do pagamento
   const isPaymentConfirmed =
     subscriptionStatus === "active" ||
     subscriptionPayments?.some((payment: any) => payment.status === "paid");
 
   return {
-    // Estado
+    // State
     selectedMethod,
     step,
     documentType,
@@ -278,6 +285,8 @@ export function useAssinaturaPage() {
     subscriptionStatus,
     subscriptionPayments,
     isPaymentConfirmed,
+    registerMode,
+    isSubmittingAuth,
 
     // Loading states
     isLoadingAuth,
@@ -289,7 +298,7 @@ export function useAssinaturaPage() {
     planError,
     subscriptionError,
 
-    // Handlers
+    // Subscription handlers
     handleSelectMethod,
     handleSelectDocumentType,
     handleCreateSubscription,
@@ -297,12 +306,16 @@ export function useAssinaturaPage() {
     handleCpfChange,
     handleCnpjChange,
     handleDocumentTypeReset,
-    handleGoToLogin,
+    handleGoToDashboard,
     refetchPlan,
 
-    // Computed values
+    // Auth handlers
+    handleRegisterAndContinue,
+    handleInlineLogin,
+    toggleRegisterMode,
+
+    // Computed
     canContinue,
     needsDocument,
   };
 }
-
