@@ -20,6 +20,7 @@ export interface AdminPlan {
   feature_advanced_dashboard: boolean
   feature_order_export: boolean
   feature_coupons: boolean
+  trial_days: number | null
   status: number
   sort_order: number
   created_at: string
@@ -74,6 +75,28 @@ export interface AdminUser {
   profile_id: number
   created_at: string
   profile?: { name: string; identifier: string }
+}
+
+export type DiscountType = 'percent' | 'fixed'
+export type AppliesToCycle = 'monthly' | 'yearly' | 'both'
+export type DurationType = 'forever' | 'once' | 'months'
+
+export interface AdminPlanCoupon {
+  id: number
+  code: string
+  description: string | null
+  discount_type: DiscountType
+  discount_value: string | number
+  applies_to_cycle: AppliesToCycle
+  duration_type: DurationType
+  duration_months: number | null
+  max_uses: number | null
+  used_count: number
+  expires_at: string | null
+  status: number
+  created_at: string
+  updated_at: string
+  plans: Array<{ plan_id: number; plan: { id: number; name: string; slug: string } }>
 }
 
 export interface PaginatedMeta {
