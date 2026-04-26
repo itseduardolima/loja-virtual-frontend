@@ -10,7 +10,7 @@ import {
   getStatusIcon,
 } from '@/lib/orderPanelUtils'
 import { OrderDetailPanel } from './OrderDetailPanel'
-import { ArrowRight, ChevronLeft, FileDown, Search, X } from 'lucide-react'
+import { ArrowRight, ChevronLeft, FileDown, Lock, Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { DashboardDateRangeFilter } from '@/components/Dashboard/DashboardDateRangeFilter'
@@ -27,7 +27,8 @@ interface MobileOrdersViewProps {
   dateToInput: string
   hasDateFilter: boolean
   onRangeSelect: (range: { dateFrom: string; dateTo: string } | null) => void
-  onExport: () => void
+  onExport?: () => void
+  isExportLocked?: boolean
   isExporting: boolean
 }
 
@@ -44,6 +45,7 @@ export function MobileOrdersView({
   hasDateFilter,
   onRangeSelect,
   onExport,
+  isExportLocked = false,
   isExporting,
 }: MobileOrdersViewProps) {
   const [activeTab, setActiveTab] = useState<number>(1)
@@ -92,20 +94,26 @@ export function MobileOrdersView({
             onRangeSelect={onRangeSelect}
             compact
           />
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={isExporting}
-            onClick={onExport}
-            className="shrink-0 gap-1.5 h-10 rounded-xl px-3"
-          >
-            {isExporting ? (
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-            ) : (
-              <FileDown className="h-4 w-4" />
-            )}
-            {isExporting ? 'Exportando...' : 'Exportar Excel'}
-          </Button>
+          {onExport && (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isExporting}
+              onClick={onExport}
+              className={cn(
+                'shrink-0 gap-1.5 h-10 rounded-xl px-3',
+                isExportLocked && 'text-gray-500 hover:text-gray-700'
+              )}
+            >
+              {isExporting ? (
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : (
+                <FileDown className="h-4 w-4" />
+              )}
+              {isExporting ? 'Exportando...' : 'Exportar Excel'}
+              {isExportLocked && <Lock className="h-3 w-3 ml-0.5 text-gray-400" />}
+            </Button>
+          )}
         </div>
 
         <div className="relative mt-3">

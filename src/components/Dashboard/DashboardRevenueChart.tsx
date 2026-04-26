@@ -26,6 +26,7 @@ interface RevenueData {
 interface DashboardRevenueChartProps {
   dateFrom?: string
   dateTo?: string
+  enabled?: boolean
 }
 
 const chartConfig = {
@@ -42,7 +43,7 @@ function formatPeriodLabel(period: string): string {
   return period
 }
 
-export function DashboardRevenueChart({ dateFrom, dateTo }: DashboardRevenueChartProps) {
+export function DashboardRevenueChart({ dateFrom, dateTo, enabled = true }: DashboardRevenueChartProps) {
   const params = new URLSearchParams()
   if (dateFrom) params.set('dateFrom', dateFrom)
   if (dateTo) params.set('dateTo', dateTo)
@@ -54,6 +55,7 @@ export function DashboardRevenueChart({ dateFrom, dateTo }: DashboardRevenueChar
       return response.data.data || []
     },
     staleTime: 30000,
+    enabled,
   })
 
   const chartData = useMemo(() => {

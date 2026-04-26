@@ -9,8 +9,11 @@ import { DashboardTopProducts } from '@/components/Dashboard/DashboardTopProduct
 import { DashboardCartConversion } from '@/components/Dashboard/DashboardCartConversion'
 import { AlertTriangle, BarChart3, FileText, Tag } from 'lucide-react'
 import LoadingPage from '@/components/Layout/LoadingPage'
+import { LockedFeatureOverlay } from '@/components/Layout/LockedFeatureOverlay'
+import { usePlanFeatures } from '@/hooks/usePlanFeatures'
 
 export default function DashboardPage() {
+  const { features } = usePlanFeatures()
   const {
     summary,
     recentOrders,
@@ -21,7 +24,6 @@ export default function DashboardPage() {
     dateFromInput,
     dateToInput,
     onRangeSelect,
-    setQuickRange,
     hasDateFilter,
     isViewingToday,
     revenueValue,
@@ -100,14 +102,20 @@ export default function DashboardPage() {
         <div>
           <DashboardRecentOrders orders={recentOrders} hasDateFilter={hasDateFilter} isViewingToday={isViewingToday} />
         </div>
-        <div>
+        <LockedFeatureOverlay feature="feature_advanced_dashboard" locked={!features.feature_advanced_dashboard}>
           <DashboardTopProducts products={topProducts} hasDateFilter={hasDateFilter} isViewingToday={isViewingToday} />
-        </div>
+        </LockedFeatureOverlay>
       </div>
 
       {/* Gráfico de Receita */}
       <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6">
-        <DashboardRevenueChart dateFrom={dateFilter?.dateFrom} dateTo={dateFilter?.dateTo} />
+        <LockedFeatureOverlay feature="feature_advanced_dashboard" locked={!features.feature_advanced_dashboard}>
+          <DashboardRevenueChart
+            dateFrom={dateFilter?.dateFrom}
+            dateTo={dateFilter?.dateTo}
+            enabled={features.feature_advanced_dashboard}
+          />
+        </LockedFeatureOverlay>
       </div>
     </div>
   )

@@ -27,7 +27,7 @@ import { useUpdateOrderStatus } from '@/hooks/useUpdateOrderStatus'
 import { useAcceptCancellationRequest } from '@/hooks/useAcceptCancellationRequest'
 import { useDenyCancellationRequest } from '@/hooks/useDenyCancellationRequest'
 import type { OrdersResponse } from '@/types/order'
-import { Search, X, FileDown, MessageCircle, User } from 'lucide-react'
+import { Search, X, FileDown, MessageCircle, User, Lock } from 'lucide-react'
 import { DashboardDateRangeFilter } from '@/components/Dashboard/DashboardDateRangeFilter'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -35,6 +35,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { MobileOrdersView } from '@/components/Order/MobileOrdersView'
 import { useExportOrders } from '@/hooks/useExportOrders'
+import { usePlanFeatures } from '@/hooks/usePlanFeatures'
+import { useFeatureLockedModal } from '@/hooks/useFeatureLockedModal'
+import { FeatureLockedModal } from '@/components/Layout/FeatureLockedModal'
 import {
   Dialog,
   DialogContent,
@@ -69,6 +72,16 @@ export default function OrdersPage() {
   } = useOrdersPage()
 
   const { exportOrders, isExporting } = useExportOrders()
+  const { features } = usePlanFeatures()
+  const { lockedFeature, showFeatureModal, closeFeatureModal } = useFeatureLockedModal()
+
+  const handleExportClick = () => {
+    if (!features.feature_order_export) {
+      showFeatureModal('feature_order_export')
+      return
+    }
+    exportOrders(exportFilters)
+  }
 
   const queryClient = useQueryClient()
   const { mutate: updateOrderStatus } = useUpdateOrderStatus()
@@ -206,7 +219,8 @@ export default function OrdersPage() {
           dateToInput={dateToInput}
           hasDateFilter={hasDateFilter}
           onRangeSelect={handleRangeSelect}
-          onExport={() => exportOrders(exportFilters)}
+          onExport={handleExportClick}
+          isExportLocked={!features.feature_order_export}
           isExporting={isExporting}
         />
       </div>
@@ -259,8 +273,11 @@ export default function OrdersPage() {
               <Button
                 variant="outline"
                 disabled={isExporting}
-                onClick={() => exportOrders(exportFilters)}
-                className="shrink-0 gap-2 h-12 rounded-xl"
+                onClick={handleExportClick}
+                className={cn(
+                  'shrink-0 gap-2 h-12 rounded-xl',
+                  !features.feature_order_export && 'text-gray-500 hover:text-gray-700'
+                )}
               >
                 {isExporting ? (
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -268,6 +285,7 @@ export default function OrdersPage() {
                   <FileDown className="h-4 w-4" />
                 )}
                 {isExporting ? 'Exportando...' : 'Exportar Excel'}
+                {!features.feature_order_export && <Lock className="h-3.5 w-3.5 ml-1 text-gray-400" />}
               </Button>
             </div>
           </div>
@@ -463,6 +481,12 @@ export default function OrdersPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <FeatureLockedModal
+        feature={lockedFeature}
+        open={!!lockedFeature}
+        onOpenChange={(open) => !open && closeFeatureModal()}
+      />
     </div>
   )
 }

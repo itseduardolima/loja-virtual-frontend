@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   CheckCircle,
   XCircle,
@@ -15,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import LoadingPage from '@/components/Layout/LoadingPage'
+import FeatureLocked from '@/components/Layout/FeatureLocked'
 import { useToastContext } from '@/contexts/ToastContext'
 import {
   useBlingStatus,
@@ -23,6 +25,7 @@ import {
   useBlingToggleSync,
   type BlingSync,
 } from '@/hooks/useBlingStatus'
+import { usePlanFeatures } from '@/hooks/usePlanFeatures'
 import { formatDate } from '@/lib/utils'
 
 function SyncStatusBadge({ status }: { status: BlingSync['status'] }) {
@@ -52,9 +55,20 @@ function SyncStatusBadge({ status }: { status: BlingSync['status'] }) {
 
 export default function IntegracaoBlingPage() {
   const searchParams = useSearchParams()
+  const queryClient = useQueryClient()
   const { success: showSuccess, error: showError } = useToastContext()
+  const { features, isLoading: isLoadingFeatures } = usePlanFeatures()
 
-  const { data: blingStatus, isLoading } = useBlingStatus()
+  const blingEnabled = features.feature_bling_integration
+
+  // Limpa cache stale quando feature é revogada (downgrade de plano)
+  useEffect(() => {
+    if (!isLoadingFeatures && !blingEnabled) {
+      queryClient.removeQueries({ queryKey: ['bling-status'] })
+    }
+  }, [blingEnabled, isLoadingFeatures, queryClient])
+
+  const { data: blingStatus, isLoading } = useBlingStatus(blingEnabled)
   const connectMutation = useBlingConnect()
   const disconnectMutation = useBlingDisconnect()
   const toggleSyncMutation = useBlingToggleSync()
@@ -71,6 +85,18 @@ export default function IntegracaoBlingPage() {
       window.history.replaceState({}, '', window.location.pathname)
     }
   }, [searchParams, showSuccess, showError])
+
+  if (isLoadingFeatures) return <LoadingPage />
+
+  if (!blingEnabled) {
+    return (
+      <FeatureLocked
+        title="Integração Bling não está no seu plano"
+        description="Faça upgrade para conectar sua loja ao Bling ERP e sincronizar pedidos automaticamente."
+        feature="feature_bling_integration"
+      />
+    )
+  }
 
   if (isLoading) return <LoadingPage />
 

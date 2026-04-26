@@ -8,7 +8,6 @@ import {
   Package,
   Tag,
   FileText,
-  TrendingUp,
   Menu,
   X,
   BarChart3,
@@ -16,84 +15,105 @@ import {
   CreditCard,
   MessageCircle,
   Plug,
+  Lock,
+  type LucideIcon,
 } from 'lucide-react'
 import { useStore } from '@/hooks/useStore'
+import { usePlanFeatures, type PlanFeatures } from '@/hooks/usePlanFeatures'
+import { useFeatureLockedModal } from '@/hooks/useFeatureLockedModal'
+import { FeatureLockedModal } from './FeatureLockedModal'
 
 interface SidebarVendedorProps {
   currentPath?: string
+}
+
+interface NavItem {
+  name: string
+  href: string
+  icon: LucideIcon
+  current: boolean | undefined
+  requiresFeature?: keyof PlanFeatures
 }
 
 export function SidebarVendedor({ currentPath }: SidebarVendedorProps) {
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
   const { data: store } = useStore()
+  const { features } = usePlanFeatures()
+  const { lockedFeature, showFeatureModal, closeFeatureModal } = useFeatureLockedModal()
 
-  const navigationItems = [
+  const navigationItems: NavItem[] = [
     {
       name: 'Home',
       href: '/vendedor',
       icon: Home,
-      current: currentPath === '/vendedor'
+      current: currentPath === '/vendedor',
     },
     {
       name: 'Dashboard',
       href: '/vendedor/dashboard',
       icon: BarChart3,
-      current: currentPath?.startsWith('/vendedor/dashboard')
+      current: currentPath?.startsWith('/vendedor/dashboard'),
     },
     {
       name: 'Produtos',
       href: '/vendedor/produtos',
       icon: Package,
-      current: currentPath?.startsWith('/vendedor/produtos')
+      current: currentPath?.startsWith('/vendedor/produtos'),
     },
     {
       name: 'Categorias',
       href: '/vendedor/categorias',
       icon: Tag,
-      current: currentPath?.startsWith('/vendedor/categorias')
+      current: currentPath?.startsWith('/vendedor/categorias'),
     },
     {
       name: 'Pedidos',
       href: '/vendedor/pedidos',
       icon: FileText,
-      current: currentPath?.startsWith('/vendedor/pedidos')
+      current: currentPath?.startsWith('/vendedor/pedidos'),
     },
     {
       name: 'Cupons',
       href: '/vendedor/cupons',
       icon: Tag,
-      current: currentPath?.startsWith('/vendedor/cupons')
+      current: currentPath?.startsWith('/vendedor/cupons'),
+      requiresFeature: 'feature_coupons',
     },
     {
       name: 'Perguntas',
       href: '/vendedor/perguntas',
       icon: MessageCircle,
-      current: currentPath?.startsWith('/vendedor/perguntas')
+      current: currentPath?.startsWith('/vendedor/perguntas'),
+      requiresFeature: 'feature_product_questions',
     },
     {
       name: 'Meu Plano',
       href: '/vendedor/plano',
       icon: CreditCard,
-      current: currentPath?.startsWith('/vendedor/plano')
+      current: currentPath?.startsWith('/vendedor/plano'),
     },
     {
       name: 'Integrações',
       href: '/vendedor/configuracoes/integracao-bling',
       icon: Plug,
-      current: currentPath?.startsWith('/vendedor/configuracoes/integracao-bling')
+      current: currentPath?.startsWith('/vendedor/configuracoes/integracao-bling'),
+      requiresFeature: 'feature_bling_integration',
     },
     {
       name: 'Ver minha loja',
       href: store?.slug ? `/loja/${store.slug}` : '#',
       icon: Store,
-      current: currentPath?.startsWith(store?.slug ? `/loja/${store.slug}/produtos` : '#')
-    }
+      current: currentPath?.startsWith(store?.slug ? `/loja/${store.slug}/produtos` : '#'),
+    },
   ]
 
-
-  const handleNavigation = (href: string) => {
-    router.push(href)
+  const handleNavigation = (item: NavItem) => {
+    if (item.requiresFeature && !features[item.requiresFeature]) {
+      showFeatureModal(item.requiresFeature)
+      return
+    }
+    router.push(item.href)
     setIsOpen(false)
   }
 
@@ -113,7 +133,7 @@ export function SidebarVendedor({ currentPath }: SidebarVendedorProps) {
 
       {/* Mobile overlay */}
       {isOpen && (
-        <div 
+        <div
           className="lg:hidden fixed inset-0 bg-black/10 z-40"
           onClick={() => setIsOpen(false)}
         />
@@ -148,31 +168,41 @@ export function SidebarVendedor({ currentPath }: SidebarVendedorProps) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2">
+          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
             {navigationItems.map((item) => {
               const Icon = item.icon
+              const isLocked = !!item.requiresFeature && !features[item.requiresFeature]
               return (
                 <button
                   key={item.name}
-                  onClick={() => handleNavigation(item.href)}
+                  onClick={() => handleNavigation(item)}
                   className={`
                     w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors
-                    ${item.current 
-                      ? 'bg-primary text-white border border-primary' 
-                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    ${item.current
+                      ? 'bg-primary text-white border border-primary'
+                      : isLocked
+                        ? 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'
+                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                     }
                   `}
                 >
-                  <Icon className="h-5 w-5" />
-                  <span className="font-medium">{item.name}</span>
+                  <Icon className="h-5 w-5 shrink-0" />
+                  <span className="font-medium flex-1">{item.name}</span>
+                  {isLocked && (
+                    <Lock className="h-3.5 w-3.5 text-gray-400 shrink-0" aria-label="Bloqueado" />
+                  )}
                 </button>
               )
             })}
           </nav>
-
-
         </div>
       </div>
+
+      <FeatureLockedModal
+        feature={lockedFeature}
+        open={!!lockedFeature}
+        onOpenChange={(open) => !open && closeFeatureModal()}
+      />
     </>
   )
 }
