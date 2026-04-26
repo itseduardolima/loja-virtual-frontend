@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Shield, Users, CreditCard, Receipt, RotateCcw, Store, BarChart3, Menu, X } from 'lucide-react'
+import { Shield, Users, CreditCard, Receipt, RotateCcw, Store, BarChart3, Ticket, Menu, X } from 'lucide-react'
 
 interface SidebarAdminProps {
   currentPath?: string
@@ -16,7 +16,8 @@ export function SidebarAdmin({ currentPath }: SidebarAdminProps) {
   const navigationItems = [
     { name: 'Dashboard', href: '/admin', icon: BarChart3, current: currentPath === '/admin' },
     { name: 'Usuários', href: '/admin/usuarios', icon: Users, current: currentPath?.startsWith('/admin/usuarios') },
-    { name: 'Planos', href: '/admin/planos', icon: CreditCard, current: currentPath?.startsWith('/admin/planos') },
+    { name: 'Planos', href: '/admin/planos', icon: CreditCard, current: currentPath === '/admin/planos' || (currentPath?.startsWith('/admin/planos/') ?? false) },
+    { name: 'Cupons de Plano', href: '/admin/cupons-plano', icon: Ticket, current: currentPath?.startsWith('/admin/cupons-plano') },
     { name: 'Assinaturas', href: '/admin/assinaturas', icon: Receipt, current: currentPath?.startsWith('/admin/assinaturas') },
     { name: 'Estornos', href: '/admin/estornos', icon: RotateCcw, current: currentPath?.startsWith('/admin/estornos') },
     { name: 'Lojas', href: '/admin/lojas', icon: Store, current: currentPath?.startsWith('/admin/lojas') },
