@@ -13,7 +13,6 @@ import {
   XCircle,
   AlertCircle,
   Package,
-  Store,
   X,
   RefreshCw,
   RotateCcw,
@@ -71,6 +70,7 @@ export default function PlanoPage() {
   const {
     subscription,
     plan,
+    billingCycle,
     features,
     planPrice,
     paymentsData,
@@ -171,8 +171,8 @@ export default function PlanoPage() {
               <div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-1">{plan?.name || 'Plano Vendedor'}</h3>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-primary">{formatPrice(plan?.price || 0)}</span>
-                  <span className="text-gray-600">/ {formatBillingCycle(plan?.billing_cycle || 'monthly')}</span>
+                  <span className="text-3xl font-bold text-primary">{formatPrice(planPrice)}</span>
+                  <span className="text-gray-600">/ {formatBillingCycle(billingCycle)}</span>
                 </div>
                 {plan?.description && <p className="text-gray-600 mt-2">{plan.description}</p>}
               </div>
@@ -191,7 +191,7 @@ export default function PlanoPage() {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+              <div className="pt-4 border-t">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
                     <Package className="w-5 h-5 text-blue-600" />
@@ -201,15 +201,6 @@ export default function PlanoPage() {
                     <p className="text-lg font-semibold text-gray-900">
                       {plan?.max_products === null ? 'Ilimitados' : (plan?.max_products || 0)}
                     </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                    <Store className="w-5 h-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Lojas</p>
-                    <p className="text-lg font-semibold text-gray-900">{plan?.max_stores || 1}</p>
                   </div>
                 </div>
               </div>

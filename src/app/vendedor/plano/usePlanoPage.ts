@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useMySubscription } from '@/hooks/useMySubscription'
 import { useCancelSubscription } from '@/hooks/useCancelSubscription'
 import { useSubscriptionPayments } from '@/hooks/useSubscriptionPayments'
+import { derivePlanFeaturesList } from '@/lib/planUtils'
 
 export function usePlanoPage() {
   const { data: subscription, isLoading, error } = useMySubscription()
@@ -33,10 +34,12 @@ export function usePlanoPage() {
   const hasRefundRequested = subscription?.payments?.some(p => p.status === 'refund_requested') ?? false
 
   const plan = subscription?.plan ?? null
-  const features: string[] = plan?.features
-    ? (typeof plan.features === 'string' ? JSON.parse(plan.features) : plan.features)
-    : []
-  const planPrice = typeof plan?.price === 'string' ? parseFloat(plan.price) : (plan?.price || 0)
+  const billingCycle = subscription?.billing_cycle ?? 'monthly'
+  const features: string[] = plan ? derivePlanFeaturesList(plan) : []
+  const planPriceRaw = plan ? (billingCycle === 'yearly' ? plan.price_yearly : plan.price_monthly) : null
+  const planPrice = planPriceRaw != null
+    ? (typeof planPriceRaw === 'string' ? parseFloat(planPriceRaw) : planPriceRaw)
+    : 0
 
   const handleCancel = () => {
     cancelSubscription(undefined, {
@@ -53,6 +56,7 @@ export function usePlanoPage() {
     // Data
     subscription,
     plan,
+    billingCycle,
     features,
     planPrice,
     paymentsData,

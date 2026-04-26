@@ -10,7 +10,6 @@ import {
   QrCode,
   FileText,
   Package,
-  Store,
   RefreshCw,
   ShieldCheck,
 } from "lucide-react";
@@ -44,7 +43,6 @@ interface SelectPaymentMethodStepProps {
   planFeatures?: string[];
   planName?: string;
   planMaxProducts?: number | null;
-  planMaxStores?: number;
   planBillingCycle?: string;
   selectedMethod: BillingType | null;
   documentType: "cpf" | "cnpj" | null;
@@ -67,7 +65,6 @@ export function SelectPaymentMethodStep({
   planFeatures = [],
   planName,
   planMaxProducts,
-  planMaxStores,
   planBillingCycle,
   selectedMethod,
   documentType,
@@ -193,16 +190,6 @@ export function SelectPaymentMethodStep({
                     {planMaxProducts
                       ? `${planMaxProducts} produtos`
                       : "Produtos ilimitados"}
-                  </span>
-                </div>
-                <div className="flex flex-col items-center gap-1.5 text-gray-400">
-                  <Store className="w-5 h-5" />
-                  <span className="text-xs">
-                    {planMaxStores === 1
-                      ? "1 loja incluída"
-                      : planMaxStores
-                      ? `${planMaxStores} lojas`
-                      : "1 loja incluída"}
                   </span>
                 </div>
                 <div className="flex flex-col items-center gap-1.5 text-gray-400">
