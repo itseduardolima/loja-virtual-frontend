@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LoadingPage } from "@/components";
 import { AlertCircle } from "lucide-react";
 import { useAssinaturaPage } from "./useAssinaturaPage";
+import { derivePlanFeaturesList } from "@/lib/planUtils";
 import {
   RegisterStep,
   PlanSelectionStep,
@@ -26,6 +27,7 @@ export default function AssinaturaPage() {
     paymentData,
     plans,
     plan,
+    selectedCycle,
     isPaymentConfirmed,
     registerMode,
     isSubmittingAuth,
@@ -96,22 +98,18 @@ export default function AssinaturaPage() {
     }
   }
 
-  const planPriceNum = plan
-    ? typeof plan.price === "string"
-      ? parseFloat(plan.price)
-      : plan.price || 0
+  const planPriceRaw = plan
+    ? selectedCycle === "yearly"
+      ? plan.price_yearly
+      : plan.price_monthly
+    : null;
+  const planPriceNum = planPriceRaw != null
+    ? typeof planPriceRaw === "string"
+      ? parseFloat(planPriceRaw)
+      : planPriceRaw
     : undefined;
 
-  const planFeatures: string[] = (() => {
-    if (!plan?.features) return [];
-    try {
-      return typeof plan.features === "string"
-        ? JSON.parse(plan.features)
-        : plan.features;
-    } catch {
-      return [];
-    }
-  })();
+  const planFeatures: string[] = plan ? derivePlanFeaturesList(plan) : [];
 
   // These steps have their own title/header built in
   const showHeader = step !== "select" && step !== "plan";
@@ -169,8 +167,7 @@ export default function AssinaturaPage() {
               planFeatures={planFeatures}
               planName={plan?.name}
               planMaxProducts={plan?.max_products}
-              planMaxStores={plan?.max_stores}
-              planBillingCycle={plan?.billing_cycle}
+              planBillingCycle={selectedCycle}
               selectedMethod={selectedMethod}
               documentType={documentType}
               cpf={cpf}

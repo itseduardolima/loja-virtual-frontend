@@ -7,12 +7,30 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSubscriptionPlans } from "@/hooks/useSubscriptionPlans";
 import { useCreateSubscription } from "@/hooks/useCreateSubscription";
 import { useMySubscription } from "@/hooks/useMySubscription";
-import { BillingType, SubscriptionPlan } from "@/types/subscription";
+import { BillingType, BillingCycle, SubscriptionPlan } from "@/types/subscription";
 import { formatCPF, formatCNPJ } from "@/lib/utils";
 import { api } from "@/lib/api";
 import toast from "react-hot-toast";
 
 export type Step = "register" | "plan" | "select" | "processing" | "payment" | "success" | "completed";
+
+const CYCLE_STORAGE_KEY = "subscription-cycle-pref";
+
+function readPersistedCycle(): BillingCycle | null {
+  if (typeof window === "undefined") return null;
+  const v = window.localStorage.getItem(CYCLE_STORAGE_KEY);
+  return v === "yearly" || v === "monthly" ? (v as BillingCycle) : null;
+}
+
+function persistCycle(cycle: BillingCycle): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(CYCLE_STORAGE_KEY, cycle);
+}
+
+function clearPersistedCycle(): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(CYCLE_STORAGE_KEY);
+}
 
 export function useAssinaturaPage() {
   const router = useRouter();
@@ -25,6 +43,13 @@ export function useAssinaturaPage() {
   const [registerMode, setRegisterMode] = useState<"register" | "login">("register");
   const [isSubmittingAuth, setIsSubmittingAuth] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
+  // Prioridade: query param > localStorage (sobrevive a OAuth redirect) > default 'monthly'
+  const initialCycle: BillingCycle = (() => {
+    const fromUrl = searchParams.get("cycle");
+    if (fromUrl === "yearly" || fromUrl === "monthly") return fromUrl;
+    return readPersistedCycle() ?? "monthly";
+  })();
+  const [selectedCycle, setSelectedCycle] = useState<BillingCycle>(initialCycle);
 
   const [selectedMethod, setSelectedMethod] = useState<BillingType | null>("CREDIT_CARD");
   const [documentType, setDocumentType] = useState<"cpf" | "cnpj" | null>(null);
@@ -111,6 +136,7 @@ export function useAssinaturaPage() {
 
     if (isActive || hasPaidPayment) {
       hasCompletedRef.current = true;
+      clearPersistedCycle();
       queryClient.removeQueries({ queryKey: ["validate-token"] });
       refreshToken()
         .catch(() => { console.warn("Token refresh failed after subscription confirmation") })
@@ -148,6 +174,7 @@ export function useAssinaturaPage() {
 
     if (isActive || hasPaidPayment) {
       hasCompletedRef.current = true;
+      clearPersistedCycle();
       queryClient.removeQueries({ queryKey: ["validate-token"] });
       refreshToken()
         .catch(() => { console.warn("Token refresh failed after subscription confirmation") })
@@ -217,8 +244,10 @@ export function useAssinaturaPage() {
     setRegisterMode((prev) => (prev === "register" ? "login" : "register"));
   };
 
-  const handleSelectPlan = (plan: SubscriptionPlan) => {
+  const handleSelectPlan = (plan: SubscriptionPlan, cycle: BillingCycle = "monthly") => {
     setSelectedPlan(plan);
+    setSelectedCycle(cycle);
+    persistCycle(cycle);
     setStep("select");
   };
 
@@ -277,7 +306,12 @@ export function useAssinaturaPage() {
         cpf?: string;
         cnpj?: string;
         plan_slug?: string;
-      } = { billing_type: selectedMethod, ...(selectedPlan && { plan_slug: selectedPlan.slug }) };
+        billing_cycle?: BillingCycle;
+      } = {
+        billing_type: selectedMethod,
+        billing_cycle: selectedCycle,
+        ...(selectedPlan && { plan_slug: selectedPlan.slug }),
+      };
 
       if (selectedMethod === "PIX" || selectedMethod === "BOLETO") {
         const cpfClean = cpf.replace(/\D/g, "");
@@ -340,6 +374,7 @@ export function useAssinaturaPage() {
     paymentData,
     plans,
     selectedPlan,
+    selectedCycle,
     plan: selectedPlan,
     mySubscription,
     subscriptionStatus,
