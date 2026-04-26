@@ -9,8 +9,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { MessageCircle, Check, Package } from 'lucide-react'
 import { TablePagination } from '@/components/Table/TablePagination'
 import LoadingPage from '@/components/Layout/LoadingPage'
+import FeatureLocked from '@/components/Layout/FeatureLocked'
 import { useStoreQuestions, QuestionStatus } from './usePendingQuestionsPage'
 import { buildImageUrl } from '@/lib/utils'
+import { usePlanFeatures } from '@/hooks/usePlanFeatures'
 
 const TABS: { label: string; value: QuestionStatus; empty: string }[] = [
   { label: 'Aguardando resposta', value: 1, empty: 'Nenhuma pergunta pendente. Ótimo!' },
@@ -19,6 +21,7 @@ const TABS: { label: string; value: QuestionStatus; empty: string }[] = [
 
 export default function PerguntasPage() {
   const { user, isLoading: authLoading } = useAuth()
+  const { features, isLoading: isLoadingFeatures } = usePlanFeatures()
   const {
     questions,
     meta,
@@ -33,8 +36,18 @@ export default function PerguntasPage() {
 
   const [answers, setAnswers] = useState<Record<number, string>>({})
 
-  if (authLoading) return <LoadingPage />
+  if (authLoading || isLoadingFeatures) return <LoadingPage />
   if (!user) return <ErrorState message='Você precisa estar logado' />
+
+  if (!features.feature_product_questions) {
+    return (
+      <FeatureLocked
+        title="Perguntas e respostas não está no seu plano"
+        description="Faça upgrade para receber e responder perguntas dos clientes nos seus produtos."
+        feature="feature_product_questions"
+      />
+    )
+  }
 
   const activeTab = TABS.find((t) => t.value === status)!
 

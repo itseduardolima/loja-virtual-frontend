@@ -38,7 +38,8 @@ function getCouponStatus(coupon: Coupon): { label: string; color: string } {
   return { label: 'Ativo', color: 'active' }
 }
 
-export function useCuponsPage() {
+export function useCuponsPage(options: { enabled?: boolean } = {}) {
+  const { enabled = true } = options
   const router = useRouter()
   const queryClient = useQueryClient()
   const { success, error: showError } = useToastContext()
@@ -53,6 +54,7 @@ export function useCuponsPage() {
       const res = await api.get<{ data: Coupon[] }>('/coupons')
       return res.data.data
     },
+    enabled,
   })
 
   const deleteMutation = useMutation({

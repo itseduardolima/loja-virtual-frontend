@@ -9,10 +9,13 @@ import { Plus, Tag, TrendingUp, Ban, Clock, Search } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCuponsPage } from './useCuponsPage'
 import LoadingPage from '@/components/Layout/LoadingPage'
+import FeatureLocked from '@/components/Layout/FeatureLocked'
+import { usePlanFeatures } from '@/hooks/usePlanFeatures'
 
 export default function CuponsPage() {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
+  const { features, isLoading: isLoadingFeatures } = usePlanFeatures()
 
   const {
     coupons,
@@ -27,10 +30,21 @@ export default function CuponsPage() {
     couponToDelete,
     handleDeleteConfirm,
     isDeleting,
-  } = useCuponsPage()
+  } = useCuponsPage({ enabled: features.feature_coupons })
 
-  if (authLoading) return <LoadingPage />
+  if (authLoading || isLoadingFeatures) return <LoadingPage />
   if (!user) return <ErrorState message="Você precisa estar logado para gerenciar cupons" />
+
+  if (!features.feature_coupons) {
+    return (
+      <FeatureLocked
+        title="Cupons de desconto não está no seu plano"
+        description="Faça upgrade para criar cupons percentuais ou fixos com expiração e limite de uso."
+        feature="feature_coupons"
+      />
+    )
+  }
+
   if (isLoading) return <LoadingPage />
   if (error) return <ErrorState message="Erro ao carregar cupons" />
 

@@ -18,7 +18,7 @@ export interface BlingStatus {
   recentSyncs: BlingSync[]
 }
 
-export function useBlingStatus() {
+export function useBlingStatus(enabled: boolean = true) {
   return useQuery({
     queryKey: ['bling-status'],
     queryFn: async (): Promise<BlingStatus> => {
@@ -26,6 +26,7 @@ export function useBlingStatus() {
       return res.data
     },
     staleTime: 30_000,
+    enabled,
   })
 }
 

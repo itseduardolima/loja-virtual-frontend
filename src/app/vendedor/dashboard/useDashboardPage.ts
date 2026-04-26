@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useCallback } from 'react'
 import { useDashboard } from '@/hooks/useDashboard'
+import { usePlanFeatures } from '@/hooks/usePlanFeatures'
 import { formatPrice } from '@/lib/utils'
 
 const today = new Date().toISOString().slice(0, 10)
@@ -12,6 +13,7 @@ const sevenDaysAgo = (() => {
 })()
 
 export function useDashboardPage() {
+  const { features } = usePlanFeatures()
   const [dateRange, setDateRange] = useState<{ dateFrom: string; dateTo: string } | null>({ dateFrom: sevenDaysAgo, dateTo: today })
   const [inputFrom, setInputFrom] = useState(sevenDaysAgo)
   const [inputTo, setInputTo] = useState(today)
@@ -29,7 +31,7 @@ export function useDashboardPage() {
     topProducts,
     isLoading,
     isError,
-  } = useDashboard(dateFilter)
+  } = useDashboard(dateFilter, { enableAdvanced: features.feature_advanced_dashboard })
 
   const applyFilter = useCallback(() => {
     if (inputFrom && inputTo && inputFrom <= inputTo) {

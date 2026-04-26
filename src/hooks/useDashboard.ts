@@ -84,7 +84,12 @@ export interface DashboardDateFilter {
   dateTo?: string
 }
 
-export function useDashboard(dateFilter?: DashboardDateFilter) {
+export interface UseDashboardOptions {
+  enableAdvanced?: boolean
+}
+
+export function useDashboard(dateFilter?: DashboardDateFilter, options: UseDashboardOptions = {}) {
+  const { enableAdvanced = true } = options
   const params = dateFilter?.dateFrom && dateFilter?.dateTo
     ? { dateFrom: dateFilter.dateFrom, dateTo: dateFilter.dateTo }
     : {}
@@ -93,7 +98,7 @@ export function useDashboard(dateFilter?: DashboardDateFilter) {
     queryKey: ['dashboard', 'summary', params],
     queryFn: async (): Promise<DashboardSummary> => {
       const response = await api.get('/dashboard/summary', { params })
-      
+
       return response.data.data.summary
     },
     staleTime: 30000, // 30 segundos
@@ -115,15 +120,16 @@ export function useDashboard(dateFilter?: DashboardDateFilter) {
       return response.data.data
     },
     staleTime: 30000,
+    enabled: enableAdvanced,
   })
 
   return {
     summary: summaryQuery.data,
     recentOrders: recentOrdersQuery.data || [],
     topProducts: topProductsQuery.data || [],
-    isLoading: summaryQuery.isLoading || recentOrdersQuery.isLoading || topProductsQuery.isLoading,
-    isError: summaryQuery.isError || recentOrdersQuery.isError || topProductsQuery.isError,
-    error: summaryQuery.error || recentOrdersQuery.error || topProductsQuery.error,
+    isLoading: summaryQuery.isLoading || recentOrdersQuery.isLoading,
+    isError: summaryQuery.isError || recentOrdersQuery.isError,
+    error: summaryQuery.error || recentOrdersQuery.error,
   }
 }
 
