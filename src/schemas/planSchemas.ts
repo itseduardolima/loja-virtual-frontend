@@ -2,15 +2,24 @@ import * as Yup from 'yup'
 
 export const createPlanSchema = Yup.object({
   name: Yup.string().required('Nome é obrigatório'),
-  slug: Yup.string()
-    .required('Slug é obrigatório')
-    .matches(/^[a-z0-9-]+$/, 'Slug deve conter apenas letras minúsculas, números e hífens'),
   description: Yup.string().optional(),
-  price: Yup.number().typeError('Preço deve ser um número').positive('Preço deve ser positivo').required('Preço é obrigatório'),
-  billing_cycle: Yup.string().oneOf(['monthly', 'yearly'], 'Ciclo inválido').required('Ciclo é obrigatório'),
-  max_products: Yup.number().nullable().optional(),
-  max_stores: Yup.number().min(1).optional(),
-  features: Yup.string().optional(),
+  price_monthly: Yup.number()
+    .typeError('Preço mensal deve ser um número')
+    .positive('Preço mensal deve ser positivo')
+    .required('Preço mensal é obrigatório'),
+  price_yearly: Yup.number()
+    .transform((_, original) => (original === '' || original == null ? null : Number(original)))
+    .nullable()
+    .optional(),
+  max_products: Yup.number()
+    .transform((_, original) => (original === '' || original == null ? null : Number(original)))
+    .nullable()
+    .optional(),
+  feature_bling_integration: Yup.boolean().default(false),
+  feature_product_questions: Yup.boolean().default(false),
+  feature_advanced_dashboard: Yup.boolean().default(false),
+  feature_order_export: Yup.boolean().default(false),
+  feature_coupons: Yup.boolean().default(false),
   status: Yup.number().oneOf([0, 1]).default(1),
   sort_order: Yup.number().min(0).default(0),
 })

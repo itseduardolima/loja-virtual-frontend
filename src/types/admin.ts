@@ -11,11 +11,15 @@ export interface AdminPlan {
   name: string
   slug: string
   description: string | null
-  price: number
-  billing_cycle: string
+  /** Prisma Decimal é serializado como string na API */
+  price_monthly: string
+  price_yearly: string | null
   max_products: number | null
-  max_stores: number
-  features: string
+  feature_bling_integration: boolean
+  feature_product_questions: boolean
+  feature_advanced_dashboard: boolean
+  feature_order_export: boolean
+  feature_coupons: boolean
   status: number
   sort_order: number
   created_at: string
@@ -24,6 +28,7 @@ export interface AdminPlan {
 
 export interface AdminSubscription {
   id: number
+  billing_cycle: string
   status: string
   payment_provider: string
   current_period_start: string
@@ -31,7 +36,7 @@ export interface AdminSubscription {
   cancel_at_period_end: number
   created_at: string
   user: { id: number; name: string; email: string }
-  plan: { id: number; name: string; price: number; billing_cycle: string }
+  plan: { id: number; name: string; price_monthly: string; price_yearly: string | null }
 }
 
 export interface AdminRefund {

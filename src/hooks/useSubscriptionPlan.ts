@@ -8,11 +8,9 @@ interface SubscriptionPlanResponse {
   name?: string
   slug?: string
   description?: string
-  price?: string
-  billing_cycle?: string
+  price_monthly?: string
+  price_yearly?: string | null
   max_products?: number | null
-  max_stores?: number
-  features?: string
   status?: number
   sort_order?: number
   created_at?: string

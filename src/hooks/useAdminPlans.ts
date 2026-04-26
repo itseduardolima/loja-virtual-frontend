@@ -1,6 +1,17 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, QueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/axios'
 import { AdminPlan, PaginatedResponse } from '@/types/admin'
+
+function invalidateAllPlanCaches(qc: QueryClient) {
+  qc.invalidateQueries({ queryKey: ['admin', 'plans'] })
+  qc.invalidateQueries({ queryKey: ['subscription-plans'] })
+  qc.invalidateQueries({ queryKey: ['subscription-plan'] })
+  qc.invalidateQueries({ queryKey: ['my-subscription'] })
+  // Features dependentes de plano podem mudar — invalida caches que dependem de feature flags
+  qc.invalidateQueries({ queryKey: ['dashboard'] })
+  qc.invalidateQueries({ queryKey: ['coupons'] })
+  qc.invalidateQueries({ queryKey: ['bling-status'] })
+}
 
 export function useAdminPlans(params?: { page?: number; limit?: number; status?: string }) {
   return useQuery({
@@ -19,7 +30,7 @@ export function useAdminCreatePlan() {
       const res = await api.post('/admin/plans', data)
       return res.data
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'plans'] }),
+    onSuccess: () => invalidateAllPlanCaches(qc),
   })
 }
 
@@ -30,7 +41,7 @@ export function useAdminUpdatePlan() {
       const res = await api.patch(`/admin/plans/${id}`, data)
       return res.data
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'plans'] }),
+    onSuccess: () => invalidateAllPlanCaches(qc),
   })
 }
 
@@ -41,6 +52,6 @@ export function useAdminDeletePlan() {
       const res = await api.delete(`/admin/plans/${id}`)
       return res.data
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'plans'] }),
+    onSuccess: () => invalidateAllPlanCaches(qc),
   })
 }

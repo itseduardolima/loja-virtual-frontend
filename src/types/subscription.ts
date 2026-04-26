@@ -3,16 +3,21 @@ export interface SubscriptionPlan {
   name: string
   slug: string
   description: string
-  price: string
-  billing_cycle: string
+  price_monthly: string
+  price_yearly: string | null
   max_products: number | null
-  max_stores: number
-  features: string
+  feature_bling_integration: boolean
+  feature_product_questions: boolean
+  feature_advanced_dashboard: boolean
+  feature_order_export: boolean
+  feature_coupons: boolean
   status: number
   sort_order: number
   created_at: string
   updated_at: string
 }
+
+export type BillingCycle = 'monthly' | 'yearly'
 
 /**
  * Status da assinatura:
@@ -54,6 +59,7 @@ export interface Subscription {
   id: number
   user_id: number
   plan_id: number
+  billing_cycle: BillingCycle
   status: SubscriptionStatus
   payment_provider: string
   subscription_id: string
@@ -72,6 +78,7 @@ export interface CreateSubscriptionRequest {
   cpf?: string
   cnpj?: string
   plan_slug?: string
+  billing_cycle?: BillingCycle
 }
 
 export interface CreateSubscriptionResponse {
