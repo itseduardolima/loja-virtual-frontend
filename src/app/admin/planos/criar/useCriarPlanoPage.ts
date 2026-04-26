@@ -10,9 +10,17 @@ export function useCriarPlanoPage() {
   const { success, error } = useToastContext()
   const createPlan = useAdminCreatePlan()
 
-  const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm({
+  const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm({
     resolver: yupResolver(createPlanSchema),
-    defaultValues: { billing_cycle: 'monthly', status: 1, sort_order: 0, max_stores: 1 },
+    defaultValues: {
+      status: 1,
+      sort_order: 0,
+      feature_bling_integration: false,
+      feature_product_questions: false,
+      feature_advanced_dashboard: false,
+      feature_order_export: false,
+      feature_coupons: false,
+    },
   })
 
   const onSubmit = async (data: any) => {
@@ -25,5 +33,5 @@ export function useCriarPlanoPage() {
     }
   }
 
-  return { register, handleSubmit, setValue, errors, isSubmitting, onSubmit, router }
+  return { register, handleSubmit, setValue, watch, errors, isSubmitting, onSubmit, router }
 }

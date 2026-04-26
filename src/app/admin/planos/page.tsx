@@ -11,16 +11,22 @@ export default function AdminPlanosPage() {
   const router = useRouter()
   const { plans, meta, isLoading, page, setPage, confirmDelete, setConfirmDelete, handleDelete } = usePlanosPage()
 
+  const formatBRL = (n: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n)
+
   const columns: Column<AdminPlan>[] = [
     { key: 'name', header: 'Nome', accessor: 'name' },
-    { key: 'slug', header: 'Slug', accessor: 'slug' },
     {
-      key: 'price',
-      header: 'Preço',
-      accessor: (row) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(row.price)),
+      key: 'price_monthly',
+      header: 'Preço Mensal',
+      accessor: (row) => formatBRL(Number(row.price_monthly)),
       type: 'price',
     },
-    { key: 'billing_cycle', header: 'Ciclo', accessor: (row) => row.billing_cycle === 'monthly' ? 'Mensal' : 'Anual' },
+    {
+      key: 'price_yearly',
+      header: 'Preço Anual',
+      accessor: (row) => row.price_yearly != null ? formatBRL(Number(row.price_yearly)) : '—',
+      type: 'price',
+    },
     { key: 'max_products', header: 'Produtos Máx.', accessor: (row) => row.max_products ?? 'Ilimitado' },
     {
       key: 'status',

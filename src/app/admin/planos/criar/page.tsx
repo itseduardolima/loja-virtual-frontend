@@ -1,16 +1,45 @@
-﻿'use client'
+'use client'
 
-import { CreditCard, Settings, Tag, ChevronLeft } from 'lucide-react'
+import { CreditCard, Settings, Tag, ChevronLeft, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useCriarPlanoPage } from './useCriarPlanoPage'
 
+const FEATURE_OPTIONS = [
+  {
+    key: 'feature_coupons' as const,
+    title: 'Cupons de desconto',
+    description: 'Criar cupons percentuais ou fixos com expiração e limite de uso',
+  },
+  {
+    key: 'feature_bling_integration' as const,
+    title: 'Integração Bling ERP',
+    description: 'Sincronizar pedidos automaticamente com o Bling',
+  },
+  {
+    key: 'feature_product_questions' as const,
+    title: 'Perguntas e respostas',
+    description: 'Receber e responder perguntas dos clientes nos produtos',
+  },
+  {
+    key: 'feature_advanced_dashboard' as const,
+    title: 'Dashboard avançado',
+    description: 'Gráfico de receita, top produtos, top categorias e estoque baixo',
+  },
+  {
+    key: 'feature_order_export' as const,
+    title: 'Exportar pedidos',
+    description: 'Exportar pedidos em planilha Excel',
+  },
+]
+
 export default function AdminCriarPlanoPage() {
-  const { register, handleSubmit, setValue, errors, isSubmitting, onSubmit, router } = useCriarPlanoPage()
+  const { register, handleSubmit, setValue, watch, errors, isSubmitting, onSubmit, router } = useCriarPlanoPage()
 
   return (
     <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
@@ -37,17 +66,10 @@ export default function AdminCriarPlanoPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">Nome *</Label>
-                    <Input {...register('name')} placeholder="Ex: Plano Premium" />
-                    {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">Slug *</Label>
-                    <Input {...register('slug')} placeholder="ex: plano-premium" />
-                    {errors.slug && <p className="text-xs text-red-500">{errors.slug.message}</p>}
-                  </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">Nome *</Label>
+                  <Input {...register('name')} placeholder="Ex: Plano Premium" />
+                  {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-700">Descrição</Label>
@@ -71,21 +93,14 @@ export default function AdminCriarPlanoPage() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">Preço (R$) *</Label>
-                    <Input {...register('price')} type="number" step="0.01" placeholder="29.90" />
-                    {errors.price && <p className="text-xs text-red-500">{errors.price.message}</p>}
+                    <Label className="text-sm font-medium text-gray-700">Preço Mensal (R$) *</Label>
+                    <Input {...register('price_monthly')} type="number" step="0.01" placeholder="29.90" />
+                    {errors.price_monthly && <p className="text-xs text-red-500">{errors.price_monthly.message}</p>}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">Ciclo de Cobrança *</Label>
-                    <Select defaultValue="monthly" onValueChange={(v) => setValue('billing_cycle', v as 'monthly' | 'yearly')}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="monthly">Mensal</SelectItem>
-                        <SelectItem value="yearly">Anual</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label className="text-sm font-medium text-gray-700">Preço Anual (R$)</Label>
+                    <Input {...register('price_yearly')} type="number" step="0.01" placeholder="Vazio = não oferece anual" />
+                    <p className="text-xs text-gray-400">Sugestão: ~17% de desconto (2 meses grátis)</p>
                   </div>
                 </div>
               </CardContent>
@@ -93,18 +108,28 @@ export default function AdminCriarPlanoPage() {
 
             <Card className="shadow-sm">
               <CardHeader className="pb-4">
-                <CardTitle className="text-base font-semibold text-gray-900">Funcionalidades</CardTitle>
-                <p className="text-sm text-gray-500">Liste cada funcionalidade em uma linha separada</p>
+                <CardTitle className="flex items-center gap-2 text-base font-semibold text-gray-900">
+                  <Sparkles className="h-4 w-4 text-gray-500" />
+                  Funcionalidades inclusas
+                </CardTitle>
+                <p className="text-sm text-gray-500">Selecione quais recursos premium este plano libera</p>
               </CardHeader>
-              <CardContent>
-                <Textarea
-                  {...register('features')}
-                  placeholder={"Produtos ilimitados\n1 loja\nDashboard de vendas\nSuporte prioritário"}
-                  rows={6}
-                  className="resize-none font-mono text-sm"
-                />
+              <CardContent className="space-y-4">
+                {FEATURE_OPTIONS.map((opt) => (
+                  <div key={opt.key} className="flex items-start justify-between gap-4 p-3 border border-gray-200 rounded-lg">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900">{opt.title}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{opt.description}</p>
+                    </div>
+                    <Switch
+                      checked={!!watch(opt.key)}
+                      onCheckedChange={(checked) => setValue(opt.key, checked, { shouldDirty: true })}
+                    />
+                  </div>
+                ))}
               </CardContent>
             </Card>
+
           </div>
 
           <div className="space-y-6">
@@ -131,10 +156,6 @@ export default function AdminCriarPlanoPage() {
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-700">Máximo de Produtos</Label>
                   <Input {...register('max_products')} type="number" placeholder="Vazio = ilimitado" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">Máximo de Lojas</Label>
-                  <Input {...register('max_stores')} type="number" defaultValue={1} />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-700">Ordem de Exibição</Label>

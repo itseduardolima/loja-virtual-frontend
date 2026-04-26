@@ -15,7 +15,7 @@ export function useEditarPlanoPage() {
   const { data } = useAdminPlans({ page: 1, limit: 100 })
   const plan = data?.data?.find((p) => p.id === Number(id))
 
-  const { register, handleSubmit, setValue, reset, formState: { errors, isSubmitting } } = useForm({
+  const { register, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } = useForm({
     resolver: yupResolver(createPlanSchema),
   })
 
@@ -23,13 +23,15 @@ export function useEditarPlanoPage() {
     if (plan) {
       reset({
         name: plan.name,
-        slug: plan.slug,
         description: plan.description ?? '',
-        price: Number(plan.price),
-        billing_cycle: plan.billing_cycle as 'monthly' | 'yearly',
+        price_monthly: Number(plan.price_monthly),
+        price_yearly: plan.price_yearly != null ? Number(plan.price_yearly) : undefined,
         max_products: plan.max_products ?? undefined,
-        max_stores: plan.max_stores,
-        features: plan.features ?? '',
+        feature_bling_integration: !!plan.feature_bling_integration,
+        feature_product_questions: !!plan.feature_product_questions,
+        feature_advanced_dashboard: !!plan.feature_advanced_dashboard,
+        feature_order_export: !!plan.feature_order_export,
+        feature_coupons: !!plan.feature_coupons,
         status: plan.status,
         sort_order: plan.sort_order,
       })
@@ -46,5 +48,5 @@ export function useEditarPlanoPage() {
     }
   }
 
-  return { plan, register, handleSubmit, setValue, errors, isSubmitting, onSubmit, router }
+  return { plan, register, handleSubmit, setValue, watch, errors, isSubmitting, onSubmit, router }
 }
