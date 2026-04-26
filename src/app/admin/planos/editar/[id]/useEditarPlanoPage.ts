@@ -32,6 +32,7 @@ export function useEditarPlanoPage() {
         feature_advanced_dashboard: !!plan.feature_advanced_dashboard,
         feature_order_export: !!plan.feature_order_export,
         feature_coupons: !!plan.feature_coupons,
+        trial_days: plan.trial_days,
         status: plan.status,
         sort_order: plan.sort_order,
       })

@@ -176,6 +176,11 @@ export default function AdminEditarPlanoPage() {
                   <Input {...register("max_products")} type="number" placeholder="Vazio = ilimitado" />
                 </div>
                 <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">Dias de Trial</Label>
+                  <Input {...register("trial_days")} type="number" min={0} placeholder="Vazio = sem trial" />
+                  <p className="text-xs text-gray-400">Acesso gratuito sem cartão por N dias</p>
+                </div>
+                <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-700">Ordem de Exibição</Label>
                   <Input {...register("sort_order")} type="number" />
                 </div>

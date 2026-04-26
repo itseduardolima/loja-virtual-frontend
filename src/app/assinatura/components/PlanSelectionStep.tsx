@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 interface PlanSelectionStepProps {
   plans: SubscriptionPlan[];
   onSelectPlan: (plan: SubscriptionPlan, cycle: BillingCycle) => void;
+  onStartTrial?: (plan: SubscriptionPlan, cycle: BillingCycle) => void;
 }
 
 const PLAN_ICONS: Record<string, React.ReactNode> = {
@@ -26,7 +27,7 @@ function parsePrice(value: string | number | null): number {
 
 const FEATURED_SLUG = "plano-pro";
 
-export function PlanSelectionStep({ plans, onSelectPlan }: PlanSelectionStepProps) {
+export function PlanSelectionStep({ plans, onSelectPlan, onStartTrial }: PlanSelectionStepProps) {
   const searchParams = useSearchParams();
   const initialSlug = searchParams.get("plano") ?? FEATURED_SLUG;
   const initialCycle = (searchParams.get("cycle") === "yearly" ? "yearly" : "monthly") as BillingCycle;
@@ -182,25 +183,43 @@ export function PlanSelectionStep({ plans, onSelectPlan }: PlanSelectionStepProp
                 ))}
               </div>
 
-              {/* CTA */}
-              <button
-                type="button"
-                disabled={yearlyUnavailable}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (yearlyUnavailable) return;
-                  onSelectPlan(plan, cycle);
-                }}
-                className={cn(
-                  "w-full h-11 rounded-xl font-semibold text-sm transition-all",
-                  yearlyUnavailable && "bg-gray-200 text-gray-400 cursor-not-allowed",
-                  !yearlyUnavailable && (isSelected
-                    ? "bg-white text-gray-900 hover:bg-gray-100"
-                    : "bg-gray-900 text-white hover:bg-gray-800"),
-                )}
-              >
-                {yearlyUnavailable ? "Indisponível" : `Escolher ${plan.name}`}
-              </button>
+              {/* CTA — único: trial OU paid */}
+              {plan.trial_days != null && plan.trial_days > 0 && onStartTrial && !yearlyUnavailable ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onStartTrial(plan, cycle);
+                  }}
+                  className={cn(
+                    "w-full h-11 rounded-xl font-semibold text-sm transition-all",
+                    isSelected
+                      ? "bg-white text-gray-900 hover:bg-gray-100"
+                      : "bg-gray-900 text-white hover:bg-gray-800",
+                  )}
+                >
+                  Começar grátis por {plan.trial_days} dias
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={yearlyUnavailable}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (yearlyUnavailable) return;
+                    onSelectPlan(plan, cycle);
+                  }}
+                  className={cn(
+                    "w-full h-11 rounded-xl font-semibold text-sm transition-all",
+                    yearlyUnavailable && "bg-gray-200 text-gray-400 cursor-not-allowed",
+                    !yearlyUnavailable && (isSelected
+                      ? "bg-white text-gray-900 hover:bg-gray-100"
+                      : "bg-gray-900 text-white hover:bg-gray-800"),
+                  )}
+                >
+                  {yearlyUnavailable ? "Indisponível" : `Escolher ${plan.name}`}
+                </button>
+              )}
             </motion.div>
           );
         })}

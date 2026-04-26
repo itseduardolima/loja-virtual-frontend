@@ -113,6 +113,12 @@ export function PricingSection() {
                   ctaText={ctaText(plan)}
                   ctaHref={`/assinatura?plano=${plan.slug}&cycle=${cycle}`}
                   featured={plan.slug === FEATURED_SLUG}
+                  trialDays={plan.trial_days}
+                  trialHref={
+                    plan.trial_days != null && plan.trial_days > 0
+                      ? `/assinatura?plano=${plan.slug}&trial=true&cycle=${cycle}`
+                      : undefined
+                  }
                 />
               )
             })}

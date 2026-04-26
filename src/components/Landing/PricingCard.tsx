@@ -19,6 +19,8 @@ interface PricingCardProps {
   ctaText: string
   ctaHref: string
   featured?: boolean
+  trialDays?: number | null
+  trialHref?: string
 }
 
 export function PricingCard({
@@ -30,6 +32,8 @@ export function PricingCard({
   ctaText,
   ctaHref,
   featured = false,
+  trialDays,
+  trialHref,
 }: PricingCardProps) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
@@ -47,13 +51,20 @@ export function PricingCard({
     >
       {/* Header */}
       <div className={`px-6 py-5 ${featured ? 'bg-gray-900' : 'bg-white'}`}>
-        {featured && (
-          <div className="text-center mb-2">
+        <div className="text-center mb-2 flex items-center justify-center gap-2 flex-wrap">
+          {featured && (
             <span className="inline-block bg-white/15 text-white text-xs font-semibold px-3 py-0.5 rounded-full">
               Mais popular
             </span>
-          </div>
-        )}
+          )}
+          {trialDays != null && trialDays > 0 && (
+            <span className={`inline-block text-xs font-semibold px-3 py-0.5 rounded-full ${
+              featured ? 'bg-green-500/20 text-green-300' : 'bg-green-100 text-green-700'
+            }`}>
+              {trialDays} dias grátis
+            </span>
+          )}
+        </div>
         <h3 className={`text-lg font-bold text-center mb-0.5 ${featured ? 'text-white' : 'text-gray-900'}`}>
           {name}
         </h3>
@@ -119,16 +130,29 @@ export function PricingCard({
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
-          <Link
-            href={ctaHref}
-            className={`block w-full text-center py-3 rounded-xl font-semibold text-sm transition-colors ${
-              featured
-                ? 'bg-white text-gray-900 hover:bg-gray-100'
-                : 'bg-gray-900 text-white hover:bg-gray-800'
-            }`}
-          >
-            {ctaText}
-          </Link>
+          {trialDays != null && trialDays > 0 && trialHref ? (
+            <Link
+              href={trialHref}
+              className={`block w-full text-center py-3 rounded-xl font-semibold text-sm transition-colors ${
+                featured
+                  ? 'bg-white text-gray-900 hover:bg-gray-100'
+                  : 'bg-gray-900 text-white hover:bg-gray-800'
+              }`}
+            >
+              Começar grátis por {trialDays} dias
+            </Link>
+          ) : (
+            <Link
+              href={ctaHref}
+              className={`block w-full text-center py-3 rounded-xl font-semibold text-sm transition-colors ${
+                featured
+                  ? 'bg-white text-gray-900 hover:bg-gray-100'
+                  : 'bg-gray-900 text-white hover:bg-gray-800'
+              }`}
+            >
+              {ctaText}
+            </Link>
+          )}
         </motion.div>
       </div>
     </motion.div>

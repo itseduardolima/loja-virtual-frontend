@@ -1,11 +1,88 @@
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { Check, Sparkles, Ticket } from "lucide-react";
+
+export type CompletedReason = "paid" | "trial" | "coupon";
 
 interface CompletedStepProps {
   onGoToDashboard: () => void;
+  reason?: CompletedReason;
+  trialDays?: number | null;
+  couponCode?: string | null;
+  freeAccessUntil?: string | null;
 }
 
-export function CompletedStep({ onGoToDashboard }: CompletedStepProps) {
+interface StepCopy {
+  icon: React.ComponentType<{ className?: string }>;
+  iconBg: string;
+  iconColor: string;
+  title: string;
+  subtitle: string;
+  nextSteps: string;
+  buttonLabel: string;
+}
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+function getCopy(props: CompletedStepProps): StepCopy {
+  const { reason, trialDays, couponCode, freeAccessUntil } = props;
+
+  if (reason === "trial") {
+    const days = trialDays ?? null;
+    return {
+      icon: Sparkles,
+      iconBg: "bg-blue-100",
+      iconColor: "text-blue-600",
+      title: "Trial ativado!",
+      subtitle: days
+        ? `Você tem ${days} dias de acesso completo, sem cartão de crédito.`
+        : "Seu acesso gratuito está liberado.",
+      nextSteps: freeAccessUntil
+        ? `Aproveite até ${formatDate(freeAccessUntil)}. Para continuar depois desse prazo, você poderá assinar um plano em "Meu Plano".`
+        : 'Crie sua loja agora e comece a vender. Quando o trial acabar, você escolhe um plano em "Meu Plano".',
+      buttonLabel: "Criar minha loja",
+    };
+  }
+
+  if (reason === "coupon") {
+    return {
+      icon: Ticket,
+      iconBg: "bg-green-100",
+      iconColor: "text-green-600",
+      title: "Acesso liberado!",
+      subtitle: couponCode
+        ? `Cupom ${couponCode} aplicado — você tem acesso gratuito durante o período do desconto.`
+        : "Seu cupom foi aplicado e você tem acesso gratuito durante o período do desconto.",
+      nextSteps: freeAccessUntil
+        ? `Sua conta é vendedor até ${formatDate(freeAccessUntil)}. Depois, será necessário assinar para continuar.`
+        : "Sua conta foi atualizada para o perfil de vendedor. Crie sua loja e comece a vender agora.",
+      buttonLabel: "Criar minha loja",
+    };
+  }
+
+  // default: paid
+  return {
+    icon: Check,
+    iconBg: "bg-green-100",
+    iconColor: "text-green-600",
+    title: "Assinatura Confirmada!",
+    subtitle: "Seu pagamento foi confirmado com sucesso e sua assinatura está ativa!",
+    nextSteps:
+      "Sua conta foi atualizada para o perfil de vendedor. Crie sua loja e comece a vender agora mesmo!",
+    buttonLabel: "Criar minha loja",
+  };
+}
+
+export function CompletedStep(props: CompletedStepProps) {
+  const copy = getCopy(props);
+  const Icon = copy.icon;
+
   return (
     <motion.div
       key="completed"
@@ -25,9 +102,9 @@ export function CompletedStep({ onGoToDashboard }: CompletedStepProps) {
             damping: 15,
             delay: 0.2,
           }}
-          className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6"
+          className={`w-20 h-20 ${copy.iconBg} rounded-full flex items-center justify-center mx-auto mb-6`}
         >
-          <Check className="w-12 h-12 text-green-600" />
+          <Icon className={`w-12 h-12 ${copy.iconColor}`} />
         </motion.div>
 
         <motion.h2
@@ -36,7 +113,7 @@ export function CompletedStep({ onGoToDashboard }: CompletedStepProps) {
           transition={{ delay: 0.3 }}
           className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4"
         >
-          Assinatura Confirmada!
+          {copy.title}
         </motion.h2>
 
         <motion.p
@@ -45,7 +122,7 @@ export function CompletedStep({ onGoToDashboard }: CompletedStepProps) {
           transition={{ delay: 0.4 }}
           className="text-lg sm:text-xl text-gray-600 mb-6"
         >
-          Seu pagamento foi confirmado com sucesso e sua assinatura está ativa!
+          {copy.subtitle}
         </motion.p>
 
         <motion.div
@@ -57,10 +134,7 @@ export function CompletedStep({ onGoToDashboard }: CompletedStepProps) {
           <p className="text-sm sm:text-base text-gray-700 mb-2">
             <strong>Próximos passos:</strong>
           </p>
-          <p className="text-sm sm:text-base text-gray-600">
-            Sua conta foi atualizada para o perfil de vendedor. Crie sua loja e
-            comece a vender agora mesmo!
-          </p>
+          <p className="text-sm sm:text-base text-gray-600">{copy.nextSteps}</p>
         </motion.div>
 
         <motion.div
@@ -70,12 +144,12 @@ export function CompletedStep({ onGoToDashboard }: CompletedStepProps) {
           className="flex justify-center"
         >
           <motion.button
-            onClick={onGoToDashboard}
+            onClick={props.onGoToDashboard}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="bg-primary text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-black/80 shadow-lg hover:shadow-xl transition-all"
           >
-            Criar minha loja
+            {copy.buttonLabel}
           </motion.button>
         </motion.div>
       </div>

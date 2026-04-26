@@ -11,6 +11,7 @@ export interface SubscriptionPlan {
   feature_advanced_dashboard: boolean
   feature_order_export: boolean
   feature_coupons: boolean
+  trial_days: number | null
   status: number
   sort_order: number
   created_at: string
@@ -67,18 +68,45 @@ export interface Subscription {
   current_period_end: string
   canceled_at: string | null
   cancel_at_period_end: number
+  applied_coupon_id: number | null
+  applied_coupon_code: string | null
+  discount_remaining_periods: number | null
+  original_price: string | null
+  free_access_until: string | null
+  free_access_reason: 'trial' | 'coupon' | null
+  /** Preço efetivo atual (com desconto aplicado, ou 0 se em modo free) */
+  current_price: number
   created_at: string
   updated_at: string
   plan?: SubscriptionPlan
   payments?: Payment[]
 }
 
+export interface PlanCouponValidation {
+  valid: boolean
+  message?: string
+  coupon?: {
+    id: number
+    code: string
+    description: string | null
+    discount_type: 'percent' | 'fixed'
+    discount_value: number
+    duration_type: 'forever' | 'once' | 'months'
+    duration_months: number | null
+  }
+  original_price?: number
+  discount_amount?: number
+  final_price?: number
+}
+
 export interface CreateSubscriptionRequest {
-  billing_type: 'CREDIT_CARD' | 'PIX' | 'BOLETO'
+  billing_type?: 'CREDIT_CARD' | 'PIX' | 'BOLETO'
   cpf?: string
   cnpj?: string
   plan_slug?: string
   billing_cycle?: BillingCycle
+  coupon_code?: string
+  start_trial?: boolean
 }
 
 export interface CreateSubscriptionResponse {

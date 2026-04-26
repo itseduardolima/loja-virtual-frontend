@@ -1,7 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BillingType } from "@/types/subscription";
+import { BillingType, PlanCouponValidation } from "@/types/subscription";
 import {
   Check,
   ChevronLeft,
@@ -12,6 +13,8 @@ import {
   Package,
   RefreshCw,
   ShieldCheck,
+  Ticket,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +54,14 @@ interface SelectPaymentMethodStepProps {
   needsDocument: boolean;
   canContinue: boolean;
   isCreatingSubscription: boolean;
+  isFreeCheckout?: boolean;
+  // Cupom
+  couponInput?: string;
+  appliedCoupon?: PlanCouponValidation | null;
+  isValidatingCoupon?: boolean;
+  onCouponInputChange?: (v: string) => void;
+  onApplyCoupon?: () => void;
+  onRemoveCoupon?: () => void;
   onSelectMethod: (method: BillingType) => void;
   onSelectDocumentType: (type: "cpf" | "cnpj") => void;
   onCpfChange: (value: string) => void;
@@ -58,6 +69,12 @@ interface SelectPaymentMethodStepProps {
   onDocumentTypeReset: () => void;
   onCreateSubscription: () => void;
   onBack: () => void;
+}
+
+function durationLabel(c: NonNullable<PlanCouponValidation['coupon']>): string {
+  if (c.duration_type === 'forever') return 'em todas as renovações';
+  if (c.duration_type === 'once') return 'apenas no primeiro pagamento';
+  return `pelos próximos ${c.duration_months} meses`;
 }
 
 export function SelectPaymentMethodStep({
@@ -73,6 +90,13 @@ export function SelectPaymentMethodStep({
   needsDocument,
   canContinue,
   isCreatingSubscription,
+  isFreeCheckout = false,
+  couponInput = '',
+  appliedCoupon = null,
+  isValidatingCoupon = false,
+  onCouponInputChange,
+  onApplyCoupon,
+  onRemoveCoupon,
   onSelectMethod,
   onSelectDocumentType,
   onCpfChange,
@@ -81,7 +105,17 @@ export function SelectPaymentMethodStep({
   onCreateSubscription,
   onBack,
 }: SelectPaymentMethodStepProps) {
-  const priceStr = planPrice.toFixed(2).replace(".", ",");
+  const [showCoupon, setShowCoupon] = useState<boolean>(!!appliedCoupon?.valid);
+
+  // Quando cupom é removido, fecha o painel automaticamente
+  useEffect(() => {
+    if (!appliedCoupon?.valid) setShowCoupon(false);
+  }, [appliedCoupon?.valid]);
+  const finalPrice = appliedCoupon?.valid && appliedCoupon.final_price != null
+    ? appliedCoupon.final_price
+    : planPrice;
+  const discountAmount = appliedCoupon?.valid ? (appliedCoupon.discount_amount ?? 0) : 0;
+  const priceStr = finalPrice.toFixed(2).replace(".", ",");
   const [priceInt, priceDec] = priceStr.split(",");
 
   const features =
@@ -151,6 +185,11 @@ export function SelectPaymentMethodStep({
 
             {/* Price */}
             <div className="mb-6">
+              {appliedCoupon?.valid && appliedCoupon.original_price != null && (
+                <div className="text-sm text-gray-400 line-through mb-1">
+                  De R$ {appliedCoupon.original_price.toFixed(2).replace('.', ',')}
+                </div>
+              )}
               <div className="flex items-start gap-1">
                 <span className="text-gray-300 text-sm font-medium mt-2.5">
                   R$
@@ -162,9 +201,18 @@ export function SelectPaymentMethodStep({
                   <span className="text-xl font-bold text-white leading-none">
                     ,{priceDec}
                   </span>
-                  <span className="text-xs text-gray-400 mt-1">por mês</span>
+                  <span className="text-xs text-gray-400 mt-1">
+                    por {planBillingCycle === 'yearly' ? 'ano' : 'mês'}
+                  </span>
                 </div>
               </div>
+              {appliedCoupon?.valid && appliedCoupon.coupon && (
+                <div className="mt-3 inline-flex items-center gap-2 bg-green-500/15 text-green-300 text-xs font-medium px-2.5 py-1 rounded-full">
+                  <Ticket className="h-3 w-3" />
+                  Cupom {appliedCoupon.coupon.code}: -R$ {discountAmount.toFixed(2).replace('.', ',')}{' '}
+                  {durationLabel(appliedCoupon.coupon)}
+                </div>
+              )}
             </div>
 
             {/* Features */}
@@ -202,6 +250,78 @@ export function SelectPaymentMethodStep({
             </div>
           </motion.div>
 
+          {/* Cupom de desconto */}
+          {onApplyCoupon && (
+            <div className="mt-4">
+              {!showCoupon && !appliedCoupon?.valid ? (
+                <button
+                  type="button"
+                  onClick={() => setShowCoupon(true)}
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  <Ticket className="h-3.5 w-3.5" />
+                  Tenho um cupom de desconto
+                </button>
+              ) : appliedCoupon?.valid ? (
+                <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-xl">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Ticket className="h-4 w-4 text-green-600 shrink-0" />
+                    <span className="text-sm font-medium text-green-900 truncate">
+                      Cupom <span className="font-mono">{appliedCoupon.coupon?.code}</span> aplicado
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onRemoveCoupon?.();
+                      setShowCoupon(false);
+                    }}
+                    className="text-xs text-green-700 hover:text-green-900 font-medium inline-flex items-center gap-1"
+                  >
+                    <X className="h-3 w-3" />
+                    Remover
+                  </button>
+                </div>
+              ) : (
+                <div className="p-3 border border-gray-200 rounded-xl bg-white">
+                  <Label className="text-xs font-medium text-gray-700 mb-2 block">
+                    Código do cupom
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={couponInput}
+                      onChange={(e) => onCouponInputChange?.(e.target.value.toUpperCase())}
+                      placeholder="EX: BLACK50"
+                      className="font-mono uppercase h-9"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          onApplyCoupon();
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      onClick={onApplyCoupon}
+                      disabled={!couponInput.trim() || isValidatingCoupon}
+                      className="h-9"
+                    >
+                      {isValidatingCoupon ? '...' : 'Aplicar'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setShowCoupon(false)}
+                      className="h-9"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Security badge */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -223,14 +343,35 @@ export function SelectPaymentMethodStep({
         >
           <div className="mb-5">
             <h2 className="text-xl font-bold text-gray-900 mb-1">
-              Escolha o método de pagamento
+              {isFreeCheckout ? "Sua assinatura será gratuita" : "Escolha o método de pagamento"}
             </h2>
             <p className="text-sm text-gray-400">
-              Selecione a forma de pagamento mais conveniente para você
+              {isFreeCheckout
+                ? "Cupom aplicado zerou o valor desta assinatura. Confirme para ativar."
+                : "Selecione a forma de pagamento mais conveniente para você"}
             </p>
           </div>
 
+          {isFreeCheckout && (
+            <div className="mb-5 p-4 bg-green-50 border border-green-200 rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                  <Check className="h-5 w-5 text-green-600" strokeWidth={3} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-green-900">
+                    R$ 0,00 — sem cobrança
+                  </p>
+                  <p className="text-xs text-green-700">
+                    Você não será cobrado enquanto o cupom estiver ativo. Sem cartão necessário.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Payment method rows */}
+          {!isFreeCheckout && (
           <div className="space-y-2 mb-5">
             {paymentMethods.map((method) => (
               <button
@@ -268,6 +409,7 @@ export function SelectPaymentMethodStep({
               </button>
             ))}
           </div>
+          )}
 
           {/* Document input for PIX / BOLETO */}
           <AnimatePresence>
@@ -346,6 +488,11 @@ export function SelectPaymentMethodStep({
           >
             {isCreatingSubscription ? (
               "Processando..."
+            ) : isFreeCheckout ? (
+              <>
+                Confirmar assinatura gratuita
+                <Check className="ml-1 w-4 h-4" strokeWidth={3} />
+              </>
             ) : (
               <>
                 Continuar para pagamento
