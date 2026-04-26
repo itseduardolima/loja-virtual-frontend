@@ -135,6 +135,7 @@ export function useCreateStore() {
   return {
     createStore: createStoreMutation.mutateAsync,
     isCreating: createStoreMutation.isPending,
+    isSuccess: createStoreMutation.isSuccess,
     error: createStoreMutation.error
   }
 }

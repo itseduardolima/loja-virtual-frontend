@@ -7,7 +7,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSubscriptionPlans } from "@/hooks/useSubscriptionPlans";
 import { useCreateSubscription } from "@/hooks/useCreateSubscription";
 import { useMySubscription } from "@/hooks/useMySubscription";
-import { BillingType, BillingCycle, SubscriptionPlan } from "@/types/subscription";
+import { useValidatePlanCoupon } from "@/hooks/useValidatePlanCoupon";
+import { BillingType, BillingCycle, SubscriptionPlan, PlanCouponValidation } from "@/types/subscription";
 import { formatCPF, formatCNPJ } from "@/lib/utils";
 import { api } from "@/lib/api";
 import toast from "react-hot-toast";
@@ -36,7 +37,9 @@ export function useAssinaturaPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const planoParam = searchParams.get("plano");
+  const trialParam = searchParams.get("trial") === "true";
   const queryClient = useQueryClient();
+  const trialAutoTriggeredRef = useRef(false);
   const { isAuthenticated, isLoading: isLoadingAuth, login, refreshToken } = useAuth();
 
   const [step, setStep] = useState<Step>("select");
@@ -59,6 +62,13 @@ export function useAssinaturaPage() {
     payment_url: string;
     qr_code: string | null;
   } | null>(null);
+
+  // Cupom de desconto de plano
+  const [couponInput, setCouponInput] = useState<string>("");
+  const [appliedCoupon, setAppliedCoupon] = useState<PlanCouponValidation | null>(null);
+  const validateCoupon = useValidatePlanCoupon();
+
+  // Trial
 
   const {
     data: plans,
@@ -104,12 +114,32 @@ export function useAssinaturaPage() {
     if (planoParam && plans?.length) {
       const matched = plans.find((p) => p.slug === planoParam);
       if (matched) {
+        // Auto-trial via ?trial=true (vindo da landing).
+        // 'active' já foi tratado pelo redirect acima, então só falta checar 'pending'.
+        const hasOngoingSubscription = mySubscription?.status === 'pending';
+        if (
+          trialParam &&
+          matched.trial_days != null &&
+          matched.trial_days > 0 &&
+          !hasOngoingSubscription &&
+          !trialAutoTriggeredRef.current
+        ) {
+          trialAutoTriggeredRef.current = true;
+          // Cycle da URL > localStorage > 'monthly'
+          const cycleFromUrl = searchParams.get("cycle");
+          const trialCycle: BillingCycle =
+            cycleFromUrl === "yearly" || cycleFromUrl === "monthly"
+              ? cycleFromUrl
+              : selectedCycle;
+          handleStartTrial(matched, trialCycle);
+          return;
+        }
         setSelectedPlan(matched);
         return; // keep step "select"
       }
     }
     setStep("plan");
-  }, [isLoadingAuth, isAuthenticated, plans, isLoadingPlan, isLoadingSubscription, mySubscription]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isLoadingAuth, isAuthenticated, plans, isLoadingPlan, isLoadingSubscription, mySubscription, trialParam]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const subscriptionStatus = mySubscription?.status;
   const subscriptionPayments = mySubscription?.payments;
@@ -194,6 +224,22 @@ export function useAssinaturaPage() {
     if (planoParam && plans?.length) {
       const matched = plans.find((p) => p.slug === planoParam);
       if (matched) {
+        // Se veio com ?trial=true e o plano oferece trial, dispara fluxo gratuito
+        if (
+          trialParam &&
+          matched.trial_days != null &&
+          matched.trial_days > 0 &&
+          !trialAutoTriggeredRef.current
+        ) {
+          trialAutoTriggeredRef.current = true;
+          const cycleFromUrl = searchParams.get("cycle");
+          const trialCycle: BillingCycle =
+            cycleFromUrl === "yearly" || cycleFromUrl === "monthly"
+              ? cycleFromUrl
+              : selectedCycle;
+          handleStartTrial(matched, trialCycle);
+          return;
+        }
         setSelectedPlan(matched);
         setStep("select");
         return;
@@ -248,7 +294,72 @@ export function useAssinaturaPage() {
     setSelectedPlan(plan);
     setSelectedCycle(cycle);
     persistCycle(cycle);
+    setAppliedCoupon(null);
+    setCouponInput("");
     setStep("select");
+  };
+
+  const handleStartTrial = (plan: SubscriptionPlan, cycle?: BillingCycle) => {
+    if (plan.trial_days == null || plan.trial_days <= 0) {
+      toast.error("Este plano não oferece período de trial.");
+      return;
+    }
+    const targetCycle = cycle ?? selectedCycle;
+    setSelectedPlan(plan);
+    setSelectedCycle(targetCycle);
+    setAppliedCoupon(null);
+    setCouponInput("");
+    // Trial não passa por seleção de método — vai direto criar
+    void handleCreateTrialSubscription(plan, targetCycle);
+  };
+
+  const handleCreateTrialSubscription = async (plan: SubscriptionPlan, cycle: BillingCycle) => {
+    setStep("processing");
+    try {
+      await createSubscription.mutateAsync({
+        plan_slug: plan.slug,
+        billing_cycle: cycle,
+        start_trial: true,
+      } as any);
+      // Backend já promoveu o user a vendedor — atualiza o JWT/cache pra refletir
+      hasCompletedRef.current = true;
+      queryClient.removeQueries({ queryKey: ["validate-token"] });
+      queryClient.invalidateQueries({ queryKey: ["my-subscription"] });
+      await refreshToken().catch(() => {
+        console.warn("Token refresh failed after trial activation");
+      });
+      clearPersistedCycle();
+      setStep("completed");
+    } catch (err: any) {
+      const msg = err?.response?.data?.message;
+      toast.error(Array.isArray(msg) ? msg[0] : msg || "Erro ao iniciar trial");
+      setStep("plan");
+    }
+  };
+
+  const handleApplyCoupon = async () => {
+    if (!selectedPlan || !couponInput.trim()) return;
+    try {
+      const result = await validateCoupon.mutateAsync({
+        code: couponInput.trim().toUpperCase(),
+        plan_slug: selectedPlan.slug,
+        billing_cycle: selectedCycle,
+      });
+      if (!result.valid) {
+        toast.error(result.message || "Cupom inválido");
+        setAppliedCoupon(null);
+        return;
+      }
+      setAppliedCoupon(result);
+      toast.success(`Cupom aplicado! Desconto de R$ ${(result.discount_amount ?? 0).toFixed(2)}`);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Erro ao validar cupom");
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponInput("");
   };
 
   const handleBackToPlan = () => {
@@ -277,7 +388,8 @@ export function useAssinaturaPage() {
   };
 
   const handleCreateSubscription = async () => {
-    if (!selectedMethod) return;
+    const isFree = appliedCoupon?.valid && (appliedCoupon.final_price ?? 0) <= 0;
+    if (!isFree && !selectedMethod) return;
 
     if (selectedMethod === "PIX" || selectedMethod === "BOLETO") {
       if (!documentType) {
@@ -302,15 +414,17 @@ export function useAssinaturaPage() {
     setStep("processing");
     try {
       const payload: {
-        billing_type: BillingType;
+        billing_type?: BillingType;
         cpf?: string;
         cnpj?: string;
         plan_slug?: string;
         billing_cycle?: BillingCycle;
+        coupon_code?: string;
       } = {
-        billing_type: selectedMethod,
         billing_cycle: selectedCycle,
+        ...(selectedMethod && { billing_type: selectedMethod }),
         ...(selectedPlan && { plan_slug: selectedPlan.slug }),
+        ...(appliedCoupon?.coupon && { coupon_code: appliedCoupon.coupon.code }),
       };
 
       if (selectedMethod === "PIX" || selectedMethod === "BOLETO") {
@@ -327,11 +441,28 @@ export function useAssinaturaPage() {
         qr_code: response.qr_code,
       });
 
+      // Free path: backend não criou cobrança no Asaas (cupom 100% off)
+      if (!response.payment_url && !response.qr_code) {
+        // Backend promoveu o user a vendedor — atualiza JWT/cache
+        hasCompletedRef.current = true;
+        queryClient.removeQueries({ queryKey: ["validate-token"] });
+        queryClient.invalidateQueries({ queryKey: ["my-subscription"] });
+        await refreshToken().catch(() => {
+          console.warn("Token refresh failed after free checkout");
+        });
+        clearPersistedCycle();
+        setStep("completed");
+        return;
+      }
+
       if (selectedMethod === "PIX" && response.qr_code) {
         setStep("payment");
-      } else {
+      } else if (response.payment_url) {
         window.open(response.payment_url, "_blank");
         setStep("success");
+      } else {
+        // fallback de segurança
+        setStep("completed");
       }
     } catch {
       setStep("select");
@@ -351,18 +482,32 @@ export function useAssinaturaPage() {
   const handleDocumentTypeReset = () => setDocumentType(null);
   const handleGoToDashboard = () => router.push("/vendedor/criar-loja");
 
-  const needsDocument = selectedMethod === "PIX" || selectedMethod === "BOLETO";
+  const isFreeCheckout = !!appliedCoupon?.valid && (appliedCoupon?.final_price ?? 0) <= 0;
+  const needsDocument = !isFreeCheckout && (selectedMethod === "PIX" || selectedMethod === "BOLETO");
   const hasDocument =
     (documentType === "cpf" && cpf.replace(/\D/g, "")) ||
     (documentType === "cnpj" && cnpj.replace(/\D/g, ""));
   const canContinue =
-    selectedMethod &&
-    (!needsDocument || (documentType && hasDocument)) &&
-    !createSubscription.isPending;
+    !createSubscription.isPending &&
+    (isFreeCheckout || (selectedMethod && (!needsDocument || (documentType && hasDocument))));
 
   const isPaymentConfirmed =
     subscriptionStatus === "active" ||
     subscriptionPayments?.some((payment: any) => payment.status === "paid");
+
+  // Tipo do completed: 'trial', 'coupon' (free) ou 'paid'
+  const completedReason: "paid" | "trial" | "coupon" =
+    mySubscription?.free_access_reason === "trial"
+      ? "trial"
+      : mySubscription?.free_access_reason === "coupon"
+        ? "coupon"
+        : "paid";
+
+  const completedTrialDays =
+    completedReason === "trial" ? selectedPlan?.trial_days ?? null : null;
+  const completedCouponCode =
+    completedReason === "coupon" ? mySubscription?.applied_coupon_code ?? null : null;
+  const completedFreeAccessUntil = mySubscription?.free_access_until ?? null;
 
   return {
     // State
@@ -376,10 +521,22 @@ export function useAssinaturaPage() {
     selectedPlan,
     selectedCycle,
     plan: selectedPlan,
+
+    // Cupom
+    couponInput,
+    setCouponInput,
+    appliedCoupon,
+    isValidatingCoupon: validateCoupon.isPending,
+    handleApplyCoupon,
+    handleRemoveCoupon,
     mySubscription,
     subscriptionStatus,
     subscriptionPayments,
     isPaymentConfirmed,
+    completedReason,
+    completedTrialDays,
+    completedCouponCode,
+    completedFreeAccessUntil,
     registerMode,
     isSubmittingAuth,
 
@@ -395,6 +552,7 @@ export function useAssinaturaPage() {
 
     // Plan handlers
     handleSelectPlan,
+    handleStartTrial,
     handleBackToPlan,
 
     // Subscription handlers
@@ -416,5 +574,6 @@ export function useAssinaturaPage() {
     // Computed
     canContinue,
     needsDocument,
+    isFreeCheckout,
   };
 }

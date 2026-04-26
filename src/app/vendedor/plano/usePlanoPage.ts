@@ -36,10 +36,13 @@ export function usePlanoPage() {
   const plan = subscription?.plan ?? null
   const billingCycle = subscription?.billing_cycle ?? 'monthly'
   const features: string[] = plan ? derivePlanFeaturesList(plan) : []
+  // Preço efetivo (com desconto / free) — vem calculado do backend; cai pro preço cheio se ausente
   const planPriceRaw = plan ? (billingCycle === 'yearly' ? plan.price_yearly : plan.price_monthly) : null
-  const planPrice = planPriceRaw != null
+  const planFullPrice = planPriceRaw != null
     ? (typeof planPriceRaw === 'string' ? parseFloat(planPriceRaw) : planPriceRaw)
     : 0
+  const planPrice = subscription?.current_price ?? planFullPrice
+  const isFreeAccess = !!subscription?.free_access_until && new Date(subscription.free_access_until) > new Date()
 
   const handleCancel = () => {
     cancelSubscription(undefined, {
@@ -59,6 +62,8 @@ export function usePlanoPage() {
     billingCycle,
     features,
     planPrice,
+    planFullPrice,
+    isFreeAccess,
     paymentsData,
 
     // Loading / error

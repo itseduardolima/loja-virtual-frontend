@@ -55,7 +55,7 @@ const emptyForm: CreateStoreData = {
 export function useCreateStorePage() {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
-  const { createStore, isCreating } = useCreateStore()
+  const { createStore, isCreating, isSuccess: justCreated } = useCreateStore()
   const { data: store, isLoading: storeLoading } = useStore()
   const { data: nichesData, isLoading: nichesLoading } = useAllNiches()
   const { data: countriesData, isLoading: countriesLoading } = useCountries()
@@ -116,14 +116,17 @@ export function useCreateStorePage() {
     isStepValid: false,
   })
 
-  if (loading) return earlyReturn(true, false)
+  // Enquanto a criação acabou de acontecer, mantém loading state.
+  // Evita flash de "Você já possui uma loja" entre a invalidação do cache e o router.push.
+  if (loading || (justCreated && isCreating === false)) return earlyReturn(true, false)
 
   if (user?.profile !== 'Vendedor') {
     router.push('/login')
     return earlyReturn(true, false)
   }
 
-  if (store) return earlyReturn(false, true, store)
+  // Se já tem loja MAS não foi criada agora (vindo de outra sessão), mostra a tela "já tem loja"
+  if (store && !justCreated) return earlyReturn(false, true, store)
 
   const setErrors = (step: number, errors: Record<string, string>) => {
     setStepErrors(prev => {

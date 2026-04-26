@@ -20,6 +20,7 @@ import {
   Receipt,
   ChevronLeft,
   ChevronRight,
+  Ticket,
 } from 'lucide-react'
 import { Payment } from '@/types/subscription'
 
@@ -73,6 +74,8 @@ export default function PlanoPage() {
     billingCycle,
     features,
     planPrice,
+    planFullPrice,
+    isFreeAccess,
     paymentsData,
     isLoading,
     error,
@@ -170,10 +173,46 @@ export default function PlanoPage() {
             <CardContent className="space-y-6">
               <div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-1">{plan?.name || 'Plano Vendedor'}</h3>
+                {(subscription.applied_coupon_code || isFreeAccess) && planFullPrice > planPrice && (
+                  <div className="text-sm text-gray-400 line-through mb-1">
+                    De {formatPrice(planFullPrice)}
+                  </div>
+                )}
                 <div className="flex items-baseline gap-2">
                   <span className="text-3xl font-bold text-primary">{formatPrice(planPrice)}</span>
                   <span className="text-gray-600">/ {formatBillingCycle(billingCycle)}</span>
                 </div>
+                {subscription.applied_coupon_code && (
+                  <div className="mt-3 inline-flex items-center gap-2 bg-green-50 text-green-800 text-xs font-medium px-2.5 py-1.5 rounded-full border border-green-200">
+                    <Ticket className="h-3 w-3" />
+                    Cupom <span className="font-mono font-bold">{subscription.applied_coupon_code}</span> ativo
+                    {subscription.discount_remaining_periods != null && subscription.discount_remaining_periods > 0
+                      ? ` por mais ${subscription.discount_remaining_periods} ${subscription.discount_remaining_periods === 1 ? 'ciclo' : 'ciclos'}`
+                      : subscription.discount_remaining_periods == null
+                        ? ' (vitalício)'
+                        : ''}
+                  </div>
+                )}
+                {subscription.free_access_until && subscription.free_access_reason === 'trial' && (
+                  <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Clock className="h-4 w-4 text-blue-600 shrink-0" />
+                      <p className="text-sm font-semibold text-blue-900">Trial gratuito ativo</p>
+                    </div>
+                    <p className="text-xs text-blue-800">
+                      Termina em{' '}
+                      <strong>
+                        {new Date(subscription.free_access_until).toLocaleDateString('pt-BR', {
+                          day: '2-digit',
+                          month: 'long',
+                          year: 'numeric',
+                          timeZone: 'UTC',
+                        })}
+                      </strong>
+                      . Adicione um método de pagamento para continuar usando após esse período.
+                    </p>
+                  </div>
+                )}
                 {plan?.description && <p className="text-gray-600 mt-2">{plan.description}</p>}
               </div>
 
@@ -243,7 +282,11 @@ export default function PlanoPage() {
                 )}
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Método de Pagamento</p>
-                  <p className="text-base font-semibold text-gray-900 capitalize">{subscription.payment_provider || 'N/A'}</p>
+                  <p className="text-base font-semibold text-gray-900 capitalize">
+                    {subscription.payment_provider === 'free'
+                      ? 'Sem cobrança'
+                      : subscription.payment_provider || 'N/A'}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -288,7 +331,7 @@ export default function PlanoPage() {
                     </div>
                   )}
 
-                  {!hasRefundRequested && refundDaysRemaining > 0 && (
+                  {!hasRefundRequested && refundDaysRemaining > 0 && !isFreeAccess && (
                     <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
                         <Clock className="w-4 h-4 text-blue-600 shrink-0" />

@@ -28,7 +28,17 @@ export default function AssinaturaPage() {
     plans,
     plan,
     selectedCycle,
+    couponInput,
+    setCouponInput,
+    appliedCoupon,
+    isValidatingCoupon,
+    handleApplyCoupon,
+    handleRemoveCoupon,
     isPaymentConfirmed,
+    completedReason,
+    completedTrialDays,
+    completedCouponCode,
+    completedFreeAccessUntil,
     registerMode,
     isSubmittingAuth,
     isLoadingAuth,
@@ -36,6 +46,7 @@ export default function AssinaturaPage() {
     isCreatingSubscription,
     planError,
     handleSelectPlan,
+    handleStartTrial,
     handleBackToPlan,
     handleSelectMethod,
     handleSelectDocumentType,
@@ -51,6 +62,7 @@ export default function AssinaturaPage() {
     toggleRegisterMode,
     canContinue,
     needsDocument,
+    isFreeCheckout,
   } = useAssinaturaPage();
 
   if (isLoadingAuth) return <LoadingPage />;
@@ -112,7 +124,8 @@ export default function AssinaturaPage() {
   const planFeatures: string[] = plan ? derivePlanFeaturesList(plan) : [];
 
   // These steps have their own title/header built in
-  const showHeader = step !== "select" && step !== "plan";
+  // Completed também não usa o header padrão — o card já comunica o estado
+  const showHeader = step !== "select" && step !== "plan" && step !== "completed";
 
   const pageTitle =
     step === "register" ? "Comece a vender online" : "Assinar Plano";
@@ -158,6 +171,7 @@ export default function AssinaturaPage() {
             <PlanSelectionStep
               plans={plans}
               onSelectPlan={handleSelectPlan}
+              onStartTrial={handleStartTrial}
             />
           )}
 
@@ -168,6 +182,12 @@ export default function AssinaturaPage() {
               planName={plan?.name}
               planMaxProducts={plan?.max_products}
               planBillingCycle={selectedCycle}
+              couponInput={couponInput}
+              appliedCoupon={appliedCoupon}
+              isValidatingCoupon={isValidatingCoupon}
+              onCouponInputChange={setCouponInput}
+              onApplyCoupon={handleApplyCoupon}
+              onRemoveCoupon={handleRemoveCoupon}
               selectedMethod={selectedMethod}
               documentType={documentType}
               cpf={cpf}
@@ -175,6 +195,7 @@ export default function AssinaturaPage() {
               needsDocument={Boolean(needsDocument)}
               canContinue={Boolean(canContinue)}
               isCreatingSubscription={isCreatingSubscription}
+              isFreeCheckout={isFreeCheckout}
               onSelectMethod={handleSelectMethod}
               onSelectDocumentType={handleSelectDocumentType}
               onCpfChange={handleCpfChange}
@@ -199,7 +220,13 @@ export default function AssinaturaPage() {
           )}
 
           {step === "completed" && (
-            <CompletedStep onGoToDashboard={handleGoToDashboard} />
+            <CompletedStep
+              onGoToDashboard={handleGoToDashboard}
+              reason={completedReason}
+              trialDays={completedTrialDays}
+              couponCode={completedCouponCode}
+              freeAccessUntil={completedFreeAccessUntil}
+            />
           )}
         </AnimatePresence>
       </div>
