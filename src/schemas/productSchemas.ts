@@ -64,6 +64,14 @@ export const createProductSchema = yup.object({
   variant_stocks: yup.array().of(
     yup.object({ color: yup.string().required(), size: yup.string().required(), stock: yup.number().min(0).required() })
   ).optional(),
+  // Dados fiscais (opcionais — necessários para emissão de NF-e via Bling)
+  ncm: yup.string().optional().nullable()
+    .matches(/^(\d{8})?$/, 'NCM deve ter 8 dígitos numéricos'),
+  cest: yup.string().optional().nullable()
+    .matches(/^(\d{7})?$/, 'CEST deve ter 7 dígitos numéricos'),
+  origem: yup.number().transform(normalizeNumber).optional().nullable().min(0).max(8),
+  unidade: yup.string().optional().nullable().max(6),
+  gtin: yup.string().optional().nullable().max(14),
 })
 
 export const updateProductSchema = yup.object({
@@ -110,6 +118,13 @@ export const updateProductSchema = yup.object({
   variant_stocks: yup.array().of(
     yup.object({ color: yup.string().required(), size: yup.string().required(), stock: yup.number().min(0).required() })
   ).optional(),
+  ncm: yup.string().optional().nullable()
+    .matches(/^(\d{8})?$/, 'NCM deve ter 8 dígitos numéricos'),
+  cest: yup.string().optional().nullable()
+    .matches(/^(\d{7})?$/, 'CEST deve ter 7 dígitos numéricos'),
+  origem: yup.number().transform(normalizeNumber).optional().nullable().min(0).max(8),
+  unidade: yup.string().optional().nullable().max(6),
+  gtin: yup.string().optional().nullable().max(14),
 })
 
 export type CreateProductFormData = yup.InferType<typeof createProductSchema>
