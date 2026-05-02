@@ -28,6 +28,7 @@ import { buildImageUrl } from '@/lib/imageUtils'
 import { OrderTrackingTimeline } from '@/components/Order/OrderTrackingTimeline'
 import { WhatsappIcon } from '@/assets/icons/WhatsappIcon'
 import { OrderPrintModal } from '@/components/Order/OrderPrintModal'
+import { OrderNfeCard } from '@/components/Order/OrderNfeCard'
 
 function renderDeliveryAddress(order: Order) {
   let deliveryAddr: Record<string, string> | null = null
@@ -221,6 +222,9 @@ export function OrderDetailPanel({ orderId, onStatusUpdate }: OrderDetailPanelPr
           </div>
         </div>
       )}
+
+      {/* NF-e */}
+      <OrderNfeCard order={order} />
 
       {/* Contato rápido */}
       <div className="flex flex-wrap gap-2">
