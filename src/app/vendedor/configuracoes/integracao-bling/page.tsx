@@ -27,6 +27,7 @@ import {
 } from '@/hooks/useBlingStatus'
 import { usePlanFeatures } from '@/hooks/usePlanFeatures'
 import { formatDate } from '@/lib/utils'
+import { BlingImportCard } from '@/components/Bling/BlingImportCard'
 
 function SyncStatusBadge({ status }: { status: BlingSync['status'] }) {
   if (status === 'synced') {
@@ -218,6 +219,9 @@ export default function IntegracaoBlingPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Bulk import */}
+        {blingStatus?.connected && <BlingImportCard />}
 
         {/* Recent syncs */}
         {blingStatus?.connected && blingStatus.recentSyncs.length > 0 && (
