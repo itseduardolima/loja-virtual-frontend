@@ -76,6 +76,11 @@ export interface Subscription {
   free_access_reason: 'trial' | 'coupon' | null
   /** Preço efetivo atual (com desconto aplicado, ou 0 se em modo free) */
   current_price: number
+  scheduled_plan_id: number | null
+  scheduled_billing_cycle: BillingCycle | null
+  scheduled_change_at: string | null
+  scheduled_plan?: SubscriptionPlan | null
+  pending_upgrade_payment_id: string | null
   created_at: string
   updated_at: string
   plan?: SubscriptionPlan
@@ -116,4 +121,30 @@ export interface CreateSubscriptionResponse {
 }
 
 export type BillingType = 'CREDIT_CARD' | 'PIX' | 'BOLETO'
+
+export interface ChangePlanRequest {
+  plan_slug: string
+  billing_cycle?: BillingCycle
+  billing_type?: BillingType
+  cpf?: string
+  cnpj?: string
+}
+
+export type ChangePlanResponse =
+  | (CreateSubscriptionResponse & {
+      proration_amount?: number
+      proration?: {
+        amount: number
+        days_remaining: number
+        old_plan: string
+        new_plan: string
+      }
+      scheduled?: false
+    })
+  | {
+      subscription: Subscription
+      scheduled: true
+      effective_at: string
+      message: string
+    }
 
