@@ -3,16 +3,21 @@
 import { useState } from 'react'
 import { useMySubscription } from '@/hooks/useMySubscription'
 import { useCancelSubscription } from '@/hooks/useCancelSubscription'
+import { useCancelScheduledChange } from '@/hooks/useCancelScheduledChange'
 import { useSubscriptionPayments } from '@/hooks/useSubscriptionPayments'
 import { derivePlanFeaturesList } from '@/lib/planUtils'
 
 export function usePlanoPage() {
   const { data: subscription, isLoading, error } = useMySubscription()
   const { mutate: cancelSubscription, isPending: isCanceling } = useCancelSubscription()
+  const { mutate: cancelScheduledChange, isPending: isCancelingScheduled } =
+    useCancelScheduledChange()
 
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [showRenewModal, setShowRenewModal] = useState(false)
   const [showRefundModal, setShowRefundModal] = useState(false)
+  const [showChangePlanModal, setShowChangePlanModal] = useState(false)
+  const [showRenewWithPlanModal, setShowRenewWithPlanModal] = useState(false)
   const [showPaymentsModal, setShowPaymentsModal] = useState(false)
   const [paymentsPage, setPaymentsPage] = useState(1)
 
@@ -50,6 +55,10 @@ export function usePlanoPage() {
     })
   }
 
+  const handleCancelScheduledChange = () => {
+    cancelScheduledChange()
+  }
+
   const openPaymentsModal = () => {
     setPaymentsPage(1)
     setShowPaymentsModal(true)
@@ -70,6 +79,7 @@ export function usePlanoPage() {
     isLoading,
     error,
     isCanceling,
+    isCancelingScheduled,
     isLoadingPayments,
 
     // Computed
@@ -84,6 +94,10 @@ export function usePlanoPage() {
     setShowRenewModal,
     showRefundModal,
     setShowRefundModal,
+    showChangePlanModal,
+    setShowChangePlanModal,
+    showRenewWithPlanModal,
+    setShowRenewWithPlanModal,
     showPaymentsModal,
     setShowPaymentsModal,
     paymentsPage,
@@ -91,6 +105,7 @@ export function usePlanoPage() {
 
     // Handlers
     handleCancel,
+    handleCancelScheduledChange,
     openPaymentsModal,
   }
 }
