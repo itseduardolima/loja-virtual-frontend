@@ -68,6 +68,10 @@ export { ProductSteps } from './Form/ProductSteps'
 // Dialog Components
 export { ConfirmDialog } from './Dialog/ConfirmDialog'
 
+// Vendor Home Components
+export { KpiCard, Checklist, StoreCard, HomeGreeting } from './Vendor/Home'
+export type { KpiTone, CheckItem } from './Vendor/Home'
+
 // Toast Components
 export { ToastContainer } from './Toast/ToastContainer'
 export { DashboardStatsCard } from './Dashboard/DashboardStatsCard'
