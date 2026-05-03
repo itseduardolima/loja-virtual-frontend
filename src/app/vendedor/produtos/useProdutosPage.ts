@@ -1,18 +1,20 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useProducts, useUpdateProductStatus, useDuplicateProduct } from '@/hooks/useProducts'
 import { useDebounce } from '@/hooks/useDebounce'
 import { formatPrice } from '@/lib/utils'
 import { useToastContext } from '@/contexts/ToastContext'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 export function useProdutosPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const initialSearch = searchParams?.get('search') ?? ''
   const updateStatusMutation = useUpdateProductStatus()
   const duplicateMutation = useDuplicateProduct()
   const { success: showSuccess, error: showError } = useToastContext()
 
   const [filters, setFilters] = useState({
-    search: '',
+    search: initialSearch,
     sort: 'newest',
     category_id: undefined as number | undefined,
     min_price: undefined as number | undefined,
@@ -24,6 +26,11 @@ export function useProdutosPage() {
     page: 1,
     limit: 10
   })
+
+  useEffect(() => {
+    const urlSearch = searchParams?.get('search') ?? ''
+    setFilters((prev) => (prev.search === urlSearch ? prev : { ...prev, search: urlSearch, page: 1 }))
+  }, [searchParams])
 
   const debouncedSearch = useDebounce(filters.search, 400)
   const debouncedMinPrice = useDebounce(filters.min_price, 400)
