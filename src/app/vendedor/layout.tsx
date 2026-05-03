@@ -206,9 +206,9 @@ export default function VendedorLayout({
           onDismiss={dismissOrderNotification}
           onClearAll={clearAllOrderNotifications}
         />
-        <div className="flex-1 overflow-y-auto bg-nxbg">
+        <main aria-label="Conteúdo principal" className="flex-1 overflow-y-auto bg-nxbg">
           <div className="mx-auto max-w-[1640px] px-6 py-6">{children}</div>
-        </div>
+        </main>
       </div>
     </div>
   )
