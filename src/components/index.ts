@@ -74,11 +74,21 @@ export type { KpiTone, CheckItem } from './Vendor/Home'
 
 // Toast Components
 export { ToastContainer } from './Toast/ToastContainer'
+
+// Legacy Dashboard Components (still used outside /vendedor/dashboard)
 export { DashboardStatsCard } from './Dashboard/DashboardStatsCard'
-export { DashboardRevenueChart } from './Dashboard/DashboardRevenueChart'
-export { DashboardRecentOrders } from './Dashboard/DashboardRecentOrders'
-export { DashboardTopProducts } from './Dashboard/DashboardTopProducts'
-export { DashboardCartConversion } from './Dashboard/DashboardCartConversion'
+
+// Vendor Dashboard Components
+export {
+  DashboardHeader,
+  DashboardPeriodChips,
+  DashboardKpiGrid,
+  DashboardRevenueChart,
+  DashboardTopProducts,
+  DashboardRecentOrders,
+} from './Vendor/Dashboard'
+export type { PeriodKey, DashboardRangeValue } from './Vendor/Dashboard'
+
 export {
   ChartContainer,
   ChartTooltip,
