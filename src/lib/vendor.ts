@@ -94,17 +94,127 @@ export function getBreadcrumb(path: string): { parent: string; current: string }
   return { parent: 'Vendedor', current: 'Início' }
 }
 
+const AVATAR_HUES = [
+  '#2A2D7C',
+  '#E8632A',
+  '#3F8A66',
+  '#7C5CFF',
+  '#C13A2E',
+  '#1A6F8E',
+  '#B17A1A',
+] as const
+
+export function avatarHueFor(name: string): string {
+  if (!name) return AVATAR_HUES[0]
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = (hash * 31 + name.charCodeAt(i)) >>> 0
+  }
+  return AVATAR_HUES[hash % AVATAR_HUES.length]
+}
+
+export type StatusTone = 'primary' | 'success' | 'warning' | 'danger' | 'neutral'
+
+const STATUS_TONE_BY_ID: Record<number, StatusTone> = {
+  1: 'warning',
+  2: 'primary',
+  3: 'primary',
+  4: 'success',
+  5: 'success',
+  6: 'danger',
+}
+
+export function getStatusTone(statusId: number): StatusTone {
+  return STATUS_TONE_BY_ID[statusId] ?? 'neutral'
+}
+
+export type KpiMetricKind = 'currency' | 'count' | 'percentPoints'
+
+export interface FormatKpiDeltaOptions {
+  kind: KpiMetricKind
+  noun?: string
+}
+
+export interface DeltaSource {
+  delta: number
+  dir: 'up' | 'down' | 'flat'
+}
+
+export interface KpiDeltaProps {
+  delta?: string
+  deltaDir: 'up' | 'down'
+}
+
+/**
+ * Constrói as props (delta + deltaDir) que o KpiCard espera, a partir de uma
+ * métrica de comparação. Quando dir = 'flat' o delta é omitido (não renderizado).
+ */
+export function kpiDeltaProps(
+  metric: DeltaSource | undefined | null,
+  kind: KpiMetricKind,
+  noun?: string,
+): KpiDeltaProps {
+  if (!metric || metric.dir === 'flat') {
+    return { delta: undefined, deltaDir: 'up' }
+  }
+  return {
+    delta: formatKpiDelta(metric.delta, { kind, noun }),
+    deltaDir: metric.dir === 'down' ? 'down' : 'up',
+  }
+}
+
+/**
+ * Formata um delta de KPI em texto humanizado (sem sinal — a direção up/down
+ * vem da prop separada e é representada pela seta + cor).
+ *
+ * - currency: "R$ 1.847,20"
+ * - count: "12 pedidos" (usa noun no plural quando aplicável)
+ * - percentPoints: "0,3 ponto"
+ */
+export function formatKpiDelta(value: number, options: FormatKpiDeltaOptions): string {
+  const abs = Math.abs(value)
+  switch (options.kind) {
+    case 'currency':
+      return formatBRL(abs)
+    case 'count': {
+      const noun = options.noun ?? 'item'
+      const plural = Math.round(abs) === 1 ? noun : `${noun}s`
+      return `${Math.round(abs)} ${plural}`
+    }
+    case 'percentPoints': {
+      const formatted = abs.toFixed(1).replace('.', ',')
+      const isOne = Number(formatted.replace(',', '.')) === 1
+      return `${formatted} ${isOne ? 'ponto' : 'pontos'}`
+    }
+  }
+}
+
+export function getPreviousRange(from: string, to: string): { from: string; to: string } {
+  const start = new Date(`${from}T00:00:00Z`)
+  const end = new Date(`${to}T00:00:00Z`)
+  const sizeDays = Math.max(0, Math.round((end.getTime() - start.getTime()) / 86_400_000))
+  const prevEnd = new Date(start.getTime() - 86_400_000)
+  const prevStart = new Date(prevEnd.getTime() - sizeDays * 86_400_000)
+  const fmt = (d: Date) => d.toISOString().slice(0, 10)
+  return { from: fmt(prevStart), to: fmt(prevEnd) }
+}
+
 export interface StoreChannel {
   label: string
   color: string
 }
 
-export function getStoreChannels(store: {
-  whatsapp?: string | null
-  instagram?: string | null
-  facebook?: string | null
-  email?: string | null
-} | null | undefined): StoreChannel[] {
+export function getStoreChannels(
+  store:
+    | {
+        whatsapp?: string | null
+        instagram?: string | null
+        facebook?: string | null
+        email?: string | null
+      }
+    | null
+    | undefined,
+): StoreChannel[] {
   if (!store) return []
   return [
     store.whatsapp ? { label: 'WhatsApp', color: '#22c55e' } : null,
