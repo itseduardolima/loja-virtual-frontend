@@ -55,6 +55,18 @@ const config: Config = {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
+        // Design system Nexo Vendedor
+        nxp: 'hsl(var(--nxp) / <alpha-value>)',
+        nxa: 'hsl(var(--nxa) / <alpha-value>)',
+        nxs: 'hsl(var(--nxs) / <alpha-value>)',
+        nxw: 'hsl(var(--nxw) / <alpha-value>)',
+        nxd: 'hsl(var(--nxd) / <alpha-value>)',
+        nxsurf: 'hsl(var(--nxsurf) / <alpha-value>)',
+        nxbg: 'hsl(var(--nxbg) / <alpha-value>)',
+        nxi1: 'hsl(var(--nxi1) / <alpha-value>)',
+        nxi2: 'hsl(var(--nxi2) / <alpha-value>)',
+        nxi3: 'hsl(var(--nxi3) / <alpha-value>)',
+        nxborder: 'hsl(var(--nxborder) / <alpha-value>)',
       },
       borderRadius: {
         lg: 'var(--radius)',
