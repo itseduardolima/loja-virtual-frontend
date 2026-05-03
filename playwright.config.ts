@@ -1,4 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
+import path from 'path'
+
+const STORAGE_STATE = path.join(__dirname, 'e2e/.auth/vendor.json')
 
 export default defineConfig({
   testDir: './e2e',
@@ -16,12 +19,18 @@ export default defineConfig({
 
   projects: [
     {
+      name: 'setup',
+      testMatch: /global\.setup\.ts/,
+    },
+    {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: { ...devices['Desktop Chrome'], storageState: STORAGE_STATE },
+      dependencies: ['setup'],
     },
     {
       name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
+      use: { ...devices['Pixel 5'], storageState: STORAGE_STATE },
+      dependencies: ['setup'],
     },
   ],
 

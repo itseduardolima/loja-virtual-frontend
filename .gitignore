@@ -105,6 +105,7 @@ dist
 # Playwright
 playwright-report/
 test-results/
+e2e/.auth/
 
 # Temporary folders
 tmp/
