@@ -192,10 +192,12 @@ export default function VendedorLayout({
     )
   }
 
+  const pendingOrdersCount = orderNotifications.filter((n) => !n.read).length
+
   return (
-    <div className="flex h-screen overflow-hidden">
-      <SidebarVendedor currentPath={pathname} />
-      <div className="flex-1 lg:ml-0 flex flex-col overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-nxbg">
+      <SidebarVendedor currentPath={pathname} pendingOrdersCount={pendingOrdersCount} />
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <UserHeader
           currentPath={pathname}
           notifications={orderNotifications}
@@ -204,10 +206,8 @@ export default function VendedorLayout({
           onDismiss={dismissOrderNotification}
           onClearAll={clearAllOrderNotifications}
         />
-        <div className="flex-1 overflow-y-auto bg-[#FAFAFB]">
-          <div className="px-4 py-8">
-            {children}
-          </div>
+        <div className="flex-1 overflow-y-auto bg-nxbg">
+          <div className="mx-auto max-w-[1640px] px-6 py-6">{children}</div>
         </div>
       </div>
     </div>
