@@ -10,6 +10,7 @@ interface KpiCardProps {
   value: string
   delta?: string
   deltaDir?: 'up' | 'down'
+  deltaLabel?: string
   icon: LucideIcon
   tone: KpiTone
 }
@@ -21,7 +22,15 @@ const ICON_BG: Record<KpiTone, string> = {
   success: 'bg-nxs/10 text-nxs',
 }
 
-export function KpiCard({ label, value, delta, deltaDir = 'up', icon: Icon, tone }: KpiCardProps) {
+export function KpiCard({
+  label,
+  value,
+  delta,
+  deltaDir = 'up',
+  deltaLabel = 'vs ontem',
+  icon: Icon,
+  tone,
+}: KpiCardProps) {
   return (
     <div
       className={cn(
@@ -59,7 +68,7 @@ export function KpiCard({ label, value, delta, deltaDir = 'up', icon: Icon, tone
             <ArrowDownRight size={12} strokeWidth={2.5} />
           )}
           {delta}
-          <span className="font-normal text-nxi3">vs ontem</span>
+          <span className="font-normal text-nxi3">{deltaLabel}</span>
         </div>
       )}
     </div>
