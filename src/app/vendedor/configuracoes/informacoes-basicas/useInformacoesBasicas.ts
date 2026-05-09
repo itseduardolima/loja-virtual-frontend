@@ -2,24 +2,20 @@ import { useState, useEffect, useMemo } from 'react'
 import * as yup from 'yup'
 import { useStore } from '@/hooks/useStore'
 import { useUpdateStore } from '@/hooks/useUpdateStore'
-import { useAllNiches } from '@/hooks/useNiches'
 import { updateInformacoesBasicasSchema } from '@/schemas'
 
 export function useInformacoesBasicas() {
   const { data: store, isLoading } = useStore()
   const { updateStore, isUpdating } = useUpdateStore()
-  const { data: nichesData, isLoading: nichesLoading } = useAllNiches()
-  
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    niche_ids: [] as string[]
   })
 
   const [errors, setErrors] = useState<{
     name?: string
     description?: string
-    niche_ids?: string
   }>({})
 
   const [logoFile, setLogoFile] = useState<File | null>(null)
@@ -29,17 +25,11 @@ export function useInformacoesBasicas() {
 
   useEffect(() => {
     if (store) {
-      // Extrair nichos de store_niches
-      const storeNiches = (store as any)?.store_niches || []
-      const nicheIds = storeNiches.map((sn: any) => sn.niche_id.toString())
-
       setFormData({
         name: (store as any)?.name || '',
         description: (store as any)?.description || '',
-        niche_ids: nicheIds
       })
-      
-      // Carregar previews das imagens existentes
+
       if ((store as any)?.logo) {
         setLogoPreview((store as any).logo)
       }
@@ -52,20 +42,19 @@ export function useInformacoesBasicas() {
   const handleInputChange = async (field: string, value: string) => {
     setFormData(prev => {
       const updatedData = { ...prev, [field]: value }
-      
+
       updateInformacoesBasicasSchema.validateAt(field, updatedData, { abortEarly: false })
         .then(() => {
           setErrors(prevErrors => ({ ...prevErrors, [field]: undefined }))
         })
         .catch((error) => {
           if (error instanceof yup.ValidationError) {
-            // Pegar a mensagem específica do campo, não a genérica
             const fieldError = error.inner.find(err => err.path === field)
             const errorMessage = fieldError?.message || error.message
             setErrors(prevErrors => ({ ...prevErrors, [field]: errorMessage }))
           }
         })
-      
+
       return updatedData
     })
   }
@@ -86,34 +75,6 @@ export function useInformacoesBasicas() {
     }
   }
 
-  const handleNicheToggle = (nicheId: string) => {
-    setFormData(prev => {
-      const currentIds = prev.niche_ids || []
-      const isSelected = currentIds.includes(nicheId)
-      const updatedIds = isSelected
-        ? currentIds.filter(id => id !== nicheId)
-        : [...currentIds, nicheId]
-      
-      const updatedData = { ...prev, niche_ids: updatedIds }
-      
-      updateInformacoesBasicasSchema.validateAt('niche_ids', updatedData, { abortEarly: false })
-        .then(() => {
-          setErrors(prevErrors => ({ ...prevErrors, niche_ids: undefined }))
-        })
-        .catch((error) => {
-          if (error instanceof yup.ValidationError) {
-            // Pegar a mensagem específica do campo, não a genérica
-            const fieldError = error.inner.find(err => err.path === 'niche_ids')
-            const errorMessage = fieldError?.message || error.message
-            setErrors(prevErrors => ({ ...prevErrors, niche_ids: errorMessage }))
-          }
-        })
-      
-      return updatedData
-    })
-  }
-
-  // Verificar se o formulário é válido
   const isFormValid = useMemo(() => {
     const hasErrors = Object.values(errors).some(error => error !== undefined && error !== '')
     if (hasErrors) return false
@@ -128,27 +89,22 @@ export function useInformacoesBasicas() {
 
   const handleSave = async () => {
     if (!store?.id) return
-    
+
     try {
       await updateInformacoesBasicasSchema.validate(formData, { abortEarly: false })
       setErrors({})
-      
+
       const updateData: any = {
         name: formData.name,
         description: formData.description || undefined,
-        niche_ids: formData.niche_ids
       }
 
-      if (logoFile) {
-        updateData.logo = logoFile
-      }
-      if (bannerFile) {
-        updateData.banner = bannerFile
-      }
+      if (logoFile) updateData.logo = logoFile
+      if (bannerFile) updateData.banner = bannerFile
 
       await updateStore({
         storeId: store.id,
-        data: updateData
+        data: updateData,
       })
     } catch (error) {
       if (error instanceof yup.ValidationError) {
@@ -176,12 +132,8 @@ export function useInformacoesBasicas() {
     bannerFile,
     logoPreview,
     bannerPreview,
-    nichesData,
-    nichesLoading,
     handleInputChange,
     handleFileChange,
-    handleNicheToggle,
-    handleSave
+    handleSave,
   }
 }
-

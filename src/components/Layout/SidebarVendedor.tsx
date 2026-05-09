@@ -112,7 +112,7 @@ export function SidebarVendedor({
         {
           id: 'config',
           label: 'Configurações',
-          href: '/vendedor/configuracoes/informacoes-basicas',
+          href: '/vendedor/configuracoes',
           icon: Settings,
         },
         { id: 'plano', label: 'Plano', href: '/vendedor/plano', icon: Crown },
