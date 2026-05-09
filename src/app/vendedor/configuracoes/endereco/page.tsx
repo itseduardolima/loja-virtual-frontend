@@ -2,7 +2,7 @@
 
 import { useEndereco } from './useEndereco'
 import { Input, LoadingSpinner } from '@/components'
-import { Loader2 } from 'lucide-react'
+import { Loader2, MapPin } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -197,6 +197,41 @@ export default function EnderecoPage() {
           )}
         </Field>
       </FieldGrid>
+
+      {/* Address preview — formatado como em NF-e */}
+      {(formData.address || formData.city) && (
+        <div className="mt-5 overflow-hidden rounded-xl border border-nxborder bg-gradient-to-br from-nxbg/50 to-white">
+          <div className="flex items-start gap-3 px-4 py-3.5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-nxp/10 text-nxp ring-1 ring-inset ring-nxp/15">
+              <MapPin className="h-4 w-4" strokeWidth={2} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-[10.5px] font-bold uppercase tracking-[0.06em] text-nxi3">
+                Endereço completo
+              </div>
+              <div className="mt-1 space-y-0.5 break-words text-[13px] leading-relaxed text-nxi1">
+                {formData.address && (
+                  <p className="font-semibold">
+                    {formData.address}
+                    {formData.number ? `, ${formData.number}` : ''}
+                    {formData.complement ? ` · ${formData.complement}` : ''}
+                  </p>
+                )}
+                {(formData.neighborhood || formData.city || formData.state) && (
+                  <p className="text-nxi2">
+                    {[formData.neighborhood, formData.city, formData.state].filter(Boolean).join(' · ')}
+                  </p>
+                )}
+                {formData.zipcode && (
+                  <p className="font-mono text-[11.5px] text-nxi3">
+                    CEP {formData.zipcode}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <FormActions>
         <NxButton
