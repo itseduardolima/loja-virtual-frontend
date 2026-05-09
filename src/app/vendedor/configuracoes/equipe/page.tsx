@@ -298,7 +298,8 @@ export default function EquipePage() {
   const counts = useMemo(() => {
     const active = members.filter((m) => m.status === 'active').length
     const invited = members.filter((m) => m.status === 'invited').length
-    return { active, invited }
+    const rolesUsed = new Set(members.map((m) => m.role)).size
+    return { active, invited, rolesUsed }
   }, [members])
 
   const handleInvite = (emails: string[], role: Role) => {
@@ -341,6 +342,52 @@ export default function EquipePage() {
       <Notice variant="info">
         Esta seção é uma <strong>prévia visual</strong> — convites e auditoria ainda não persistem.
       </Notice>
+
+      {/* KPIs no topo */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="rounded-2xl border border-nxborder bg-white p-4 shadow-[0_1px_2px_hsl(0_0%_0%/0.04)]">
+          <div className="flex items-center justify-between">
+            <span className="text-[10.5px] font-bold uppercase tracking-[0.06em] text-nxi3">
+              Pessoas ativas
+            </span>
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-nxs/10 text-nxs">
+              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 7L9 18l-5-5"/></svg>
+            </span>
+          </div>
+          <div className="mt-2 text-[22px] font-extrabold leading-[1.1] tracking-[-0.03em] text-nxi1 tabular-nums">
+            {counts.active}
+          </div>
+        </div>
+        <div className="rounded-2xl border border-nxborder bg-white p-4 shadow-[0_1px_2px_hsl(0_0%_0%/0.04)]">
+          <div className="flex items-center justify-between">
+            <span className="text-[10.5px] font-bold uppercase tracking-[0.06em] text-nxi3">
+              Convites pendentes
+            </span>
+            <span className={cn(
+              'flex h-7 w-7 items-center justify-center rounded-lg',
+              counts.invited > 0 ? 'bg-nxw/10 text-nxw' : 'bg-nxbg text-nxi3',
+            )}>
+              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            </span>
+          </div>
+          <div className="mt-2 text-[22px] font-extrabold leading-[1.1] tracking-[-0.03em] text-nxi1 tabular-nums">
+            {counts.invited}
+          </div>
+        </div>
+        <div className="rounded-2xl border border-nxborder bg-white p-4 shadow-[0_1px_2px_hsl(0_0%_0%/0.04)]">
+          <div className="flex items-center justify-between">
+            <span className="text-[10.5px] font-bold uppercase tracking-[0.06em] text-nxi3">
+              Papéis em uso
+            </span>
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-nxp/10 text-nxp">
+              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s-8-4.5-8-11.8A5.2 5.2 0 0 1 12 5a5.2 5.2 0 0 1 8 5.2C20 17.5 12 22 12 22Z"/></svg>
+            </span>
+          </div>
+          <div className="mt-2 text-[22px] font-extrabold leading-[1.1] tracking-[-0.03em] text-nxi1 tabular-nums">
+            {counts.rolesUsed}<span className="text-[14px] font-bold text-nxi3">/{ROLES.length}</span>
+          </div>
+        </div>
+      </div>
 
       {/* Membros */}
       <SectionCard>

@@ -4,19 +4,44 @@ import { useState, useEffect } from 'react'
 import { useDocumentos } from './useDocumentos'
 import { Input, LoadingSpinner } from '@/components'
 import { cn } from '@/lib/utils'
+import { Building2, User, ShieldCheck, CheckCircle2 } from 'lucide-react'
 import {
   SectionCard,
   SectionHeader,
   Field,
   FieldLabel,
   FieldHelp,
-  FieldGrid,
   FormActions,
   NxButton,
   nxInputClass,
 } from '../_shared'
 
 type DocType = 'cnpj' | 'cpf'
+
+interface DocTypeMeta {
+  id: DocType
+  Icon: typeof Building2
+  title: string
+  subtitle: string
+  bullets: string[]
+}
+
+const DOC_TYPES: DocTypeMeta[] = [
+  {
+    id: 'cnpj',
+    Icon: Building2,
+    title: 'Pessoa Jurídica',
+    subtitle: 'CNPJ · Empresa formal',
+    bullets: ['Emite NF-e como empresa', 'Mais credibilidade', 'Permite vender em marketplaces'],
+  },
+  {
+    id: 'cpf',
+    Icon: User,
+    title: 'Pessoa Física',
+    subtitle: 'CPF · Autônomo / MEI sem CNPJ',
+    bullets: ['Cadastro simplificado', 'Sem necessidade de empresa', 'Limite de faturamento anual'],
+  },
+]
 
 export default function DocumentosPage() {
   const {
@@ -47,48 +72,101 @@ export default function DocumentosPage() {
     )
   }
 
+  // Document considered "filled" — used to show validation chip
+  const isFilled = docType === 'cnpj'
+    ? !!formData.cnpj && !errors.cnpj
+    : !!formData.cpf && !errors.cpf
+
   return (
     <SectionCard>
       <SectionHeader
         title="Documentos"
-        description="Usados para emitir nota fiscal e comprovar a titularidade da loja. Valide com calma — alterar depois requer suporte."
+        description="Identifique sua loja para emissão de notas fiscais e comprovação de titularidade."
       />
 
-      <FieldGrid columns={1}>
-        {/* Tipo de cadastro (segmented control no padrão Nexo) */}
-        <Field full>
-          <FieldLabel>Tipo de cadastro</FieldLabel>
-          <div
-            role="radiogroup"
-            aria-label="Tipo de cadastro"
-            className="inline-flex w-fit items-center rounded-xl border border-nxborder bg-white p-1 shadow-[0_1px_2px_hsl(0_0%_0%/0.04)]"
-          >
-            {(['cnpj', 'cpf'] as DocType[]).map((t) => {
-              const active = docType === t
-              return (
-                <button
-                  key={t}
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  onClick={() => setDocType(t)}
+      {/* Cards de seleção de tipo */}
+      <div>
+        <FieldLabel className="mb-2.5">Tipo de cadastro</FieldLabel>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          {DOC_TYPES.map((opt) => {
+            const active = docType === opt.id
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => setDocType(opt.id)}
+                className={cn(
+                  'group relative flex flex-col gap-3 overflow-hidden rounded-xl border p-4 text-left transition-all',
+                  active
+                    ? 'border-nxp/40 bg-nxp/[0.04] shadow-[0_2px_8px_hsl(237_49%_33%/0.08)]'
+                    : 'border-nxborder bg-white hover:border-nxp/20 hover:bg-nxbg/30',
+                )}
+              >
+                {/* Indicador "selecionado" */}
+                <div
                   className={cn(
-                    'rounded-lg px-3.5 py-1.5 text-[12.5px] font-semibold tabular-nums transition-colors',
+                    'absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full transition-all',
                     active
-                      ? 'bg-nxp text-white shadow-[0_1px_2px_hsl(237_49%_33%/0.25)]'
-                      : 'text-nxi2 hover:text-nxi1',
+                      ? 'bg-nxp text-white shadow-[0_1px_2px_hsl(237_49%_33%/0.3)]'
+                      : 'border-2 border-nxborder bg-white',
                   )}
                 >
-                  {t === 'cnpj' ? 'Pessoa Jurídica (CNPJ)' : 'Pessoa Física (CPF)'}
-                </button>
-              )
-            })}
-          </div>
-        </Field>
+                  {active && <CheckCircle2 className="h-3 w-3" strokeWidth={3} />}
+                </div>
+
+                <div
+                  className={cn(
+                    'flex h-11 w-11 items-center justify-center rounded-xl transition-colors',
+                    active ? 'bg-nxp/10 text-nxp ring-1 ring-inset ring-nxp/15' : 'bg-nxbg text-nxi3',
+                  )}
+                >
+                  <opt.Icon size={22} strokeWidth={1.75} />
+                </div>
+
+                <div>
+                  <div className={cn('text-[14px] font-bold tracking-[-0.005em]', active ? 'text-nxp' : 'text-nxi1')}>
+                    {opt.title}
+                  </div>
+                  <div className="mt-0.5 text-[11.5px] font-medium uppercase tracking-[0.04em] text-nxi3">
+                    {opt.subtitle}
+                  </div>
+                </div>
+
+                <ul className="mt-1 space-y-1">
+                  {opt.bullets.map((b) => (
+                    <li key={b} className="flex items-start gap-1.5 text-[12px] leading-snug text-nxi2">
+                      <CheckCircle2
+                        className={cn('mt-0.5 h-3 w-3 shrink-0', active ? 'text-nxp/70' : 'text-nxi3')}
+                        strokeWidth={2.5}
+                      />
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Input do documento — aparece após escolher o tipo */}
+      <div className="mt-6">
+        <div className="mb-2.5 flex items-center justify-between">
+          <FieldLabel htmlFor={docType === 'cnpj' ? 'cnpj' : 'cpf'} required>
+            {docType === 'cnpj' ? 'CNPJ da empresa' : 'CPF do lojista'}
+          </FieldLabel>
+          {isFilled && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-nxs/10 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.04em] text-nxs ring-1 ring-inset ring-nxs/20">
+              <ShieldCheck className="h-2.5 w-2.5" strokeWidth={2.5} />
+              Válido
+            </span>
+          )}
+        </div>
 
         {docType === 'cnpj' ? (
           <Field full>
-            <FieldLabel htmlFor="cnpj" required>CNPJ</FieldLabel>
             <Input
               id="cnpj"
               value={formData.cnpj}
@@ -96,17 +174,16 @@ export default function DocumentosPage() {
               placeholder="00.000.000/0000-00"
               maxLength={18}
               inputMode="numeric"
-              className={nxInputClass(!!errors.cnpj)}
+              className={cn(nxInputClass(!!errors.cnpj), 'font-mono tracking-wide')}
             />
             {errors.cnpj ? (
               <FieldHelp variant="error">{errors.cnpj}</FieldHelp>
             ) : (
-              <FieldHelp>CNPJ da empresa (formato: 00.000.000/0000-00)</FieldHelp>
+              <FieldHelp>Formato: 00.000.000/0000-00</FieldHelp>
             )}
           </Field>
         ) : (
           <Field full>
-            <FieldLabel htmlFor="cpf" required>CPF</FieldLabel>
             <Input
               id="cpf"
               value={formData.cpf}
@@ -114,16 +191,16 @@ export default function DocumentosPage() {
               placeholder="000.000.000-00"
               maxLength={14}
               inputMode="numeric"
-              className={nxInputClass(!!errors.cpf)}
+              className={cn(nxInputClass(!!errors.cpf), 'font-mono tracking-wide')}
             />
             {errors.cpf ? (
               <FieldHelp variant="error">{errors.cpf}</FieldHelp>
             ) : (
-              <FieldHelp>CPF do lojista (formato: 000.000.000-00)</FieldHelp>
+              <FieldHelp>Formato: 000.000.000-00</FieldHelp>
             )}
           </Field>
         )}
-      </FieldGrid>
+      </div>
 
       <FormActions>
         <NxButton
