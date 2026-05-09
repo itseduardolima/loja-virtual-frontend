@@ -1,48 +1,60 @@
 'use client'
 
 import { useHorario } from './useHorario'
-import { Card, CardContent, Label, Button, LoadingSpinner, Checkbox, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components'
-import LoadingPage from '@/components/Layout/LoadingPage'
+import {
+  Label,
+  LoadingSpinner,
+  Checkbox,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components'
+import { Copy } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import {
+  SectionCard,
+  SectionHeader,
+  FormActions,
+  FieldHelp,
+  NxButton,
+} from '../_shared'
 
-// Componente de seleção de horário
-const TimeSelect = ({ value, onChange, id }: { value: string; onChange: (value: string) => void; id: string }) => {
+const TimeSelect = ({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (value: string) => void
+}) => {
   const [hours, minutes] = value.split(':') || ['09', '00']
-  
   const hoursOptions = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'))
   const minutesOptions = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'))
 
-  const handleHoursChange = (newHours: string) => {
-    onChange(`${newHours}:${minutes}`)
-  }
-
-  const handleMinutesChange = (newMinutes: string) => {
-    onChange(`${hours}:${newMinutes}`)
-  }
+  const triggerCls =
+    'h-9 w-16 rounded-lg border border-nxborder bg-white px-2 text-[13px] text-nxi1 tabular-nums focus:border-nxp focus:outline-none focus:ring-2 focus:ring-nxp/30'
 
   return (
     <div className="flex items-center gap-1">
-      <Select value={hours} onValueChange={handleHoursChange}>
-        <SelectTrigger className="w-16 h-10">
+      <Select value={hours} onValueChange={(v) => onChange(`${v}:${minutes}`)}>
+        <SelectTrigger className={triggerCls}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
           {hoursOptions.map((hour) => (
-            <SelectItem key={hour} value={hour}>
-              {hour}
-            </SelectItem>
+            <SelectItem key={hour} value={hour}>{hour}</SelectItem>
           ))}
         </SelectContent>
       </Select>
-      <span className="text-gray-500 font-medium">:</span>
-      <Select value={minutes} onValueChange={handleMinutesChange}>
-        <SelectTrigger className="w-16 h-10">
+      <span className="text-nxi3">:</span>
+      <Select value={minutes} onValueChange={(v) => onChange(`${hours}:${v}`)}>
+        <SelectTrigger className={triggerCls}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
           {minutesOptions.map((minute) => (
-            <SelectItem key={minute} value={minute}>
-              {minute}
-            </SelectItem>
+            <SelectItem key={minute} value={minute}>{minute}</SelectItem>
           ))}
         </SelectContent>
       </Select>
@@ -60,102 +72,117 @@ export default function HorarioPage() {
     DAYS_OF_WEEK,
     handleDayToggle,
     handleTimeChange,
-    handleSave
+    handleSave,
   } = useHorario()
 
+  const handleApplyToAll = (sourceDayId: string) => {
+    const source = businessHours[sourceDayId]
+    if (!source) return
+    DAYS_OF_WEEK.forEach((day) => {
+      if (day.id === sourceDayId) return
+      handleTimeChange(day.id, 'open', source.open)
+      handleTimeChange(day.id, 'close', source.close)
+    })
+  }
+
   if (isLoading) {
-    return <LoadingPage />
+    return (
+      <SectionCard>
+        <div className="flex items-center justify-center py-16">
+          <LoadingSpinner size="md" />
+        </div>
+      </SectionCard>
+    )
   }
 
   return (
-    <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
-      {/* Header */}
-      <div className="mb-3 sm:mb-4 md:mb-6 lg:mb-8">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-1 sm:mb-2">Horário de Funcionamento</h1>
-        <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
-          Configure os horários de funcionamento da sua loja
-        </p>
+    <SectionCard>
+      <SectionHeader
+        title="Horário de funcionamento"
+        description="Aparece no rodapé e é usado em mensagens automáticas fora do expediente."
+      />
+
+      <div className="flex flex-col gap-1 rounded-xl border border-nxborder bg-nxbg/30 p-1.5">
+        {DAYS_OF_WEEK.map((day) => {
+          const dayHours = businessHours[day.id] || {
+            enabled: false,
+            open: '09:00',
+            close: '18:00',
+          }
+          const closed = !dayHours.enabled
+
+          return (
+            <div
+              key={day.id}
+              className={cn(
+                'flex flex-wrap items-center gap-3 rounded-lg px-3 py-2.5 transition-colors',
+                closed ? 'bg-transparent' : 'bg-white shadow-[0_1px_2px_hsl(0_0%_0%/0.04)]',
+              )}
+            >
+              <div className="flex min-w-[150px] items-center gap-2.5">
+                <Checkbox
+                  id={day.id}
+                  checked={dayHours.enabled}
+                  onCheckedChange={() => handleDayToggle(day.id)}
+                />
+                <Label
+                  htmlFor={day.id}
+                  className={cn(
+                    'cursor-pointer text-[13.5px] font-semibold tracking-[-0.005em]',
+                    closed ? 'text-nxi3' : 'text-nxi1',
+                  )}
+                >
+                  {day.label}
+                </Label>
+              </div>
+
+              {closed ? (
+                <span className="text-[12.5px] font-medium text-nxi3">Fechado</span>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2">
+                    <TimeSelect
+                      value={dayHours.open}
+                      onChange={(v) => handleTimeChange(day.id, 'open', v)}
+                    />
+                    <span className="text-[12px] text-nxi3">até</span>
+                    <TimeSelect
+                      value={dayHours.close}
+                      onChange={(v) => handleTimeChange(day.id, 'close', v)}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleApplyToAll(day.id)}
+                    title="Aplicar este horário a todos os dias"
+                    className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-transparent px-2 py-1 text-[12px] font-semibold text-nxi3 transition-colors hover:border-nxborder hover:bg-nxbg hover:text-nxi1"
+                  >
+                    <Copy size={12} strokeWidth={2} />
+                    Aplicar a todos
+                  </button>
+                </>
+              )}
+            </div>
+          )
+        })}
       </div>
 
-      <Card className="shadow-sm">
-        <CardContent className="p-8">
-          <div className="space-y-6">
-            {DAYS_OF_WEEK.map((day) => {
-              const dayHours = businessHours[day.id] || { enabled: false, open: '09:00', close: '18:00' }
-              
-              return (
-                <div
-                  key={day.id}
-                  className="flex items-center gap-4 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center gap-3 flex-1">
-                    <Checkbox
-                      id={day.id}
-                      checked={dayHours.enabled}
-                      onCheckedChange={() => handleDayToggle(day.id)}
-                    />
-                    <Label
-                      htmlFor={day.id}
-                      className="font-medium text-gray-900 cursor-pointer min-w-[140px]"
-                    >
-                      {day.label}
-                    </Label>
-                  </div>
+      {errors.business_hours && (
+        <div className="mt-3">
+          <FieldHelp variant="error">{errors.business_hours}</FieldHelp>
+        </div>
+      )}
 
-                  {dayHours.enabled && (
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-2">
-                        <Label htmlFor={`${day.id}-open`} className="text-sm text-gray-600">
-                          De:
-                        </Label>
-                        <TimeSelect
-                          value={dayHours.open}
-                          onChange={(value) => handleTimeChange(day.id, 'open', value)}
-                          id={`${day.id}-open`}
-                        />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Label htmlFor={`${day.id}-close`} className="text-sm text-gray-600">
-                          Até:
-                        </Label>
-                        <TimeSelect
-                          value={dayHours.close}
-                          onChange={(value) => handleTimeChange(day.id, 'close', value)}
-                          id={`${day.id}-close`}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {!dayHours.enabled && (
-                    <span className="text-sm text-gray-400">Fechado</span>
-                  )}
-                </div>
-              )
-            })}
-
-            {errors.business_hours && (
-              <p className="text-sm text-red-600">{errors.business_hours}</p>
-            )}
-
-            {/* Botão Salvar */}
-            <div className="flex justify-end pt-6 border-t border-gray-200">
-              <Button
-                onClick={handleSave}
-                disabled={isUpdating || !isFormValid}
-                className="flex items-center gap-2"
-              >
-                {isUpdating ? (
-                  <LoadingSpinner size="sm" />
-                ) : (
-                  ""
-                )}
-                {isUpdating ? 'Salvando...' : 'Salvar'}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+      <FormActions>
+        <NxButton
+          variant="primary"
+          onClick={handleSave}
+          disabled={!isFormValid}
+          loading={isUpdating}
+        >
+          {isUpdating ? 'Salvando…' : 'Salvar alterações'}
+        </NxButton>
+      </FormActions>
+    </SectionCard>
   )
 }
