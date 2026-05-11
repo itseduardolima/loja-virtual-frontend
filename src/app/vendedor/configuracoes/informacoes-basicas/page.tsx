@@ -71,7 +71,7 @@ export default function InformacoesBasicasPage() {
         {/* Banner zone */}
         <label
           htmlFor="banner-upload"
-          className="group relative block h-44 w-full cursor-pointer overflow-hidden bg-gradient-to-br from-nxp/[0.08] via-nxp/[0.04] to-nxbg"
+          className="group relative block h-[400px] w-full cursor-pointer overflow-hidden bg-gradient-to-br from-nxp/[0.08] via-nxp/[0.04] to-nxbg"
         >
           {bannerPreview ? (
             <>
@@ -108,7 +108,7 @@ export default function InformacoesBasicasPage() {
         </label>
 
         {/* Logo + name preview row */}
-        <div className="relative -mt-10 flex flex-col gap-3 px-5 pb-5 pt-0 sm:flex-row sm:items-end">
+        <div className="relative -mt-10 flex flex-col gap-3 px-5 pb-5 pt-5 sm:flex-row sm:items-end">
           <label
             htmlFor="logo-upload"
             className="group relative flex h-20 w-20 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-gradient-to-br from-nxp to-nxp/70 text-[22px] font-extrabold tracking-[-0.02em] text-white shadow-[0_4px_12px_hsl(0_0%_0%/0.10)]"
