@@ -3,7 +3,6 @@
 import { usePagamento, PAYMENT_METHODS } from './usePagamento'
 import { LoadingSpinner } from '@/components'
 import { ArrowUpRight, ShieldCheck, Clock, Zap, type LucideIcon } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import {
   SectionCard,
   ToggleRow,
