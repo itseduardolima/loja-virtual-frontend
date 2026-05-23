@@ -1,36 +1,33 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Eye, EyeOff, Mail, Lock, User, Phone, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import { useAuth } from "@/contexts/AuthContext";
-import { GoogleIcon } from "@/public/assets/icons/GoogleIcon";
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { Eye, EyeOff, Check, Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { PhoneCountryInput } from '@/components/Form/PhoneCountryInput'
+import { useAuth } from '@/contexts/AuthContext'
+import { useCountries } from '@/hooks/useCountries'
+import { GoogleIcon } from '@/public/assets/icons/GoogleIcon'
+import { cn } from '@/lib/utils'
 
 interface RegisterStepProps {
-  mode: "register" | "login";
-  isSubmitting: boolean;
-  planPrice?: number;
-  planName?: string;
-  onSubmitRegister: (
-    name: string,
-    email: string,
-    password: string,
-    whatsapp: string
-  ) => void;
-  onSubmitLogin: (email: string, password: string) => void;
-  onToggleMode: () => void;
+  mode: 'register' | 'login'
+  isSubmitting: boolean
+  planPrice?: number
+  planName?: string
+  onSubmitRegister: (name: string, email: string, password: string, whatsapp: string) => void
+  onSubmitLogin: (email: string, password: string) => void
+  onToggleMode: () => void
 }
 
 function passwordRequirements(password: string) {
   return [
-    { label: "Mínimo 8 caracteres", valid: password.length >= 8 },
-    { label: "Pelo menos uma letra maiúscula", valid: /[A-Z]/.test(password) },
-    { label: "Pelo menos um número", valid: /[0-9]/.test(password) },
-  ];
+    { label: 'Mínimo 8 caracteres', valid: password.length >= 8 },
+    { label: 'Pelo menos uma letra maiúscula', valid: /[A-Z]/.test(password) },
+    { label: 'Pelo menos um número', valid: /[0-9]/.test(password) },
+  ]
 }
 
 export function RegisterStep({
@@ -42,34 +39,43 @@ export function RegisterStep({
   onSubmitLogin,
   onToggleMode,
 }: RegisterStepProps) {
-  const { loginWithGoogle } = useAuth();
+  const { loginWithGoogle } = useAuth()
+  const { data: countriesData, isLoading: countriesLoading } = useCountries()
+  const [selectedCountry, setSelectedCountry] = useState('BR')
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [whatsapp, setWhatsapp] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [loginEmail, setLoginEmail] = useState('')
+  const [loginPassword, setLoginPassword] = useState('')
+  const [showLoginPassword, setShowLoginPassword] = useState(false)
 
-  const passwordMismatch = !!confirmPassword && password !== confirmPassword;
-  const reqs = passwordRequirements(password);
-  const allReqsMet = reqs.every((r) => r.valid);
+  const passwordMismatch = !!confirmPassword && password !== confirmPassword
+  const reqs = passwordRequirements(password)
+  const allReqsMet = reqs.every((r) => r.valid)
+
+  const getCallingCode = () => {
+    const country = countriesData?.find((c) => c.cca2 === selectedCountry)
+    return country?.callingCodes?.[0] || '55'
+  }
 
   const handleRegisterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (passwordMismatch || !allReqsMet) return;
-    onSubmitRegister(name, email, password, whatsapp);
-  };
+    e.preventDefault()
+    if (passwordMismatch || !allReqsMet) return
+    const digits = whatsapp.replace(/\D/g, '')
+    if (!digits || digits.length < 8) return
+    onSubmitRegister(name, email, password, `${getCallingCode()}${digits}`)
+  }
 
   const handleLoginSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmitLogin(loginEmail, loginPassword);
-  };
+    e.preventDefault()
+    onSubmitLogin(loginEmail, loginPassword)
+  }
 
   return (
     <motion.div
@@ -79,367 +85,302 @@ export function RegisterStep({
       exit={{ opacity: 0, x: 20 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-lg mx-auto">
         {planPrice !== undefined && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-primary/5 border border-primary/20 rounded-xl p-3 mb-5 text-center"
-          >
+          <div className="bg-black/5 border border-black/[8%] rounded-xl p-3 mb-6 text-center">
             <p className="text-sm text-gray-600">
-              {planName || "Plano"} —{" "}
-              <span className="font-semibold text-primary">
-                R$ {planPrice.toFixed(2).replace(".", ",")}/mês
+              {planName || 'Plano'} —{' '}
+              <span className="font-semibold text-black">
+                R$ {planPrice.toFixed(2).replace('.', ',')}/mês
               </span>
             </p>
-          </motion.div>
+          </div>
         )}
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 sm:p-8"
-        >
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-1">
-              {mode === "register" ? "Criar conta" : "Bem-vindo de volta"}
-            </h2>
-            <p className="text-gray-600 text-sm">
-              {mode === "register"
-                ? "Crie sua conta gratuita para continuar"
-                : "Entre na sua conta para continuar"}
-            </p>
-          </div>
+        {mode === 'register' ? (
+          <form onSubmit={handleRegisterSubmit} className="space-y-7">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">Crie sua conta grátis.</h1>
+              <p className="text-sm text-gray-400 mb-8">Comece a vender em poucos minutos.</p>
 
-          <Card className="border-0 shadow-none">
-            <CardContent className="p-0">
-              {mode === "register" ? (
-                <form onSubmit={handleRegisterSubmit} className="space-y-4">
+              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">
+                Seus dados
+              </p>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label
-                      htmlFor="reg-name"
-                      className="text-sm font-medium text-slate-700"
-                    >
-                      Nome completo <span className="text-red-500">*</span>
+                    <Label htmlFor="reg-name" className="text-[13px] font-semibold text-gray-700">
+                      Nome completo <span className="text-red-400">*</span>
+                    </Label>
+                    <Input
+                      id="reg-name"
+                      type="text"
+                      placeholder="Seu nome completo"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="h-11 px-3.5 rounded-lg border-gray-200 text-sm focus-visible:ring-black/10 focus-visible:border-black"
+                      required
+                      minLength={3}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="reg-email" className="text-[13px] font-semibold text-gray-700">
+                      E-mail <span className="text-red-400">*</span>
+                    </Label>
+                    <Input
+                      id="reg-email"
+                      type="email"
+                      placeholder="seu@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="h-11 px-3.5 rounded-lg border-gray-200 text-sm focus-visible:ring-black/10 focus-visible:border-black"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="reg-whatsapp" className="text-[13px] font-semibold text-gray-700">
+                    WhatsApp <span className="text-red-400">*</span>
+                  </Label>
+                  <PhoneCountryInput
+                    id="reg-whatsapp"
+                    value={whatsapp}
+                    onValueChange={setWhatsapp}
+                    placeholder="(11) 99999-9999"
+                    minLength={8}
+                    maxLength={15}
+                    required
+                    selectedCountry={selectedCountry}
+                    onSelectedCountryChange={setSelectedCountry}
+                    countriesData={countriesData}
+                    countriesLoading={countriesLoading}
+                    inputClassName="flex-1 h-11 border-gray-200 text-sm focus-visible:ring-black/10 focus-visible:border-black"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">
+                Sua senha
+              </p>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="reg-password" className="text-[13px] font-semibold text-gray-700">
+                      Senha <span className="text-red-400">*</span>
                     </Label>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                       <Input
-                        id="reg-name"
-                        type="text"
-                        placeholder="Seu nome completo"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="pl-10 h-11 border-slate-200 focus:border-slate-400"
+                        id="reg-password"
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="Mínimo 8 caracteres"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="h-11 px-3.5 pr-10 rounded-lg border-gray-200 text-sm focus-visible:ring-black/10 focus-visible:border-black"
                         required
-                        minLength={3}
+                        minLength={8}
                       />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label
-                      htmlFor="reg-email"
-                      className="text-sm font-medium text-slate-700"
-                    >
-                      E-mail <span className="text-red-500">*</span>
-                    </Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                      <Input
-                        id="reg-email"
-                        type="email"
-                        placeholder="seu@email.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10 h-11 border-slate-200 focus:border-slate-400"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label
-                      htmlFor="reg-whatsapp"
-                      className="text-sm font-medium text-slate-700"
-                    >
-                      WhatsApp{" "}
-                      <span className="text-slate-400 font-normal">
-                        (opcional)
-                      </span>
-                    </Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                      <Input
-                        id="reg-whatsapp"
-                        type="tel"
-                        placeholder="(11) 99999-9999"
-                        value={whatsapp}
-                        onChange={(e) => setWhatsapp(e.target.value)}
-                        className="pl-10 h-11 border-slate-200 focus:border-slate-400"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <Label
-                        htmlFor="reg-password"
-                        className="text-sm font-medium text-slate-700"
-                      >
-                        Senha <span className="text-red-500">*</span>
-                      </Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                        <Input
-                          id="reg-password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="Mínimo 8 caracteres"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className="pl-10 pr-10 h-11 border-slate-200 focus:border-slate-400"
-                          required
-                          minLength={8}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword((v) => !v)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-0.5"
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label
-                        htmlFor="reg-confirm"
-                        className="text-sm font-medium text-slate-700"
-                      >
-                        Confirmar senha <span className="text-red-500">*</span>
-                      </Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                        <Input
-                          id="reg-confirm"
-                          type={showConfirmPassword ? "text" : "password"}
-                          placeholder="Repita a senha"
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          className={`pl-10 pr-10 h-11 ${
-                            passwordMismatch
-                              ? "border-red-400 focus:border-red-500"
-                              : "border-slate-200 focus:border-slate-400"
-                          }`}
-                          required
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowConfirmPassword((v) => !v)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-0.5"
-                        >
-                          {showConfirmPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </button>
-                      </div>
-                      {passwordMismatch && (
-                        <p className="text-xs text-red-600">
-                          As senhas não conferem
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {password && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="flex flex-col gap-2 pt-1"
-                    >
-                      {reqs.map((req) => (
-                        <span
-                          key={req.label}
-                          className={`flex items-center gap-2 text-xs transition-all duration-200 ${
-                            req.valid ? "text-emerald-600" : "text-slate-400"
-                          }`}
-                        >
-                          <span
-                            className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full transition-all duration-200 ${
-                              req.valid
-                                ? "bg-emerald-500 text-white"
-                                : "bg-slate-200"
-                            }`}
-                          >
-                            {req.valid && (
-                              <Check className="h-2.5 w-2.5" strokeWidth={3} />
-                            )}
-                          </span>
-                          {req.label}
-                        </span>
-                      ))}
-                    </motion.div>
-                  )}
-
-                  <Button
-                    type="submit"
-                    className="w-full h-12 text-base font-semibold"
-                    disabled={
-                      isSubmitting ||
-                      !name ||
-                      !email ||
-                      !password ||
-                      passwordMismatch ||
-                      !allReqsMet
-                    }
-                  >
-                    {isSubmitting ? "Criando conta..." : "Criar conta e continuar"}
-                  </Button>
-
-                  <p className="text-center text-sm text-slate-500">
-                    Já tenho uma conta?{" "}
-                    <button
-                      type="button"
-                      onClick={onToggleMode}
-                      className="font-medium text-slate-700 hover:text-slate-900 hover:underline transition-colors"
-                    >
-                      Entrar
-                    </button>
-                  </p>
-
-                  <div className="pt-2">
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-gray-200" />
-                      </div>
-                      <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-white text-gray-500">
-                          Ou registre-se com
-                        </span>
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <Button
+                      <button
                         type="button"
-                        variant="outline"
-                        className="w-full h-12"
-                        onClick={loginWithGoogle}
-                        disabled={isSubmitting}
+                        onClick={() => setShowPassword((v) => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                       >
-                        <GoogleIcon />
-                        Continuar com Google
-                      </Button>
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
                     </div>
                   </div>
-                </form>
-              ) : (
-                <form onSubmit={handleLoginSubmit} className="space-y-5">
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="login-email"
-                      className="text-sm font-medium text-gray-700"
-                    >
-                      Email
+                  <div className="space-y-1.5">
+                    <Label htmlFor="reg-confirm" className="text-[13px] font-semibold text-gray-700">
+                      Confirmar senha <span className="text-red-400">*</span>
                     </Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                       <Input
-                        id="login-email"
-                        type="email"
-                        placeholder="seu@email.com"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                        className="pl-10 h-12 text-base"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="login-password"
-                      className="text-sm font-medium text-gray-700"
-                    >
-                      Senha
-                    </Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                      <Input
-                        id="login-password"
-                        type={showLoginPassword ? "text" : "password"}
-                        placeholder="Digite sua senha"
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                        className="pl-10 pr-12 h-12 text-base"
+                        id="reg-confirm"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        placeholder="Repita a senha"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className={cn(
+                          'h-11 px-3.5 pr-10 rounded-lg text-sm focus-visible:ring-black/10',
+                          passwordMismatch
+                            ? 'border-red-400 focus-visible:border-red-400'
+                            : 'border-gray-200 focus-visible:border-black',
+                        )}
                         required
                       />
                       <button
                         type="button"
-                        onClick={() => setShowLoginPassword((v) => !v)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors"
+                        onClick={() => setShowConfirmPassword((v) => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                       >
-                        {showLoginPassword ? <EyeOff /> : <Eye />}
+                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
+                    {passwordMismatch && (
+                      <p className="text-xs text-red-500 mt-1">As senhas não conferem</p>
+                    )}
                   </div>
+                </div>
 
-                  <Button
-                    type="submit"
-                    className="w-full h-12 text-base font-medium"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? "Entrando..." : "Entrar"}
-                  </Button>
-
-                  <p className="text-center text-sm text-gray-600">
-                    Não tem uma conta?{" "}
-                    <button
-                      type="button"
-                      onClick={onToggleMode}
-                      className="font-medium text-primary hover:underline"
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {reqs.map((req) => (
+                    <span
+                      key={req.label}
+                      className={cn(
+                        'inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full transition-all duration-200',
+                        req.valid ? 'bg-black/10 text-black font-semibold' : 'bg-gray-100 text-gray-400',
+                      )}
                     >
-                      Cadastre-se
-                    </button>
-                  </p>
+                      {req.valid && <Check className="w-3 h-3" strokeWidth={3} />}
+                      {req.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
 
-                  <div className="mt-2">
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-gray-300" />
-                      </div>
-                      <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-white text-gray-500">
-                          Ou continue com
-                        </span>
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full h-12"
-                        onClick={loginWithGoogle}
-                        disabled={isSubmitting}
-                      >
-                        <GoogleIcon />
-                        Entrar com Google
-                      </Button>
-                    </div>
-                  </div>
-                </form>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
+            <Button
+              type="submit"
+              className="w-full h-11 text-sm font-semibold bg-black hover:bg-gray-900 text-white rounded-lg"
+              disabled={isSubmitting || !name || !email || !password || whatsapp.replace(/\D/g, '').length < 8 || passwordMismatch || !allReqsMet}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Criando conta...
+                </>
+              ) : 'Criar conta e continuar'}
+            </Button>
+
+            <p className="text-center text-sm text-gray-400">
+              Já tenho uma conta.{' '}
+              <button
+                type="button"
+                onClick={onToggleMode}
+                className="font-semibold text-gray-700 hover:text-black transition-colors"
+              >
+                Entrar →
+              </button>
+            </p>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-100" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="px-3 bg-white text-xs text-gray-400">ou</span>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full h-11 text-sm font-medium border-gray-200 rounded-lg gap-2.5 hover:bg-gray-50 hover:border-gray-300"
+              onClick={loginWithGoogle}
+              disabled={isSubmitting}
+            >
+              <GoogleIcon />
+              Continuar com Google
+            </Button>
+          </form>
+        ) : (
+          <form onSubmit={handleLoginSubmit} className="space-y-5">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">Bem-vindo de volta</h1>
+              <p className="text-sm text-gray-400 mb-8">Entre na sua conta para continuar.</p>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="login-email" className="text-[13px] font-semibold text-gray-700">
+                Email
+              </Label>
+              <Input
+                id="login-email"
+                type="email"
+                placeholder="seu@email.com"
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                className="h-11 px-3.5 rounded-lg border-gray-200 text-sm focus-visible:ring-black/10 focus-visible:border-black"
+                required
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="login-password" className="text-[13px] font-semibold text-gray-700">
+                  Senha
+                </Label>
+                <a href="#" className="text-xs text-gray-400 hover:text-gray-700 transition-colors">
+                  Esqueceu a senha?
+                </a>
+              </div>
+              <div className="relative">
+                <Input
+                  id="login-password"
+                  type={showLoginPassword ? 'text' : 'password'}
+                  placeholder="Digite sua senha"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  className="h-11 px-3.5 pr-10 rounded-lg border-gray-200 text-sm focus-visible:ring-black/10 focus-visible:border-black"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full h-11 text-sm font-semibold bg-black hover:bg-gray-900 text-white rounded-lg"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Entrando...
+                </>
+              ) : 'Entrar'}
+            </Button>
+
+            <p className="text-center text-sm text-gray-400">
+              Novo por aqui?{' '}
+              <button
+                type="button"
+                onClick={onToggleMode}
+                className="font-semibold text-gray-700 hover:text-black transition-colors"
+              >
+                Criar conta →
+              </button>
+            </p>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-100" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="px-3 bg-white text-xs text-gray-400">ou</span>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full h-11 text-sm font-medium border-gray-200 rounded-lg gap-2.5 hover:bg-gray-50 hover:border-gray-300"
+              onClick={loginWithGoogle}
+              disabled={isSubmitting}
+            >
+              <GoogleIcon />
+              Entrar com Google
+            </Button>
+          </form>
+        )}
       </div>
     </motion.div>
-  );
+  )
 }
