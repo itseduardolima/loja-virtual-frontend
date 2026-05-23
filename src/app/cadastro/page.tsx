@@ -3,10 +3,18 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Eye, EyeOff, Mail, Lock, User, Check } from 'lucide-react'
+import { Eye, EyeOff, Check, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { useCadastro } from './useCadastro'
 import { PhoneCountryInput } from '@/components/Form/PhoneCountryInput'
+import { NexoLeftPanel } from '@/components/Layout/NexoLeftPanel'
+import { cn } from '@/lib/utils'
+
+const BULLETS = [
+  'Loja própria em minutos',
+  'Gestão de pedidos e catálogo',
+  'Suporte e relatórios em tempo real',
+]
 
 export default function CadastroPage() {
   const {
@@ -35,167 +43,220 @@ export default function CadastroPage() {
   } = useCadastro()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex items-center justify-center px-4 py-8 sm:py-12">
-      <div className="w-full max-w-2xl">
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm shadow-slate-200/50 p-6 sm:p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div className="space-y-1.5">
-                <Label htmlFor="name" className="text-sm font-medium text-slate-700">
-                  Nome completo <span className="text-red-500">*</span>
-                </Label>
-                <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="Seu nome completo"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="pl-10 h-11 border-slate-200 focus:border-slate-400 focus:ring-slate-400/20"
-                    minLength={5}
-                    maxLength={40}
-                    required
-                  />
+    <div className="flex h-screen overflow-hidden">
+      <NexoLeftPanel
+        footer={
+          <p className="text-xs text-white/35">
+            +2.400 vendedores ativos na plataforma
+          </p>
+        }
+      >
+        <div>
+          <h2 className="text-2xl font-bold text-white leading-snug mb-2">
+            Venda online.<br />Cresça de verdade.
+          </h2>
+          <p className="text-sm mb-8 text-white/50">
+            Tudo que você precisa para vender mais.
+          </p>
+          <div className="flex flex-col gap-3.5">
+            {BULLETS.map((b) => (
+              <div key={b} className="flex items-center gap-3">
+                <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-white/[12%]">
+                  <Check className="w-3 h-3 text-white" strokeWidth={2.5} />
                 </div>
+                <span className="text-sm text-white/75">{b}</span>
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-sm font-medium text-slate-700">
-                  E-mail <span className="text-red-500">*</span>
-                </Label>
-                <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="seu@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 h-11 border-slate-200 focus:border-slate-400 focus:ring-slate-400/20"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
+            ))}
+          </div>
+        </div>
+      </NexoLeftPanel>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="whatsapp" className="text-sm font-medium text-slate-700">
-                WhatsApp <span className="text-red-500">*</span>
-              </Label>
-              <PhoneCountryInput
-                id="whatsapp"
-                value={whatsapp}
-                onValueChange={(val) => handleWhatsappChange({ target: { value: val } } as any)}
-                placeholder="11999998888"
-                minLength={8}
-                maxLength={15}
-                required
-                selectedCountry={selectedCountry}
-                onSelectedCountryChange={setSelectedCountry}
-                countriesData={countriesData}
-                countriesLoading={countriesLoading}
-                inputClassName="flex-1 h-11 border-slate-200 focus:border-slate-400 focus:ring-slate-400/20"
-              />
-            </div>
+      {/* Right — form */}
+      <div className="flex-1 flex flex-col overflow-hidden bg-white">
+        {/* Top-right link */}
+        <div className="flex justify-end px-10 pt-8 pb-0 flex-shrink-0">
+          <span className="text-sm text-gray-400">
+            Já tenho conta.{' '}
+            <Link href="/login" className="font-semibold text-gray-700 hover:text-black transition-colors">
+              Entrar →
+            </Link>
+          </span>
+        </div>
 
-            <div className="space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div className="space-y-1.5">
-                  <Label htmlFor="password" className="text-sm font-medium text-slate-700">
-                    Senha <span className="text-red-500">*</span>
-                  </Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Digite sua senha"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 pr-10 h-11 border-slate-200 focus:border-slate-400 focus:ring-slate-400/20"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
+        {/* Scrollable form */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="px-8 sm:px-14 lg:px-20 py-8">
+            <div className="w-full max-w-lg mx-auto">
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">Crie sua conta grátis.</h1>
+              <p className="text-sm text-gray-400 mb-8">Comece a vender em poucos minutos.</p>
+
+              <form onSubmit={handleSubmit} className="space-y-7">
+                {/* Seus dados */}
+                <div>
+                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">
+                    Seus dados
+                  </p>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Nome */}
+                      <div className="space-y-1.5">
+                        <Label htmlFor="name" className="text-[13px] font-semibold text-gray-700">
+                          Nome completo <span className="text-red-400">*</span>
+                        </Label>
+                        <Input
+                          id="name"
+                          type="text"
+                          placeholder="Seu nome completo"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className="h-11 px-3.5 rounded-lg border-gray-200 text-sm focus-visible:ring-black/10 focus-visible:border-black"
+                          minLength={5}
+                          maxLength={40}
+                          required
+                        />
+                      </div>
+
+                      {/* Email */}
+                      <div className="space-y-1.5">
+                        <Label htmlFor="email" className="text-[13px] font-semibold text-gray-700">
+                          E-mail <span className="text-red-400">*</span>
+                        </Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="seu@email.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="h-11 px-3.5 rounded-lg border-gray-200 text-sm focus-visible:ring-black/10 focus-visible:border-black"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    {/* WhatsApp */}
+                    <div className="space-y-1.5">
+                      <Label htmlFor="whatsapp" className="text-[13px] font-semibold text-gray-700">
+                        WhatsApp <span className="text-red-400">*</span>
+                      </Label>
+                      <PhoneCountryInput
+                        id="whatsapp"
+                        value={whatsapp}
+                        onValueChange={(val) => handleWhatsappChange({ target: { value: val } } as any)}
+                        placeholder="(11) 99999-9999"
+                        minLength={8}
+                        maxLength={15}
+                        required
+                        selectedCountry={selectedCountry}
+                        onSelectedCountryChange={setSelectedCountry}
+                        countriesData={countriesData}
+                        countriesLoading={countriesLoading}
+                        inputClassName="flex-1 h-11 border-gray-200 text-sm focus-visible:ring-black/10 focus-visible:border-black"
+                      />
+                    </div>
                   </div>
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="confirmPassword" className="text-sm font-medium text-slate-700">
-                    Confirmar senha <span className="text-red-500">*</span>
-                  </Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input
-                      id="confirmPassword"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder="Repita a senha"
-                      value={confirmPassword}
-                      onChange={handleConfirmPasswordChange}
-                      className={`pl-10 pr-10 h-11 focus:ring-slate-400/20 ${
-                        passwordMismatchError
-                          ? 'border-red-400 focus:border-red-500 focus:ring-red-500/20'
-                          : 'border-slate-200 focus:border-slate-400'
-                      }`}
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
-                    >
-                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
+
+                {/* Sua senha */}
+                <div>
+                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">
+                    Sua senha
+                  </p>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Senha */}
+                      <div className="space-y-1.5">
+                        <Label htmlFor="password" className="text-[13px] font-semibold text-gray-700">
+                          Senha <span className="text-red-400">*</span>
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            id="password"
+                            type={showPassword ? 'text' : 'password'}
+                            placeholder="Digite sua senha"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="h-11 px-3.5 pr-10 rounded-lg border-gray-200 text-sm focus-visible:ring-black/10 focus-visible:border-black"
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                          >
+                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Confirmar senha */}
+                      <div className="space-y-1.5">
+                        <Label htmlFor="confirmPassword" className="text-[13px] font-semibold text-gray-700">
+                          Confirmar senha <span className="text-red-400">*</span>
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            id="confirmPassword"
+                            type={showConfirmPassword ? 'text' : 'password'}
+                            placeholder="Repita a senha"
+                            value={confirmPassword}
+                            onChange={handleConfirmPasswordChange}
+                            className={cn(
+                              'h-11 px-3.5 pr-10 rounded-lg text-sm focus-visible:ring-black/10',
+                              passwordMismatchError
+                                ? 'border-red-400 focus-visible:border-red-400'
+                                : 'border-gray-200 focus-visible:border-black',
+                            )}
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                          >
+                            {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                        {passwordMismatchError && (
+                          <p className="text-xs text-red-500 mt-1">{passwordMismatchError}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Password chips */}
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {passwordRequirements.map((req) => (
+                        <span
+                          key={req.label}
+                          className={cn(
+                            'inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full transition-all duration-200',
+                            req.valid
+                              ? 'bg-black/10 text-black font-semibold'
+                              : 'bg-gray-100 text-gray-400',
+                          )}
+                        >
+                          {req.valid && <Check className="w-3 h-3" strokeWidth={3} />}
+                          {req.label}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  {passwordMismatchError && (
-                    <p className="text-xs text-red-600 mt-1">{passwordMismatchError}</p>
-                  )}
                 </div>
-              </div>
 
-              <div className="py-3">
-                <p className="text-xs font-medium text-slate-500 mb-2.5">Requisitos da senha</p>
-                <div className="flex flex-col gap-3">
-                  {passwordRequirements.map((req) => (
-                    <span
-                      key={req.label}
-                      className={`flex items-center gap-2 text-xs transition-all duration-200 ${
-                        req.valid ? 'text-emerald-600' : 'text-slate-400'
-                      }`}
-                    >
-                      <span
-                        className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full transition-all duration-200 ${
-                          req.valid ? 'bg-emerald-500 text-white' : 'bg-slate-200'
-                        }`}
-                      >
-                        {req.valid && <Check className="h-2.5 w-2.5" strokeWidth={3} />}
-                      </span>
-                      {req.label}
-                    </span>
-                  ))}
-                </div>
-              </div>
+                <Button
+                  type="submit"
+                  className="w-full h-11 text-sm font-semibold bg-black hover:bg-gray-900 text-white rounded-lg"
+                  disabled={isRegistering}
+                >
+                  {isRegistering ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Criando conta...
+                    </>
+                  ) : 'Criar conta'}
+                </Button>
+              </form>
             </div>
-
-            <Button
-              type="submit"
-              className="w-full h-12 text-base font-semibold bg-slate-900 hover:bg-slate-800 text-white transition-colors"
-              disabled={isRegistering}
-            >
-              {isRegistering ? 'Cadastrando...' : 'Cadastrar'}
-            </Button>
-
-            <p className="text-center text-sm text-slate-500 pt-2">
-              Já tem uma conta?{' '}
-              <Link href="/login" className="font-medium text-slate-700 hover:text-slate-900 hover:underline transition-colors">
-                Entrar
-              </Link>
-            </p>
-          </form>
+          </div>
         </div>
       </div>
     </div>

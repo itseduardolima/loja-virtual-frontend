@@ -21,6 +21,7 @@ export { NotFoundContent } from './Layout/NotFoundContent'
 export { ProfileInfo } from './Layout/ProfileInfo'
 export { SidebarVendedor } from './Layout/SidebarVendedor'
 export { SidebarAdmin } from './Layout/SidebarAdmin'
+export { NexoLeftPanel } from './Layout/NexoLeftPanel'
 export { UserHeader } from './Layout/UserHeader'
 export { UserHeaderCliente } from './Layout/UserHeaderCliente'
 

@@ -25,7 +25,7 @@ export function useLogin() {
   const handleLogin = async (credentials: LoginRequest) => {
     try {
       const data = await login(credentials)
-      showSuccess('Login realizado com sucesso!')
+      
 
       const profile = data.user.profile
 
