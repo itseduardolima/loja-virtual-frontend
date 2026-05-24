@@ -1,8 +1,8 @@
 'use client'
 
-import { X, User, Package, LogOut, Heart, MapPin } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
+import { IconUser, IconPackage, IconHeart, IconMapPin, IconLogout } from '@/assets/icons'
 
 interface CustomerProfileMenuDrawerProps {
   isOpen: boolean
@@ -13,6 +13,25 @@ interface CustomerProfileMenuDrawerProps {
   onViewAddresses: () => void
 }
 
+function MenuRow({ icon, label, danger, onClick }: {
+  icon: React.ReactNode
+  label: string
+  danger?: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-3 text-left border-none cursor-pointer transition-colors px-[14px] py-[10px] rounded-[10px] bg-transparent font-inherit"
+      onMouseEnter={e => { e.currentTarget.style.background = danger ? '#FEF2F2' : '#F7F3EF' }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+    >
+      <span className={`flex items-center shrink-0 ${danger ? 'text-red-500' : 'text-gray-500'}`}>{icon}</span>
+      <span className={`flex-1 text-[13px] font-medium text-left ${danger ? 'text-red-500' : 'text-[#111]'}`}>{label}</span>
+    </button>
+  )
+}
+
 export function CustomerProfileMenuDrawer({
   isOpen,
   onClose,
@@ -21,10 +40,16 @@ export function CustomerProfileMenuDrawer({
   onViewFavorites,
   onViewAddresses,
 }: CustomerProfileMenuDrawerProps) {
+  const router = useRouter()
   const { user, logout } = useAuth()
+
+  const initials = user?.name
+    ? user.name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
+    : 'U'
 
   const handleLogout = () => {
     logout()
+    router.push('/login')
     onClose()
   }
 
@@ -32,94 +57,57 @@ export function CustomerProfileMenuDrawer({
 
   return (
     <>
-      {/* Overlay */}
-      <div
-        className="fixed inset-0 bg-black/50 z-40"
-        onClick={onClose}
-      />
-
-      {/* Drawer */}
-      <div className={`fixed top-0 right-0 h-full w-full max-w-sm bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
-        isOpen ? 'translate-x-0' : 'translate-x-full'
-      }`}>
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* User Info */}
-          <div className="p-4 border-b border-gray-200 bg-gray-50">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <User className="w-6 h-6 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 truncate">{user?.name}</p>
-                <p className="text-sm text-gray-500 truncate">{user?.email}</p>
-              </div>
+      <div className="fixed inset-0 z-10" onClick={onClose} />
+      <div className="absolute right-0 z-20 overflow-hidden top-[calc(100%+8px)] w-[288px] bg-white rounded-[18px] border border-[#F0EBE3] shadow-[0_12px_48px_rgba(0,0,0,.14),0_2px_8px_rgba(0,0,0,.06)]">
+        <div className="px-4 pt-4 pb-3 border-b border-[#F3F4F6]">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center flex-shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-[#f5e8f0] to-[#d4a8c8] shadow-[inset_0_1px_0_rgba(255,255,255,.5)]">
+              <span className="italic text-base font-semibold text-[#5a2040]">{initials}</span>
             </div>
-          </div>
-
-          {/* Menu Options */}
-          <div className="flex-1 overflow-y-auto p-4">
-            <div className="space-y-2">
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-3 h-12 text-left"
-                onClick={() => { onUpdateProfile(); onClose() }}
-              >
-                <User className="w-5 h-5" />
-                <span>Atualizar Cadastro</span>
-              </Button>
-
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-3 h-12 text-left"
-                onClick={() => { onViewOrders(); onClose() }}
-              >
-                <Package className="w-5 h-5" />
-                <span>Meus Pedidos</span>
-              </Button>
-
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-3 h-12 text-left"
-                onClick={() => { onViewFavorites(); onClose() }}
-              >
-                <Heart className="w-5 h-5" />
-                <span>Meus Favoritos</span>
-              </Button>
-
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-3 h-12 text-left"
-                onClick={() => { onViewAddresses(); onClose() }}
-              >
-                <MapPin className="w-5 h-5" />
-                <span>Meus Endereços</span>
-              </Button>
-
-              <div className="border-t border-gray-200 my-2" />
-
-              <Button
-                variant="destructive"
-                className="w-full justify-start gap-3 h-12 text-left"
-                onClick={handleLogout}
-              >
-                <LogOut className="w-5 h-5" />
-                <span>Sair</span>
-              </Button>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13.5px] font-bold text-[#111] tracking-[-0.01em] whitespace-nowrap overflow-hidden text-ellipsis">{user?.name}</p>
+              <p className="text-[11px] text-[#9CA3AF] mt-px whitespace-nowrap overflow-hidden text-ellipsis">{user?.email}</p>
             </div>
+            <span className="shrink-0 text-[9px] font-extrabold tracking-[.1em] text-[#9CA3AF] bg-[#F9FAFB] px-[7px] py-[3px] rounded-[5px]">CLIENTE</span>
           </div>
+        </div>
+
+        <div className="p-2">
+          <MenuRow
+            icon={<IconUser size={16} />}
+            label="Minha conta"
+            onClick={() => { onUpdateProfile(); onClose() }}
+          />
+          <MenuRow
+            icon={<IconPackage size={16} />}
+            label="Meus pedidos"
+            onClick={() => { onViewOrders(); onClose() }}
+          />
+          <MenuRow
+            icon={<IconHeart size={16} />}
+            label="Lista de desejos"
+            onClick={() => { onViewFavorites(); onClose() }}
+          />
+          <MenuRow
+            icon={<IconMapPin size={16} />}
+            label="Endereços"
+            onClick={() => { onViewAddresses(); onClose() }}
+          />
+
+          <div className="h-px bg-[#F3F4F6] my-[6px] mx-[6px]" />
+
+          <MenuRow
+            icon={<IconLogout size={16} />}
+            label="Sair"
+            danger
+            onClick={handleLogout}
+          />
+        </div>
+
+        <div className="border-t border-[#F3F4F6] px-4 py-[10px] flex items-center justify-center gap-[5px]">
+          <span className="text-[10px] text-[#C4C0BB]">Plataforma</span>
+          <span className="w-[14px] h-[14px] rounded-[3px] bg-[#F0EBE4] inline-flex items-center justify-center text-[8px] font-extrabold text-[#9CA3AF]">N</span>
+          <span className="text-[10px] font-semibold text-[#9CA3AF] tracking-[.02em]">nexo</span>
         </div>
       </div>
     </>

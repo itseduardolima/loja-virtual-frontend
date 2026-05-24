@@ -2,24 +2,22 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import Image from 'next/image'
-import { ShoppingBag, Search, User, LogIn, LogOut } from 'lucide-react'
+import { ShoppingBag, Search, User, LogIn } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCart } from '@/hooks/useCart'
 import { StoreInfo } from '@/types/store'
 import { useDebounce } from '@/hooks/useDebounce'
 import { api } from '@/lib/api'
 import { Product, ProductsResponse } from '@/types/product'
-import { formatPrice, buildImageUrl } from '@/lib/utils'
 import { CustomerOrdersDrawer } from './CustomerOrdersDrawer'
 import { CustomerFavoritesDrawer } from './CustomerFavoritesDrawer'
 import { CustomerAddressesDrawer } from './CustomerAddressesDrawer'
 import { CustomerProfileMenuDrawer } from './CustomerProfileMenuDrawer'
 import { UpdateProfileDrawer } from './UpdateProfileDrawer'
 import { VendorSettingsDrawer } from './VendorSettingsDrawer'
+import { StoreSearchDropdown } from './StoreSearchDropdown'
 import { PROFILE_IDS } from '@/types/auth'
 
 interface StoreHeaderProps {
@@ -29,6 +27,8 @@ interface StoreHeaderProps {
   onSearchChange?: (value: string) => void
   onSearchSubmit?: (value: string) => void
   onCartClick?: () => void
+  scrolled?: boolean
+  categories?: string[]
 }
 
 export function StoreHeader({
@@ -37,24 +37,28 @@ export function StoreHeader({
   searchValue,
   onSearchChange,
   onSearchSubmit,
-  onCartClick
+  onCartClick,
+  scrolled = true,
+  categories = [],
 }: StoreHeaderProps) {
   const router = useRouter()
   const pathname = usePathname()
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [suggestions, setSuggestions] = useState<Product[]>([])
-  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [searchFocused, setSearchFocused] = useState(false)
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const [isOrdersDrawerOpen, setIsOrdersDrawerOpen] = useState(false)
   const [isFavoritesDrawerOpen, setIsFavoritesDrawerOpen] = useState(false)
   const [isAddressesDrawerOpen, setIsAddressesDrawerOpen] = useState(false)
   const [isUpdateProfileOpen, setIsUpdateProfileOpen] = useState(false)
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
-  const suggestionsRef = useRef<HTMLDivElement>(null)
+  const mobileSearchInputRef = useRef<HTMLInputElement>(null)
+  const searchContainerRef = useRef<HTMLDivElement>(null)
   const { user, isAuthenticated, logout } = useAuth()
   const { totalItems } = useCart(storeInfo?.id)
-  
+
   const debouncedSearch = useDebounce(searchValue || '', 300)
 
   const handleStoreNameClick = () => {
@@ -64,15 +68,27 @@ export function StoreHeader({
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       const value = (e.target as HTMLInputElement).value
-      setShowSuggestions(false)
+      setSearchFocused(false)
       if (onSearchSubmit) {
         onSearchSubmit(value)
       } else {
         router.push(`/loja/${slug}/produtos?search=${value}`)
       }
     } else if (e.key === 'Escape') {
-      setShowSuggestions(false)
+      setSearchFocused(false)
+      setMobileSearchOpen(false)
     }
+  }
+
+  const openMobileSearch = () => {
+    setMobileSearchOpen(true)
+    setTimeout(() => mobileSearchInputRef.current?.focus(), 50)
+  }
+
+  const closeMobileSearch = () => {
+    setMobileSearchOpen(false)
+    setSearchFocused(false)
+    onSearchChange?.('')
   }
 
   const handleLoginClick = () => {
@@ -81,306 +97,291 @@ export function StoreHeader({
     setIsUserMenuOpen(false)
   }
 
-  // Buscar sugestões de produtos
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (!debouncedSearch || debouncedSearch.length < 2 || !slug) {
         setSuggestions([])
-        setShowSuggestions(false)
         return
       }
-
       setIsLoadingSuggestions(true)
       try {
         const response = await api.get<ProductsResponse>(
           `/catalog/store/${slug}/products?search=${encodeURIComponent(debouncedSearch)}&limit=8`
         )
         setSuggestions(response.data.data)
-        setShowSuggestions(response.data.data.length > 0)
-      } catch (error) {
-        console.error('Erro ao buscar sugestões:', error)
+      } catch {
         setSuggestions([])
-        setShowSuggestions(false)
       } finally {
         setIsLoadingSuggestions(false)
       }
     }
-
     fetchSuggestions()
   }, [debouncedSearch, slug])
 
-  // Fechar sugestões ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        suggestionsRef.current &&
-        !suggestionsRef.current.contains(event.target as Node) &&
-        searchInputRef.current &&
-        !searchInputRef.current.contains(event.target as Node)
-      ) {
-        setShowSuggestions(false)
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setSearchFocused(false)
       }
     }
-
     document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   const handleSuggestionClick = (product: Product) => {
-    setShowSuggestions(false)
+    setSearchFocused(false)
     router.push(`/loja/${slug}/produto/${product.id}`)
   }
 
-  const handleInputFocus = () => {
-    if (suggestions.length > 0) {
-      setShowSuggestions(true)
-    }
+  const handleSelectSuggestion = (term: string) => {
+    onSearchChange?.(term)
+    setSearchFocused(false)
+    if (onSearchSubmit) onSearchSubmit(term)
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onSearchChange?.(e.target.value)
-    if (e.target.value.length >= 2) {
-      setShowSuggestions(true)
-    } else {
-      setShowSuggestions(false)
-    }
   }
 
+  const userButton = (
+    <div className="relative flex-shrink-0">
+      <Button
+        variant="ghost"
+        onClick={() => {
+          if (isAuthenticated && user) {
+            setIsProfileMenuOpen(prev => !prev)
+          } else {
+            setIsUserMenuOpen(!isUserMenuOpen)
+          }
+        }}
+        className="flex items-center gap-1.5 p-2 hover:bg-gray-100 h-9 rounded-full"
+        aria-label={isAuthenticated ? 'Menu do perfil' : 'Login'}
+      >
+        <User className="w-[19px] h-[19px] text-[#111827]" />
+        {isAuthenticated && user && (
+          <span className="text-[13px] font-medium text-[#111827] hidden sm:inline max-w-[100px] truncate">
+            {user.name}
+          </span>
+        )}
+      </Button>
+
+      {isUserMenuOpen && !isAuthenticated && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setIsUserMenuOpen(false)} />
+          <div className="absolute right-0 mt-2 w-40 sm:w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
+            <div className="p-1.5 sm:p-2">
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2 rounded text-sm h-9"
+                onClick={handleLoginClick}
+              >
+                <LogIn className="w-4 h-4" />
+                Fazer Login
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {isAuthenticated && user && user.profile_id === PROFILE_IDS.Vendedor && (
+        <VendorSettingsDrawer
+          isOpen={isProfileMenuOpen}
+          onClose={() => setIsProfileMenuOpen(false)}
+        />
+      )}
+
+      {isAuthenticated && user && user.profile_id === PROFILE_IDS.Cliente && (
+        <CustomerProfileMenuDrawer
+          isOpen={isProfileMenuOpen}
+          onClose={() => setIsProfileMenuOpen(false)}
+          onUpdateProfile={() => setIsUpdateProfileOpen(true)}
+          onViewOrders={() => setIsOrdersDrawerOpen(true)}
+          onViewFavorites={() => setIsFavoritesDrawerOpen(true)}
+          onViewAddresses={() => setIsAddressesDrawerOpen(true)}
+        />
+      )}
+    </div>
+  )
+
+  const cartButton = (
+    <Button
+      id="cart-icon-button"
+      variant="ghost"
+      onClick={onCartClick}
+      className="relative p-2 hover:bg-gray-100 h-9 w-9 rounded-full flex-shrink-0"
+      aria-label="Carrinho"
+    >
+      <ShoppingBag className="w-[19px] h-[19px] text-[#111827]" />
+      {totalItems > 0 && (
+        <Badge className="absolute top-0.5 right-0.5 h-[15px] min-w-[15px] px-1 flex items-center justify-center bg-red-500 text-white text-[9.5px] rounded-full border-0 font-bold">
+          {totalItems > 99 ? '99+' : totalItems}
+        </Badge>
+      )}
+    </Button>
+  )
+
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-20 py-4 sm:py-6 lg:py-8">
-      <div className="py-3 sm:py-4 lg:py-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 lg:gap-6">
-          {/* Informações da Loja */}
-          <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
+    <>
+      <div className="sticky top-0 z-50 w-full h-16 flex items-center transition-[background,border-color,backdrop-filter] duration-300 bg-[rgba(255,255,255,0.97)] border-b border-[#F3F4F6] backdrop-blur-[12px]">
+        {/* MOBILE layout */}
+        <div className="flex md:hidden w-full items-center px-4 gap-2">
+          <div
+            className={[
+              'flex-shrink-0 overflow-hidden transition-all duration-300 ease-[cubic-bezier(.22,1,.36,1)]',
+              mobileSearchOpen ? 'max-w-0 opacity-0' : 'max-w-[200px] opacity-100',
+            ].join(' ')}
+          >
             <button
               onClick={handleStoreNameClick}
-              className="text-xl sm:text-2xl lg:text-3xl uppercase font-nunito font-bold text-primary hover:opacity-80 transition-opacity text-left"
+              className="text-[15px] font-semibold text-[#111827] hover:opacity-75 transition-opacity tracking-[-0.01em] whitespace-nowrap pr-1"
             >
               {storeInfo?.name}
             </button>
           </div>
 
-          {/* Direita: Busca, Carrinho e Usuário */}
-          <div className="flex items-center sm:gap-3 lg:gap-5 w-full sm:w-auto">
-            {/* Campo de Busca */}
-            <div className="relative flex-1 sm:flex-initial sm:w-[280px] md:w-[350px] lg:w-[400px] xl:w-[577px]">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5 z-10" />
-              <Input
-                ref={searchInputRef}
+          <div
+            className={[
+              'relative transition-all duration-300 ease-[cubic-bezier(.22,1,.36,1)]',
+              mobileSearchOpen ? 'flex-[1_1_0%] opacity-100' : 'flex-[0_0_0%] opacity-0 overflow-hidden',
+            ].join(' ')}
+          >
+            <div className="flex items-center gap-2 bg-[#F9FAFB] border border-[#E5E7EB] rounded-full px-3 h-9 focus-within:border-gray-400 transition-[border-color]">
+              <Search className="w-[14px] h-[14px] text-gray-400 flex-shrink-0" />
+              <input
+                ref={mobileSearchInputRef}
                 type="text"
                 placeholder="Buscar produtos..."
                 value={searchValue || ''}
                 onChange={handleInputChange}
                 onKeyDown={handleSearchKeyDown}
-                onFocus={handleInputFocus}
-                className="pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-2.5 lg:py-3 bg-muted rounded-full text-sm sm:text-base h-9 sm:h-10 lg:h-11"
+                className="bg-transparent flex-1 border-0 outline-none text-[13px] text-[#374151] placeholder-gray-400 min-w-0"
               />
-              
-              {/* Dropdown de Sugestões */}
-              {showSuggestions && (
-                <div
-                  ref={suggestionsRef}
-                  className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-[60vh] sm:max-h-96 overflow-y-auto"
-                >
-                  {isLoadingSuggestions ? (
-                    <div className="p-3 sm:p-4 text-center text-gray-500 text-sm">
-                      Buscando...
-                    </div>
-                  ) : suggestions.length > 0 ? (
-                    <div className="py-1 sm:py-2">
-                      {suggestions.map((product) => (
-                        <button
-                          key={product.id}
-                          onClick={() => handleSuggestionClick(product)}
-                          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-left hover:bg-gray-50 active:bg-gray-100 transition-colors flex items-center gap-2 sm:gap-3"
-                        >
-                          {(() => {
-                            // Função helper para obter a primeira imagem disponível
-                            const getProductImage = (images: any): string | null => {
-                              // Se images é um objeto (formato novo com cores)
-                              if (images && typeof images === 'object' && !Array.isArray(images)) {
-                                // Pegar a primeira cor disponível
-                                const firstColor = Object.keys(images)[0]
-                                if (firstColor && Array.isArray(images[firstColor]) && images[firstColor].length > 0) {
-                                  return images[firstColor][0]
-                                }
-                              }
-                              
-                              // Se images é um array (formato antigo)
-                              if (Array.isArray(images) && images.length > 0) {
-                                return images[0]
-                              }
-                              
-                              return null
-                            }
-                            
-                            const imageUrl = getProductImage(product.images)
-                            
-                            return imageUrl ? (
-                              <div className="relative w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
-                                <Image
-                                  src={buildImageUrl(imageUrl)}
-                                  alt={product.name}
-                                  fill
-                                  className="object-cover rounded"
-                                  sizes="(max-width: 640px) 40px, 48px"
-                                />
-                              </div>
-                          ) : (
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 bg-gray-100 rounded flex items-center justify-center">
-                              <Search className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
-                            </div>
-                          )
-                          })()}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
-                              {product.name}
-                            </p>
-                            {product.category && (
-                              <p className="text-[10px] sm:text-xs text-gray-500 truncate mt-0.5">
-                                {product.category.name}
-                              </p>
-                            )}
-                          </div>
-                          <div className="text-right flex-shrink-0">
-                            <p className="text-xs sm:text-sm font-semibold text-primary">
-                              {formatPrice(product.final_price || product.price)}
-                            </p>
-                            {product.promo_active && (
-                              <p className="text-[10px] sm:text-xs text-gray-400 line-through">
-                                {formatPrice(product.price)}
-                              </p>
-                            )}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-3 sm:p-4 text-center text-gray-500 text-sm">
-                      Nenhum produto encontrado
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
-            
-            {/* Botão do Carrinho */}
-            <Button
-              id="cart-icon-button"
-              variant="ghost"
-              onClick={onCartClick}
-              className="relative p-2 sm:p-0 hover:bg-transparent h-9 w-9 sm:h-auto sm:w-auto flex-shrink-0"
-              aria-label="Carrinho"
+          </div>
+
+          {!mobileSearchOpen && <div className="flex-1" />}
+
+          {!mobileSearchOpen && (
+            <button
+              onClick={openMobileSearch}
+              className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors flex-shrink-0"
+              aria-label="Buscar"
             >
-              <ShoppingBag className="w-6 h-6" />
-              {totalItems > 0 && (
-                <Badge
-                  className="absolute bottom-4 right-0 sm:bottom-3 sm:left-3 h-4 sm:h-5 min-w-4 sm:min-w-5 px-1 sm:px-1.5 flex items-center justify-center bg-red-500 text-white text-[10px] sm:text-xs rounded-full border-0 font-medium"
-                >
-                  {totalItems > 99 ? '99+' : totalItems}
-                </Badge>
-              )}
-            </Button>
+              <Search className="w-[19px] h-[19px] text-[#111827]" />
+            </button>
+          )}
 
-            {/* Botão de Usuário */}
-            <div className="relative flex-shrink-0">
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  if (isAuthenticated && user) {
-                    setIsProfileMenuOpen(true)
-                  } else {
-                    setIsUserMenuOpen(!isUserMenuOpen)
-                  }
-                }}
-                className="flex items-center gap-1.5 sm:gap-2 p-2 sm:p-0 hover:bg-transparent h-9 sm:h-auto"
-                aria-label={isAuthenticated ? 'Menu do perfil' : 'Login'}
+          {mobileSearchOpen && (
+            <button
+              onClick={closeMobileSearch}
+              className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors flex-shrink-0 text-gray-500 text-lg leading-none"
+              aria-label="Fechar busca"
+            >
+              ×
+            </button>
+          )}
+
+          <div
+            className={[
+              'flex items-center transition-all duration-300 ease-[cubic-bezier(.22,1,.36,1)] overflow-hidden flex-shrink-0',
+              mobileSearchOpen ? 'max-w-0 opacity-0' : 'max-w-[40px] opacity-100',
+            ].join(' ')}
+          >
+            {cartButton}
+          </div>
+
+          <div
+            className={[
+              'flex-shrink-0 transition-[opacity] duration-300',
+              mobileSearchOpen ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto',
+            ].join(' ')}
+          >
+            {userButton}
+          </div>
+        </div>
+
+        {/* DESKTOP layout */}
+        <div className="hidden md:flex w-full items-center gap-4 px-6 lg:px-20">
+          <div className="flex-shrink-0 min-w-[176px]">
+            <button
+              onClick={handleStoreNameClick}
+              className="text-[15px] font-semibold text-[#111827] hover:opacity-75 transition-opacity tracking-[-0.01em] whitespace-nowrap"
+            >
+              {storeInfo?.name}
+            </button>
+          </div>
+
+          <div className="flex-1 flex justify-center relative z-[501]">
+            <div className="relative w-full max-w-[380px]" ref={searchContainerRef}>
+              <div
+                className={[
+                  'flex items-center gap-2.5 bg-[#F9FAFB] rounded-full px-4 h-9 transition-[border-color,border-width]',
+                  searchFocused
+                    ? 'border-[1.5px] border-[#111]'
+                    : 'border border-[#E5E7EB]',
+                ].join(' ')}
               >
-                <User className="w-6 h-6" />
-                {isAuthenticated && user && (
-                  <span className="text-xs sm:text-sm font-medium hidden sm:inline max-w-[100px] lg:max-w-none truncate">
-                    {user.name}
-                  </span>
+                <Search className="w-[15px] h-[15px] text-gray-400 flex-shrink-0" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Buscar por produtos..."
+                  value={searchValue || ''}
+                  onChange={handleInputChange}
+                  onKeyDown={handleSearchKeyDown}
+                  onFocus={() => setSearchFocused(true)}
+                  className="bg-transparent flex-1 border-0 outline-none text-[13px] text-[#374151] placeholder-gray-400 min-w-0"
+                />
+                {searchFocused && searchValue && (
+                  <button
+                    onClick={() => { onSearchChange?.(''); setSuggestions([]) }}
+                    className="bg-transparent border-0 text-[#9CA3AF] text-[18px] cursor-pointer p-0 leading-none flex-shrink-0"
+                  >
+                    ×
+                  </button>
                 )}
-              </Button>
+              </div>
 
-              {/* Dropdown Menu - Apenas quando não estiver autenticado */}
-              {isUserMenuOpen && !isAuthenticated && (
-                <>
-                  <div
-                    className="fixed inset-0 z-10"
-                    onClick={() => setIsUserMenuOpen(false)}
-                  />
-                  <div className="absolute right-0 mt-2 w-40 sm:w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
-                    <div className="p-1.5 sm:p-2">
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start gap-2 rounded text-sm sm:text-base h-9 sm:h-10"
-                        onClick={handleLoginClick}
-                      >
-                        <LogIn className="w-4 h-4" />
-                        Fazer Login
-                      </Button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Drawer de Menu do Perfil - Cliente */}
-            {isAuthenticated && user && user.profile_id === PROFILE_IDS.Cliente && (
-              <>
-                <CustomerProfileMenuDrawer
-                  isOpen={isProfileMenuOpen}
-                  onClose={() => setIsProfileMenuOpen(false)}
-                  onUpdateProfile={() => setIsUpdateProfileOpen(true)}
-                  onViewOrders={() => setIsOrdersDrawerOpen(true)}
-                  onViewFavorites={() => setIsFavoritesDrawerOpen(true)}
-                  onViewAddresses={() => setIsAddressesDrawerOpen(true)}
-                />
-
-                {/* Drawer de Atualização de Perfil - montado só ao abrir para evitar peso no header */}
-                {isUpdateProfileOpen && (
-                  <UpdateProfileDrawer
-                    isOpen
-                    onClose={() => setIsUpdateProfileOpen(false)}
-                  />
-                )}
-
-                {/* Drawer de Pedidos e Rastreio */}
-                <CustomerOrdersDrawer
-                  isOpen={isOrdersDrawerOpen}
-                  onClose={() => setIsOrdersDrawerOpen(false)}
-                  onOpenCart={onCartClick}
-                />
-
-                {/* Drawer de Favoritos */}
-                <CustomerFavoritesDrawer
-                  isOpen={isFavoritesDrawerOpen}
-                  onClose={() => setIsFavoritesDrawerOpen(false)}
-                />
-
-                {/* Drawer de Endereços */}
-                <CustomerAddressesDrawer
-                  isOpen={isAddressesDrawerOpen}
-                  onClose={() => setIsAddressesDrawerOpen(false)}
-                />
-              </>
-            )}
-
-            {/* Drawer de Configurações - Vendedor */}
-            {isAuthenticated && user && user.profile_id === PROFILE_IDS.Vendedor && (
-              <VendorSettingsDrawer
-                isOpen={isProfileMenuOpen}
-                onClose={() => setIsProfileMenuOpen(false)}
+              <StoreSearchDropdown
+                query={searchValue || ''}
+                visible={searchFocused}
+                suggestions={suggestions}
+                loading={isLoadingSuggestions}
+                categories={categories}
+                onClose={() => setSearchFocused(false)}
+                onSelect={handleSelectSuggestion}
+                onClickProduct={handleSuggestionClick}
               />
-            )}
+            </div>
+          </div>
+
+          <div className="flex-shrink-0 flex items-center gap-1 min-w-[120px] justify-end">
+            {cartButton}
+            {userButton}
           </div>
         </div>
       </div>
-    </div>
+
+      {isAuthenticated && user && user.profile_id === PROFILE_IDS.Cliente && (
+        <>
+          {isUpdateProfileOpen && (
+            <UpdateProfileDrawer isOpen onClose={() => setIsUpdateProfileOpen(false)} />
+          )}
+          <CustomerOrdersDrawer
+            isOpen={isOrdersDrawerOpen}
+            onClose={() => setIsOrdersDrawerOpen(false)}
+            onOpenCart={onCartClick}
+          />
+          <CustomerFavoritesDrawer
+            isOpen={isFavoritesDrawerOpen}
+            onClose={() => setIsFavoritesDrawerOpen(false)}
+          />
+          <CustomerAddressesDrawer
+            isOpen={isAddressesDrawerOpen}
+            onClose={() => setIsAddressesDrawerOpen(false)}
+          />
+        </>
+      )}
+    </>
   )
 }
-
