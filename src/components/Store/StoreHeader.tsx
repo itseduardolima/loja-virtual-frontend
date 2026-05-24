@@ -11,11 +11,8 @@ import { StoreInfo } from '@/types/store'
 import { useDebounce } from '@/hooks/useDebounce'
 import { api } from '@/lib/api'
 import { Product, ProductsResponse } from '@/types/product'
-import { CustomerOrdersDrawer } from './CustomerOrdersDrawer'
-import { CustomerFavoritesDrawer } from './CustomerFavoritesDrawer'
-import { CustomerAddressesDrawer } from './CustomerAddressesDrawer'
+import { CustomerAccountDrawer } from './CustomerAccountDrawer'
 import { CustomerProfileMenuDrawer } from './CustomerProfileMenuDrawer'
-import { UpdateProfileDrawer } from './UpdateProfileDrawer'
 import { VendorSettingsDrawer } from './VendorSettingsDrawer'
 import { StoreSearchDropdown } from './StoreSearchDropdown'
 import { PROFILE_IDS } from '@/types/auth'
@@ -48,10 +45,8 @@ export function StoreHeader({
   const [searchFocused, setSearchFocused] = useState(false)
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
-  const [isOrdersDrawerOpen, setIsOrdersDrawerOpen] = useState(false)
-  const [isFavoritesDrawerOpen, setIsFavoritesDrawerOpen] = useState(false)
-  const [isAddressesDrawerOpen, setIsAddressesDrawerOpen] = useState(false)
-  const [isUpdateProfileOpen, setIsUpdateProfileOpen] = useState(false)
+  const [isAccountDrawerOpen, setIsAccountDrawerOpen] = useState(false)
+  const [accountDrawerTab, setAccountDrawerTab] = useState<'conta' | 'pedidos' | 'desejos' | 'enderecos'>('conta')
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const mobileSearchInputRef = useRef<HTMLInputElement>(null)
@@ -194,10 +189,10 @@ export function StoreHeader({
         <CustomerProfileMenuDrawer
           isOpen={isProfileMenuOpen}
           onClose={() => setIsProfileMenuOpen(false)}
-          onUpdateProfile={() => setIsUpdateProfileOpen(true)}
-          onViewOrders={() => setIsOrdersDrawerOpen(true)}
-          onViewFavorites={() => setIsFavoritesDrawerOpen(true)}
-          onViewAddresses={() => setIsAddressesDrawerOpen(true)}
+          onUpdateProfile={() => { setAccountDrawerTab('conta'); setIsAccountDrawerOpen(true); setIsProfileMenuOpen(false) }}
+          onViewOrders={() => { setAccountDrawerTab('pedidos'); setIsAccountDrawerOpen(true); setIsProfileMenuOpen(false) }}
+          onViewFavorites={() => { setAccountDrawerTab('desejos'); setIsAccountDrawerOpen(true); setIsProfileMenuOpen(false) }}
+          onViewAddresses={() => { setAccountDrawerTab('enderecos'); setIsAccountDrawerOpen(true); setIsProfileMenuOpen(false) }}
         />
       )}
     </div>
@@ -363,24 +358,12 @@ export function StoreHeader({
       </div>
 
       {isAuthenticated && user && user.profile_id === PROFILE_IDS.Cliente && (
-        <>
-          {isUpdateProfileOpen && (
-            <UpdateProfileDrawer isOpen onClose={() => setIsUpdateProfileOpen(false)} />
-          )}
-          <CustomerOrdersDrawer
-            isOpen={isOrdersDrawerOpen}
-            onClose={() => setIsOrdersDrawerOpen(false)}
-            onOpenCart={onCartClick}
-          />
-          <CustomerFavoritesDrawer
-            isOpen={isFavoritesDrawerOpen}
-            onClose={() => setIsFavoritesDrawerOpen(false)}
-          />
-          <CustomerAddressesDrawer
-            isOpen={isAddressesDrawerOpen}
-            onClose={() => setIsAddressesDrawerOpen(false)}
-          />
-        </>
+        <CustomerAccountDrawer
+          isOpen={isAccountDrawerOpen}
+          onClose={() => setIsAccountDrawerOpen(false)}
+          initialTab={accountDrawerTab}
+          onOpenCart={onCartClick}
+        />
       )}
     </>
   )

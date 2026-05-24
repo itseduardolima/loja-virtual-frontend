@@ -101,46 +101,42 @@ export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOr
     <>
       {/* Overlay */}
       <div
-        className="fixed inset-0 bg-black/50 z-40"
+        className="fixed inset-0 bg-black/40 z-40"
         onClick={onClose}
       />
 
       {/* Drawer */}
-      <div className={`fixed top-0 right-0 h-full w-full max-w-3xl bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}>
+      <div className={`fixed top-0 right-0 h-full w-full max-w-2xl bg-white z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex flex-col h-full">
+
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
-            <div className="flex items-center gap-3">
+          <div className="h-16 flex items-center justify-between px-5 border-b border-[#F0EBE3]">
+            <div className="flex items-center">
               {selectedOrderId && (
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <button
                   onClick={handleBackToList}
-                  className="h-8 w-8 p-0 -ml-1"
+                  className="w-8 h-8 rounded-full bg-[#F7F3EF] flex items-center justify-center text-[#7C6B5C] hover:text-[#1C1008] cursor-pointer border-none mr-2"
                 >
                   <ChevronRight className="h-4 w-4 rotate-180" />
-                </Button>
+                </button>
               )}
               <div>
-                <h2 className="text-base font-semibold text-gray-900">
+                <h2 className="text-[15px] font-semibold text-[#1C1008]">
                   {selectedOrderId ? 'Detalhes do Pedido' : 'Meus Pedidos'}
                 </h2>
                 {!selectedOrderId && meta?.total !== undefined && (
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-[11px] text-[#A8998A] mt-0.5">
                     {meta.total} {meta.total === 1 ? 'pedido encontrado' : 'pedidos encontrados'}
                   </p>
                 )}
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
               onClick={onClose}
-              className="h-8 w-8 p-0"
+              className="w-8 h-8 rounded-full bg-[#F7F3EF] flex items-center justify-center text-[#7C6B5C] hover:text-[#1C1008] cursor-pointer border-none"
             >
               <X className="h-4 w-4" />
-            </Button>
+            </button>
           </div>
 
           {/* Content */}
@@ -153,38 +149,41 @@ export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOr
                 </div>
               ) : selectedOrder ? (
                 <div className="p-6 space-y-6">
+
                   {/* Informações do Pedido */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-gray-500">Código do Pedido</p>
-                        <p className="text-lg font-semibold">{selectedOrder.order_code}</p>
+                        <p className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#A8998A]">Código do Pedido</p>
+                        <p className="text-[18px] font-bold text-[#1C1008]">{selectedOrder.order_code}</p>
                       </div>
                       <Badge
-                        className={`${getStatusInfo(selectedOrder.status).color === 'yellow' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                            getStatusInfo(selectedOrder.status).color === 'blue' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                              getStatusInfo(selectedOrder.status).color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                                getStatusInfo(selectedOrder.status).color === 'green' ? 'bg-green-50 text-green-700 border-green-200' :
-                                  'bg-red-50 text-red-700 border-red-200'
-                          }`}
+                        className={cn(
+                          'text-[10px] font-semibold tracking-[0.05em] uppercase px-2 py-0.5 rounded-full border',
+                          getStatusInfo(selectedOrder.status).color === 'yellow' && 'bg-amber-50 text-amber-700 border-amber-200',
+                          getStatusInfo(selectedOrder.status).color === 'blue' && 'bg-blue-50 text-blue-700 border-blue-200',
+                          getStatusInfo(selectedOrder.status).color === 'purple' && 'bg-violet-50 text-violet-700 border-violet-200',
+                          getStatusInfo(selectedOrder.status).color === 'green' && 'bg-green-50 text-green-700 border-green-200',
+                          getStatusInfo(selectedOrder.status).color === 'red' && 'bg-red-50 text-red-700 border-red-200',
+                        )}
                       >
                         {getStatusInfo(selectedOrder.status).label}
                       </Badge>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <p className="text-gray-500">Data do Pedido</p>
-                        <p className="font-medium">{formatDate(selectedOrder.created_at)}</p>
+                        <p className="text-[11px] text-[#A8998A]">Data do Pedido</p>
+                        <p className="text-[13px] font-semibold text-[#1C1008]">{formatDate(selectedOrder.created_at)}</p>
                       </div>
                       <div>
-                        <p className="text-gray-500">Valor Total</p>
-                        <p className="font-medium text-lg">{formatPrice(parseFloat(selectedOrder.total))}</p>
+                        <p className="text-[11px] text-[#A8998A]">Valor Total</p>
+                        <p className="text-[13px] font-semibold text-[#1C1008]">{formatPrice(parseFloat(selectedOrder.total))}</p>
                       </div>
                     </div>
 
                     <Button
-                      className="w-full gap-2"
+                      className="bg-[#1C1008] hover:bg-[#5A3C1E] text-white w-full h-10 rounded-xl text-[13px] font-medium gap-2"
                       disabled={isRepeating}
                       onClick={() => repeatOrder(selectedOrder.id, { onSuccess: () => { onClose(); onOpenCart?.() } })}
                     >
@@ -194,8 +193,8 @@ export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOr
                   </div>
 
                   {/* Timeline de Rastreio */}
-                  <div className="border-t pt-6">
-                    <OrderTrackingTimeline 
+                  <div className="border-t border-[#F0EBE3] pt-6">
+                    <OrderTrackingTimeline
                       currentStatus={selectedOrder.status}
                       orderId={selectedOrder.id}
                       showTitle={true}
@@ -204,60 +203,66 @@ export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOr
                   </div>
 
                   {/* Itens do Pedido */}
-                  <div className="border-t pt-6">
-                    <h3 className="font-semibold mb-4">Itens do Pedido</h3>
+                  <div className="border-t border-[#F0EBE3] pt-6">
+                    <h3 className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#A8998A] mb-4">Itens do Pedido</h3>
                     <div className="space-y-4">
                       {selectedOrder.items.map((item) => {
                         // Função helper para obter a primeira imagem disponível
                         const getProductImage = (): string | null => {
                           const images = item.product.images
-                          
+
                           // Se images é um objeto (formato novo com cores)
                           if (images && typeof images === 'object' && !Array.isArray(images)) {
                             const imagesObj = images as Record<string, string[]>
-                            
+
                             // Tentar pegar a imagem da cor selecionada
                             if (item.color && imagesObj[item.color] && Array.isArray(imagesObj[item.color]) && imagesObj[item.color].length > 0) {
                               return imagesObj[item.color][0]
                             }
-                            
+
                             // Se não encontrar, pegar a primeira cor disponível
                             const firstColor = Object.keys(imagesObj)[0]
                             if (firstColor && Array.isArray(imagesObj[firstColor]) && imagesObj[firstColor].length > 0) {
                               return imagesObj[firstColor][0]
                             }
                           }
-                          
+
                           // Se images é um array (formato antigo)
                           if (Array.isArray(images) && images.length > 0) {
                             return images[0]
                           }
-                          
+
                           return null
                         }
-                        
+
                         const imageUrl = getProductImage()
-                        
+
                         return (
                           <div key={item.id} className="flex gap-4">
-                            {imageUrl && (
-                              <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200">
-                                <Image
-                                  src={buildImageUrl(imageUrl)}
-                                  alt={item.product.name}
-                                  fill
-                                  className="object-cover"
-                                />
-                              </div>
-                            )}
+                            <div className="w-[72px] h-[72px] rounded-xl overflow-hidden bg-[#F7F3EF] flex-shrink-0">
+                              {imageUrl ? (
+                                <div className="relative w-full h-full">
+                                  <Image
+                                    src={buildImageUrl(imageUrl)}
+                                    alt={item.product.name}
+                                    fill
+                                    className="object-cover"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <Package className="w-5 h-5 text-[#C4B4A4]" />
+                                </div>
+                              )}
+                            </div>
                             <div className="flex-1">
-                              <p className="font-medium">{item.product.name}</p>
-                              <div className="flex gap-4 text-sm text-gray-500 mt-1">
+                              <p className="text-[13px] font-semibold text-[#1C1008]">{item.product.name}</p>
+                              <div className="flex gap-4 text-[11px] text-[#A8998A] mt-1">
                                 <span>Qtd: {item.quantity}</span>
                                 {item.color && <span>Cor: {item.color}</span>}
                                 {item.size && <span>Tamanho: {item.size}</span>}
                               </div>
-                              <p className="text-sm font-semibold mt-2">
+                              <p className="text-[13px] font-bold text-[#1C1008] mt-2">
                                 {formatPrice(parseFloat(item.price))}
                               </p>
                             </div>
@@ -269,16 +274,16 @@ export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOr
 
                   {/* Solicitar cancelamento / solicitação pendente */}
                   {(selectedOrder.status === 1 || selectedOrder.status === 2) && (
-                    <div className="border-t pt-6">
+                    <div className="border-t border-[#F0EBE3] pt-6">
                       {selectedOrder.cancellation_requested === 1 ? (
-                        <div className="flex items-center gap-2 p-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-600">
+                        <div className="bg-[#F7F3EF] rounded-xl p-3 border border-[#F0EBE3] text-[12px] text-[#7C6B5C] flex items-center gap-2">
                           <AlertTriangle className="h-4 w-4 shrink-0" />
                           <span>Solicitação de cancelamento enviada. Aguardando aprovação da loja.</span>
                         </div>
                       ) : (
                         <Button
                           variant="outline"
-                          className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 gap-2"
+                          className="w-full border border-red-200 text-red-500 hover:bg-red-50 rounded-xl gap-2"
                           onClick={() => {
                             setCancelReason('')
                             setShowCancelDialog(true)
@@ -293,11 +298,8 @@ export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOr
 
                   {/* Informações da Loja */}
                   {selectedOrder.store && (
-                    <div className="border-t pt-6 mt-6">
-                      <div className="flex items-center gap-2 mb-5">
-                        <Store className="w-5 h-5 text-primary" />
-                        <h3 className="font-semibold text-lg">Informações da Loja</h3>
-                      </div>
+                    <div className="border-t border-[#F0EBE3] pt-6 mt-6">
+                      <h3 className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#A8998A] mb-4">Informações da Loja</h3>
 
                       {isLoadingStoreInfo ? (
                         <div className="flex items-center justify-center py-8">
@@ -306,12 +308,12 @@ export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOr
                       ) : storeInfo?.data ? (
                         <div className="space-y-5">
                           {/* Header da Loja - Nome e Descrição */}
-                          <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                            <h4 className="font-semibold text-base text-gray-900 mb-1.5">
+                          <div className="bg-[#F7F3EF] rounded-2xl p-4">
+                            <h4 className="text-[14px] font-semibold text-[#1C1008] mb-1.5">
                               {storeInfo.data.name}
                             </h4>
                             {storeInfo.data.description && (
-                              <p className="text-sm text-gray-600 leading-relaxed">
+                              <p className="text-[12px] text-[#7C6B5C] leading-relaxed">
                                 {storeInfo.data.description}
                               </p>
                             )}
@@ -331,7 +333,6 @@ export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOr
                               >
                                 <WhatsappIcon />
                                 Falar no WhatsApp
-
                               </a>
                             </Button>
                           )}
@@ -339,18 +340,18 @@ export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOr
                           {/* Contatos - Email */}
                           {storeInfo.data.email && (
                             <div className="space-y-3">
-                              <h5 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                              <h5 className="text-[9px] font-semibold tracking-[0.2em] uppercase text-[#A8998A] mb-2">
                                 Contato
                               </h5>
-                              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100 transition-colors">
-                                <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                                  <Mail className="w-5 h-5 text-purple-600" />
+                              <div className="bg-white rounded-xl p-3 border border-[#F0EBE3] flex items-center gap-3 hover:bg-[#F7F3EF] transition-colors">
+                                <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
+                                  <Mail className="w-5 h-5 text-violet-600" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-xs text-gray-500 mb-0.5">E-mail</p>
+                                  <p className="text-[11px] text-[#A8998A] mb-0.5">E-mail</p>
                                   <a
                                     href={`mailto:${storeInfo.data.email}`}
-                                    className="text-sm font-medium text-gray-900 hover:text-primary transition-colors truncate block"
+                                    className="text-[13px] font-semibold text-[#1C1008] hover:text-[#5A3C1E] transition-colors truncate block"
                                   >
                                     {storeInfo.data.email}
                                   </a>
@@ -362,7 +363,7 @@ export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOr
                           {/* Redes Sociais */}
                           {(storeInfo.data.instagram || storeInfo.data.facebook) && (
                             <div className="space-y-3">
-                              <h5 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                              <h5 className="text-[9px] font-semibold tracking-[0.2em] uppercase text-[#A8998A] mb-2">
                                 Redes Sociais
                               </h5>
                               <div className="flex flex-wrap gap-2">
@@ -411,26 +412,26 @@ export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOr
                           {/* Endereço */}
                           {(storeInfo.data.address || storeInfo.data.city || storeInfo.data.state) && (
                             <div className="space-y-3">
-                              <h5 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                              <h5 className="text-[9px] font-semibold tracking-[0.2em] uppercase text-[#A8998A] mb-2">
                                 Endereço
                               </h5>
-                              <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                              <div className="bg-white rounded-xl p-3 border border-[#F0EBE3] flex items-start gap-3">
                                 <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
                                   <MapPin className="w-5 h-5 text-red-600" />
                                 </div>
-                                <div className="flex-1 min-w-0 text-sm text-gray-700 space-y-0.5">
+                                <div className="flex-1 min-w-0 text-[13px] text-[#1C1008] space-y-0.5">
                                   {storeInfo.data.address && (
-                                    <p className="font-medium">
+                                    <p className="font-semibold">
                                       {storeInfo.data.address}
                                       {storeInfo.data.number && `, ${storeInfo.data.number}`}
                                       {storeInfo.data.complement && ` - ${storeInfo.data.complement}`}
                                     </p>
                                   )}
                                   {storeInfo.data.neighborhood && (
-                                    <p className="text-gray-600">{storeInfo.data.neighborhood}</p>
+                                    <p className="text-[#7C6B5C]">{storeInfo.data.neighborhood}</p>
                                   )}
                                   {(storeInfo.data.city || storeInfo.data.state) && (
-                                    <p className="text-gray-600">
+                                    <p className="text-[#7C6B5C]">
                                       {storeInfo.data.city}
                                       {storeInfo.data.city && storeInfo.data.state && ', '}
                                       {storeInfo.data.state}
@@ -443,8 +444,8 @@ export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOr
                           )}
                         </div>
                       ) : (
-                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                          <p className="font-medium text-gray-900 mb-3">{selectedOrder.store.name}</p>
+                        <div className="bg-[#F7F3EF] rounded-2xl p-4">
+                          <p className="text-[14px] font-semibold text-[#1C1008] mb-3">{selectedOrder.store.name}</p>
                           {selectedOrder.store.whatsapp && (
                             <Button
                               asChild
@@ -477,25 +478,28 @@ export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOr
               // Lista de pedidos
               <div className="p-4 sm:p-5">
                 {/* Filtros */}
-                <div className="space-y-3 mb-5">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <div className="mb-4">
+                  {/* Search */}
+                  <div className="relative mb-3">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C4B4A4] w-4 h-4" />
                     <Input
                       type="text"
                       placeholder="Buscar por código do pedido..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-9 h-10 rounded-lg"
+                      className="pl-9 h-10 rounded-xl border-[#F0EBE3] bg-[#F7F3EF] text-[13px] text-[#1C1008] placeholder:text-[#A8998A] focus:border-[#5A3C1E] focus:ring-0 w-full"
                     />
                   </div>
-                  <div className="flex gap-2 overflow-x-auto pb-1">
+
+                  {/* Status filter pills */}
+                  <div className="flex gap-1.5 overflow-x-auto pb-2 mb-4">
                     <button
                       onClick={() => setStatusFilter('all')}
                       className={cn(
-                        'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors',
+                        'flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-medium transition-colors whitespace-nowrap cursor-pointer border-none',
                         statusFilter === 'all'
-                          ? 'bg-primary text-white'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          ? 'bg-[#1C1008] text-white'
+                          : 'bg-[#F7F3EF] text-[#7C6B5C] hover:bg-[#F0EBE3]'
                       )}
                     >
                       Todos
@@ -505,10 +509,10 @@ export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOr
                         key={key}
                         onClick={() => setStatusFilter(parseInt(key))}
                         className={cn(
-                          'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap',
+                          'flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-medium transition-colors whitespace-nowrap cursor-pointer border-none',
                           statusFilter === parseInt(key)
-                            ? 'bg-primary text-white'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            ? 'bg-[#1C1008] text-white'
+                            : 'bg-[#F7F3EF] text-[#7C6B5C] hover:bg-[#F0EBE3]'
                         )}
                       >
                         {status.label}
@@ -528,11 +532,9 @@ export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOr
                   </div>
                 ) : orders.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                      <Package className="w-8 h-8 text-gray-300" />
-                    </div>
-                    <p className="text-gray-700 font-semibold">Nenhum pedido encontrado</p>
-                    <p className="text-sm text-gray-400 mt-1.5 max-w-xs">
+                    <Package className="w-10 h-10 text-[#C4B4A4] mx-auto" />
+                    <p className="text-[14px] font-semibold text-[#1C1008] mt-3">Nenhum pedido encontrado</p>
+                    <p className="text-[12px] text-[#A8998A] mt-1 max-w-xs">
                       {searchTerm || statusFilter !== 'all'
                         ? 'Tente ajustar os filtros de busca'
                         : 'Você ainda não fez nenhum pedido'}
@@ -563,50 +565,52 @@ export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOr
                       return (
                         <div
                           key={order.id}
-                          className="rounded-2xl border border-gray-200 overflow-hidden hover:border-primary/50 hover:shadow-md transition-all flex flex-col group"
+                          className="rounded-2xl border border-[#F0EBE3] overflow-hidden hover:border-[#C4B4A4] hover:shadow-sm transition-all flex flex-col cursor-pointer bg-white group"
                         >
                           {/* Corpo clicável */}
                           <div
-                            className="p-4 flex-1 cursor-pointer"
+                            className="p-4 flex-1"
                             onClick={() => handleOrderClick(order.id)}
                           >
                             {/* Status + Data */}
                             <div className="flex items-center justify-between mb-3">
                               <Badge className={cn(
-                                'gap-1 text-xs font-medium',
+                                'text-[10px] font-semibold tracking-[0.05em] uppercase px-2 py-0.5 rounded-full border',
                                 statusInfo.color === 'yellow' && 'bg-amber-50 text-amber-700 border-amber-200',
                                 statusInfo.color === 'blue' && 'bg-blue-50 text-blue-700 border-blue-200',
-                                statusInfo.color === 'purple' && 'bg-purple-50 text-purple-700 border-purple-200',
+                                statusInfo.color === 'purple' && 'bg-violet-50 text-violet-700 border-violet-200',
                                 statusInfo.color === 'green' && 'bg-green-50 text-green-700 border-green-200',
                                 statusInfo.color === 'red' && 'bg-red-50 text-red-700 border-red-200',
                               )}>
                                 {statusInfo.label}
                               </Badge>
-                              <span className="text-xs text-gray-400">{formatDate(order.created_at)}</span>
+                              <span className="text-[11px] text-[#A8998A]">{formatDate(order.created_at)}</span>
                             </div>
 
                             {/* Foto + Nome do primeiro produto */}
                             <div className="flex items-center gap-3 mb-4">
-                              <div className="relative w-14 h-14 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                              <div className="w-12 h-12 rounded-xl overflow-hidden bg-[#F7F3EF] flex-shrink-0">
                                 {firstImage ? (
-                                  <Image
-                                    src={buildImageUrl(firstImage)}
-                                    alt={firstItem?.product.name ?? ''}
-                                    fill
-                                    className="object-cover"
-                                  />
+                                  <div className="relative w-full h-full">
+                                    <Image
+                                      src={buildImageUrl(firstImage)}
+                                      alt={firstItem?.product.name ?? ''}
+                                      fill
+                                      className="object-cover"
+                                    />
+                                  </div>
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center">
-                                    <Package className="w-5 h-5 text-gray-300" />
+                                    <Package className="w-5 h-5 text-[#C4B4A4]" />
                                   </div>
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-sm text-gray-900 group-hover:text-primary transition-colors line-clamp-2">
+                                <p className="text-[13px] font-semibold text-[#1C1008] line-clamp-2 group-hover:text-[#5A3C1E] transition-colors">
                                   {firstItem?.product.name ?? 'Produto'}
                                 </p>
                                 {extraItems > 0 && (
-                                  <p className="text-xs text-gray-400 mt-0.5">
+                                  <p className="text-[11px] text-[#A8998A] mt-0.5">
                                     + {extraItems} {extraItems === 1 ? 'item' : 'itens'}
                                   </p>
                                 )}
@@ -615,8 +619,8 @@ export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOr
 
                             {/* Total */}
                             <div className="flex items-center justify-between">
-                              <span className="text-xs text-gray-400">{order.store?.name || 'Loja'}</span>
-                              <span className="font-bold text-base text-gray-900">
+                              <span className="text-[11px] text-[#A8998A]">{order.store?.name || 'Loja'}</span>
+                              <span className="text-[15px] font-bold text-[#1C1008]">
                                 {formatPrice(parseFloat(order.total))}
                               </span>
                             </div>
@@ -624,22 +628,20 @@ export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOr
 
                           {/* Ações */}
                           <div
-                            className="px-3 pb-3 grid grid-cols-2 gap-2"
+                            className="px-3 pb-3 grid grid-cols-2 gap-2 border-t border-[#F7F3EF] pt-3"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <Button
-                              variant="ghost"
                               size="sm"
-                              className="gap-1 text-xs h-8"
+                              className="text-[11px] text-[#7C6B5C] hover:text-[#1C1008] h-8 gap-1 bg-transparent border-none cursor-pointer"
                               onClick={() => handleOrderClick(order.id)}
                             >
                               Ver detalhes
                               <ChevronRight className="w-3 h-3" />
                             </Button>
                             <Button
-                              variant="outline"
                               size="sm"
-                              className="gap-1 text-xs h-8 text-primary border-primary/30 hover:bg-primary/5"
+                              className="text-[11px] font-medium text-[#5A3C1E] border border-[#E8E0D8] hover:bg-[#F7F3EF] h-8 gap-1 rounded-lg cursor-pointer bg-transparent"
                               disabled={isRepeating}
                               onClick={() => repeatOrder(order.id, { onSuccess: () => { onClose(); onOpenCart?.() } })}
                             >
@@ -657,6 +659,7 @@ export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOr
           </div>
         </div>
       </div>
+
       {/* Dialog de cancelamento */}
       <Dialog
         open={showCancelDialog}
@@ -726,4 +729,3 @@ export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOr
     </>
   )
 }
-

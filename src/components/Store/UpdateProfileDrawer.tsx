@@ -120,6 +120,10 @@ export function UpdateProfileDrawer({ isOpen, onClose }: UpdateProfileDrawerProp
     }
   }
 
+  const initials = user?.name
+    ? user.name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
+    : 'U'
+
   if (!isOpen) return null
 
   return (
@@ -128,9 +132,9 @@ export function UpdateProfileDrawer({ isOpen, onClose }: UpdateProfileDrawerProp
 
       <div className={`fixed top-0 right-0 h-full w-full max-w-2xl bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Atualizar Cadastro</h2>
-            <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#F0EBE3]">
+            <h2 className="text-[15px] font-semibold text-[#1C1008]">Atualizar Cadastro</h2>
+            <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0 text-[#7C6B5C] hover:bg-[#F7F3EF] hover:text-[#1C1008]">
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -142,8 +146,20 @@ export function UpdateProfileDrawer({ isOpen, onClose }: UpdateProfileDrawerProp
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="flex flex-col items-center mb-6">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#f5e8f0] to-[#d4a8c8] flex items-center justify-center text-xl font-semibold text-[#5a2040] italic mb-3">
+                    {initials}
+                  </div>
+                  {user?.name && (
+                    <p className="text-[14px] font-semibold text-[#1C1008]">{user.name}</p>
+                  )}
+                  {user?.email && (
+                    <p className="text-[12px] text-[#A8998A]">{user.email}</p>
+                  )}
+                </div>
+
                 <div className="space-y-4">
-                  <h3 className="text-base font-semibold text-gray-900">Informações Pessoais</h3>
+                  <h3 className="text-[9px] font-semibold tracking-[0.2em] uppercase text-[#A8998A] mb-4">Informações Pessoais</h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
@@ -154,7 +170,7 @@ export function UpdateProfileDrawer({ isOpen, onClose }: UpdateProfileDrawerProp
                         onChange={(e) => handleInputChange('name', e.target.value)}
                         placeholder="Seu nome completo"
                         required
-                        className={errors.name ? 'border-red-500 focus:ring-red-500' : ''}
+                        className={errors.name ? 'border-red-500 focus:ring-red-500' : 'border-[#F0EBE3] focus:border-[#5A3C1E] focus:ring-0'}
                       />
                       {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
                     </div>
@@ -168,7 +184,7 @@ export function UpdateProfileDrawer({ isOpen, onClose }: UpdateProfileDrawerProp
                         onChange={(e) => handleInputChange('email', e.target.value)}
                         placeholder="seu@email.com"
                         required
-                        className={errors.email ? 'border-red-500 focus:ring-red-500' : ''}
+                        className={errors.email ? 'border-red-500 focus:ring-red-500' : 'border-[#F0EBE3] focus:border-[#5A3C1E] focus:ring-0'}
                       />
                       {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
                     </div>
@@ -180,18 +196,28 @@ export function UpdateProfileDrawer({ isOpen, onClose }: UpdateProfileDrawerProp
                         value={formData.phone}
                         onChange={(e) => handleInputChange('phone', e.target.value)}
                         placeholder="5511999999999"
-                        className={errors.phone ? 'border-red-500 focus:ring-red-500' : ''}
+                        className={errors.phone ? 'border-red-500 focus:ring-red-500' : 'border-[#F0EBE3] focus:border-[#5A3C1E] focus:ring-0'}
                       />
                       {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
                     </div>
                   </div>
                 </div>
 
-                <div className="flex gap-3 pt-4 border-t">
-                  <Button type="button" variant="outline" onClick={onClose} className="flex-1" disabled={isUpdating}>
+                <div className="flex gap-3 pt-4 border-t border-[#F0EBE3]">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onClose}
+                    className="flex-1 border-[#F0EBE3] text-[#7C6B5C] hover:bg-[#F7F3EF] hover:text-[#1C1008]"
+                    disabled={isUpdating}
+                  >
                     Cancelar
                   </Button>
-                  <Button type="submit" className="flex-1" disabled={isUpdating || !canSubmit}>
+                  <Button
+                    type="submit"
+                    className="flex-1 bg-[#1C1008] hover:bg-[#5A3C1E] text-white"
+                    disabled={isUpdating || !canSubmit}
+                  >
                     {isUpdating ? (
                       <><LoadingSpinner className="mr-2" />Salvando...</>
                     ) : (

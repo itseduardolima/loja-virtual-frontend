@@ -2,10 +2,7 @@
 
 import { useState, useRef } from "react";
 import { X, MapPin, Plus, Pencil, Trash2, Star, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAddresses, CreateAddressData, Address } from "@/hooks/useAddresses";
 import { LoadingSpinner } from "../Layout/LoadingSpinner";
@@ -139,47 +136,51 @@ export function CustomerAddressesDrawer({
 
       {/* Drawer */}
       <div
-        className={`fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "translate-x-full"}`}
+        className={`fixed top-0 right-0 h-full w-full max-w-[440px] bg-white z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "translate-x-full"}`}
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-gray-600" />
-              <h2 className="text-lg font-semibold text-gray-900">
+          <div className="h-16 flex items-center justify-between px-5 border-b border-[#F0EBE3]">
+            <div className="flex items-center">
+              <MapPin className="w-4 h-4 text-[#5A3C1E]" />
+              <span className="text-[15px] font-semibold text-[#1C1008] ml-2.5">
                 Meus Endereços
-              </h2>
+              </span>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
               onClick={onClose}
-              className="h-8 w-8 p-0"
+              className="w-8 h-8 rounded-full bg-[#F7F3EF] flex items-center justify-center text-[#7C6B5C] hover:text-[#1C1008] cursor-pointer transition-colors"
             >
-              <X className="h-4 w-4" />
-            </Button>
+              <X className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-5 space-y-4">
             {/* Botão novo endereço */}
             {!showForm && (
-              <Button className="w-full" onClick={() => setShowForm(true)}>
-                <Plus className="h-4 w-4 mr-2" /> Novo Endereço
-              </Button>
+              <button
+                onClick={() => setShowForm(true)}
+                className="w-full bg-[#1C1008] hover:bg-[#5A3C1E] text-white text-[13px] font-medium rounded-xl h-10 flex items-center justify-center gap-2 transition-colors cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                Novo Endereço
+              </button>
             )}
 
             {/* Formulário */}
             {showForm && (
-              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                <h3 className="font-bold text-gray-900 mb-3 text-sm">
+              <div className="bg-[#F7F3EF] rounded-2xl p-4 mb-4">
+                <p className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#A8998A] mb-4">
                   {editId ? "Editar Endereço" : "Novo Endereço"}
-                </h3>
+                </p>
                 <form onSubmit={handleSubmit} className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     {/* CEP */}
                     <div className="col-span-2 sm:col-span-1">
-                      <Label className="text-xs">CEP *</Label>
+                      <label className="block text-[11px] font-medium text-[#7C6B5C] mb-1">
+                        CEP *
+                      </label>
                       <div className="relative">
                         <Input
                           value={form.zipcode}
@@ -189,22 +190,19 @@ export function CustomerAddressesDrawer({
                           placeholder="00000-000"
                           maxLength={9}
                           required
-                          className="h-9 text-sm pr-8"
+                          className="border-[#E8E0D8] focus:border-[#5A3C1E] bg-white rounded-lg h-9 text-[13px] text-[#1C1008] pr-8"
                         />
                         {isFetchingCep && (
-                          <Loader2
-                            className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
-                            style={{ animation: "spin 1s linear infinite" }}
-                          />
+                          <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-[#A8998A] animate-spin" />
                         )}
                       </div>
                       {cepError && (
-                        <p className="text-xs text-red-500 mt-0.5">
+                        <p className="text-[11px] text-red-500 mt-1">
                           {cepError}
                         </p>
                       )}
                       {!cepError && focusedField === "zipcode" && (
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-[10px] text-[#A8998A] mt-0.5">
                           {form.zipcode.length}/9
                         </p>
                       )}
@@ -212,9 +210,9 @@ export function CustomerAddressesDrawer({
 
                     {/* Rótulo */}
                     <div className="col-span-2 sm:col-span-1">
-                      <Label className="text-xs">
+                      <label className="block text-[11px] font-medium text-[#7C6B5C] mb-1">
                         Rótulo (ex: Casa, Trabalho)
-                      </Label>
+                      </label>
                       <Input
                         value={form.label}
                         onChange={(e) =>
@@ -227,10 +225,10 @@ export function CustomerAddressesDrawer({
                         onBlur={() => setFocusedField(null)}
                         placeholder="Casa"
                         maxLength={30}
-                        className="h-9 text-sm"
+                        className="border-[#E8E0D8] focus:border-[#5A3C1E] bg-white rounded-lg h-9 text-[13px] text-[#1C1008]"
                       />
                       {focusedField === "label" && (
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-[10px] text-[#A8998A] mt-0.5">
                           {(form.label ?? "").length}/30
                         </p>
                       )}
@@ -238,7 +236,9 @@ export function CustomerAddressesDrawer({
 
                     {/* Nome */}
                     <div className="col-span-2">
-                      <Label className="text-xs">Nome do destinatário *</Label>
+                      <label className="block text-[11px] font-medium text-[#7C6B5C] mb-1">
+                        Nome do destinatário *
+                      </label>
                       <Input
                         value={form.name}
                         onChange={(e) =>
@@ -252,10 +252,10 @@ export function CustomerAddressesDrawer({
                         placeholder="Nome completo"
                         maxLength={80}
                         required
-                        className="h-9 text-sm"
+                        className="border-[#E8E0D8] focus:border-[#5A3C1E] bg-white rounded-lg h-9 text-[13px] text-[#1C1008]"
                       />
                       {focusedField === "name" && (
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-[10px] text-[#A8998A] mt-0.5">
                           {form.name.length}/80
                         </p>
                       )}
@@ -263,7 +263,9 @@ export function CustomerAddressesDrawer({
 
                     {/* Logradouro */}
                     <div className="col-span-2">
-                      <Label className="text-xs">Logradouro *</Label>
+                      <label className="block text-[11px] font-medium text-[#7C6B5C] mb-1">
+                        Logradouro *
+                      </label>
                       <Input
                         value={form.street}
                         onChange={(e) =>
@@ -277,10 +279,10 @@ export function CustomerAddressesDrawer({
                         placeholder="Rua, Avenida..."
                         maxLength={100}
                         required
-                        className="h-9 text-sm"
+                        className="border-[#E8E0D8] focus:border-[#5A3C1E] bg-white rounded-lg h-9 text-[13px] text-[#1C1008]"
                       />
                       {focusedField === "street" && (
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-[10px] text-[#A8998A] mt-0.5">
                           {form.street.length}/100
                         </p>
                       )}
@@ -288,7 +290,9 @@ export function CustomerAddressesDrawer({
 
                     {/* Número */}
                     <div>
-                      <Label className="text-xs">Número</Label>
+                      <label className="block text-[11px] font-medium text-[#7C6B5C] mb-1">
+                        Número
+                      </label>
                       <Input
                         ref={numberInputRef}
                         value={form.number}
@@ -302,10 +306,10 @@ export function CustomerAddressesDrawer({
                         onBlur={() => setFocusedField(null)}
                         placeholder="123"
                         maxLength={10}
-                        className="h-9 text-sm"
+                        className="border-[#E8E0D8] focus:border-[#5A3C1E] bg-white rounded-lg h-9 text-[13px] text-[#1C1008]"
                       />
                       {focusedField === "number" && (
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-[10px] text-[#A8998A] mt-0.5">
                           {(form.number ?? "").length}/10
                         </p>
                       )}
@@ -313,7 +317,9 @@ export function CustomerAddressesDrawer({
 
                     {/* Complemento */}
                     <div>
-                      <Label className="text-xs">Complemento</Label>
+                      <label className="block text-[11px] font-medium text-[#7C6B5C] mb-1">
+                        Complemento
+                      </label>
                       <Input
                         value={form.complement}
                         onChange={(e) =>
@@ -326,10 +332,10 @@ export function CustomerAddressesDrawer({
                         onBlur={() => setFocusedField(null)}
                         placeholder="Apto 4B"
                         maxLength={50}
-                        className="h-9 text-sm"
+                        className="border-[#E8E0D8] focus:border-[#5A3C1E] bg-white rounded-lg h-9 text-[13px] text-[#1C1008]"
                       />
                       {focusedField === "complement" && (
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-[10px] text-[#A8998A] mt-0.5">
                           {(form.complement ?? "").length}/50
                         </p>
                       )}
@@ -337,7 +343,9 @@ export function CustomerAddressesDrawer({
 
                     {/* Bairro */}
                     <div className="col-span-2">
-                      <Label className="text-xs">Bairro</Label>
+                      <label className="block text-[11px] font-medium text-[#7C6B5C] mb-1">
+                        Bairro
+                      </label>
                       <Input
                         value={form.neighborhood}
                         onChange={(e) =>
@@ -350,10 +358,10 @@ export function CustomerAddressesDrawer({
                         onBlur={() => setFocusedField(null)}
                         placeholder="Bairro"
                         maxLength={60}
-                        className="h-9 text-sm"
+                        className="border-[#E8E0D8] focus:border-[#5A3C1E] bg-white rounded-lg h-9 text-[13px] text-[#1C1008]"
                       />
                       {focusedField === "neighborhood" && (
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-[10px] text-[#A8998A] mt-0.5">
                           {(form.neighborhood ?? "").length}/60
                         </p>
                       )}
@@ -361,7 +369,9 @@ export function CustomerAddressesDrawer({
 
                     {/* Cidade */}
                     <div>
-                      <Label className="text-xs">Cidade *</Label>
+                      <label className="block text-[11px] font-medium text-[#7C6B5C] mb-1">
+                        Cidade *
+                      </label>
                       <Input
                         value={form.city}
                         onChange={(e) =>
@@ -375,10 +385,10 @@ export function CustomerAddressesDrawer({
                         placeholder="São Paulo"
                         maxLength={60}
                         required
-                        className="h-9 text-sm"
+                        className="border-[#E8E0D8] focus:border-[#5A3C1E] bg-white rounded-lg h-9 text-[13px] text-[#1C1008]"
                       />
                       {focusedField === "city" && (
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-[10px] text-[#A8998A] mt-0.5">
                           {form.city.length}/60
                         </p>
                       )}
@@ -386,7 +396,9 @@ export function CustomerAddressesDrawer({
 
                     {/* UF */}
                     <div>
-                      <Label className="text-xs">UF *</Label>
+                      <label className="block text-[11px] font-medium text-[#7C6B5C] mb-1">
+                        UF *
+                      </label>
                       <Input
                         value={form.state}
                         onChange={(e) =>
@@ -400,10 +412,10 @@ export function CustomerAddressesDrawer({
                         placeholder="SP"
                         maxLength={2}
                         required
-                        className="h-9 text-sm"
+                        className="border-[#E8E0D8] focus:border-[#5A3C1E] bg-white rounded-lg h-9 text-[13px] text-[#1C1008]"
                       />
                       {focusedField === "state" && (
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-[10px] text-[#A8998A] mt-0.5">
                           {form.state.length}/2
                         </p>
                       )}
@@ -425,7 +437,7 @@ export function CustomerAddressesDrawer({
                       />
                       <label
                         htmlFor="is_default_drawer"
-                        className="text-xs text-gray-700"
+                        className="text-[12px] text-[#7C6B5C]"
                       >
                         Definir como endereço padrão
                       </label>
@@ -433,10 +445,10 @@ export function CustomerAddressesDrawer({
                   </div>
 
                   <div className="flex gap-2 pt-1">
-                    <Button
+                    <button
                       type="submit"
-                      size="sm"
                       disabled={isCreating || isUpdating}
+                      className="bg-[#1C1008] hover:bg-[#5A3C1E] text-white text-[12px] font-medium rounded-lg h-9 px-5 transition-colors disabled:opacity-60 flex items-center gap-2"
                     >
                       {isCreating || isUpdating ? (
                         <LoadingSpinner size="sm" fullScreen={false} />
@@ -445,15 +457,14 @@ export function CustomerAddressesDrawer({
                       ) : (
                         "Adicionar"
                       )}
-                    </Button>
-                    <Button
+                    </button>
+                    <button
                       type="button"
-                      size="sm"
-                      variant="outline"
                       onClick={handleCancel}
+                      className="border border-[#E8E0D8] text-[#7C6B5C] hover:bg-[#F7F3EF] text-[12px] rounded-lg h-9 px-5 transition-colors"
                     >
                       Cancelar
-                    </Button>
+                    </button>
                   </div>
                 </form>
               </div>
@@ -466,11 +477,11 @@ export function CustomerAddressesDrawer({
               </div>
             ) : addresses.length === 0 ? (
               <div className="text-center py-10">
-                <MapPin className="h-10 w-10 text-gray-300 mx-auto mb-2" />
-                <p className="font-medium text-gray-700 text-sm mb-1">
+                <MapPin className="w-10 h-10 text-[#C4B4A4] mx-auto mb-3" />
+                <p className="text-[14px] font-semibold text-[#1C1008] mt-2">
                   Nenhum endereço salvo
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-[12px] text-[#A8998A] mt-1">
                   Salve endereços para agilizar seus próximos pedidos
                 </p>
               </div>
@@ -479,62 +490,60 @@ export function CustomerAddressesDrawer({
                 {addresses.map((addr) => (
                   <div
                     key={addr.id}
-                    className={`bg-white border rounded-xl p-3 flex items-start justify-between gap-2 ${addr.is_default === 1 ? "border-gray-900" : "border-gray-200"}`}
+                    className={`rounded-2xl border p-4 flex items-start justify-between gap-3 ${
+                      addr.is_default === 1
+                        ? "border-[#5A3C1E] bg-[#F7F3EF]"
+                        : "border-[#F0EBE3] bg-white"
+                    }`}
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-0.5">
                         {addr.label && (
-                          <span className="text-xs font-semibold text-gray-500 uppercase">
+                          <span className="text-[9px] font-bold tracking-[0.15em] uppercase text-[#A8998A]">
                             {addr.label}
                           </span>
                         )}
-                        <span className="text-sm font-medium text-gray-900">
+                        <span className="text-[13px] font-semibold text-[#1C1008]">
                           {addr.name}
                         </span>
                         {addr.is_default === 1 && (
-                          <Badge variant="default" className="text-xs">
+                          <span className="inline-flex items-center text-[9px] font-bold tracking-[0.1em] uppercase text-[#5A3C1E] bg-[#F0E8DC] px-2 py-0.5 rounded-full">
                             Padrão
-                          </Badge>
+                          </span>
                         )}
                       </div>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-[12px] text-[#7C6B5C] mt-0.5">
                         {addr.street}
                         {addr.number ? `, ${addr.number}` : ""}
                         {addr.complement ? ` - ${addr.complement}` : ""}
                       </p>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-[12px] text-[#7C6B5C]">
                         {addr.neighborhood ? `${addr.neighborhood}, ` : ""}
                         {addr.city} - {addr.state}, {addr.zipcode}
                       </p>
                     </div>
                     <div className="flex gap-0.5 shrink-0">
                       {addr.is_default !== 1 && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 w-7 p-0"
+                        <button
                           title="Tornar padrão"
                           onClick={() => setDefaultAddress(addr.id)}
+                          className="w-7 h-7 rounded-full hover:bg-[#F0EBE3] flex items-center justify-center text-[#A8998A] hover:text-[#1C1008] transition-colors"
                         >
-                          <Star className="h-3.5 w-3.5" />
-                        </Button>
+                          <Star className="w-3.5 h-3.5" />
+                        </button>
                       )}
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 w-7 p-0"
+                      <button
                         onClick={() => handleEdit(addr)}
+                        className="w-7 h-7 rounded-full hover:bg-[#F0EBE3] flex items-center justify-center text-[#A8998A] hover:text-[#1C1008] transition-colors"
                       >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
                         onClick={() => removeAddress(addr.id)}
+                        className="w-7 h-7 rounded-full hover:bg-red-50 flex items-center justify-center text-[#A8998A] hover:text-red-500 transition-colors"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
                 ))}
