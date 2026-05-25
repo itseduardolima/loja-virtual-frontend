@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, Button, LoadingSpinner } from
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { RenewSubscriptionModal } from '@/components/Subscription/RenewSubscriptionModal'
 import { RefundModal } from '@/components/Subscription/RefundModal'
+import { ChangePlanModal } from '@/components/Subscription/ChangePlanModal'
+import { useGetPaymentLink } from '@/hooks/useGetPaymentLink'
 import { formatPrice, formatBillingCycle } from '@/lib/utils'
 import {
   CreditCard,
@@ -16,6 +18,7 @@ import {
   X,
   RefreshCw,
   RotateCcw,
+  ArrowLeftRight,
   Clock,
   Receipt,
   ChevronLeft,
@@ -38,10 +41,27 @@ const PAYMENT_METHOD_MAP: Record<string, string> = {
   boleto: 'Boleto',
 }
 
+function PayProrationButton({ paymentId }: { paymentId: string }) {
+  const { mutate: getLink, isPending } = useGetPaymentLink()
+  return (
+    <Button
+      size="sm"
+      onClick={() => getLink(paymentId)}
+      disabled={isPending}
+      className="bg-orange-600 hover:bg-orange-700 text-white"
+    >
+      {isPending ? 'Carregando...' : 'Pagar agora'}
+    </Button>
+  )
+}
+
 function PaymentRow({ payment }: { payment: Payment }) {
   const statusInfo = PAYMENT_STATUS_MAP[payment.status] ?? { label: payment.status, className: 'bg-gray-100 text-gray-800' }
   const methodLabel = PAYMENT_METHOD_MAP[payment.payment_method ?? ''] ?? (payment.payment_method ?? 'N/A')
   const date = payment.paid_at ?? payment.created_at
+  const { mutate: getLink, isPending: isFetchingLink } = useGetPaymentLink()
+  const isPayable = payment.status === 'pending' && !!payment.payment_id
+
   return (
     <div className="flex items-center justify-between py-3">
       <div className="flex flex-col gap-0.5">
@@ -62,6 +82,17 @@ function PaymentRow({ payment }: { payment: Payment }) {
         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusInfo.className}`}>
           {statusInfo.label}
         </span>
+        {isPayable && (
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={isFetchingLink}
+            onClick={() => getLink(payment.payment_id!)}
+            className="h-7 text-xs"
+          >
+            {isFetchingLink ? '...' : 'Pagar agora'}
+          </Button>
+        )}
       </div>
     </div>
   )
@@ -90,11 +121,17 @@ export default function PlanoPage() {
     setShowRenewModal,
     showRefundModal,
     setShowRefundModal,
+    showChangePlanModal,
+    setShowChangePlanModal,
+    showRenewWithPlanModal,
+    setShowRenewWithPlanModal,
     showPaymentsModal,
     setShowPaymentsModal,
     paymentsPage,
     setPaymentsPage,
     handleCancel,
+    handleCancelScheduledChange,
+    isCancelingScheduled,
     openPaymentsModal,
   } = usePlanoPage()
 
@@ -301,6 +338,65 @@ export default function PlanoPage() {
               <CardTitle className='text-base'>Ações</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {subscription.pending_upgrade_payment_id && subscription.scheduled_plan && (
+                <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                  <div className="flex items-center gap-2 mb-1">
+                    <ArrowLeftRight className="w-4 h-4 text-orange-600 shrink-0" />
+                    <p className="text-sm font-semibold text-orange-900">Upgrade pendente de pagamento</p>
+                  </div>
+                  <p className="text-sm text-orange-800 mb-3">
+                    Você iniciou um upgrade para <strong>{subscription.scheduled_plan.name}</strong>.
+                    Os recursos do novo plano só serão liberados após a confirmação do pagamento da
+                    proração.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <PayProrationButton paymentId={subscription.pending_upgrade_payment_id} />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-orange-300 text-orange-700 hover:bg-orange-100"
+                      onClick={handleCancelScheduledChange}
+                      disabled={isCancelingScheduled}
+                    >
+                      {isCancelingScheduled ? 'Cancelando...' : 'Cancelar upgrade'}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {subscription.scheduled_plan && subscription.scheduled_change_at && (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center gap-2 mb-1">
+                    <ArrowLeftRight className="w-4 h-4 text-blue-600 shrink-0" />
+                    <p className="text-sm font-semibold text-blue-900">Troca de plano agendada</p>
+                  </div>
+                  <p className="text-sm text-blue-800">
+                    Sua assinatura mudará para <strong>{subscription.scheduled_plan.name}</strong>
+                    {subscription.scheduled_billing_cycle && (
+                      <> ({subscription.scheduled_billing_cycle === 'yearly' ? 'Anual' : 'Mensal'})</>
+                    )}{' '}em{' '}
+                    <strong>
+                      {new Date(subscription.scheduled_change_at).toLocaleDateString('pt-BR', {
+                        day: '2-digit',
+                        month: 'long',
+                        year: 'numeric',
+                        timeZone: 'UTC',
+                      })}
+                    </strong>
+                    .
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-3 border-blue-300 text-blue-700 hover:bg-blue-100"
+                    onClick={handleCancelScheduledChange}
+                    disabled={isCancelingScheduled}
+                  >
+                    {isCancelingScheduled ? 'Cancelando...' : 'Cancelar agendamento'}
+                  </Button>
+                </div>
+              )}
+
               {subscription.status === 'active' && isCancelScheduled && (
                 <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
                   <div className="flex items-center gap-2 mb-1">
@@ -354,6 +450,19 @@ export default function PlanoPage() {
                     </div>
                   )}
 
+                  {!isFreeAccess &&
+                    !subscription.pending_upgrade_payment_id &&
+                    !subscription.scheduled_plan_id && (
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => setShowChangePlanModal(true)}
+                      >
+                        <ArrowLeftRight className="w-4 h-4 mr-2" />
+                        Trocar de Plano
+                      </Button>
+                    )}
+
                   {!showCancelConfirm ? (
                     <Button variant="destructive" className="w-full" onClick={() => setShowCancelConfirm(true)}>
                       <X className="w-4 h-4 mr-2" />
@@ -393,6 +502,14 @@ export default function PlanoPage() {
                   <Button className="w-full" onClick={() => setShowRenewModal(true)}>
                     <RefreshCw className="w-4 h-4 mr-2" />
                     Renovar Assinatura
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setShowRenewWithPlanModal(true)}
+                  >
+                    <ArrowLeftRight className="w-4 h-4 mr-2" />
+                    Escolher Outro Plano
                   </Button>
                 </>
               )}
@@ -468,6 +585,31 @@ export default function PlanoPage() {
           onOpenChange={setShowRefundModal}
           planPrice={planPrice}
           daysRemaining={refundDaysRemaining}
+        />
+      )}
+
+      {/* Modal de Troca de Plano */}
+      {plan && (
+        <ChangePlanModal
+          open={showChangePlanModal}
+          onOpenChange={setShowChangePlanModal}
+          currentPlanId={plan.id}
+          currentBillingCycle={billingCycle}
+          hasActiveCoupon={!!subscription.applied_coupon_code}
+          currentPrice={planPrice}
+          currentPeriodEnd={subscription.current_period_end}
+        />
+      )}
+
+      {/* Modal de Renovação com escolha de outro plano */}
+      {plan && (
+        <ChangePlanModal
+          mode="renew"
+          open={showRenewWithPlanModal}
+          onOpenChange={setShowRenewWithPlanModal}
+          currentPlanId={plan.id}
+          currentBillingCycle={billingCycle}
+          hasActiveCoupon={false}
         />
       )}
 

@@ -5,6 +5,11 @@ import { api } from '@/lib/axios'
 import { useToastContext } from '@/contexts/ToastContext'
 import { useRouter } from 'next/navigation'
 
+export interface UpdateStoreOptions {
+  redirectOnSuccess?: boolean
+  silent?: boolean
+}
+
 export interface UpdateStoreData {
   name?: string
   description?: string
@@ -30,11 +35,14 @@ export interface UpdateStoreData {
   delivery_fee?: number
   free_delivery_min?: number
   delivery_time?: string
+  pickup_enabled?: boolean
+  free_shipping_enabled?: boolean
   payment_methods?: string[]
   business_hours?: Record<string, string>
 }
 
-export function useUpdateStore() {
+export function useUpdateStore(options: UpdateStoreOptions = {}) {
+  const { redirectOnSuccess = false, silent = false } = options
   const { toast } = useToastContext()
   const router = useRouter()
   const queryClient = useQueryClient()
@@ -75,27 +83,32 @@ export function useUpdateStore() {
   const updateStore = async ({ storeId, data }: { storeId: number; data: UpdateStoreData }) => {
     try {
       const result = await updateStoreMutation.mutateAsync({ storeId, data })
-      
-      toast({
-        title: 'Sucesso!',
-        description: 'As informações da loja foram salvas com sucesso.',
-        variant: 'success'
-      })
-      
+
+      if (!silent) {
+        toast({
+          title: 'Sucesso!',
+          description: 'As informações da loja foram salvas com sucesso.',
+          variant: 'success'
+        })
+      }
+
       // Invalidar cache da loja
       queryClient.invalidateQueries({ queryKey: ['store'] })
-      
-      // Redirecionar para o dashboard
-      router.push('/vendedor')
-      
+
+      if (redirectOnSuccess) {
+        router.push('/vendedor')
+      }
+
       return result
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Erro ao atualizar loja'
-      toast({
-        title: 'Erro!',
-        description: errorMessage,
-        variant: 'destructive'
-      })
+      if (!silent) {
+        toast({
+          title: 'Erro!',
+          description: errorMessage,
+          variant: 'destructive'
+        })
+      }
       throw error
     }
   }

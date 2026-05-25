@@ -104,6 +104,12 @@ export function useEditProductPage(productId: string, user: any) {
       form.setValue('promo_price', product.promo_price ? parseFloat(String(product.promo_price)) : undefined)
       form.setValue('promo_starts_at', product.promo_starts_at ? product.promo_starts_at.slice(0, 16) : null)
       form.setValue('promo_ends_at', product.promo_ends_at ? product.promo_ends_at.slice(0, 16) : null)
+      // Dados fiscais (NF-e)
+      form.setValue('ncm', (product as any).ncm || '')
+      form.setValue('cest', (product as any).cest || '')
+      form.setValue('origem', (product as any).origem ?? 0)
+      form.setValue('unidade', (product as any).unidade || 'UN')
+      form.setValue('gtin', (product as any).gtin || '')
       if (product.stock_variants && product.stock_variants.length > 0) {
         setVariantStocks(product.stock_variants)
       }
@@ -234,6 +240,12 @@ export function useEditProductPage(productId: string, user: any) {
     if (data.promo_starts_at) formData.append('promo_starts_at', data.promo_starts_at)
     if (data.promo_ends_at) formData.append('promo_ends_at', data.promo_ends_at)
     if (variantStocks.length > 0) formData.append('variant_stocks', JSON.stringify(variantStocks))
+    // Dados fiscais (NF-e)
+    if (data.ncm !== undefined) formData.append('ncm', data.ncm || '')
+    if (data.cest !== undefined) formData.append('cest', data.cest || '')
+    if (data.origem !== undefined && data.origem !== null) formData.append('origem', String(data.origem))
+    if (data.unidade !== undefined) formData.append('unidade', data.unidade || '')
+    if (data.gtin !== undefined) formData.append('gtin', data.gtin || '')
 
     if (selectedNicheId && Object.keys(dynamicFieldValues).length > 0) {
       const dynamicFields = Object.values(dynamicFieldValues).map((fieldValue) => ({

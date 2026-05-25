@@ -1,84 +1,47 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
-  User,
   Phone,
   Mail,
   Package,
-  FileText,
-  ShoppingBag,
   MapPin,
-  PhoneCall,
   Tag,
   Printer,
   CheckCircle,
   AlertTriangle,
   X,
+  Loader2,
+  Copy,
+  Check,
+  PhoneCall,
+  ArrowRight,
 } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 import { useOrderDetail } from '@/hooks/useOrderDetail'
 import { useAcceptCancellationRequest } from '@/hooks/useAcceptCancellationRequest'
 import { useDenyCancellationRequest } from '@/hooks/useDenyCancellationRequest'
 import { type Order } from '@/types/order'
-import { formatDate, formatPrice } from '@/lib/utils'
+import { formatDate, formatPrice, cn } from '@/lib/utils'
 import { buildImageUrl } from '@/lib/imageUtils'
 import { OrderTrackingTimeline } from '@/components/Order/OrderTrackingTimeline'
 import { WhatsappIcon } from '@/assets/icons/WhatsappIcon'
 import { OrderPrintModal } from '@/components/Order/OrderPrintModal'
+import { OrderNfeCard } from '@/components/Order/OrderNfeCard'
+import { STATUS_OPTIONS } from '@/lib/orderPanelUtils'
 
-function renderDeliveryAddress(order: Order) {
-  let deliveryAddr: Record<string, string> | null = null
-  if (order.delivery_address) {
-    try { deliveryAddr = JSON.parse(order.delivery_address) } catch { /* */ }
-  }
-
-  const cardHeader = (
-    <CardHeader className="py-2 px-3">
-      <CardTitle className="flex items-center gap-2 text-sm font-bold">
-        <MapPin className="h-4 w-4 shrink-0" />
-        Endereço de entrega
-      </CardTitle>
-    </CardHeader>
-  )
-
-  if (deliveryAddr) {
-    const { name, street, number, complement, neighborhood, city, state, zipcode } = deliveryAddr
-    return (
-      <Card>
-        {cardHeader}
-        <CardContent className="py-2 px-3 pb-3 space-y-0.5 text-sm text-gray-700 break-words">
-          {name && <p className="font-medium text-gray-900">{name}</p>}
-          {street && (
-            <p>
-              {street}
-              {number ? `, ${number}` : ''}
-              {complement ? ` - ${complement}` : ''}
-            </p>
-          )}
-          {(neighborhood || city || state) && (
-            <p>
-              {[neighborhood, city, state].filter(Boolean).join(', ')}
-              {zipcode ? ` - ${zipcode}` : ''}
-            </p>
-          )}
-        </CardContent>
-      </Card>
-    )
-  }
-
-  return (
-    <Card>
-      {cardHeader}
-      <CardContent className="py-2 px-3 pb-3">
-        <p className="text-gray-500 text-xs">Endereço não informado pelo comprador</p>
-      </CardContent>
-    </Card>
-  )
+// ─── Status chip palette (refined neutral + accent) ──────────────────────────
+const STATUS_CHIP: Record<
+  number,
+  { dot: string; bg: string; text: string; ring: string }
+> = {
+  1: { dot: 'bg-amber-500',   bg: 'bg-amber-50',   text: 'text-amber-800',   ring: 'ring-amber-200' },
+  2: { dot: 'bg-blue-500',    bg: 'bg-blue-50',    text: 'text-blue-800',    ring: 'ring-blue-200' },
+  3: { dot: 'bg-violet-500',  bg: 'bg-violet-50',  text: 'text-violet-800',  ring: 'ring-violet-200' },
+  4: { dot: 'bg-emerald-500', bg: 'bg-emerald-50', text: 'text-emerald-800', ring: 'ring-emerald-200' },
+  5: { dot: 'bg-rose-500',    bg: 'bg-rose-50',    text: 'text-rose-800',    ring: 'ring-rose-200' },
 }
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 function getProductImage(item: Order['items'][0]): string | null {
   const images = item.product.images
   if (images && typeof images === 'object' && !Array.isArray(images)) {
@@ -115,41 +78,313 @@ Em breve entraremos em contato para confirmar o pedido!`
   return encodeURIComponent(message)
 }
 
-interface OrderDetailPanelProps {
-  orderId: number | null
-  onStatusUpdate?: () => void
+function parseDeliveryAddress(order: Order): Record<string, string> | null {
+  if (!order.delivery_address) return null
+  try {
+    return JSON.parse(order.delivery_address)
+  } catch {
+    return null
+  }
 }
 
-export function OrderDetailPanel({ orderId, onStatusUpdate }: OrderDetailPanelProps) {
-  const { data: order, isLoading, error } = useOrderDetail(orderId ?? 0)
-  const [isPrintOpen, setIsPrintOpen] = useState(false)
-  const { mutate: acceptRequest, isPending: isAccepting } = useAcceptCancellationRequest()
-  const { mutate: denyRequest, isPending: isDenying } = useDenyCancellationRequest()
+function relativeTime(date: string): string {
+  const d = new Date(date)
+  const diffMs = Date.now() - d.getTime()
+  const min = Math.floor(diffMs / 60_000)
+  if (min < 1) return 'agora'
+  if (min < 60) return `há ${min} min`
+  const h = Math.floor(min / 60)
+  if (h < 24) return `há ${h} h`
+  const days = Math.floor(h / 24)
+  if (days < 7) return `há ${days} ${days === 1 ? 'dia' : 'dias'}`
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
+}
 
+function initials(name: string): string {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0])
+    .join('')
+    .toUpperCase()
+}
 
-  if (isLoading) {
-    return (
-      <div className="h-full flex items-center justify-center p-6 bg-gray-50/50 rounded-xl border border-dashed border-gray-200 min-w-0">
-        <div className="animate-pulse flex flex-col gap-3 w-full">
-          <div className="h-5 bg-gray-200 rounded w-3/4" />
-          <div className="h-4 bg-gray-200 rounded w-full" />
-          <div className="h-4 bg-gray-200 rounded w-2/3" />
+// ─── StatusChip ──────────────────────────────────────────────────────────────
+function StatusChip({ status, size = 'sm' }: { status: number; size?: 'sm' | 'md' }) {
+  const chip = STATUS_CHIP[status] || STATUS_CHIP[1]
+  const opt = STATUS_OPTIONS.find((s) => s.value === status)
+  const padding = size === 'md' ? 'px-2.5 py-1 text-[12px]' : 'px-2 py-0.5 text-[11px]'
+
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1.5 rounded-full font-semibold ring-1 ring-inset',
+        padding,
+        chip.bg,
+        chip.text,
+        chip.ring,
+      )}
+    >
+      <span className={cn('h-1.5 w-1.5 rounded-full', chip.dot)} />
+      {opt?.label ?? `Status ${status}`}
+    </span>
+  )
+}
+
+// ─── Copy-to-clipboard inline button ─────────────────────────────────────────
+function CopyButton({ value, label }: { value: string; label?: string }) {
+  const [copied, setCopied] = useState(false)
+  const onCopy = () => {
+    navigator.clipboard.writeText(value).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    })
+  }
+  return (
+    <button
+      type="button"
+      onClick={onCopy}
+      title={`Copiar ${label ?? value}`}
+      className="inline-flex h-5 w-5 items-center justify-center rounded text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+    >
+      {copied ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
+    </button>
+  )
+}
+
+// ─── Tab definitions ─────────────────────────────────────────────────────────
+type TabKey = 'resumo' | 'itens' | 'cliente' | 'historico'
+
+const TABS: Array<{ id: TabKey; label: string; count?: (o: Order) => number | undefined }> = [
+  { id: 'resumo', label: 'Resumo' },
+  { id: 'itens', label: 'Itens', count: (o) => o.items?.length },
+  { id: 'cliente', label: 'Cliente' },
+  { id: 'historico', label: 'Histórico' },
+]
+
+// ─── Tab: Resumo ─────────────────────────────────────────────────────────────
+function ResumoTab({ order }: { order: Order }) {
+  const total = parseFloat(order.total)
+  const discount = order.coupon_discount ? parseFloat(order.coupon_discount) : 0
+  const subtotal = discount > 0 ? total + discount : total
+
+  return (
+    <div className="flex flex-col gap-5">
+      {/* Hero metric: total */}
+      <div className="rounded-2xl border border-gray-200 bg-white p-5">
+        <div className="flex items-baseline justify-between">
+          <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">
+            Total do pedido
+          </span>
+          <span className="text-[11px] font-medium text-gray-400">
+            {order.items.length} {order.items.length === 1 ? 'item' : 'itens'}
+          </span>
         </div>
-      </div>
-    )
-  }
+        <div className="mt-1.5 flex items-baseline gap-2 tabular-nums">
+          <span className="text-[28px] font-extrabold tracking-[-0.03em] text-gray-900">
+            {formatPrice(total)}
+          </span>
+          {discount > 0 && (
+            <span className="text-[13px] font-semibold text-gray-400 line-through">
+              {formatPrice(subtotal)}
+            </span>
+          )}
+        </div>
 
-  if (error || !order) {
-    return (
-      <div className="h-full flex flex-col items-center justify-center text-center p-6 bg-red-50/50 rounded-xl border border-dashed border-red-200 min-w-0">
-        <p className="text-red-600 font-bold text-sm">Erro ao carregar o pedido</p>
-        <p className="text-xs text-red-500 mt-1">Tente selecionar novamente</p>
+        {discount > 0 && (
+          <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11.5px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200">
+            <Tag className="h-3 w-3" strokeWidth={2.5} />
+            {order.coupon_code ?? 'Cupom'}
+            <span className="font-bold">−{formatPrice(discount)}</span>
+          </div>
+        )}
       </div>
-    )
-  }
 
+      {/* NF-e */}
+      <OrderNfeCard order={order} />
+
+      {/* Breakdown financeiro detalhado */}
+      {discount > 0 && (
+        <section>
+          <h4 className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">
+            Composição
+          </h4>
+          <dl className="rounded-xl border border-gray-200 bg-white">
+            <div className="flex items-center justify-between border-b border-gray-100 px-4 py-2.5">
+              <dt className="text-[13px] text-gray-600">Subtotal dos itens</dt>
+              <dd className="text-[13px] font-medium tabular-nums text-gray-900">
+                {formatPrice(subtotal)}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between border-b border-gray-100 px-4 py-2.5">
+              <dt className="inline-flex items-center gap-1.5 text-[13px] text-emerald-700">
+                <Tag className="h-3 w-3" />
+                {order.coupon_code ?? 'Desconto'}
+              </dt>
+              <dd className="text-[13px] font-medium tabular-nums text-emerald-700">
+                −{formatPrice(discount)}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between px-4 py-2.5">
+              <dt className="text-[13px] font-bold text-gray-900">Total</dt>
+              <dd className="text-[14px] font-extrabold tabular-nums text-gray-900">
+                {formatPrice(total)}
+              </dd>
+            </div>
+          </dl>
+        </section>
+      )}
+
+      {/* Observações */}
+      {order.notes && (
+        <section>
+          <h4 className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">
+            Observações do cliente
+          </h4>
+          <div className="rounded-xl border-l-2 border-amber-300 bg-amber-50/60 px-4 py-3 text-[13px] leading-relaxed text-amber-950">
+            {order.notes}
+          </div>
+        </section>
+      )}
+    </div>
+  )
+}
+
+// ─── Tab: Itens ──────────────────────────────────────────────────────────────
+function ItensTab({ order }: { order: Order }) {
+  const total = parseFloat(order.total)
+  const discount = order.coupon_discount ? parseFloat(order.coupon_discount) : 0
+  const subtotal = discount > 0 ? total + discount : total
+  const totalQty = order.items.reduce((sum, i) => sum + i.quantity, 0)
+
+  return (
+    <div className="flex flex-col gap-5">
+      <section>
+        <div className="mb-2 flex items-baseline justify-between px-1">
+          <h4 className="text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">
+            {order.items.length} {order.items.length === 1 ? 'item' : 'itens'}
+          </h4>
+          <span className="text-[11px] font-medium text-gray-400 tabular-nums">
+            {totalQty} {totalQty === 1 ? 'unidade' : 'unidades'}
+          </span>
+        </div>
+
+        <ul className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+          {order.items.map((item, idx) => {
+            const imageUrl = getProductImage(item)
+            const lineTotal = parseFloat(item.price) * item.quantity
+            return (
+              <li
+                key={item.id}
+                className={cn(
+                  'group flex gap-3 px-3 py-3 transition-colors hover:bg-gray-50/60',
+                  idx > 0 && 'border-t border-gray-100',
+                )}
+              >
+                <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-100 ring-1 ring-inset ring-gray-200">
+                  {imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={buildImageUrl(imageUrl)}
+                      alt={item.product.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <Package className="h-5 w-5 text-gray-400" />
+                  )}
+                  <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-nxp px-1 text-[10px] font-bold tabular-nums text-white shadow-[0_1px_2px_hsl(237_49%_33%/0.3)]">
+                    {item.quantity}
+                  </span>
+                </div>
+
+                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                  <p className="line-clamp-2 break-words text-[13px] font-semibold leading-tight text-gray-900">
+                    {item.product.name}
+                  </p>
+                  {(item.size || item.color) && (
+                    <div className="flex flex-wrap items-center gap-1">
+                      {item.size && (
+                        <span className="rounded-md bg-gray-100 px-1.5 py-0.5 text-[10.5px] font-medium text-gray-700">
+                          Tam {item.size}
+                        </span>
+                      )}
+                      {item.color && (
+                        <span className="rounded-md bg-gray-100 px-1.5 py-0.5 text-[10.5px] font-medium text-gray-700">
+                          {item.color}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {item.notes && (
+                    <p className="mt-0.5 line-clamp-2 break-words rounded-md border-l-2 border-amber-300 bg-amber-50/60 px-2 py-0.5 text-[11px] leading-snug text-amber-900">
+                      {item.notes}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex shrink-0 flex-col items-end justify-between text-right">
+                  <p className="text-[13px] font-bold tabular-nums text-gray-900">
+                    {formatPrice(lineTotal)}
+                  </p>
+                  <p className="text-[10.5px] font-medium tabular-nums text-gray-400">
+                    {formatPrice(parseFloat(item.price))} ea
+                  </p>
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+      </section>
+
+      {/* Total breakdown */}
+      <section>
+        <h4 className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">
+          Totais
+        </h4>
+        <dl className="rounded-xl border border-gray-200 bg-white">
+          {discount > 0 && (
+            <>
+              <div className="flex items-center justify-between border-b border-gray-100 px-4 py-2.5">
+                <dt className="text-[13px] text-gray-600">Subtotal</dt>
+                <dd className="text-[13px] font-medium tabular-nums text-gray-900">
+                  {formatPrice(subtotal)}
+                </dd>
+              </div>
+              <div className="flex items-center justify-between border-b border-gray-100 px-4 py-2.5">
+                <dt className="inline-flex items-center gap-1.5 text-[13px] text-emerald-700">
+                  <Tag className="h-3 w-3" />
+                  {order.coupon_code ?? 'Desconto'}
+                </dt>
+                <dd className="text-[13px] font-medium tabular-nums text-emerald-700">
+                  −{formatPrice(discount)}
+                </dd>
+              </div>
+            </>
+          )}
+          <div className="flex items-baseline justify-between bg-gray-50/50 px-4 py-3">
+            <dt className="text-[13px] font-bold text-gray-900">Total</dt>
+            <dd className="text-[18px] font-extrabold tracking-[-0.02em] tabular-nums text-gray-900">
+              {formatPrice(total)}
+            </dd>
+          </div>
+        </dl>
+      </section>
+    </div>
+  )
+}
+
+// ─── Tab: Cliente ────────────────────────────────────────────────────────────
+function ClienteTab({
+  order,
+  onPrint,
+}: {
+  order: Order
+  onPrint: () => void
+}) {
   const whatsappNumber = order.customer_phone ? formatWhatsAppNumber(order.customer_phone) : null
   const whatsappMessage = generateWhatsAppMessage(order)
+  const deliveryAddr = parseDeliveryAddress(order)
 
   const handleWhatsappContact = () => {
     if (!whatsappNumber) return
@@ -164,228 +399,372 @@ export function OrderDetailPanel({ orderId, onStatusUpdate }: OrderDetailPanelPr
   }
 
   return (
-    <div className="h-full overflow-y-auto space-y-4 min-w-0">
-      {/* Cabeçalho do pedido */}
-      <div className="flex flex-col gap-3">
-        <h2 className="text-lg font-bold text-gray-900 truncate" title={order.customer_name}>
-          {order.customer_name}
-        </h2>
-      </div>
-
-      <div className="text-sm text-gray-600 break-words flex flex-col gap-2">
-        <div className="flex items-center gap-2 flex-wrap">
-          <p>Pedido <span className="font-bold text-gray-900">#{order.order_code}</span></p>
-          {order.bling_sync?.status === 'synced' && (
-            <Badge variant="outline" className="gap-1 text-green-700 border-green-200 bg-green-50 text-xs">
-              <CheckCircle className="h-3 w-3" />
-              Bling
-            </Badge>
-          )}
-        </div>
-        <p>Feito às <span className="font-bold text-gray-900">{formatDate(order.created_at)}</span></p>
-      </div>
-
-      {/* Solicitação de cancelamento pelo cliente */}
-      {order.cancellation_requested === 1 && (
-        <div className="rounded-xl border border-orange-200 bg-orange-50 p-3 space-y-2.5">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-orange-600 shrink-0" />
-            <p className="text-sm font-bold text-orange-800">Cancelamento solicitado pelo cliente</p>
+    <div className="flex flex-col gap-5">
+      {/* Cliente card */}
+      <section className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <div className="flex items-start gap-3 border-b border-gray-100 px-4 py-4">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-nxp to-nxp/70 text-[14px] font-bold text-white shadow-[0_1px_2px_hsl(237_49%_33%/0.25)]">
+            {initials(order.customer_name)}
           </div>
-          {order.cancellation_request_reason && (
-            <p className="text-sm text-orange-700 bg-white/60 rounded-lg px-2.5 py-2 break-words">
-              {order.cancellation_request_reason}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[14px] font-bold tracking-[-0.005em] text-gray-900">
+              {order.customer_name}
             </p>
-          )}
-          <div className="flex gap-2 pt-0.5">
-            <Button
-              size="sm"
-              variant="destructive"
-              disabled={isAccepting || isDenying}
-              onClick={() => acceptRequest(order.id)}
-              className="flex-1 gap-1.5"
-            >
-              <CheckCircle className="h-3.5 w-3.5" />
-              {isAccepting ? 'Aceitando...' : 'Aceitar'}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={isAccepting || isDenying}
-              onClick={() => denyRequest(order.id)}
-              className="flex-1 gap-1.5 border-orange-200 text-orange-700 hover:bg-orange-50"
-            >
-              <X className="h-3.5 w-3.5" />
-              {isDenying ? 'Recusando...' : 'Recusar'}
-            </Button>
+            <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-gray-500">
+              <span className="rounded-sm bg-gray-100 px-1 py-0.5 font-mono text-[10.5px] text-gray-600">
+                #{order.order_code}
+              </span>
+              <span>·</span>
+              <span>{relativeTime(order.created_at)}</span>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Contato rápido */}
-      <div className="flex flex-wrap gap-2">
-        <Button variant="outline" size="sm" onClick={handleWhatsappContact} disabled={!whatsappNumber} className="gap-1.5 flex-1 min-w-0 sm:flex-initial">
-          <span className="h-4 w-4 shrink-0 flex items-center justify-center">
-            <WhatsappIcon />
-          </span>
-          <span className="truncate">WhatsApp</span>
-        </Button>
-        <Button variant="outline" size="sm" onClick={handleCallContact} disabled={!order.customer_phone} className="gap-1.5 flex-1 min-w-0 sm:flex-initial">
-          <PhoneCall className="h-4 w-4 shrink-0" />
-          <span className="truncate">Ligar</span>
-        </Button>
-        <Button variant="outline" size="sm" onClick={handleEmailContact} className="gap-1.5 flex-1 min-w-0 sm:flex-initial">
-          <Mail className="h-4 w-4 shrink-0" />
-          <span className="truncate">Email</span>
-        </Button>
-        <Button variant="outline" size="sm" onClick={() => setIsPrintOpen(true)} className="gap-1.5 flex-1 min-w-0 sm:flex-initial">
-          <Printer className="h-4 w-4 shrink-0" />
-          <span className="truncate">Imprimir</span>
-        </Button>
-      </div>
-
-      {/* Itens */}
-      <Card>
-        <CardHeader className="py-2 px-3">
-          <CardTitle className="flex items-center gap-2 text-base font-bold">
-            <ShoppingBag className="h-4 w-4 shrink-0" />
-            Itens no pedido
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="py-2 px-3 pb-3 space-y-3">
-          {order.items.map((item) => {
-            const imageUrl = getProductImage(item)
-            return (
-              <div key={item.id} className="flex flex-col gap-2 rounded-lg border border-gray-100 p-2.5 min-w-0">
-                <div className="flex gap-2 min-w-0">
-                  <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-100 shrink-0">
-                    {imageUrl ? (
-                      <img src={buildImageUrl(imageUrl)} alt={item.product.name} className="w-full h-full object-cover rounded-lg" />
-                    ) : (
-                      <Package className="h-5 w-5 text-gray-400" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 text-sm leading-tight break-words">{item.product.name}</p>
-                    <div className="flex flex-wrap gap-1 mt-0.5 text-xs text-gray-500">
-                      {item.size && <span>{item.size}</span>}
-                      {item.color && <span>· {item.color}</span>}
-                      <span>· Qtd: {item.quantity}</span>
-                    </div>
-                  </div>
-                </div>
-                {item.notes && (
-                  <p className="text-xs text-amber-700 break-words">Obs: {item.notes}</p>
-                )}
-                <p className="text-sm font-bold text-gray-900 text-right">
-                  {formatPrice(parseFloat(item.price) * item.quantity)}
+        {/* Contatos como linhas action-able */}
+        <div className="divide-y divide-gray-100">
+          {order.customer_phone && (
+            <button
+              type="button"
+              onClick={handleCallContact}
+              className="group flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-gray-50"
+            >
+              <Phone className="h-4 w-4 shrink-0 text-gray-400" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[10.5px] font-bold uppercase tracking-[0.06em] text-gray-400">
+                  Telefone
+                </p>
+                <p className="truncate text-[13px] font-medium tabular-nums text-gray-900 group-hover:text-gray-700">
+                  {order.customer_phone}
                 </p>
               </div>
-            )
-          })}
-          
-        </CardContent>
-      </Card>
-
-      {/* Cupom + Total */}
-      <Card>
-        <CardContent className="py-3 px-3 space-y-2">
-          {/* Subtotal */}
-          {order.coupon_discount && parseFloat(order.coupon_discount) > 0 && (
-            <>
-              <div className="flex justify-between items-center text-sm text-gray-500">
-                <span>Subtotal</span>
-                <span>
-                  {formatPrice(parseFloat(order.total) + parseFloat(order.coupon_discount))}
-                </span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="flex items-center gap-1.5 text-green-700 font-medium">
-                  <Tag className="h-3.5 w-3.5" />
-                  {order.coupon_code ?? 'Cupom'}
-                </span>
-                <span className="text-green-700 font-medium">
-                  -{formatPrice(parseFloat(order.coupon_discount))}
-                </span>
-              </div>
-              <div className="border-t border-gray-100 pt-2" />
-            </>
+              <CopyButton value={order.customer_phone} label="telefone" />
+            </button>
           )}
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-900 font-bold">Total</span>
-            <span className="text-base font-bold text-gray-900">{formatPrice(parseFloat(order.total))}</span>
+          <div className="flex items-center gap-3 px-4 py-3">
+            <Mail className="h-4 w-4 shrink-0 text-gray-400" />
+            <div className="min-w-0 flex-1">
+              <p className="text-[10.5px] font-bold uppercase tracking-[0.06em] text-gray-400">
+                Email
+              </p>
+              <p className="truncate text-[13px] font-medium text-gray-900">
+                {order.customer_email}
+              </p>
+            </div>
+            <CopyButton value={order.customer_email} label="email" />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
+
+      {/* Quick actions: primary + secondary */}
+      <section>
+        <h4 className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">
+          Ações rápidas
+        </h4>
+        <div className="flex flex-col gap-2">
+          {/* Primary action — WhatsApp */}
+          <button
+            type="button"
+            onClick={handleWhatsappContact}
+            disabled={!whatsappNumber}
+            className="group inline-flex items-center justify-between gap-3 rounded-xl bg-emerald-600 px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_1px_2px_hsl(151_55%_30%/0.25)] transition-all hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none"
+          >
+            <span className="inline-flex items-center gap-2">
+              <span className="flex h-4 w-4 items-center justify-center">
+                <WhatsappIcon />
+              </span>
+              Enviar mensagem por WhatsApp
+            </span>
+            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" strokeWidth={2.5} />
+          </button>
+
+          {/* Secondary actions */}
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              onClick={handleCallContact}
+              disabled={!order.customer_phone}
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-[12px] font-semibold text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <PhoneCall className="h-3.5 w-3.5" />
+              Ligar
+            </button>
+            <button
+              type="button"
+              onClick={handleEmailContact}
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-[12px] font-semibold text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900"
+            >
+              <Mail className="h-3.5 w-3.5" />
+              Email
+            </button>
+            <button
+              type="button"
+              onClick={onPrint}
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-[12px] font-semibold text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900"
+            >
+              <Printer className="h-3.5 w-3.5" />
+              Imprimir
+            </button>
+          </div>
+        </div>
+      </section>
 
       {/* Endereço de entrega */}
-      {renderDeliveryAddress(order)}
-
-      {/* Motivo de cancelamento */}
-      {order.status === 5 && (
-        <Card className="border-red-100">
-          <CardHeader className="py-2 px-3">
-            <CardTitle className="flex items-center gap-2 text-sm font-bold text-red-700">
-              <FileText className="h-4 w-4 shrink-0" />
-              Motivo do cancelamento
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="py-2 px-3 pb-3">
-            {order.cancellation_reason ? (
-              <p className="text-sm text-red-800 bg-red-50 rounded-lg p-2.5 break-words">{order.cancellation_reason}</p>
-            ) : (
-              <p className="text-xs text-gray-400 italic">Motivo não informado</p>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Observações */}
-      {order.notes && (
-        <Card>
-          <CardHeader className="py-2 px-3">
-            <CardTitle className="flex items-center gap-2 text-sm font-bold">
-              <FileText className="h-4 w-4 shrink-0" />
-              Observações
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="py-2 px-3 pb-3">
-            <p className="text-sm text-gray-600 bg-gray-50 rounded-lg p-2.5 break-words">{order.notes}</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Progresso */}
-      <Card>
-        <CardHeader className="py-2 px-3">
-          <CardTitle className="text-sm font-bold">Progresso do pedido</CardTitle>
-        </CardHeader>
-        <CardContent className="py-2 px-3 pb-3">
-          <OrderTrackingTimeline currentStatus={order.status} orderId={order.id} showTitle={false} isVendor />
-        </CardContent>
-      </Card>
-
-      {/* Cliente / Contato */}
-      <Card>
-        <CardHeader className="py-2 px-3">
-          <CardTitle className="flex items-center gap-2 text-sm font-bold">
-            <User className="h-4 w-4 shrink-0" />
-            Contato
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="py-2 px-3 pb-3 space-y-2 text-sm min-w-0">
-          {order.customer_phone && (
-            <div className="flex items-center gap-2 text-gray-700 min-w-0">
-              <Phone className="h-4 w-4 text-gray-400 shrink-0" />
-              <span className="break-all min-w-0">{order.customer_phone}</span>
+      <section>
+        <h4 className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">
+          Endereço de entrega
+        </h4>
+        {deliveryAddr ? (
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+            <div className="flex items-start gap-3 px-4 py-3.5">
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
+              <div className="min-w-0 flex-1 space-y-0.5 break-words text-[13px] leading-relaxed">
+                {deliveryAddr.name && (
+                  <p className="font-semibold text-gray-900">{deliveryAddr.name}</p>
+                )}
+                {deliveryAddr.street && (
+                  <p className="text-gray-700">
+                    {deliveryAddr.street}
+                    {deliveryAddr.number ? `, ${deliveryAddr.number}` : ''}
+                    {deliveryAddr.complement ? ` · ${deliveryAddr.complement}` : ''}
+                  </p>
+                )}
+                {(deliveryAddr.neighborhood || deliveryAddr.city || deliveryAddr.state) && (
+                  <p className="text-gray-500">
+                    {[deliveryAddr.neighborhood, deliveryAddr.city, deliveryAddr.state].filter(Boolean).join(' · ')}
+                  </p>
+                )}
+                {deliveryAddr.zipcode && (
+                  <p className="font-mono text-[11.5px] text-gray-400">
+                    CEP {deliveryAddr.zipcode}
+                  </p>
+                )}
+              </div>
             </div>
-          )}
-          <div className="flex items-center gap-2 text-gray-700 min-w-0">
-            <Mail className="h-4 w-4 text-gray-400 shrink-0" />
-            <span className="break-all min-w-0">{order.customer_email}</span>
           </div>
-        </CardContent>
-      </Card>
+        ) : (
+          <div className="flex items-center gap-2 rounded-xl border border-dashed border-gray-200 px-4 py-4 text-[12.5px] italic text-gray-500">
+            <MapPin className="h-4 w-4 shrink-0" />
+            Endereço não informado pelo comprador
+          </div>
+        )}
+      </section>
+    </div>
+  )
+}
+
+// ─── Tab: Histórico ──────────────────────────────────────────────────────────
+function HistoricoTab({ order }: { order: Order }) {
+  return (
+    <div className="flex flex-col gap-5">
+      {/* Motivo de cancelamento (no topo se cancelado) */}
+      {order.status === 5 && (
+        <section className="overflow-hidden rounded-xl border border-rose-200 bg-rose-50/50">
+          <div className="flex items-start gap-3 px-4 py-3.5">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-rose-100 text-rose-700">
+              <X className="h-4 w-4" strokeWidth={2.5} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-rose-700">
+                Pedido cancelado
+              </p>
+              <p className="mt-1 break-words text-[13px] leading-relaxed text-rose-900">
+                {order.cancellation_reason || (
+                  <span className="italic text-rose-600/70">Motivo não informado</span>
+                )}
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Timeline */}
+      <section>
+        <h4 className="mb-3 px-1 text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">
+          Linha do tempo
+        </h4>
+        <div className="rounded-xl border border-gray-200 bg-white p-4">
+          <OrderTrackingTimeline
+            currentStatus={order.status}
+            orderId={order.id}
+            showTitle={false}
+            isVendor
+          />
+        </div>
+      </section>
+    </div>
+  )
+}
+
+// ─── Main panel ──────────────────────────────────────────────────────────────
+interface OrderDetailPanelProps {
+  orderId: number | null
+  onStatusUpdate?: () => void
+}
+
+export function OrderDetailPanel({ orderId }: OrderDetailPanelProps) {
+  const { data: order, isLoading, error } = useOrderDetail(orderId ?? 0)
+  const [isPrintOpen, setIsPrintOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<TabKey>('resumo')
+  const { mutate: acceptRequest, isPending: isAccepting } = useAcceptCancellationRequest()
+  const { mutate: denyRequest, isPending: isDenying } = useDenyCancellationRequest()
+
+  if (isLoading) {
+    return (
+      <div className="flex h-full min-w-0 items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50/50 p-6">
+        <div className="flex w-full animate-pulse flex-col gap-3">
+          <div className="h-5 w-3/4 rounded bg-gray-200" />
+          <div className="h-4 w-full rounded bg-gray-200" />
+          <div className="h-4 w-2/3 rounded bg-gray-200" />
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !order) {
+    return (
+      <div className="flex h-full min-w-0 flex-col items-center justify-center rounded-xl border border-dashed border-rose-200 bg-rose-50/50 p-6 text-center">
+        <p className="text-sm font-bold text-rose-700">Erro ao carregar o pedido</p>
+        <p className="mt-1 text-xs text-rose-500">Tente selecionar novamente</p>
+      </div>
+    )
+  }
+
+  const ActiveTabComponent = {
+    resumo: <ResumoTab order={order} />,
+    itens: <ItensTab order={order} />,
+    cliente: <ClienteTab order={order} onPrint={() => setIsPrintOpen(true)} />,
+    historico: <HistoricoTab order={order} />,
+  }[activeTab]
+
+  const isBlingSynced = order.bling_sync?.status === 'synced'
+
+  return (
+    <div className="flex h-full min-w-0 flex-col gap-4 overflow-hidden">
+      {/* ─── Header ───────────────────────────────────────────────────────── */}
+      <header className="flex flex-col gap-3">
+        {/* Linha 1: status + ID + sync */}
+        <div className="flex items-center justify-between gap-2">
+          <StatusChip status={order.status} size="md" />
+          <div className="flex items-center gap-1.5">
+            {isBlingSynced && (
+              <span
+                title="Sincronizado com Bling"
+                className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.04em] text-emerald-700 ring-1 ring-inset ring-emerald-200"
+              >
+                <CheckCircle className="h-2.5 w-2.5" strokeWidth={2.5} />
+                Bling
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Linha 2: ID em mono + botão de copiar */}
+        <div className="flex items-center gap-1">
+          <span className="font-mono text-[12px] font-semibold text-gray-500">
+            #{order.order_code}
+          </span>
+          <CopyButton value={order.order_code} label="código do pedido" />
+          <span className="text-gray-300">·</span>
+          <span className="text-[12px] text-gray-500">
+            {formatDate(order.created_at)} <span className="text-gray-400">({relativeTime(order.created_at)})</span>
+          </span>
+        </div>
+
+        {/* Linha 3: nome do cliente em destaque */}
+        <h2
+          className="truncate text-[20px] font-extrabold leading-tight tracking-[-0.025em] text-gray-900"
+          title={order.customer_name}
+        >
+          {order.customer_name}
+        </h2>
+
+        {/* Cancellation request — alerta destacado */}
+        {order.cancellation_requested === 1 && (
+          <div className="overflow-hidden rounded-xl border border-orange-200 bg-orange-50">
+            <div className="flex items-start gap-2.5 px-3.5 py-3">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-orange-100 text-orange-700">
+                <AlertTriangle className="h-3.5 w-3.5" strokeWidth={2.5} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[12.5px] font-bold text-orange-900">
+                  Cliente solicitou o cancelamento
+                </p>
+                {order.cancellation_request_reason && (
+                  <p className="mt-1 break-words rounded-md bg-white/70 px-2 py-1.5 text-[12px] leading-relaxed text-orange-800">
+                    “{order.cancellation_request_reason}”
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-px border-t border-orange-200 bg-orange-200/40">
+              <button
+                type="button"
+                onClick={() => denyRequest(order.id)}
+                disabled={isAccepting || isDenying}
+                className="inline-flex items-center justify-center gap-1.5 bg-white px-3 py-2 text-[12.5px] font-semibold text-orange-700 transition-colors hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isDenying ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
+                {isDenying ? 'Recusando…' : 'Recusar'}
+              </button>
+              <button
+                type="button"
+                onClick={() => acceptRequest(order.id)}
+                disabled={isAccepting || isDenying}
+                className="inline-flex items-center justify-center gap-1.5 bg-rose-600 px-3 py-2 text-[12.5px] font-semibold text-white transition-colors hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isAccepting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
+                {isAccepting ? 'Aceitando…' : 'Aceitar e cancelar'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Tabs underlined (estilo Stripe/Linear) */}
+        <nav role="tablist" aria-label="Seções do pedido" className="-mx-1 flex border-b border-gray-200">
+          {TABS.map((tab) => {
+            const active = activeTab === tab.id
+            const count = tab.count?.(order)
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  'relative flex items-center gap-1.5 px-3 py-2.5 text-[13px] font-semibold transition-colors',
+                  active
+                    ? 'text-nxp'
+                    : 'text-gray-500 hover:text-gray-800',
+                )}
+              >
+                {tab.label}
+                {count !== undefined && count > 0 && (
+                  <span
+                    className={cn(
+                      'inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-bold tabular-nums',
+                      active ? 'bg-nxp text-white' : 'bg-gray-100 text-gray-500',
+                    )}
+                  >
+                    {count}
+                  </span>
+                )}
+                {active && (
+                  <span
+                    aria-hidden
+                    className="absolute inset-x-0 -bottom-px h-0.5 rounded-t-sm bg-nxp"
+                  />
+                )}
+              </button>
+            )
+          })}
+        </nav>
+      </header>
+
+      {/* ─── Tab content (scrollable) ─────────────────────────────────────── */}
+      <div className="-mx-1 flex-1 overflow-y-auto overflow-x-hidden px-1 pb-2">
+        {ActiveTabComponent}
+      </div>
 
       <OrderPrintModal
         order={order}

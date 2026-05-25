@@ -31,6 +31,8 @@ export interface OrderBlingSync {
   error_message: string | null
 }
 
+export type NfeStatus = 'em_processo' | 'autorizada' | 'denegada' | 'cancelada'
+
 export interface Order {
   id: number
   order_number: string
@@ -54,6 +56,14 @@ export interface Order {
   cancellation_reason: string | null
   cancellation_requested: number
   cancellation_request_reason: string | null
+  nfe_id_bling?: string | null
+  nfe_status?: NfeStatus | null
+  nfe_chave?: string | null
+  nfe_number?: string | null
+  nfe_serie?: string | null
+  nfe_url_pdf?: string | null
+  nfe_url_xml?: string | null
+  nfe_emitted_at?: string | null
   items: OrderItem[]
   user: OrderBuyer | null
   bling_sync?: OrderBlingSync | null

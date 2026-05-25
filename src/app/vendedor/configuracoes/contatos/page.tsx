@@ -1,11 +1,22 @@
 'use client'
 
 import { useContatos } from './useContatos'
-import { Card, CardContent, Input, Label, Button, LoadingSpinner } from '@/components'
-import LoadingPage from '@/components/Layout/LoadingPage'
-import { Instagram, Facebook, Mail } from 'lucide-react'
+import { Input, LoadingSpinner } from '@/components'
+import { Instagram, Facebook, Mail, CheckCircle2, Radio } from 'lucide-react'
 import { WhatsappIcon } from '@/assets/icons/WhatsappIcon'
 import { PhoneCountryInput } from '@/components/Form/PhoneCountryInput'
+import { cn } from '@/lib/utils'
+import {
+  SectionCard,
+  SectionHeader,
+  Field,
+  FieldLabel,
+  FieldHelp,
+  FieldGrid,
+  FormActions,
+  NxButton,
+  nxInputClass,
+} from '../_shared'
 
 export default function ContatosPage() {
   const {
@@ -19,135 +30,188 @@ export default function ContatosPage() {
     countriesLoading,
     handleInputChange,
     handleCountrySelect,
-    handleSave
+    handleSave,
   } = useContatos()
 
   if (isLoading) {
-    return <LoadingPage />
+    return (
+      <SectionCard>
+        <div className="flex items-center justify-center py-16">
+          <LoadingSpinner size="md" />
+        </div>
+      </SectionCard>
+    )
   }
 
+  // Quais canais estão preenchidos (para o resumo de canais ativos)
+  const channels = [
+    { id: 'whatsapp', label: 'WhatsApp', filled: !!formData.whatsapp, color: '#25D366' },
+    { id: 'email', label: 'Email', filled: !!formData.email, color: '#5965E0' },
+    { id: 'instagram', label: 'Instagram', filled: !!formData.instagram, color: '#E1306C' },
+    { id: 'facebook', label: 'Facebook', filled: !!formData.facebook, color: '#1877F2' },
+  ]
+  const activeCount = channels.filter((c) => c.filled).length
+
   return (
-    <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
-      {/* Header */}
-      <div className="mb-3 sm:mb-4 md:mb-6 lg:mb-8">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-1 sm:mb-2">Contatos e Redes Sociais</h1>
-        <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
-          Configure os canais de contato e redes sociais da sua loja
-        </p>
+    <div className="flex flex-col gap-4">
+      {/* ─── Hero: status dos canais ativos ──────────────────────────────── */}
+      <div className="overflow-hidden rounded-2xl border border-nxborder bg-white shadow-[0_1px_2px_hsl(0_0%_0%/0.04)]">
+        <div className="flex items-start gap-3 border-b border-nxborder bg-gradient-to-br from-nxp/[0.04] to-transparent px-4 py-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-nxp ring-1 ring-inset ring-nxp/15">
+            <Radio className="h-4 w-4" strokeWidth={2} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-[13.5px] font-bold tracking-[-0.005em] text-nxi1">
+              Canais de atendimento
+            </h3>
+            <p className="mt-0.5 text-[12px] text-nxi2">
+              <strong className="text-nxi1">{activeCount}</strong> de {channels.length} canais configurados ·
+              aparecem no rodapé da loja.
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
+            {channels.map((c) => (
+              <span
+                key={c.id}
+                title={c.filled ? `${c.label} configurado` : `${c.label} não configurado`}
+                className={cn(
+                  'flex h-7 w-7 items-center justify-center rounded-lg text-[10px] font-bold uppercase ring-1 ring-inset transition-all',
+                  c.filled
+                    ? 'bg-nxs/10 text-nxs ring-nxs/20'
+                    : 'bg-nxbg text-nxi3 ring-nxborder',
+                )}
+              >
+                {c.filled ? <CheckCircle2 className="h-3 w-3" strokeWidth={2.5} /> : c.label[0]}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
 
-      <Card className="shadow-sm">
-        <CardContent className="p-8">
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* WhatsApp */}
-              <div className="md:col-span-2">
-                <div className="flex items-center gap-2 mb-2">
-                  <WhatsappIcon />
-                  <Label htmlFor="whatsapp" className="text-sm font-medium text-gray-700">
-                    WhatsApp
-                  </Label>
-                </div>
-                <div className="flex gap-2 mt-2">
-                  <PhoneCountryInput
-                    id="whatsapp"
-                    value={formData.whatsapp}
-                    onValueChange={(val) => handleInputChange('whatsapp', val)}
-                    placeholder="11999999999"
-                    selectedCountry={selectedCountry}
-                    onSelectedCountryChange={handleCountrySelect}
-                    countriesData={countriesData}
-                    countriesLoading={countriesLoading}
-                    inputClassName={`flex-1 ${errors.whatsapp ? 'border-red-500 focus:ring-red-500' : ''}`}
-                  />
-                </div>
-                {errors.whatsapp && (
-                  <p className="mt-1 text-sm text-red-600">{errors.whatsapp}</p>
-                )}
-              </div>
+      <SectionCard>
+        <SectionHeader
+          title="Contatos"
+          description="Como clientes podem falar com sua loja."
+        />
 
-              {/* Email */}
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Mail className="h-5 w-5 text-gray-600" />
-                  <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-                    Email
-                  </Label>
-                </div>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  placeholder="contato@minhaloja.com.br"
-                  className={`mt-2 ${errors.email ? 'border-red-500 focus:ring-red-500' : ''}`}
-                />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                )}
-              </div>
+        <FieldGrid columns={2}>
+          {/* WhatsApp */}
+          <Field full>
+            <FieldLabel htmlFor="whatsapp">
+              <span className="inline-flex h-4 w-4 items-center justify-center text-emerald-600">
+                <WhatsappIcon />
+              </span>
+              WhatsApp para vendas
+              {formData.whatsapp && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-nxs/10 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.04em] text-nxs ring-1 ring-inset ring-nxs/20">
+                  <CheckCircle2 className="h-2 w-2" strokeWidth={3} />
+                  Ativo
+                </span>
+              )}
+            </FieldLabel>
+            <PhoneCountryInput
+              id="whatsapp"
+              value={formData.whatsapp}
+              onValueChange={(val) => handleInputChange('whatsapp', val)}
+              placeholder="(11) 99999-9999"
+              selectedCountry={selectedCountry}
+              onSelectedCountryChange={handleCountrySelect}
+              countriesData={countriesData}
+              countriesLoading={countriesLoading}
+              inputClassName={nxInputClass(!!errors.whatsapp)}
+            />
+            {errors.whatsapp ? (
+              <FieldHelp variant="error">{errors.whatsapp}</FieldHelp>
+            ) : (
+              <FieldHelp>Usado nos botões “Falar no WhatsApp” da loja.</FieldHelp>
+            )}
+          </Field>
 
-              {/* Instagram */}
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Instagram className="h-5 w-5 text-pink-600" />
-                  <Label htmlFor="instagram" className="text-sm font-medium text-gray-700">
-                    Link do Instagram
-                  </Label>
-                </div>
-                <Input
-                  id="instagram"
-                  type="url"
-                  value={formData.instagram}
-                  onChange={(e) => handleInputChange('instagram', e.target.value)}
-                  placeholder="https://instagram.com/minhaloja"
-                  className={`mt-2 ${errors.instagram ? 'border-red-500 focus:ring-red-500' : ''}`}
-                />
-                {errors.instagram && (
-                  <p className="mt-1 text-sm text-red-600">{errors.instagram}</p>
-                )}
-              </div>
+          {/* Email */}
+          <Field full>
+            <FieldLabel htmlFor="email">
+              <Mail className="h-3.5 w-3.5 text-nxi3" />
+              Email público
+              {formData.email && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-nxs/10 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.04em] text-nxs ring-1 ring-inset ring-nxs/20">
+                  <CheckCircle2 className="h-2 w-2" strokeWidth={3} />
+                  Ativo
+                </span>
+              )}
+            </FieldLabel>
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              placeholder="contato@sualoja.com.br"
+              className={nxInputClass(!!errors.email)}
+            />
+            {errors.email ? (
+              <FieldHelp variant="error">{errors.email}</FieldHelp>
+            ) : (
+              <FieldHelp>Aparece no rodapé. Diferente do email de login.</FieldHelp>
+            )}
+          </Field>
 
-              {/* Facebook */}
-              <div className="md:col-span-2">
-                <div className="flex items-center gap-2 mb-2">
-                  <Facebook className="h-5 w-5 text-blue-600" />
-                  <Label htmlFor="facebook" className="text-sm font-medium text-gray-700">
-                    Link do Facebook
-                  </Label>
-                </div>
-                <Input
-                  id="facebook"
-                  type="url"
-                  value={formData.facebook}
-                  onChange={(e) => handleInputChange('facebook', e.target.value)}
-                  placeholder="https://facebook.com/minhaloja"
-                  className={`mt-2 ${errors.facebook ? 'border-red-500 focus:ring-red-500' : ''}`}
-                />
-                {errors.facebook && (
-                  <p className="mt-1 text-sm text-red-600">{errors.facebook}</p>
-                )}
-              </div>
-            </div>
+          {/* Instagram */}
+          <Field>
+            <FieldLabel htmlFor="instagram">
+              <Instagram className="h-3.5 w-3.5 text-pink-600" />
+              Instagram
+              {formData.instagram && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-nxs/10 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.04em] text-nxs ring-1 ring-inset ring-nxs/20">
+                  <CheckCircle2 className="h-2 w-2" strokeWidth={3} />
+                  Ativo
+                </span>
+              )}
+            </FieldLabel>
+            <Input
+              id="instagram"
+              type="url"
+              value={formData.instagram}
+              onChange={(e) => handleInputChange('instagram', e.target.value)}
+              placeholder="https://instagram.com/sualoja"
+              className={nxInputClass(!!errors.instagram)}
+            />
+            {errors.instagram && <FieldHelp variant="error">{errors.instagram}</FieldHelp>}
+          </Field>
 
-            {/* Botão Salvar */}
-            <div className="flex justify-end pt-6 border-t border-gray-200">
-              <Button
-                onClick={handleSave}
-                disabled={isUpdating || !isFormValid}
-                className="flex items-center gap-2"
-              >
-                {isUpdating ? (
-                  <LoadingSpinner size="sm" />
-                ) : (
-                  ""
-                )}
-                {isUpdating ? 'Salvando...' : 'Salvar'}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          {/* Facebook */}
+          <Field>
+            <FieldLabel htmlFor="facebook">
+              <Facebook className="h-3.5 w-3.5 text-blue-600" />
+              Facebook
+              {formData.facebook && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-nxs/10 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.04em] text-nxs ring-1 ring-inset ring-nxs/20">
+                  <CheckCircle2 className="h-2 w-2" strokeWidth={3} />
+                  Ativo
+                </span>
+              )}
+            </FieldLabel>
+            <Input
+              id="facebook"
+              type="url"
+              value={formData.facebook}
+              onChange={(e) => handleInputChange('facebook', e.target.value)}
+              placeholder="https://facebook.com/sualoja"
+              className={nxInputClass(!!errors.facebook)}
+            />
+            {errors.facebook && <FieldHelp variant="error">{errors.facebook}</FieldHelp>}
+          </Field>
+        </FieldGrid>
+
+        <FormActions>
+          <NxButton
+            variant="primary"
+            onClick={handleSave}
+            disabled={!isFormValid}
+            loading={isUpdating}
+          >
+            {isUpdating ? 'Salvando…' : 'Salvar alterações'}
+          </NxButton>
+        </FormActions>
+      </SectionCard>
     </div>
   )
 }

@@ -11,13 +11,7 @@ export const updateInformacoesBasicasSchema = yup.object({
     .string()
     .optional()
     .max(170, 'Descrição deve ter no máximo 170 caracteres'),
-  niche_ids: yup
-    .array()
-    .of(yup.string())
-    .min(1, 'Pelo menos um nicho é obrigatório')
-    .required('Pelo menos um nicho é obrigatório')
 })
 
 // Tipo inferido do schema
 export type UpdateInformacoesBasicasFormData = yup.InferType<typeof updateInformacoesBasicasSchema>
-
