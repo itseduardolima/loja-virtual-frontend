@@ -1,9 +1,47 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useDocumentos } from './useDocumentos'
-import { Card, CardContent, Input, Label, Button, LoadingSpinner } from '@/components'
-import LoadingPage from '@/components/Layout/LoadingPage'
-import { FileText, Building2, User } from 'lucide-react'
+import { Input, LoadingSpinner } from '@/components'
+import { cn } from '@/lib/utils'
+import { Building2, User, ShieldCheck, CheckCircle2 } from 'lucide-react'
+import {
+  SectionCard,
+  SectionHeader,
+  Field,
+  FieldLabel,
+  FieldHelp,
+  FormActions,
+  NxButton,
+  nxInputClass,
+} from '../_shared'
+
+type DocType = 'cnpj' | 'cpf'
+
+interface DocTypeMeta {
+  id: DocType
+  Icon: typeof Building2
+  title: string
+  subtitle: string
+  bullets: string[]
+}
+
+const DOC_TYPES: DocTypeMeta[] = [
+  {
+    id: 'cnpj',
+    Icon: Building2,
+    title: 'Pessoa Jurídica',
+    subtitle: 'CNPJ · Empresa formal',
+    bullets: ['Emite NF-e como empresa', 'Mais credibilidade', 'Permite vender em marketplaces'],
+  },
+  {
+    id: 'cpf',
+    Icon: User,
+    title: 'Pessoa Física',
+    subtitle: 'CPF · Autônomo / MEI sem CNPJ',
+    bullets: ['Cadastro simplificado', 'Sem necessidade de empresa', 'Limite de faturamento anual'],
+  },
+]
 
 export default function DocumentosPage() {
   const {
@@ -14,111 +52,166 @@ export default function DocumentosPage() {
     isFormValid,
     handleCNPJChange,
     handleCPFChange,
-    handleSave
+    handleSave,
   } = useDocumentos()
 
+  const [docType, setDocType] = useState<DocType>('cnpj')
+
+  useEffect(() => {
+    if (formData.cnpj) setDocType('cnpj')
+    else if (formData.cpf) setDocType('cpf')
+  }, [formData.cnpj, formData.cpf])
+
   if (isLoading) {
-    return <LoadingPage />
+    return (
+      <SectionCard>
+        <div className="flex items-center justify-center py-16">
+          <LoadingSpinner size="md" />
+        </div>
+      </SectionCard>
+    )
   }
 
+  // Document considered "filled" — used to show validation chip
+  const isFilled = docType === 'cnpj'
+    ? !!formData.cnpj && !errors.cnpj
+    : !!formData.cpf && !errors.cpf
+
   return (
-    <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
-      {/* Header */}
-      <div className="mb-3 sm:mb-4 md:mb-6 lg:mb-8">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-1 sm:mb-2">Documentos</h1>
-        <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
-          Configure os documentos fiscais da sua loja
-        </p>
+    <SectionCard>
+      <SectionHeader
+        title="Documentos"
+        description="Identifique sua loja para emissão de notas fiscais e comprovação de titularidade."
+      />
+
+      {/* Cards de seleção de tipo */}
+      <div>
+        <FieldLabel className="mb-2.5">Tipo de cadastro</FieldLabel>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          {DOC_TYPES.map((opt) => {
+            const active = docType === opt.id
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => setDocType(opt.id)}
+                className={cn(
+                  'group relative flex flex-col gap-3 overflow-hidden rounded-xl border p-4 text-left transition-all',
+                  active
+                    ? 'border-nxp/40 bg-nxp/[0.04] shadow-[0_2px_8px_hsl(237_49%_33%/0.08)]'
+                    : 'border-nxborder bg-white hover:border-nxp/20 hover:bg-nxbg/30',
+                )}
+              >
+                {/* Indicador "selecionado" */}
+                <div
+                  className={cn(
+                    'absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full transition-all',
+                    active
+                      ? 'bg-nxp text-white shadow-[0_1px_2px_hsl(237_49%_33%/0.3)]'
+                      : 'border-2 border-nxborder bg-white',
+                  )}
+                >
+                  {active && <CheckCircle2 className="h-3 w-3" strokeWidth={3} />}
+                </div>
+
+                <div
+                  className={cn(
+                    'flex h-11 w-11 items-center justify-center rounded-xl transition-colors',
+                    active ? 'bg-nxp/10 text-nxp ring-1 ring-inset ring-nxp/15' : 'bg-nxbg text-nxi3',
+                  )}
+                >
+                  <opt.Icon size={22} strokeWidth={1.75} />
+                </div>
+
+                <div>
+                  <div className={cn('text-[14px] font-bold tracking-[-0.005em]', active ? 'text-nxp' : 'text-nxi1')}>
+                    {opt.title}
+                  </div>
+                  <div className="mt-0.5 text-[11.5px] font-medium uppercase tracking-[0.04em] text-nxi3">
+                    {opt.subtitle}
+                  </div>
+                </div>
+
+                <ul className="mt-1 space-y-1">
+                  {opt.bullets.map((b) => (
+                    <li key={b} className="flex items-start gap-1.5 text-[12px] leading-snug text-nxi2">
+                      <CheckCircle2
+                        className={cn('mt-0.5 h-3 w-3 shrink-0', active ? 'text-nxp/70' : 'text-nxi3')}
+                        strokeWidth={2.5}
+                      />
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+              </button>
+            )
+          })}
+        </div>
       </div>
 
-      <Card className="shadow-sm">
-        <CardContent className="p-8">
-          <div className="space-y-8">
-            {/* CNPJ */}
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Building2 className="h-5 w-5 text-gray-600" />
-                <Label htmlFor="cnpj" className="text-sm font-medium text-gray-700">
-                  CNPJ
-                </Label>
-              </div>
-              <Input
-                id="cnpj"
-                value={formData.cnpj}
-                onChange={handleCNPJChange}
-                placeholder="12.345.678/0001-90"
-                maxLength={18}
-                className={`mt-2 ${errors.cnpj ? 'border-red-500 focus:ring-red-500' : ''}`}
-              />
-              <div className="flex justify-between items-center mt-1">
-                <p className="text-xs text-gray-500">
-                  CNPJ da empresa (formato: 12.345.678/0001-90)
-                </p>
-                {errors.cnpj && (
-                  <p className="text-sm text-red-600">{errors.cnpj}</p>
-                )}
-              </div>
-            </div>
+      {/* Input do documento — aparece após escolher o tipo */}
+      <div className="mt-6">
+        <div className="mb-2.5 flex items-center justify-between">
+          <FieldLabel htmlFor={docType === 'cnpj' ? 'cnpj' : 'cpf'} required>
+            {docType === 'cnpj' ? 'CNPJ da empresa' : 'CPF do lojista'}
+          </FieldLabel>
+          {isFilled && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-nxs/10 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.04em] text-nxs ring-1 ring-inset ring-nxs/20">
+              <ShieldCheck className="h-2.5 w-2.5" strokeWidth={2.5} />
+              Válido
+            </span>
+          )}
+        </div>
 
-            {/* CPF */}
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <User className="h-5 w-5 text-gray-600" />
-                <Label htmlFor="cpf" className="text-sm font-medium text-gray-700">
-                  CPF do Vendedor
-                </Label>
-              </div>
-              <Input
-                id="cpf"
-                value={formData.cpf}
-                onChange={handleCPFChange}
-                placeholder="123.456.789-00"
-                maxLength={14}
-                className={`mt-2 ${errors.cpf ? 'border-red-500 focus:ring-red-500' : ''}`}
-              />
-              <div className="flex justify-between items-center mt-1">
-                <p className="text-xs text-gray-500">
-                  CPF do vendedor (formato: 123.456.789-00)
-                </p>
-                {errors.cpf && (
-                  <p className="text-sm text-red-600">{errors.cpf}</p>
-                )}
-              </div>
-            </div>
+        {docType === 'cnpj' ? (
+          <Field full>
+            <Input
+              id="cnpj"
+              value={formData.cnpj}
+              onChange={handleCNPJChange}
+              placeholder="00.000.000/0000-00"
+              maxLength={18}
+              inputMode="numeric"
+              className={cn(nxInputClass(!!errors.cnpj), 'font-mono tracking-wide')}
+            />
+            {errors.cnpj ? (
+              <FieldHelp variant="error">{errors.cnpj}</FieldHelp>
+            ) : (
+              <FieldHelp>Formato: 00.000.000/0000-00</FieldHelp>
+            )}
+          </Field>
+        ) : (
+          <Field full>
+            <Input
+              id="cpf"
+              value={formData.cpf}
+              onChange={handleCPFChange}
+              placeholder="000.000.000-00"
+              maxLength={14}
+              inputMode="numeric"
+              className={cn(nxInputClass(!!errors.cpf), 'font-mono tracking-wide')}
+            />
+            {errors.cpf ? (
+              <FieldHelp variant="error">{errors.cpf}</FieldHelp>
+            ) : (
+              <FieldHelp>Formato: 000.000.000-00</FieldHelp>
+            )}
+          </Field>
+        )}
+      </div>
 
-            {/* Informação */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <FileText className="h-5 w-5 text-blue-600 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-blue-900">
-                    Informação Importante
-                  </p>
-                  <p className="text-sm text-blue-700 mt-1">
-                    Os documentos são opcionais, mas podem ser necessários para algumas funcionalidades da plataforma.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Botão Salvar */}
-            <div className="flex justify-end pt-6 border-t border-gray-200">
-              <Button
-                onClick={handleSave}
-                disabled={isUpdating || !isFormValid}
-                className="flex items-center gap-2"
-              >
-                {isUpdating ? (
-                  <LoadingSpinner size="sm" />
-                ) : (
-                  ""
-                )}
-                {isUpdating ? 'Salvando...' : 'Salvar'}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+      <FormActions>
+        <NxButton
+          variant="primary"
+          onClick={handleSave}
+          disabled={!isFormValid}
+          loading={isUpdating}
+        >
+          {isUpdating ? 'Salvando…' : 'Salvar alterações'}
+        </NxButton>
+      </FormActions>
+    </SectionCard>
   )
 }

@@ -8,6 +8,21 @@ export interface CartConversionStats {
   conversion_rate: number
 }
 
+export interface ComparisonMetric {
+  current: number
+  previous: number
+  delta: number
+  delta_percent: number | null
+  dir: 'up' | 'down' | 'flat'
+}
+
+export interface DashboardComparison {
+  revenue: ComparisonMetric
+  orders: ComparisonMetric
+  products_sold: ComparisonMetric
+  conversion: ComparisonMetric
+}
+
 export interface DashboardSummary {
   today: {
     orders: number
@@ -34,6 +49,8 @@ export interface DashboardSummary {
     total: number
   }
   cart_conversion?: CartConversionStats
+  comparison?: DashboardComparison
+  comparison_range?: { from: string; to: string }
 }
 
 export interface RecentOrder {
@@ -90,9 +107,10 @@ export interface UseDashboardOptions {
 
 export function useDashboard(dateFilter?: DashboardDateFilter, options: UseDashboardOptions = {}) {
   const { enableAdvanced = true } = options
-  const params = dateFilter?.dateFrom && dateFilter?.dateTo
-    ? { dateFrom: dateFilter.dateFrom, dateTo: dateFilter.dateTo }
-    : {}
+  const params =
+    dateFilter?.dateFrom && dateFilter?.dateTo
+      ? { dateFrom: dateFilter.dateFrom, dateTo: dateFilter.dateTo }
+      : {}
 
   const summaryQuery = useQuery({
     queryKey: ['dashboard', 'summary', params],
@@ -132,4 +150,3 @@ export function useDashboard(dateFilter?: DashboardDateFilter, options: UseDashb
     error: summaryQuery.error || recentOrdersQuery.error,
   }
 }
-

@@ -118,6 +118,12 @@ export function useCreateProductPage(user: any) {
       if (data.promo_starts_at) formData.append('promo_starts_at', data.promo_starts_at)
       if (data.promo_ends_at) formData.append('promo_ends_at', data.promo_ends_at)
       if (variantStocks.length > 0) formData.append('variant_stocks', JSON.stringify(variantStocks))
+      // Dados fiscais (NF-e)
+      if (data.ncm) formData.append('ncm', data.ncm)
+      if (data.cest) formData.append('cest', data.cest)
+      if (data.origem !== undefined && data.origem !== null) formData.append('origem', String(data.origem))
+      if (data.unidade) formData.append('unidade', data.unidade)
+      if (data.gtin) formData.append('gtin', data.gtin)
 
       if (selectedNicheId && Object.keys(dynamicFieldValues).length > 0) {
         const dynamicFields = Object.values(dynamicFieldValues).map((fieldValue) => ({

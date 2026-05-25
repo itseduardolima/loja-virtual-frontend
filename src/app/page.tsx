@@ -1,36 +1,27 @@
 'use client'
 
-import { useAuth } from '@/contexts/AuthContext'
-import LoadingPage from '@/components/Layout/LoadingPage'
-import {
-  Navbar,
-  HeroSection,
-  FeaturesSection,
-  PricingSection,
-  CTASection,
-  Footer,
-} from '@/components/Landing'
+import s from './landing.module.css'
+import { Navbar } from './_landing/Navbar'
+import { Hero } from './_landing/Hero'
+import { BentoFeatures } from './_landing/BentoFeatures'
+import { HowItWorks } from './_landing/HowItWorks'
+import { PricingSection } from './_landing/PricingSection'
+import { FAQ } from './_landing/FAQ'
+import { FinalCTA } from './_landing/FinalCTA'
+import { Footer } from './_landing/Footer'
 
 export default function Home() {
-  const { isLoading } = useAuth()
-
-  // Se está carregando, mostra apenas loading
-  if (isLoading) {
-    return <LoadingPage />
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className={s.nexo}>
       <Navbar />
-      <HeroSection />
-      <FeaturesSection />
-      <PricingSection />
-      <CTASection
-        title="Pronto para começar a vender?"
-        description="Junte-se a vendedores que já estão transformando seus negócios com nossa plataforma"
-        ctaText="Criar Minha Loja Agora"
-        ctaHref="/assinatura"
-      />
+      <main>
+        <Hero />
+        <BentoFeatures />
+        <HowItWorks />
+        <PricingSection />
+        <FAQ />
+        <FinalCTA />
+      </main>
       <Footer />
     </div>
   )

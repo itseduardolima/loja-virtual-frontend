@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/experimental-nextjs-vite'
+import type { Meta, StoryObj } from '@storybook/react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Star, Heart } from 'lucide-react'

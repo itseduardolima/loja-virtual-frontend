@@ -1,125 +1,150 @@
 import { useState, useEffect, useMemo } from 'react'
-import * as yup from 'yup'
 import { useStore } from '@/hooks/useStore'
 import { useUpdateStore } from '@/hooks/useUpdateStore'
-import { updateEntregaSchema } from '@/schemas'
+
+interface EntregaFormData {
+  pickup_enabled: boolean
+  free_shipping_enabled: boolean
+  free_shipping_min: string
+}
+
+const initial: EntregaFormData = {
+  pickup_enabled: false,
+  free_shipping_enabled: false,
+  free_shipping_min: '',
+}
 
 export function useEntrega() {
   const { data: store, isLoading } = useStore()
   const { updateStore, isUpdating } = useUpdateStore()
-  
-  const [formData, setFormData] = useState({
-    delivery_fee: '',
-    free_delivery_min: '',
-    delivery_time: ''
-  })
 
-  const [errors, setErrors] = useState<{
-    delivery_fee?: string
-    free_delivery_min?: string
-    delivery_time?: string
-  }>({})
+  const [formData, setFormData] = useState<EntregaFormData>(initial)
+  const [server, setServer] = useState<EntregaFormData>(initial)
+  const [errors, setErrors] = useState<{ free_shipping_min?: string; _global?: string }>({})
 
+  // Sincroniza com a loja
   useEffect(() => {
-    if (store) {
-      setFormData({
-        delivery_fee: (store as any)?.delivery_fee || '',
-        free_delivery_min: (store as any)?.free_delivery_min || '',
-        delivery_time: (store as any)?.delivery_time || ''
-      })
+    if (!store) return
+    const s = store as any
+    const minVal = s?.free_delivery_min
+    const minStr = minVal != null && minVal !== '' && Number(minVal) > 0 ? String(minVal) : ''
+
+    const next: EntregaFormData = {
+      pickup_enabled: !!s?.pickup_enabled,
+      free_shipping_enabled: !!s?.free_shipping_enabled || (minStr !== ''),
+      free_shipping_min: minStr,
     }
+    setFormData(next)
+    setServer(next)
   }, [store])
 
-  const handleInputChange = async (field: string, value: string | number) => {
-    setFormData(prev => {
-      const updatedData = { ...prev, [field]: value }
-      
-      // Converter para número se necessário para validação
-      const dataForValidation = {
-        ...updatedData,
-        delivery_fee: updatedData.delivery_fee ? parseFloat(updatedData.delivery_fee.toString()) : undefined,
-        free_delivery_min: updatedData.free_delivery_min ? parseFloat(updatedData.free_delivery_min.toString()) : undefined
+  const isDirty = useMemo(
+    () => JSON.stringify(formData) !== JSON.stringify(server),
+    [formData, server],
+  )
+
+  const validate = (data: EntregaFormData) => {
+    const errs: typeof errors = {}
+    if (data.free_shipping_enabled) {
+      const num = parseFloat(data.free_shipping_min.replace(',', '.'))
+      if (isNaN(num) || num <= 0) {
+        errs.free_shipping_min = 'Informe um valor mínimo maior que zero.'
       }
-      
-      updateEntregaSchema.validateAt(field, dataForValidation, { abortEarly: false })
-        .then(() => {
-          setErrors(prevErrors => ({ ...prevErrors, [field]: undefined }))
-        })
-        .catch((error) => {
-          if (error instanceof yup.ValidationError) {
-            const fieldError = error.inner.find(err => err.path === field)
-            const errorMessage = fieldError?.message || error.message
-            setErrors(prevErrors => ({ ...prevErrors, [field]: errorMessage }))
-          }
-        })
-      
-      return updatedData
+    }
+    if (!data.pickup_enabled && !data.free_shipping_enabled) {
+      errs._global = 'Habilite ao menos um método de entrega.'
+    }
+    return errs
+  }
+
+  const setPickupEnabled = (next: boolean) => {
+    setFormData((prev) => {
+      const updated = { ...prev, pickup_enabled: next }
+      setErrors(validate(updated))
+      return updated
     })
   }
 
-  // Verificar se o formulário é válido
-  const isFormValid = useMemo(() => {
-    const hasErrors = Object.values(errors).some(error => error !== undefined && error !== '')
-    if (hasErrors) return false
+  const setFreeShippingEnabled = (next: boolean) => {
+    setFormData((prev) => {
+      const updated = { ...prev, free_shipping_enabled: next }
+      setErrors(validate(updated))
+      return updated
+    })
+  }
 
-    try {
-      const dataForValidation = {
-        delivery_fee: formData.delivery_fee ? parseFloat(formData.delivery_fee.toString()) : undefined,
-        free_delivery_min: formData.free_delivery_min ? parseFloat(formData.free_delivery_min.toString()) : undefined,
-        delivery_time: formData.delivery_time
-      }
-      updateEntregaSchema.validateSync(dataForValidation, { abortEarly: false })
-      return true
-    } catch {
-      return false
-    }
-  }, [formData, errors])
+  const setFreeShippingMin = (value: string) => {
+    // Permite só números, vírgula e ponto
+    const sanitized = value.replace(/[^\d.,]/g, '')
+    setFormData((prev) => {
+      const updated = { ...prev, free_shipping_min: sanitized }
+      setErrors(validate(updated))
+      return updated
+    })
+  }
+
+  const isFormValid = useMemo(() => {
+    const errs = validate(formData)
+    return Object.keys(errs).length === 0
+  }, [formData])
 
   const handleSave = async () => {
     if (!store?.id) return
-    
+    const errs = validate(formData)
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs)
+      return
+    }
+    setErrors({})
+
+    const minNum = formData.free_shipping_enabled
+      ? parseFloat(formData.free_shipping_min.replace(',', '.'))
+      : 0
+
     try {
-      const dataForValidation = {
-        delivery_fee: formData.delivery_fee ? parseFloat(formData.delivery_fee.toString()) : undefined,
-        free_delivery_min: formData.free_delivery_min ? parseFloat(formData.free_delivery_min.toString()) : undefined,
-        delivery_time: formData.delivery_time.trim() || undefined
-      }
-      
-      await updateEntregaSchema.validate(dataForValidation, { abortEarly: false })
-      setErrors({})
-      
       await updateStore({
         storeId: store.id,
         data: {
-          delivery_fee: dataForValidation.delivery_fee,
-          free_delivery_min: dataForValidation.free_delivery_min,
-          delivery_time: dataForValidation.delivery_time
-        }
+          pickup_enabled: formData.pickup_enabled,
+          free_shipping_enabled: formData.free_shipping_enabled,
+          free_delivery_min: isNaN(minNum) ? 0 : minNum,
+          // Pickup is always free shipping cost-wise; keep delivery_fee at 0
+          delivery_fee: 0,
+        },
       })
-    } catch (error) {
-      if (error instanceof yup.ValidationError) {
-        const validationErrors: { [key: string]: string } = {}
-        error.inner.forEach((err) => {
-          if (err.path) {
-            validationErrors[err.path] = err.message
-          }
-        })
-        setErrors(validationErrors)
-      } else {
-        console.error('Erro ao atualizar configurações de entrega:', error)
-      }
+      setServer(formData)
+    } catch (err) {
+      console.error('Erro ao salvar entrega:', err)
     }
   }
 
+  const handleReset = () => {
+    setFormData(server)
+    setErrors({})
+  }
+
   return {
-    store,
     isLoading,
     isUpdating,
     formData,
     errors,
+    isDirty,
     isFormValid,
-    handleInputChange,
-    handleSave
+    setPickupEnabled,
+    setFreeShippingEnabled,
+    setFreeShippingMin,
+    handleSave,
+    handleReset,
+    storeAddress: store
+      ? {
+          address: (store as any)?.address || '',
+          number: (store as any)?.number || '',
+          complement: (store as any)?.complement || '',
+          neighborhood: (store as any)?.neighborhood || '',
+          city: (store as any)?.city || '',
+          state: (store as any)?.state || '',
+          zipcode: (store as any)?.zipcode || '',
+        }
+      : null,
   }
 }
-

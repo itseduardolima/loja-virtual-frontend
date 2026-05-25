@@ -92,16 +92,22 @@ export default function VendedorLayout({
 
       // Verifica assinatura para outras páginas
       if (!isLoadingSubscription) {
-        // Se não tem assinatura ou está cancelada/expirada, bloqueia acesso
-        if (!subscription || subscription.status === 'canceled' || subscription.status === 'expired') {
+        // Se não tem assinatura, ou está cancelada/expirada/pendente, bloqueia acesso
+        // (o backend só libera com status === 'active')
+        if (
+          !subscription ||
+          subscription.status === 'canceled' ||
+          subscription.status === 'expired' ||
+          subscription.status === 'pending'
+        ) {
           setSubscriptionBlocked(true)
           setAccessDenied(false)
           setIsReady(false)
           return
         }
 
-        // Se tem assinatura ativa ou pendente, permite acesso
-        if (subscription.status === 'active' || subscription.status === 'pending') {
+        // Se tem assinatura ativa, permite acesso
+        if (subscription.status === 'active') {
           setSubscriptionBlocked(false)
           setAccessDenied(false)
           const timer = setTimeout(() => {
@@ -157,12 +163,17 @@ export default function VendedorLayout({
     )
   }
 
-  // Se a assinatura está cancelada/expirada, mostra tela de bloqueio
+  // Se a assinatura está cancelada/expirada/pendente, mostra tela de bloqueio
   if (subscriptionBlocked) {
+    const isPending = subscription?.status === 'pending'
     return (
       <SubscriptionBlocked
-        title="Assinatura Cancelada"
-        message="Sua assinatura foi cancelada ou expirou. Para continuar usando a plataforma, é necessário renovar sua assinatura."
+        title={isPending ? 'Pagamento Pendente' : 'Assinatura Cancelada'}
+        message={
+          isPending
+            ? 'Sua assinatura está aguardando confirmação do pagamento. Assim que ele for processado, seu acesso será liberado automaticamente.'
+            : 'Sua assinatura foi cancelada ou expirou. Para continuar usando a plataforma, é necessário renovar sua assinatura.'
+        }
         showManageButton={true}
       />
     )
@@ -181,10 +192,12 @@ export default function VendedorLayout({
     )
   }
 
+  const pendingOrdersCount = orderNotifications.filter((n) => !n.read).length
+
   return (
-    <div className="flex h-screen overflow-hidden">
-      <SidebarVendedor currentPath={pathname} />
-      <div className="flex-1 lg:ml-0 flex flex-col overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-nxbg">
+      <SidebarVendedor currentPath={pathname} pendingOrdersCount={pendingOrdersCount} />
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <UserHeader
           currentPath={pathname}
           notifications={orderNotifications}
@@ -193,11 +206,9 @@ export default function VendedorLayout({
           onDismiss={dismissOrderNotification}
           onClearAll={clearAllOrderNotifications}
         />
-        <div className="flex-1 overflow-y-auto bg-[#FAFAFB]">
-          <div className="px-4 py-8">
-            {children}
-          </div>
-        </div>
+        <main aria-label="Conteúdo principal" className="flex-1 overflow-y-auto bg-nxbg">
+          <div className="mx-auto max-w-[1640px] px-6 py-6">{children}</div>
+        </main>
       </div>
     </div>
   )

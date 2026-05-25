@@ -9,6 +9,7 @@ import { Package, X, Star, Plus, ChevronLeft, ChevronRight, Calendar, Layers, Ch
 import { useRouter, useParams, usePathname } from 'next/navigation'
 import { useEditProductPage } from './useEditProductPage'
 import { useStore } from '@/hooks/useStore'
+import { useBlingStatus } from '@/hooks/useBlingStatus'
 import LoadingPage from '@/components/Layout/LoadingPage'
 import { useState, useMemo, useEffect } from 'react'
 
@@ -26,6 +27,8 @@ export default function EditProductPage() {
   const params = useParams()
   const productId = params.id as string
   const { data: storeData, isLoading: storeLoading } = useStore()
+  const { data: blingStatus } = useBlingStatus()
+  const isBlingConnected = !!blingStatus?.connected && !!blingStatus?.syncEnabled
   const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [completedSteps, setCompletedSteps] = useState<number[]>([])
@@ -1031,6 +1034,125 @@ export default function EditProductPage() {
                   </p>
                 )}
               </div>
+
+              {/* Dados Fiscais — necessários para emissão de NF-e via Bling */}
+              <details
+                className="border border-gray-200 rounded-lg overflow-hidden group"
+                open={isBlingConnected}
+              >
+                <summary className="cursor-pointer px-4 py-3 bg-gray-50 hover:bg-gray-100 flex items-center justify-between text-sm font-semibold text-gray-700">
+                  <span>
+                    Dados fiscais (NF-e){' '}
+                    <span className="text-gray-400 font-normal">— necessários para emitir NF-e</span>
+                    {isBlingConnected && (
+                      <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">
+                        Recomendado (Bling conectado)
+                      </span>
+                    )}
+                  </span>
+                  <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="p-4 space-y-4 border-t border-gray-200">
+                  {isBlingConnected ? (
+                    <div className="bg-orange-50 border border-orange-200 rounded-md p-3 text-xs text-orange-900">
+                      Sua loja está integrada ao Bling. Sem o NCM preenchido, a emissão de NF-e
+                      deste produto será rejeitada pela SEFAZ.
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-500">
+                      Preencha estes campos se você pretende emitir NF-e via Bling. Sem eles, a
+                      emissão será rejeitada.
+                    </p>
+                  )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="ncm" className="text-sm font-semibold text-gray-700 mb-2 block">NCM *</Label>
+                      <Input
+                        id="ncm"
+                        {...register('ncm')}
+                        placeholder="Ex: 61091000"
+                        maxLength={8}
+                        className={`h-11 ${errors.ncm ? 'border-red-500' : 'border-gray-200'}`}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        8 dígitos. Consulte em{' '}
+                        <a
+                          href="https://portalunico.siscomex.gov.br/classif/#/sumario"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-primary hover:underline"
+                        >
+                          Portal Único Siscomex
+                        </a>
+                        .
+                      </p>
+                      {errors.ncm && <p className="text-red-500 text-sm mt-1">{(errors.ncm as any).message}</p>}
+                    </div>
+
+                    <div>
+                      <Label htmlFor="origem" className="text-sm font-semibold text-gray-700 mb-2 block">Origem</Label>
+                      <Select
+                        value={String(watch('origem') ?? 0)}
+                        onValueChange={(v) => setValue('origem', Number(v))}
+                      >
+                        <SelectTrigger className="h-11">
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0">0 — Nacional</SelectItem>
+                          <SelectItem value="1">1 — Estrangeira (importação direta)</SelectItem>
+                          <SelectItem value="2">2 — Estrangeira (mercado interno)</SelectItem>
+                          <SelectItem value="3">3 — Nacional, com conteúdo importado &gt;40%</SelectItem>
+                          <SelectItem value="4">4 — Nacional (processos básicos)</SelectItem>
+                          <SelectItem value="5">5 — Nacional, com conteúdo importado ≤40%</SelectItem>
+                          <SelectItem value="6">6 — Estrangeira (importação direta, sem similar)</SelectItem>
+                          <SelectItem value="7">7 — Estrangeira (mercado interno, sem similar)</SelectItem>
+                          <SelectItem value="8">8 — Nacional, com conteúdo importado &gt;70%</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="unidade" className="text-sm font-semibold text-gray-700 mb-2 block">Unidade de medida</Label>
+                      <Input
+                        id="unidade"
+                        {...register('unidade')}
+                        placeholder="UN"
+                        maxLength={6}
+                        className="h-11 border-gray-200"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">UN, KG, PC, M, M2, etc. (default: UN)</p>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="gtin" className="text-sm font-semibold text-gray-700 mb-2 block">
+                        GTIN/EAN <span className="text-gray-400 font-normal">(opcional)</span>
+                      </Label>
+                      <Input
+                        id="gtin"
+                        {...register('gtin')}
+                        placeholder="Código de barras"
+                        maxLength={14}
+                        className="h-11 border-gray-200"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <Label htmlFor="cest" className="text-sm font-semibold text-gray-700 mb-2 block">
+                        CEST <span className="text-gray-400 font-normal">(opcional, somente se ICMS-ST)</span>
+                      </Label>
+                      <Input
+                        id="cest"
+                        {...register('cest')}
+                        placeholder="7 dígitos"
+                        maxLength={7}
+                        className={`h-11 ${errors.cest ? 'border-red-500' : 'border-gray-200'}`}
+                      />
+                      {errors.cest && <p className="text-red-500 text-sm mt-1">{(errors.cest as any).message}</p>}
+                    </div>
+                  </div>
+                </div>
+              </details>
 
             </div>
 

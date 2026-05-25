@@ -1,114 +1,100 @@
 'use client'
 
-import { useMemo, useState, useCallback } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useDashboard } from '@/hooks/useDashboard'
+import { useRevenueChart } from '@/hooks/useRevenueChart'
 import { usePlanFeatures } from '@/hooks/usePlanFeatures'
-import { formatPrice } from '@/lib/utils'
+import { getPreviousRange } from '@/lib/vendor'
+import type { PeriodKey } from '@/components/Vendor/Dashboard'
 
-const today = new Date().toISOString().slice(0, 10)
-const sevenDaysAgo = (() => {
+export interface DashboardCustomRange {
+  from: string
+  to: string
+}
+
+const todayIso = () => new Date().toISOString().slice(0, 10)
+const isoFromOffset = (days: number) => {
   const d = new Date()
-  d.setDate(d.getDate() - 6)
+  d.setDate(d.getDate() - days)
   return d.toISOString().slice(0, 10)
-})()
+}
+
+function rangeForPeriod(
+  period: PeriodKey,
+  customRange: DashboardCustomRange | null,
+): DashboardCustomRange | null {
+  switch (period) {
+    case 'today':
+      return { from: todayIso(), to: todayIso() }
+    case '7d':
+      return { from: isoFromOffset(6), to: todayIso() }
+    case '30d':
+      return { from: isoFromOffset(29), to: todayIso() }
+    case '90d':
+      return { from: isoFromOffset(89), to: todayIso() }
+    case 'custom':
+      return customRange
+    default:
+      return { from: isoFromOffset(6), to: todayIso() }
+  }
+}
 
 export function useDashboardPage() {
   const { features } = usePlanFeatures()
-  const [dateRange, setDateRange] = useState<{ dateFrom: string; dateTo: string } | null>({ dateFrom: sevenDaysAgo, dateTo: today })
-  const [inputFrom, setInputFrom] = useState(sevenDaysAgo)
-  const [inputTo, setInputTo] = useState(today)
+  const [period, setPeriodState] = useState<PeriodKey>('7d')
+  const [customRange, setCustomRangeState] = useState<DashboardCustomRange | null>(null)
 
-  const dateFilter = useMemo(() => {
-    if (!dateRange) return undefined
-    const { dateFrom, dateTo } = dateRange
-    if (!dateFrom || !dateTo) return undefined
-    return { dateFrom, dateTo }
-  }, [dateRange])
+  const currentRange = useMemo(() => rangeForPeriod(period, customRange), [period, customRange])
+  const previousRange = useMemo(
+    () => (currentRange ? getPreviousRange(currentRange.from, currentRange.to) : null),
+    [currentRange],
+  )
+
+  const dateFilter = useMemo(
+    () => (currentRange ? { dateFrom: currentRange.from, dateTo: currentRange.to } : undefined),
+    [currentRange],
+  )
+  const previousFilter = useMemo(
+    () => (previousRange ? { dateFrom: previousRange.from, dateTo: previousRange.to } : undefined),
+    [previousRange],
+  )
 
   const {
     summary,
     recentOrders,
     topProducts,
-    isLoading,
+    isLoading: isLoadingCurrent,
     isError,
   } = useDashboard(dateFilter, { enableAdvanced: features.feature_advanced_dashboard })
 
-  const applyFilter = useCallback(() => {
-    if (inputFrom && inputTo && inputFrom <= inputTo) {
-      setDateRange({ dateFrom: inputFrom, dateTo: inputTo })
-    }
-  }, [inputFrom, inputTo])
+  const revenueQuery = useRevenueChart(dateFilter, {
+    enabled: features.feature_advanced_dashboard,
+  })
+  const previousRevenueQuery = useRevenueChart(previousFilter, {
+    enabled: features.feature_advanced_dashboard && !!previousFilter,
+  })
 
-  const clearFilter = useCallback(() => {
-    setDateRange(null)
-    setInputFrom('')
-    setInputTo('')
+  const setPeriod = useCallback((next: PeriodKey) => {
+    setPeriodState(next)
   }, [])
 
-  const onRangeSelect = useCallback((range: { dateFrom: string; dateTo: string } | null) => {
-    if (!range) {
-      setDateRange(null)
-      setInputFrom('')
-      setInputTo('')
-      return
-    }
-    setDateRange(range)
-    setInputFrom(range.dateFrom)
-    setInputTo(range.dateTo)
+  const setCustomRange = useCallback((range: DashboardCustomRange | null) => {
+    setCustomRangeState(range)
+    if (range) setPeriodState('custom')
   }, [])
-
-  const setQuickRange = useCallback((days: number) => {
-    const end = new Date()
-    const start = new Date(end)
-    start.setDate(start.getDate() - days)
-    const from = start.toISOString().slice(0, 10)
-    const to = end.toISOString().slice(0, 10)
-    setInputFrom(from)
-    setInputTo(to)
-    setDateRange({ dateFrom: from, dateTo: to })
-  }, [])
-
-  const updateDateFrom = useCallback((value: string) => {
-    if (dateRange) {
-      setDateRange((r) => (r ? { ...r, dateFrom: value } : null))
-    } else {
-      setInputFrom(value)
-    }
-  }, [dateRange])
-
-  const updateDateTo = useCallback((value: string) => {
-    if (dateRange) {
-      setDateRange((r) => (r ? { ...r, dateTo: value } : null))
-    } else {
-      setInputTo(value)
-    }
-  }, [dateRange])
-
-  const revenueValue = useMemo(() => {
-    return formatPrice(summary?.today?.revenue || 0)
-  }, [summary?.today?.revenue])
 
   return {
-    // Dados
     summary,
     recentOrders,
     topProducts,
-    // Estado de loading/erro
-    isLoading,
+    revenueData: revenueQuery.data ?? [],
+    previousRevenueData: previousRevenueQuery.data ?? [],
+    isLoading: isLoadingCurrent,
     isError,
-    // Filtro de período
-    dateFilter,
-    dateFromInput: dateRange?.dateFrom ?? inputFrom,
-    dateToInput: dateRange?.dateTo ?? inputTo,
-    updateDateFrom,
-    updateDateTo,
-    applyFilter,
-    clearFilter,
-    onRangeSelect,
-    setQuickRange,
-    hasDateFilter: !!dateRange,
-    isViewingToday: dateRange?.dateFrom === today && dateRange?.dateTo === today,
-    // Valores derivados para os cards
-    revenueValue,
+    period,
+    setPeriod,
+    customRange,
+    setCustomRange,
+    currentRange,
   }
 }

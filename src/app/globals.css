@@ -71,6 +71,21 @@
   }
 }
 
+/* ── Design System — Nexo Vendedor ─────────────────────────── */
+:root {
+  --nxp: 237 49% 33%;          /* primary índigo  #2A2D7C */
+  --nxa: 18 80% 54%;           /* accent laranja  #E8632A */
+  --nxs: 151 37% 40%;          /* success verde   #3F8A66 */
+  --nxw: 38 76% 57%;           /* warning âmbar   #E8A33D */
+  --nxd: 4 61% 47%;            /* danger vermelho #C13A2E */
+  --nxsurf: 100 100% 100%;        /* surface off-white #FBFAF7 */
+  --nxbg: 220 14% 96%;         /* background área #F3F4F8 */
+  --nxi1: 225 32% 17%;         /* ink-strong  */
+  --nxi2: 225 14% 38%;         /* ink-medium  */
+  --nxi3: 225 10% 58%;         /* ink-faint   */
+  --nxborder: 220 14% 92%;     /* border      */
+}
+
 /* Custom scrollbar styles */
 .scrollbar-thin::-webkit-scrollbar {
   width: 6px;
