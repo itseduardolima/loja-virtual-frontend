@@ -3,9 +3,9 @@
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { cn } from '@/lib/utils'
-import { IconBarChart, IconApps, IconInbox, IconSettings, IconLogout } from '@/assets/icons'
+import { BarChart2, Users, Store, CreditCard, Star, RotateCcw, Tag, LogOut } from 'lucide-react'
 
-interface VendorSettingsDrawerProps {
+interface AdminProfileMenuDrawerProps {
   isOpen: boolean
   onClose: () => void
 }
@@ -30,13 +30,13 @@ function MenuRow({ icon, label, danger, onClick }: {
   )
 }
 
-export function VendorSettingsDrawer({ isOpen, onClose }: VendorSettingsDrawerProps) {
+export function AdminProfileMenuDrawer({ isOpen, onClose }: AdminProfileMenuDrawerProps) {
   const router = useRouter()
   const { user, logout } = useAuth()
 
   const initials = user?.name
     ? user.name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
-    : 'V'
+    : 'A'
 
   const navigate = (href: string) => {
     router.push(href)
@@ -64,36 +64,51 @@ export function VendorSettingsDrawer({ isOpen, onClose }: VendorSettingsDrawerPr
               <p className="text-[13.5px] font-bold text-nxi1 tracking-[-0.01em] whitespace-nowrap overflow-hidden text-ellipsis">{user?.name}</p>
               <p className="text-[11px] text-nxi3 mt-px whitespace-nowrap overflow-hidden text-ellipsis">{user?.email}</p>
             </div>
-            <span className="shrink-0 text-[9px] font-extrabold tracking-[.1em] text-nxp bg-nxp/[0.08] px-[7px] py-[3px] rounded-[5px]">VENDEDOR</span>
+            <span className="shrink-0 text-[9px] font-extrabold tracking-[.1em] text-nxp bg-nxp/[0.08] px-[7px] py-[3px] rounded-[5px]">ADMIN</span>
           </div>
         </div>
 
         <div className="p-2">
           <MenuRow
-            icon={<IconBarChart size={16} />}
+            icon={<BarChart2 size={16} />}
             label="Dashboard"
-            onClick={() => navigate('/vendedor/dashboard')}
+            onClick={() => navigate('/admin')}
           />
           <MenuRow
-            icon={<IconApps size={16} />}
-            label="Meus produtos"
-            onClick={() => navigate('/vendedor/produtos')}
+            icon={<Users size={16} />}
+            label="Usuários"
+            onClick={() => navigate('/admin/usuarios')}
           />
           <MenuRow
-            icon={<IconInbox size={16} />}
-            label="Pedidos recebidos"
-            onClick={() => navigate('/vendedor/pedidos')}
+            icon={<Store size={16} />}
+            label="Lojas"
+            onClick={() => navigate('/admin/lojas')}
           />
           <MenuRow
-            icon={<IconSettings size={16} />}
-            label="Configurações da loja"
-            onClick={() => navigate('/vendedor/configuracoes/informacoes-basicas')}
+            icon={<CreditCard size={16} />}
+            label="Assinaturas"
+            onClick={() => navigate('/admin/assinaturas')}
+          />
+          <MenuRow
+            icon={<Star size={16} />}
+            label="Planos"
+            onClick={() => navigate('/admin/planos')}
+          />
+          <MenuRow
+            icon={<RotateCcw size={16} />}
+            label="Estornos"
+            onClick={() => navigate('/admin/estornos')}
+          />
+          <MenuRow
+            icon={<Tag size={16} />}
+            label="Cupons de plano"
+            onClick={() => navigate('/admin/cupons-plano')}
           />
 
           <div className="h-px bg-nxborder my-[6px] mx-[6px]" />
 
           <MenuRow
-            icon={<IconLogout size={16} />}
+            icon={<LogOut size={16} />}
             label="Sair"
             danger
             onClick={handleLogout}

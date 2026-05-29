@@ -14,6 +14,7 @@ import { Product, ProductsResponse } from '@/types/product'
 import { CustomerAccountDrawer } from './CustomerAccountDrawer'
 import { CustomerProfileMenuDrawer } from './CustomerProfileMenuDrawer'
 import { VendorSettingsDrawer } from './VendorSettingsDrawer'
+import { AdminProfileMenuDrawer } from './AdminProfileMenuDrawer'
 import { StoreSearchDropdown } from './StoreSearchDropdown'
 import { PROFILE_IDS } from '@/types/auth'
 
@@ -180,6 +181,13 @@ export function StoreHeader({
 
       {isAuthenticated && user && user.profile_id === PROFILE_IDS.Vendedor && (
         <VendorSettingsDrawer
+          isOpen={isProfileMenuOpen}
+          onClose={() => setIsProfileMenuOpen(false)}
+        />
+      )}
+
+      {isAuthenticated && user && user.profile_id === PROFILE_IDS.Administrador && (
+        <AdminProfileMenuDrawer
           isOpen={isProfileMenuOpen}
           onClose={() => setIsProfileMenuOpen(false)}
         />

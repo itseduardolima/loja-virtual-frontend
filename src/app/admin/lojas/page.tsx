@@ -1,11 +1,11 @@
 ﻿'use client'
 
-import { Store, Search } from 'lucide-react'
+import { Store } from 'lucide-react'
 import { Table, Column } from '@/components'
 import { AdminStore } from '@/types/admin'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Input } from '@/components/ui/input'
+import { SearchInput } from '@/components/ui/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useLojasPage } from './useLojasPage'
 
@@ -54,16 +54,13 @@ export default function AdminLojasPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative w-full sm:max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            type="text"
-            placeholder="Buscar por nome ou slug..."
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-            className="pl-9"
-          />
-        </div>
+        <SearchInput
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+          onClear={() => { setSearch(''); setPage(1) }}
+          placeholder="Buscar por nome ou slug..."
+          className="w-full sm:max-w-xs bg-white"
+        />
         <Select value={statusFilter || 'all'} onValueChange={(v) => { setStatusFilter(v === 'all' ? '' : v); setPage(1) }}>
           <SelectTrigger className="w-36">
             <SelectValue placeholder="Todos os status" />

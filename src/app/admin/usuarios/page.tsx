@@ -1,9 +1,9 @@
 ﻿'use client'
 
-import { Users, Eye, Search } from 'lucide-react'
+import { Users, Eye } from 'lucide-react'
 import { Table, Column } from '@/components'
 import { AdminUser } from '@/types/admin'
-import { Input } from '@/components/ui/input'
+import { SearchInput } from '@/components/ui/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { UserDetailDrawer } from '@/components/Admin/UserDetailDrawer'
 import { useUsuariosPage } from './useUsuariosPage'
@@ -74,16 +74,13 @@ export default function AdminUsuariosPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative w-full sm:max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            type="text"
-            placeholder="Buscar por nome ou email..."
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-            className="pl-9"
-          />
-        </div>
+        <SearchInput
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+          onClear={() => { setSearch(''); setPage(1) }}
+          placeholder="Buscar por nome ou email..."
+          className="w-full sm:max-w-xs bg-white"
+        />
         <Select value={profileFilter || 'all'} onValueChange={(v) => { setProfileFilter(v === 'all' ? '' : v); setPage(1) }}>
           <SelectTrigger className="w-44">
             <SelectValue placeholder="Todos os perfis" />

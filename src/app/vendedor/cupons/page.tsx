@@ -4,8 +4,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Button, ErrorState, ConfirmDialog } from '@/components'
 import { Table } from '@/components/Table/Table'
 import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Plus, Tag, TrendingUp, Ban, Clock, Search } from 'lucide-react'
+import { SearchInput } from '@/components/ui/search-input'
+import { Plus, Tag, TrendingUp, Ban, Clock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCuponsPage } from './useCuponsPage'
 import LoadingPage from '@/components/Layout/LoadingPage'
@@ -136,16 +136,13 @@ export default function CuponsPage() {
       </div>
 
       {/* Busca */}
-      <div className="relative w-full sm:max-w-md mb-4 sm:mb-6">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
-        <Input
-          type="text"
-          placeholder="Buscar por código..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="pl-9 sm:pl-10 py-2 sm:py-3 text-sm sm:text-base"
-        />
-      </div>
+      <SearchInput
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        onClear={() => setSearch('')}
+        placeholder="Buscar por código..."
+        className="w-full sm:max-w-md mb-4 sm:mb-6 bg-white"
+      />
 
       {/* Tabela */}
       <Table

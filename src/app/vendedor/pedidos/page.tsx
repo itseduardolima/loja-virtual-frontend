@@ -27,10 +27,10 @@ import { useUpdateOrderStatus } from '@/hooks/useUpdateOrderStatus'
 import { useAcceptCancellationRequest } from '@/hooks/useAcceptCancellationRequest'
 import { useDenyCancellationRequest } from '@/hooks/useDenyCancellationRequest'
 import type { OrdersResponse } from '@/types/order'
-import { Search, X, FileDown, MessageCircle, User, Lock } from 'lucide-react'
+import { FileDown, MessageCircle, User, Lock, X } from 'lucide-react'
 import { DashboardDateRangeFilter } from '@/components/Dashboard/DashboardDateRangeFilter'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { SearchInput } from '@/components/ui/search-input'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { MobileOrdersView } from '@/components/Order/MobileOrdersView'
@@ -235,31 +235,13 @@ export default function OrdersPage() {
 
           <div className="flex items-center gap-3 mt-4">
             {/* Campo de busca */}
-            <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5 z-10" />
-            <Input
-              type="text"
-              placeholder="Buscar pedidos..."
+            <SearchInput
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className={cn(
-                'pl-9 sm:pl-10 py-2 sm:py-2.5 bg-muted rounded-full text-sm h-9 sm:h-10 w-full',
-                searchTerm ? 'pr-9 sm:pr-10' : 'pr-3 sm:pr-4'
-              )}
+              onClear={() => setSearchTerm('')}
+              placeholder="Buscar pedidos..."
+              className="flex-1 max-w-md"
             />
-            {searchTerm && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-200/80 z-10"
-                onClick={() => setSearchTerm('')}
-                aria-label="Limpar busca"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
-            </div>
 
             {/* Filtro de data */}
             <div className="ml-auto shrink-0 flex items-center gap-2">

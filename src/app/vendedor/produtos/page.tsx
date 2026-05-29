@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext'
 import { Button, ErrorState, StorePagination, ProductCard } from '@/components'
-import { Input } from '@/components/ui/input'
+import { SearchInput } from '@/components/ui/search-input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -11,7 +11,6 @@ import {
   Plus,
   Star,
   TrendingUp,
-  Search,
   MoreVertical,
   Pencil,
   Copy,
@@ -189,21 +188,13 @@ export default function ProdutosPage() {
       {/* Busca + Filtros */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
         {/* Campo de Busca */}
-        <div className="relative w-full sm:max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            type="text"
-            placeholder="Buscar produtos..."
-            value={filters.search}
-            onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value, page: 1 }))}
-            className="pl-9 pr-8 text-sm"
-          />
-          {isSearching && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              <div className="animate-spin rounded-full h-3 w-3 border-2 border-t-transparent border-gray-400" />
-            </div>
-          )}
-        </div>
+        <SearchInput
+          value={filters.search}
+          onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value, page: 1 }))}
+          placeholder="Buscar produtos..."
+          isLoading={isSearching}
+          className="w-full sm:max-w-xs"
+        />
 
         {/* Filtros */}
         <div className="flex items-center gap-2 sm:ml-auto">
