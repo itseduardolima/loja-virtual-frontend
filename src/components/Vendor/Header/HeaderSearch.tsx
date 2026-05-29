@@ -85,7 +85,7 @@ export function HeaderSearch() {
           }}
           onFocus={() => setIsOpen(true)}
           placeholder="Buscar produtos, pedidos, clientes…"
-          className="h-11 w-full rounded-full border border-nxborder bg-nxbg pl-[34px] pr-20 text-[13px] text-nxi2 outline-none transition-[border-color,box-shadow] focus:border-nxp focus:shadow-[0_0_0_3px_hsl(237_49%_33%/0.1)]"
+          className="h-9 w-full rounded-full border border-nxborder bg-nxbg pl-[34px] pr-20 text-[13px] text-nxi2 outline-none transition-[border-color,box-shadow] focus:border-nxp focus:shadow-[0_0_0_3px_hsl(237_49%_33%/0.1)]"
         />
         <kbd className="pointer-events-none absolute right-5 rounded-[5px] bg-nxborder px-1.5 py-0.5 font-[inherit] text-[11px] text-nxi3">
           ⌘K

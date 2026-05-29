@@ -10,9 +10,9 @@ import {
   getStatusIcon,
 } from '@/lib/orderPanelUtils'
 import { OrderDetailPanel } from './OrderDetailPanel'
-import { ArrowRight, ChevronLeft, FileDown, Lock, Search, X } from 'lucide-react'
+import { ArrowRight, ChevronLeft, FileDown, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { SearchInput } from '@/components/ui/search-input'
 import { DashboardDateRangeFilter } from '@/components/Dashboard/DashboardDateRangeFilter'
 
 interface MobileOrdersViewProps {
@@ -116,31 +116,13 @@ export function MobileOrdersView({
           )}
         </div>
 
-        <div className="relative mt-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 z-10" />
-          <Input
-            type="text"
-            placeholder="Buscar pedidos..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className={cn(
-              'pl-9 py-2 bg-muted rounded-full text-sm h-9 w-full',
-              searchTerm ? 'pr-9' : 'pr-3'
-            )}
-          />
-          {searchTerm && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-200/80 z-10"
-              onClick={() => setSearchTerm('')}
-              aria-label="Limpar busca"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
+        <SearchInput
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onClear={() => setSearchTerm('')}
+          placeholder="Buscar pedidos..."
+          className="mt-3 w-full"
+        />
       </div>
 
       {/* Abas de status */}

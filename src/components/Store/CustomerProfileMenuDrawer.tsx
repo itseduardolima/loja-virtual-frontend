@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
+import { cn } from '@/lib/utils'
 import { IconUser, IconPackage, IconHeart, IconMapPin, IconLogout } from '@/assets/icons'
 
 interface CustomerProfileMenuDrawerProps {
@@ -22,12 +23,13 @@ function MenuRow({ icon, label, danger, onClick }: {
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 text-left border-none cursor-pointer transition-colors px-[14px] py-[10px] rounded-[10px] bg-transparent font-inherit ${
-        danger ? 'hover:bg-red-50' : 'hover:bg-[#F7F3EF]'
-      }`}
+      className={cn(
+        'w-full flex items-center gap-3 text-left border-none cursor-pointer transition-colors px-[14px] py-[10px] rounded-[10px] bg-transparent font-inherit',
+        danger ? 'hover:bg-nxd/[0.08]' : 'hover:bg-nxi3/[0.08]',
+      )}
     >
-      <span className={`flex items-center shrink-0 ${danger ? 'text-red-500' : 'text-[#7C6B5C]'}`}>{icon}</span>
-      <span className={`flex-1 text-[13px] font-medium text-left ${danger ? 'text-red-500' : 'text-[#1C1008]'}`}>{label}</span>
+      <span className={cn('flex items-center shrink-0', danger ? 'text-nxd' : 'text-nxi2')}>{icon}</span>
+      <span className={cn('flex-1 text-[13px] font-medium text-left', danger ? 'text-nxd' : 'text-nxi1')}>{label}</span>
     </button>
   )
 }
@@ -58,17 +60,17 @@ export function CustomerProfileMenuDrawer({
   return (
     <>
       <div className="fixed inset-0 z-10" onClick={onClose} />
-      <div className="absolute right-0 z-20 overflow-hidden top-[calc(100%+8px)] w-[288px] bg-white rounded-[18px] border border-[#F0EBE3] shadow-[0_12px_48px_rgba(0,0,0,.14),0_2px_8px_rgba(0,0,0,.06)]">
-        <div className="px-4 pt-4 pb-3 border-b border-[#F0EBE3]">
+      <div className="absolute right-0 z-20 overflow-hidden top-[calc(100%+8px)] w-[288px] bg-nxsurf rounded-[18px] border border-nxborder shadow-[0_12px_48px_rgba(0,0,0,.14),0_2px_8px_rgba(0,0,0,.06)]">
+        <div className="px-4 pt-4 pb-3 border-b border-nxborder">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center flex-shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-[#f5e8f0] to-[#d4a8c8]">
-              <span className="italic text-base font-semibold text-[#5a2040]">{initials}</span>
+            <div className="flex items-center justify-center flex-shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-nxp/40 to-nxp shadow-[inset_0_1px_0_rgba(255,255,255,.15)]">
+              <span className="italic text-base font-semibold text-white">{initials}</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[13.5px] font-bold text-[#1C1008] tracking-[-0.01em] whitespace-nowrap overflow-hidden text-ellipsis">{user?.name}</p>
-              <p className="text-[11px] text-[#A8998A] mt-px whitespace-nowrap overflow-hidden text-ellipsis">{user?.email}</p>
+              <p className="text-[13.5px] font-bold text-nxi1 tracking-[-0.01em] whitespace-nowrap overflow-hidden text-ellipsis">{user?.name}</p>
+              <p className="text-[11px] text-nxi3 mt-px whitespace-nowrap overflow-hidden text-ellipsis">{user?.email}</p>
             </div>
-            <span className="shrink-0 text-[9px] font-extrabold tracking-[.1em] text-[#A8998A] bg-[#F7F3EF] px-[7px] py-[3px] rounded-[5px]">CLIENTE</span>
+            <span className="shrink-0 text-[9px] font-extrabold tracking-[.1em] text-nxp bg-nxp/[0.08] px-[7px] py-[3px] rounded-[5px]">CLIENTE</span>
           </div>
         </div>
 
@@ -94,7 +96,7 @@ export function CustomerProfileMenuDrawer({
             onClick={() => { onViewAddresses(); onClose() }}
           />
 
-          <div className="h-px bg-[#F0EBE3] my-[6px] mx-[6px]" />
+          <div className="h-px bg-nxborder my-[6px] mx-[6px]" />
 
           <MenuRow
             icon={<IconLogout size={16} />}
@@ -104,10 +106,10 @@ export function CustomerProfileMenuDrawer({
           />
         </div>
 
-        <div className="border-t border-[#F0EBE3] px-4 py-[10px] flex items-center justify-center gap-[5px]">
-          <span className="text-[10px] text-[#A8998A]">Plataforma</span>
-          <span className="w-[14px] h-[14px] rounded-[3px] bg-[#F0EBE3] inline-flex items-center justify-center text-[8px] font-extrabold text-[#7C6B5C]">N</span>
-          <span className="text-[10px] font-semibold text-[#7C6B5C] tracking-[.02em]">nexo</span>
+        <div className="border-t border-nxborder px-4 py-[10px] flex items-center justify-center gap-[5px]">
+          <span className="text-[10px] text-nxi3">Plataforma</span>
+          <span className="w-[14px] h-[14px] rounded-[3px] bg-nxborder inline-flex items-center justify-center text-[8px] font-extrabold text-nxi3">N</span>
+          <span className="text-[10px] font-semibold text-nxi3 tracking-[.02em]">nexo</span>
         </div>
       </div>
     </>

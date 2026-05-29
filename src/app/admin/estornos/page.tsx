@@ -1,11 +1,11 @@
 ﻿'use client'
 
-import { RotateCcw, CheckCircle, XCircle, Search } from 'lucide-react'
+import { RotateCcw, CheckCircle, XCircle } from 'lucide-react'
 import { Table, Column, ConfirmDialog } from '@/components'
 import { AdminRefund } from '@/types/admin'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Input } from '@/components/ui/input'
+import { SearchInput } from '@/components/ui/search-input'
 import { useEstornosPage } from './useEstornosPage'
 
 export default function AdminEstornosPage() {
@@ -70,16 +70,13 @@ export default function AdminEstornosPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative w-full sm:max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            type="text"
-            placeholder="Buscar por usuário..."
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-            className="pl-9"
-          />
-        </div>
+        <SearchInput
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+          onClear={() => { setSearch(''); setPage(1) }}
+          placeholder="Buscar por usuário..."
+          className="w-full sm:max-w-xs bg-white"
+        />
       </div>
 
       {isLoading ? (
