@@ -5,6 +5,7 @@ import { Input, Textarea, LoadingSpinner } from '@/components'
 import Image from 'next/image'
 import { Camera, ImagePlus, Store } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { ImageCropDialog } from '@/components/Dialog/ImageCropDialog'
 import {
   SectionCard,
   SectionHeader,
@@ -18,7 +19,9 @@ import {
 } from '../_shared'
 
 function buildSrc(API_URL: string | undefined, src: string) {
-  return src.startsWith('data:') || src.startsWith('http') ? src : `${API_URL}${src}`
+  return src.startsWith('data:') || src.startsWith('http') || src.startsWith('blob:')
+    ? src
+    : `${API_URL}${src}`
 }
 
 function initials(name: string) {
@@ -42,8 +45,11 @@ export default function InformacoesBasicasPage() {
     isFormValid,
     logoPreview,
     bannerPreview,
+    cropTarget,
+    setCropTarget,
     handleInputChange,
-    handleFileChange,
+    handleFileSelect,
+    handleCropDone,
     handleSave,
   } = useInformacoesBasicas()
 
@@ -79,6 +85,7 @@ export default function InformacoesBasicasPage() {
                 src={buildSrc(API_URL, bannerPreview)}
                 alt="Banner"
                 fill
+                unoptimized={bannerPreview.startsWith('blob:') || bannerPreview.startsWith('data:')}
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
@@ -101,7 +108,7 @@ export default function InformacoesBasicasPage() {
           <input
             type="file"
             accept="image/*"
-            onChange={(e) => handleFileChange('banner', e.target.files?.[0] || null)}
+            onChange={(e) => { handleFileSelect('banner', e.target.files?.[0] || null); e.target.value = '' }}
             className="hidden"
             id="banner-upload"
           />
@@ -120,6 +127,7 @@ export default function InformacoesBasicasPage() {
                   alt="Logo"
                   width={80}
                   height={80}
+                  unoptimized={logoPreview.startsWith('blob:') || logoPreview.startsWith('data:')}
                   className="h-full w-full object-cover"
                 />
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
@@ -137,7 +145,7 @@ export default function InformacoesBasicasPage() {
             <input
               type="file"
               accept="image/*"
-              onChange={(e) => handleFileChange('logo', e.target.files?.[0] || null)}
+              onChange={(e) => { handleFileSelect('logo', e.target.files?.[0] || null); e.target.value = '' }}
               className="hidden"
               id="logo-upload"
             />
@@ -168,6 +176,26 @@ export default function InformacoesBasicasPage() {
           </span>
         </div>
       </div>
+
+      {/* ─── Dialogs de crop ───────────────────────────────────────────── */}
+      <ImageCropDialog
+        open={cropTarget?.type === 'banner'}
+        onClose={() => setCropTarget(null)}
+        imageSrc={cropTarget?.imageSrc ?? ''}
+        aspect={4}
+        cropShape="rect"
+        fileName={cropTarget?.fileName ?? 'banner.jpg'}
+        onCropDone={(file, url) => handleCropDone('banner', file, url)}
+      />
+      <ImageCropDialog
+        open={cropTarget?.type === 'logo'}
+        onClose={() => setCropTarget(null)}
+        imageSrc={cropTarget?.imageSrc ?? ''}
+        aspect={1}
+        cropShape="round"
+        fileName={cropTarget?.fileName ?? 'logo.jpg'}
+        onCropDone={(file, url) => handleCropDone('logo', file, url)}
+      />
 
       {/* ─── Form de identidade textual ────────────────────────────────── */}
       <SectionCard>

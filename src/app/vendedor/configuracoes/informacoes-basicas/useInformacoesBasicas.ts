@@ -22,6 +22,11 @@ export function useInformacoesBasicas() {
   const [bannerFile, setBannerFile] = useState<File | null>(null)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [bannerPreview, setBannerPreview] = useState<string | null>(null)
+  const [cropTarget, setCropTarget] = useState<{
+    type: 'logo' | 'banner'
+    imageSrc: string
+    fileName: string
+  } | null>(null)
 
   useEffect(() => {
     if (store) {
@@ -59,20 +64,23 @@ export function useInformacoesBasicas() {
     })
   }
 
-  const handleFileChange = (type: 'logo' | 'banner', file: File | null) => {
-    if (file) {
-      if (type === 'logo') {
-        setLogoFile(file)
-        const reader = new FileReader()
-        reader.onload = (e) => setLogoPreview(e.target?.result as string)
-        reader.readAsDataURL(file)
-      } else {
-        setBannerFile(file)
-        const reader = new FileReader()
-        reader.onload = (e) => setBannerPreview(e.target?.result as string)
-        reader.readAsDataURL(file)
-      }
+  const handleFileSelect = (type: 'logo' | 'banner', file: File | null) => {
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (e) =>
+      setCropTarget({ type, imageSrc: e.target?.result as string, fileName: file.name })
+    reader.readAsDataURL(file)
+  }
+
+  const handleCropDone = (type: 'logo' | 'banner', croppedFile: File, previewUrl: string) => {
+    if (type === 'logo') {
+      setLogoFile(croppedFile)
+      setLogoPreview(previewUrl)
+    } else {
+      setBannerFile(croppedFile)
+      setBannerPreview(previewUrl)
     }
+    setCropTarget(null)
   }
 
   const isFormValid = useMemo(() => {
@@ -133,7 +141,10 @@ export function useInformacoesBasicas() {
     logoPreview,
     bannerPreview,
     handleInputChange,
-    handleFileChange,
+    handleFileSelect,
+    handleCropDone,
+    cropTarget,
+    setCropTarget,
     handleSave,
   }
 }
