@@ -1,30 +1,20 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { Button, LoadingSpinner } from '@/components'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { LoadingSpinner } from '@/components'
 import { Input, Label } from '@/components'
-import { CheckCircle2, ArrowLeft, CreditCard, QrCode, FileText, Loader2, AlertTriangle } from 'lucide-react'
+import { Check, ArrowLeft, CreditCard, QrCode, FileText, Loader2, ArrowRight } from 'lucide-react'
 import { useSubscriptionPlans } from '@/hooks/useSubscriptionPlans'
 import { useChangePlan } from '@/hooks/useChangePlan'
 import { useRenewSubscription } from '@/hooks/useRenewSubscription'
 import { usePreviewChangePlan } from '@/hooks/usePreviewChangePlan'
-import { derivePlanFeaturesList, computeYearlySavings } from '@/lib/planUtils'
+import { derivePlanFeaturesComparison, computeYearlySavings } from '@/lib/planUtils'
 import { formatPrice, cn } from '@/lib/utils'
-import type {
-  BillingCycle,
-  BillingType,
-  ChangePlanRequest,
-  SubscriptionPlan,
-} from '@/types/subscription'
+import type { BillingCycle, BillingType, ChangePlanRequest, SubscriptionPlan } from '@/types/subscription'
 
 type Mode = 'change' | 'renew'
+type Step = 'select' | 'confirm'
 
 interface ChangePlanModalProps {
   open: boolean
@@ -32,14 +22,10 @@ interface ChangePlanModalProps {
   currentPlanId: number
   currentBillingCycle: BillingCycle
   hasActiveCoupon: boolean
-  /** Preço atual efetivo (com desconto) — usado para preview de proração */
   currentPrice?: number
-  /** Fim do período atual — usado para preview de proração / data agendada */
   currentPeriodEnd?: string
   mode?: Mode
 }
-
-type Step = 'select' | 'confirm'
 
 export function ChangePlanModal({
   open,
@@ -55,8 +41,7 @@ export function ChangePlanModal({
   const changePlanMutation = useChangePlan()
   const renewMutation = useRenewSubscription()
   const previewMutation = usePreviewChangePlan()
-  const { mutate: submit, isPending } =
-    mode === 'renew' ? renewMutation : changePlanMutation
+  const { mutate: submit, isPending } = mode === 'renew' ? renewMutation : changePlanMutation
 
   const [step, setStep] = useState<Step>('select')
   const [billingCycle, setBillingCycle] = useState<BillingCycle>(currentBillingCycle)
@@ -76,8 +61,6 @@ export function ChangePlanModal({
     return raw ? parseFloat(raw) : 0
   }, [selectedPlan, billingCycle])
 
-  // Heurística local — usada apenas pra escolher copy (upgrade/downgrade/cycle/renew).
-  // Os números reais (proração, datas) vêm do backend via previewMutation.data.
   const changeKind: 'upgrade' | 'downgrade' | 'cycle' | 'renew' = useMemo(() => {
     if (mode === 'renew') return 'renew'
     if (billingCycle !== currentBillingCycle) return 'cycle'
@@ -85,28 +68,15 @@ export function ChangePlanModal({
     return 'downgrade'
   }, [mode, billingCycle, currentBillingCycle, currentPrice, newPrice])
 
-  // Dispara preview ao entrar na etapa de confirmação (apenas para mode 'change')
   useEffect(() => {
     if (step === 'confirm' && selectedPlan && mode === 'change') {
-      previewMutation.mutate({
-        plan_slug: selectedPlan.slug,
-        billing_cycle: billingCycle,
-      })
+      previewMutation.mutate({ plan_slug: selectedPlan.slug, billing_cycle: billingCycle })
     }
-    // selectedPlan e billingCycle ficam estáveis após entrar em confirm
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, selectedPlan?.slug, billingCycle, mode])
 
   const previewData = previewMutation.data
   const isPreviewLoading = previewMutation.isPending
-
-  const formatScheduledDate = (iso: string) =>
-    new Date(iso).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-      timeZone: 'UTC',
-    })
 
   const handleClose = (next: boolean) => {
     if (isPending) return
@@ -127,9 +97,7 @@ export function ChangePlanModal({
 
   const handleConfirm = () => {
     if (!selectedPlan) return
-    if ((billingType === 'PIX' || billingType === 'BOLETO') && !cpf && !cnpj) {
-      return
-    }
+    if ((billingType === 'PIX' || billingType === 'BOLETO') && !cpf && !cnpj) return
     const payload: ChangePlanRequest = {
       plan_slug: selectedPlan.slug,
       billing_cycle: billingCycle,
@@ -137,372 +105,325 @@ export function ChangePlanModal({
       ...(cpf ? { cpf } : {}),
       ...(cnpj ? { cnpj } : {}),
     }
-
-    submit(payload as any, {
-      onSuccess: () => handleClose(false),
-    })
+    submit(payload as any, { onSuccess: () => handleClose(false) })
   }
 
-  const renderPlanCard = (plan: SubscriptionPlan) => {
-    const isCurrent =
-      mode === 'change' &&
-      plan.id === currentPlanId &&
-      billingCycle === currentBillingCycle
-    const features = derivePlanFeaturesList(plan)
-    const priceRaw = billingCycle === 'yearly' ? plan.price_yearly : plan.price_monthly
-    const isAvailable = priceRaw != null
-    const price = priceRaw ? parseFloat(priceRaw) : null
-    const savings =
-      billingCycle === 'yearly'
-        ? computeYearlySavings(plan.price_monthly, plan.price_yearly)
-        : 0
+  const needsPayment = mode === 'renew' || previewData?.kind === 'upgrade'
+  const needsDocument = needsPayment && (billingType === 'PIX' || billingType === 'BOLETO')
+  const confirmDisabled = isPending || isPreviewLoading || (needsDocument && !cpf && !cnpj)
 
-    return (
-      <div
-        key={plan.id}
-        className={cn(
-          'border-2 rounded-lg p-5 flex flex-col transition-all',
-          isCurrent
-            ? 'border-primary/40 bg-primary/5'
-            : 'border-gray-200 hover:border-primary/60',
-        )}
-      >
-        <div className="flex items-start justify-between mb-2">
-          <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
-          {isCurrent && (
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-              Atual
-            </span>
-          )}
-        </div>
-
-        {plan.description && (
-          <p className="text-sm text-gray-600 mb-3 line-clamp-2">{plan.description}</p>
-        )}
-
-        <div className="mb-4">
-          {isAvailable && price != null ? (
-            <>
-              <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-primary">
-                  {formatPrice(price)}
-                </span>
-                <span className="text-sm text-gray-600">
-                  /{billingCycle === 'yearly' ? 'ano' : 'mês'}
-                </span>
-              </div>
-              {billingCycle === 'yearly' && savings > 0 && (
-                <span className="inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">
-                  Economize {savings}%
-                </span>
-              )}
-            </>
-          ) : (
-            <span className="text-sm text-gray-500 italic">Sem opção anual</span>
-          )}
-        </div>
-
-        <ul className="space-y-1.5 mb-5 flex-1">
-          {features.slice(0, 5).map((f, i) => (
-            <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
-              <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
-              <span>{f}</span>
-            </li>
-          ))}
-        </ul>
-
-        <Button
-          className="w-full"
-          variant={isCurrent ? 'outline' : 'default'}
-          disabled={isCurrent || !isAvailable}
-          onClick={() => handleSelectPlan(plan)}
-        >
-          {isCurrent ? 'Plano atual' : 'Trocar para este plano'}
-        </Button>
-      </div>
-    )
+  const titles = {
+    select: mode === 'renew' ? 'Escolher plano' : 'Mudar de plano',
+    confirm: mode === 'renew' ? 'Confirmar renovação' : 'Confirmar troca',
   }
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {mode === 'renew'
-              ? step === 'select'
-                ? 'Renovar com outro plano'
-                : 'Confirmar renovação'
-              : step === 'select'
-                ? 'Trocar de plano'
-                : 'Confirmar troca de plano'}
-          </DialogTitle>
-          <DialogDescription>
-            {step === 'select'
-              ? 'Escolha o plano e o ciclo de cobrança que melhor se adequam à sua loja.'
-              : mode === 'renew'
-                ? 'Revise os detalhes da renovação antes de confirmar.'
-                : 'Revise os detalhes da troca antes de confirmar.'}
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className={cn('gap-0 overflow-hidden p-0', step === 'select' ? 'max-w-3xl' : 'max-w-md')}>
 
-        {step === 'select' && (
-          <div className="space-y-6 py-2">
-            {/* Toggle ciclo */}
-            <div className="flex justify-center">
-              <div className="inline-flex p-1 bg-gray-100 rounded-lg">
-                <button
-                  type="button"
-                  onClick={() => setBillingCycle('monthly')}
-                  className={cn(
-                    'px-4 py-1.5 rounded-md text-sm font-medium transition-all',
-                    billingCycle === 'monthly'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900',
-                  )}
-                >
-                  Mensal
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setBillingCycle('yearly')}
-                  className={cn(
-                    'px-4 py-1.5 rounded-md text-sm font-medium transition-all',
-                    billingCycle === 'yearly'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900',
-                  )}
-                >
-                  Anual
-                </button>
-              </div>
-            </div>
-
-            {isLoading ? (
-              <div className="flex justify-center py-12">
-                <LoadingSpinner size="lg" />
-              </div>
-            ) : sortedPlans.length === 0 ? (
-              <p className="text-center text-gray-500 py-10">Nenhum plano disponível.</p>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {sortedPlans.map(renderPlanCard)}
-              </div>
-            )}
+        {/* Header */}
+        <div className="flex items-center gap-4 px-6 pb-4 pt-6">
+          {step === 'confirm' && (
+            <button
+              onClick={() => setStep('select')}
+              disabled={isPending}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-nxborder text-nxi2 transition hover:bg-nxbg disabled:opacity-40"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
+            </button>
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-nxi3">
+              {mode === 'renew' ? 'Renovação' : 'Assinatura'}
+            </p>
+            <h2 className="text-[17px] font-extrabold tracking-tight text-nxi1">{titles[step]}</h2>
           </div>
+          {/* Cycle toggle — only in select step */}
+          {step === 'select' && (
+            <div className="inline-flex shrink-0 gap-0.5 rounded-full bg-nxbg p-1">
+              {(['monthly', 'yearly'] as const).map(c => (
+                <button
+                  key={c}
+                  onClick={() => setBillingCycle(c)}
+                  className={cn(
+                    'rounded-full px-3.5 py-1.5 text-[12.5px] font-bold transition',
+                    billingCycle === c ? 'bg-nxi1 text-white shadow-sm' : 'text-nxi2 hover:text-nxi1',
+                  )}
+                >
+                  {c === 'monthly' ? 'Mensal' : (
+                    <span className="flex items-center gap-1.5">
+                      Anual
+                      <span className="rounded-full bg-green-100 px-1.5 text-[9.5px] font-black text-green-700">-17%</span>
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="border-t border-nxborder" />
+
+        {/* ── Step: select ─────────────────────────────────────────────────── */}
+        {step === 'select' && (
+          <>
+            <div className="overflow-y-auto px-6 py-5" style={{ maxHeight: '70vh' }}>
+              {isLoading ? (
+                <div className="flex justify-center py-16">
+                  <LoadingSpinner size="md" />
+                </div>
+              ) : sortedPlans.length === 0 ? (
+                <p className="py-12 text-center text-[13px] text-nxi3">Nenhum plano disponível.</p>
+              ) : (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                  {sortedPlans.map(plan => {
+                    const isCurrent = mode === 'change' && plan.id === currentPlanId && billingCycle === currentBillingCycle
+                    const priceRaw = billingCycle === 'yearly' ? plan.price_yearly : plan.price_monthly
+                    const price = priceRaw ? parseFloat(priceRaw) : null
+                    const savings = computeYearlySavings(plan.price_monthly, plan.price_yearly)
+                    const features = derivePlanFeaturesComparison(plan)
+
+                    return (
+                      <article
+                        key={plan.id}
+                        className={cn(
+                          'relative flex flex-col rounded-xl border p-5 transition',
+                          isCurrent
+                            ? 'border-nxborder bg-nxbg'
+                            : 'border-nxborder bg-white hover:border-nxp/40 hover:shadow-[0_2px_12px_hsl(var(--nxp)/0.08)] cursor-pointer',
+                        )}
+                        onClick={() => !isCurrent && price != null && handleSelectPlan(plan)}
+                      >
+                        {isCurrent && (
+                          <span className="absolute right-3 top-3 rounded-full bg-nxp/10 px-2 py-0.5 text-[10.5px] font-bold text-nxp">
+                            Atual
+                          </span>
+                        )}
+
+                        <h3 className="text-[14px] font-extrabold text-nxi1">{plan.name}</h3>
+                        {plan.description && (
+                          <p className="mt-1 text-[12px] leading-snug text-nxi3">{plan.description}</p>
+                        )}
+
+                        <div className="mt-4">
+                          {price != null ? (
+                            <>
+                              <div className="flex items-baseline gap-1">
+                                <span className="text-[24px] font-bold tracking-tight text-nxi1">
+                                  {price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                </span>
+                                <span className="text-[12px] text-nxi3">/{billingCycle === 'yearly' ? 'ano' : 'mês'}</span>
+                              </div>
+                              {billingCycle === 'yearly' && savings > 0 && (
+                                <p className="mt-0.5 text-[11.5px] font-semibold text-green-700">
+                                  {formatPrice(price / 12)}/mês · {savings}% off
+                                </p>
+                              )}
+                            </>
+                          ) : (
+                            <p className="text-[12px] italic text-nxi3">Sem opção anual</p>
+                          )}
+                        </div>
+
+                        <div className="my-4 border-t border-nxborder" />
+
+                        <ul className="flex-1 space-y-2">
+                          {features.map((f, i) => (
+                            <li key={i} className={cn('flex items-start gap-2 text-[12px]', f.included ? 'text-nxi1' : 'text-nxi3')}>
+                              <span className={cn('mt-px flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full', f.included ? 'bg-green-50 text-green-700' : 'bg-nxbg text-nxi3')}>
+                                <Check className="h-2 w-2" strokeWidth={3} />
+                              </span>
+                              {f.label}
+                            </li>
+                          ))}
+                        </ul>
+
+                        {!isCurrent && price != null && (
+                          <button
+                            onClick={e => { e.stopPropagation(); handleSelectPlan(plan) }}
+                            className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl bg-nxp py-2.5 text-[13px] font-bold text-white transition hover:bg-nxp/90"
+                          >
+                            Selecionar
+                            <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
+                          </button>
+                        )}
+                        {isCurrent && (
+                          <div className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl border border-nxborder py-2.5 text-[12.5px] font-bold text-nxi3">
+                            <Check className="h-4 w-4" strokeWidth={2.5} />
+                            Plano atual
+                          </div>
+                        )}
+                      </article>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </>
         )}
 
+        {/* ── Step: confirm ────────────────────────────────────────────────── */}
         {step === 'confirm' && selectedPlan && (
-          <div className="space-y-5 py-2">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">Novo plano</p>
-              <p className="text-lg font-bold text-gray-900">
-                {selectedPlan.name} —{' '}
-                {billingCycle === 'yearly' ? 'Anual' : 'Mensal'}
-              </p>
-              <p className="text-2xl font-bold text-primary mt-1">
-                {formatPrice(
-                  parseFloat(
-                    (billingCycle === 'yearly'
-                      ? selectedPlan.price_yearly
-                      : selectedPlan.price_monthly) ?? '0',
-                  ),
-                )}
-                <span className="text-sm font-normal text-gray-600 ml-1">
-                  /{billingCycle === 'yearly' ? 'ano' : 'mês'}
-                </span>
-              </p>
-            </div>
+          <>
+            <div className="overflow-y-auto px-6 py-5" style={{ maxHeight: '70vh' }}>
+              <div className="space-y-4">
 
-            {isPreviewLoading && (
-              <div className="flex justify-center py-6">
-                <LoadingSpinner size="md" />
-              </div>
-            )}
-
-            {!isPreviewLoading && previewData?.kind === 'upgrade' && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-start gap-2">
-                  <AlertTriangle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-                  <div className="text-sm text-blue-900 space-y-2">
-                    <p className="font-semibold">Upgrade com proração</p>
-                    <p>
-                      Será cobrada apenas a <strong>diferença proporcional</strong> pelos{' '}
-                      <strong>
-                        {previewData.days_remaining} dia
-                        {previewData.days_remaining !== 1 ? 's' : ''}
-                      </strong>{' '}
-                      restantes do seu período atual:
-                    </p>
-                    <p className="text-2xl font-bold text-blue-900">
-                      {formatPrice(previewData.proration_amount)}
-                    </p>
-                    <p className="text-xs text-blue-800">
-                      O novo plano só será ativado após a confirmação do pagamento. A próxima
-                      cobrança no valor cheio ({formatPrice(previewData.new_price)}) será em{' '}
-                      {formatScheduledDate(previewData.next_full_charge_at)}.
-                      {hasActiveCoupon && ' O cupom ativo será removido.'}
+                {/* Resumo do novo plano */}
+                <div className="flex items-center justify-between rounded-xl border border-nxborder bg-nxbg px-4 py-3.5">
+                  <div>
+                    <p className="text-[11.5px] font-semibold text-nxi3">Novo plano</p>
+                    <p className="mt-0.5 text-[15px] font-extrabold tracking-tight text-nxi1">
+                      {selectedPlan.name} · {billingCycle === 'yearly' ? 'Anual' : 'Mensal'}
                     </p>
                   </div>
+                  <p className="text-[20px] font-extrabold tracking-tight text-nxi1">
+                    {formatPrice(parseFloat(
+                      (billingCycle === 'yearly' ? selectedPlan.price_yearly : selectedPlan.price_monthly) ?? '0',
+                    ))}
+                    <span className="text-[12px] font-normal text-nxi3">/{billingCycle === 'yearly' ? 'ano' : 'mês'}</span>
+                  </p>
                 </div>
-              </div>
-            )}
 
-            {!isPreviewLoading &&
-              (previewData?.kind === 'downgrade' || previewData?.kind === 'cycle') && (
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                  <div className="flex items-start gap-2">
-                    <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                    <div className="text-sm text-amber-900 space-y-2">
-                      <p className="font-semibold">
-                        {previewData.kind === 'cycle'
-                          ? 'Mudança de ciclo agendada'
-                          : 'Downgrade agendado'}
+                {/* Preview de cobrança */}
+                {isPreviewLoading && (
+                  <div className="flex justify-center py-6">
+                    <LoadingSpinner size="sm" />
+                  </div>
+                )}
+
+                {!isPreviewLoading && previewData?.kind === 'upgrade' && (
+                  <div className="overflow-hidden rounded-xl border border-nxborder">
+                    <div className="border-b border-nxborder bg-nxbg px-4 py-2.5">
+                      <p className="text-[11px] font-bold uppercase tracking-widest text-nxi3">Cobrança imediata</p>
+                    </div>
+                    <div className="divide-y divide-nxborder">
+                      <div className="flex items-center justify-between px-4 py-3">
+                        <p className="text-[12.5px] text-nxi2">
+                          Diferença proporcional ({previewData.days_remaining} dia{previewData.days_remaining !== 1 ? 's' : ''} restantes)
+                        </p>
+                        <p className="text-[14px] font-bold text-nxi1">{formatPrice(previewData.proration_amount)}</p>
+                      </div>
+                      <div className="flex items-center justify-between px-4 py-3">
+                        <p className="text-[12.5px] text-nxi2">
+                          Próxima cobrança em{' '}
+                          <span className="font-semibold text-nxi1">
+                            {new Date(previewData.next_full_charge_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' })}
+                          </span>
+                        </p>
+                        <p className="text-[14px] font-bold text-nxi1">{formatPrice(previewData.new_price)}</p>
+                      </div>
+                    </div>
+                    {hasActiveCoupon && (
+                      <div className="border-t border-amber-100 bg-amber-50 px-4 py-2.5 text-[12px] font-medium text-amber-800">
+                        ⚠ O cupom ativo será removido com o upgrade.
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {!isPreviewLoading && (previewData?.kind === 'downgrade' || previewData?.kind === 'cycle') && (
+                  <div className="overflow-hidden rounded-xl border border-nxborder">
+                    <div className="border-b border-nxborder bg-nxbg px-4 py-2.5">
+                      <p className="text-[11px] font-bold uppercase tracking-widest text-nxi3">Troca agendada</p>
+                    </div>
+                    <div className="px-4 py-3.5">
+                      <p className="text-[12.5px] text-nxi2">Você continua no plano atual até</p>
+                      <p className="mt-0.5 text-[16px] font-extrabold tracking-tight text-nxi1">
+                        {new Date(previewData.effective_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'UTC' })}
                       </p>
-                      <p>
-                        A troca será aplicada apenas no <strong>fim do seu período atual</strong>:
-                      </p>
-                      <p className="text-base font-bold text-amber-900">
-                        {formatScheduledDate(previewData.effective_at)}
-                      </p>
-                      <p className="text-xs text-amber-800">
-                        Até lá você continua no plano atual. Não há cobrança nem reembolso agora —
-                        o novo plano só começa a ser cobrado no rollover. Você pode cancelar o
-                        agendamento a qualquer momento antes dessa data.
+                      <p className="mt-2 text-[12px] text-nxi3">
+                        Nenhuma cobrança agora. O novo plano começa a ser cobrado no próximo ciclo. Você pode cancelar o agendamento antes dessa data.
                       </p>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-            {changeKind === 'renew' && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                <div className="flex items-start gap-2">
-                  <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                  <div className="text-sm text-amber-900 space-y-1">
-                    <p className="font-semibold">Atenção</p>
-                    <ul className="list-disc list-inside space-y-1 text-amber-800">
-                      <li>
-                        <strong>Você precisará pagar a nova fatura para ativar o acesso.</strong>{' '}
-                        Sua assinatura ficará pendente até a confirmação do pagamento.
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {(mode === 'renew' || previewData?.kind === 'upgrade') && (
-            <div className="space-y-3">
-              <Label className="text-sm font-semibold">Método de pagamento</Label>
-              <div className="grid grid-cols-3 gap-3">
-                {([
-                  { type: 'CREDIT_CARD' as BillingType, icon: CreditCard, label: 'Cartão' },
-                  { type: 'PIX' as BillingType, icon: QrCode, label: 'PIX' },
-                  { type: 'BOLETO' as BillingType, icon: FileText, label: 'Boleto' },
-                ]).map(({ type, icon: Icon, label }) => (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => setBillingType(type)}
-                    className={cn(
-                      'p-3 border-2 rounded-lg transition-all',
-                      billingType === type
-                        ? 'border-primary bg-primary/5'
-                        : 'border-gray-200 hover:border-gray-300',
-                    )}
-                  >
-                    <Icon
-                      className={cn(
-                        'w-5 h-5 mx-auto mb-1',
-                        billingType === type ? 'text-primary' : 'text-gray-400',
-                      )}
-                    />
-                    <p
-                      className={cn(
-                        'text-xs font-medium',
-                        billingType === type ? 'text-primary' : 'text-gray-600',
-                      )}
-                    >
-                      {label}
+                {changeKind === 'renew' && (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5">
+                    <p className="text-[12.5px] font-semibold text-amber-900">
+                      Sua assinatura ficará pendente até a confirmação do pagamento.
                     </p>
-                  </button>
-                ))}
+                  </div>
+                )}
+
+                {/* Método de pagamento */}
+                {needsPayment && (
+                  <div>
+                    <p className="mb-2.5 text-[11.5px] font-bold uppercase tracking-widest text-nxi3">Forma de pagamento</p>
+                    <div className="grid grid-cols-3 gap-2.5">
+                      {([
+                        { type: 'CREDIT_CARD' as BillingType, Icon: CreditCard, label: 'Cartão' },
+                        { type: 'PIX' as BillingType, Icon: QrCode, label: 'PIX' },
+                        { type: 'BOLETO' as BillingType, Icon: FileText, label: 'Boleto' },
+                      ]).map(({ type, Icon, label }) => (
+                        <button
+                          key={type}
+                          onClick={() => setBillingType(type)}
+                          className={cn(
+                            'flex flex-col items-center gap-2 rounded-xl border py-3.5 text-[12.5px] font-bold transition',
+                            billingType === type
+                              ? 'border-nxp bg-nxp/[0.06] text-nxp'
+                              : 'border-nxborder bg-white text-nxi2 hover:border-nxi3',
+                          )}
+                        >
+                          <Icon className="h-5 w-5" strokeWidth={1.75} />
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Documento */}
+                {needsDocument && (
+                  <div className="space-y-3 rounded-xl border border-nxborder px-4 py-4">
+                    <p className="text-[11.5px] font-bold uppercase tracking-widest text-nxi3">
+                      Documento (obrigatório para {billingType === 'PIX' ? 'PIX' : 'Boleto'})
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="mb-1 text-[12px]">CPF</Label>
+                        <Input placeholder="000.000.000-00" value={cpf} onChange={e => setCpf(e.target.value)} disabled={isPending} maxLength={14} />
+                      </div>
+                      <div>
+                        <Label className="mb-1 text-[12px]">CNPJ</Label>
+                        <Input placeholder="00.000.000/0000-00" value={cnpj} onChange={e => setCnpj(e.target.value)} disabled={isPending} maxLength={18} />
+                      </div>
+                    </div>
+                    <p className="text-[11.5px] text-nxi3">Informe CPF ou CNPJ — apenas um é necessário.</p>
+                  </div>
+                )}
+
               </div>
             </div>
-            )}
 
-            {(mode === 'renew' || previewData?.kind === 'upgrade') &&
-              (billingType === 'PIX' || billingType === 'BOLETO') && (
-              <div className="space-y-3 pt-2 border-t">
-                <div>
-                  <Label htmlFor="cp-cpf">CPF (opcional se informar CNPJ)</Label>
-                  <Input
-                    id="cp-cpf"
-                    type="text"
-                    placeholder="000.000.000-00"
-                    value={cpf}
-                    onChange={(e) => setCpf(e.target.value)}
-                    disabled={isPending}
-                    maxLength={14}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="cp-cnpj">CNPJ (opcional se informar CPF)</Label>
-                  <Input
-                    id="cp-cnpj"
-                    type="text"
-                    placeholder="00.000.000/0000-00"
-                    value={cnpj}
-                    onChange={(e) => setCnpj(e.target.value)}
-                    disabled={isPending}
-                    maxLength={18}
-                  />
-                </div>
-                <p className="text-xs text-gray-500">
-                  * Para {billingType === 'PIX' ? 'PIX' : 'Boleto'} é obrigatório
-                  informar CPF ou CNPJ.
-                </p>
-              </div>
-            )}
-
-            <div className="flex gap-3 pt-2">
-              <Button
-                variant="outline"
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-2.5 border-t border-nxborder bg-nxbg px-6 py-4">
+              <button
                 onClick={() => setStep('select')}
                 disabled={isPending}
-                className="flex-1"
+                className="rounded-xl border border-nxborder bg-white px-5 py-2.5 text-[13px] font-semibold text-nxi1 transition hover:border-nxi3 disabled:opacity-40"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
                 Voltar
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={handleConfirm}
-                disabled={
-                  isPending ||
-                  isPreviewLoading ||
-                  ((billingType === 'PIX' || billingType === 'BOLETO') && !cpf && !cnpj)
-                }
-                className="flex-1"
+                disabled={confirmDisabled}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-nxp px-5 py-2.5 text-[13px] font-bold text-white transition hover:bg-nxp/90 disabled:opacity-60"
               >
                 {isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Processando...
-                  </>
-                ) : mode === 'renew' ? (
-                  'Confirmar renovação'
-                ) : previewData?.kind === 'upgrade' ? (
-                  `Pagar ${formatPrice(previewData.proration_amount)}`
-                ) : previewData?.kind === 'downgrade' || previewData?.kind === 'cycle' ? (
-                  'Agendar troca'
-                ) : (
-                  'Confirmar troca'
-                )}
-              </Button>
+                  <><Loader2 className="h-4 w-4 animate-spin" />Processando…</>
+                ) : mode === 'renew' ? 'Confirmar renovação'
+                  : previewData?.kind === 'upgrade' ? `Pagar ${formatPrice(previewData.proration_amount)}`
+                  : previewData?.kind === 'downgrade' || previewData?.kind === 'cycle' ? 'Agendar troca'
+                  : 'Confirmar troca'}
+              </button>
             </div>
-          </div>
+          </>
         )}
+
       </DialogContent>
     </Dialog>
   )
 }
+
