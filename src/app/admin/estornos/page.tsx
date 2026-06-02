@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { RotateCcw, CheckCircle, XCircle } from 'lucide-react'
 import { Table, Column, ConfirmDialog } from '@/components'
@@ -7,6 +7,8 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { SearchInput } from '@/components/ui/search-input'
 import { useEstornosPage } from './useEstornosPage'
+import { SectionCard } from '../_shared'
+import LoadingPage from '@/components/Layout/LoadingPage'
 
 export default function AdminEstornosPage() {
   const {
@@ -19,9 +21,9 @@ export default function AdminEstornosPage() {
   } = useEstornosPage()
 
   const columns: Column<AdminRefund>[] = [
-    { key: 'user', header: 'Usuário', accessor: (row) => row.subscription?.user?.name ?? '-' },
-    { key: 'email', header: 'Email', accessor: (row) => row.subscription?.user?.email ?? '-' },
-    { key: 'plan', header: 'Plano', accessor: (row) => row.subscription?.plan?.name ?? '-' },
+    { key: 'user',   header: 'Usuário', accessor: (row) => row.subscription?.user?.name ?? '-' },
+    { key: 'email',  header: 'Email',   accessor: (row) => row.subscription?.user?.email ?? '-' },
+    { key: 'plan',   header: 'Plano',   accessor: (row) => row.subscription?.plan?.name ?? '-' },
     {
       key: 'amount',
       header: 'Valor',
@@ -47,14 +49,14 @@ export default function AdminEstornosPage() {
             type: 'button',
             icon: CheckCircle,
             variant: 'ghost',
-            className: 'h-8 w-8 p-0 text-green-600 hover:text-green-700',
+            className: 'h-8 w-8 p-0 text-nxs hover:text-nxs/80',
             onClick: (row) => setConfirmAction({ refund: row, action: 'approve' }),
           },
           {
             type: 'button',
             icon: XCircle,
             variant: 'ghost',
-            className: 'h-8 w-8 p-0 text-red-500 hover:text-red-600',
+            className: 'h-8 w-8 p-0 text-nxd hover:text-nxd/80',
             onClick: (row) => setConfirmAction({ refund: row, action: 'reject' }),
           },
         ],
@@ -63,10 +65,10 @@ export default function AdminEstornosPage() {
   ]
 
   return (
-    <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
+    <div className="flex flex-col gap-5">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Estornos</h1>
-        <p className="text-gray-500 text-sm mt-1">Pedidos de estorno aguardando revisão</p>
+        <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-nxi1">Estornos</h1>
+        <p className="mt-0.5 text-[13px] text-nxi2">Pedidos de estorno aguardando revisão</p>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -74,22 +76,26 @@ export default function AdminEstornosPage() {
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1) }}
           onClear={() => { setSearch(''); setPage(1) }}
-          placeholder="Buscar por usuário..."
-          className="w-full sm:max-w-xs bg-white"
+          placeholder="Buscar por usuário…"
+          className="w-full sm:max-w-xs bg-white h-12 rounded-xl"
         />
       </div>
 
-      {isLoading ? (
-        <div className="text-center py-16 text-gray-400">Carregando...</div>
-      ) : (
-        <Table
-          columns={columns}
-          data={refunds}
-          meta={meta as any}
-          onPageChange={setPage}
-          emptyState={{ icon: RotateCcw, title: 'Nenhum estorno encontrado', description: 'Não há pedidos de estorno no momento.' }}
-        />
-      )}
+      <SectionCard flush>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <LoadingPage />
+          </div>
+        ) : (
+          <Table
+            columns={columns}
+            data={refunds}
+            meta={meta as any}
+            onPageChange={setPage}
+            emptyState={{ icon: RotateCcw, title: 'Nenhum estorno encontrado', description: 'Não há pedidos de estorno no momento.' }}
+          />
+        )}
+      </SectionCard>
 
       <ConfirmDialog
         open={!!confirmAction}

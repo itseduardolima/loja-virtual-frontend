@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { Users, Eye } from 'lucide-react'
 import { Table, Column } from '@/components'
@@ -7,6 +7,8 @@ import { SearchInput } from '@/components/ui/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { UserDetailDrawer } from '@/components/Admin/UserDetailDrawer'
 import { useUsuariosPage } from './useUsuariosPage'
+import { SectionCard } from '../_shared'
+import LoadingPage from '@/components/Layout/LoadingPage'
 
 export default function AdminUsuariosPage() {
   const {
@@ -21,8 +23,8 @@ export default function AdminUsuariosPage() {
   } = useUsuariosPage()
 
   const columns: Column<AdminUser>[] = [
-    { key: 'name', header: 'Nome', accessor: 'name' },
-    { key: 'email', header: 'Email', accessor: 'email' },
+    { key: 'name',  header: 'Nome',     accessor: 'name' },
+    { key: 'email', header: 'Email',    accessor: 'email' },
     { key: 'phone', header: 'Telefone', accessor: 'phone', type: 'phone' },
     {
       key: 'profile',
@@ -34,9 +36,9 @@ export default function AdminUsuariosPage() {
       type: 'badge',
       options: {
         badgeColors: {
-          admin: { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-200' },
-          vendor: { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200' },
-          client: { bg: 'bg-gray-100', text: 'text-gray-700', border: 'border-gray-200' },
+          admin:  { bg: 'bg-nxp/[0.08]',  text: 'text-nxp',  border: 'ring-1 ring-nxp/20' },
+          vendor: { bg: 'bg-nxp/[0.05]',  text: 'text-nxp',  border: 'ring-1 ring-nxp/15' },
+          client: { bg: 'bg-nxi3/[0.08]', text: 'text-nxi2', border: 'ring-1 ring-nxborder' },
         },
       },
     },
@@ -48,28 +50,19 @@ export default function AdminUsuariosPage() {
       options: {
         align: 'right',
         actions: [
-          {
-            type: 'switch',
-            getChecked: (row) => row.status === 1,
-            onClick: handleToggleStatus,
-          },
-          {
-            type: 'button',
-            icon: Eye,
-            variant: 'ghost',
-            onClick: (row) => setSelectedUserId(row.id),
-          },
+          { type: 'switch', getChecked: (row) => row.status === 1, onClick: handleToggleStatus },
+          { type: 'button', icon: Eye, variant: 'ghost', onClick: (row) => setSelectedUserId(row.id) },
         ],
       },
     },
   ]
 
   return (
-    <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
+    <div className="flex flex-col gap-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Usuários</h1>
-          <p className="text-gray-500 text-sm mt-1">Gerencie todos os usuários da plataforma</p>
+          <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-nxi1">Usuários</h1>
+          <p className="mt-0.5 text-[13px] text-nxi2">Gerencie todos os usuários da plataforma</p>
         </div>
       </div>
 
@@ -78,8 +71,8 @@ export default function AdminUsuariosPage() {
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1) }}
           onClear={() => { setSearch(''); setPage(1) }}
-          placeholder="Buscar por nome ou email..."
-          className="w-full sm:max-w-xs bg-white"
+          placeholder="Buscar por nome ou email…"
+          className="w-full sm:max-w-xs bg-white h-12 rounded-xl"
         />
         <Select value={profileFilter || 'all'} onValueChange={(v) => { setProfileFilter(v === 'all' ? '' : v); setPage(1) }}>
           <SelectTrigger className="w-44">
@@ -104,17 +97,22 @@ export default function AdminUsuariosPage() {
         </Select>
       </div>
 
-      {isLoading ? (
-        <div className="text-center py-16 text-gray-400">Carregando...</div>
-      ) : (
-        <Table
-          columns={columns}
-          data={Array.isArray(users) ? users : []}
-          meta={meta as any}
-          onPageChange={setPage}
-          emptyState={{ icon: Users, title: 'Nenhum usuário encontrado', description: 'Nenhum usuário corresponde aos filtros.' }}
-        />
-      )}
+      <SectionCard flush>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <LoadingPage />
+          </div>
+        ) : (
+          <Table
+            columns={columns}
+            data={Array.isArray(users) ? users : []}
+            meta={meta as any}
+            onPageChange={setPage}
+            emptyState={{ icon: Users, title: 'Nenhum usuário encontrado', description: 'Nenhum usuário corresponde aos filtros.' }}
+          />
+        )}
+      </SectionCard>
+
       <UserDetailDrawer
         userId={selectedUserId}
         open={selectedUserId !== null}

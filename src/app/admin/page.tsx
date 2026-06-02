@@ -1,74 +1,77 @@
-﻿'use client'
+'use client'
 
 import { Users, Store, BarChart3, TrendingUp, DollarSign } from 'lucide-react'
 import { DashboardStatsCard } from '@/components'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { useAdminPage } from './useAdminPage'
+import { SectionCard, SectionHeader } from './_shared'
 
 export default function AdminPage() {
   const { stats, loadingStats, loadingRevenue, formatCurrency, chartData } = useAdminPage()
 
   return (
-    <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
+    <div className="flex flex-col gap-5">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Painel Administrativo</h1>
-        <p className="text-gray-500 text-sm mt-1">Visão geral da plataforma</p>
+        <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-nxi1">
+          Painel Administrativo
+        </h1>
+        <p className="mt-0.5 text-[13px] text-nxi2">Visão geral da plataforma</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <DashboardStatsCard
           title="Total de Usuários"
-          value={loadingStats ? '...' : stats?.total_users ?? 0}
+          value={loadingStats ? '—' : stats?.total_users ?? 0}
           icon={Users}
-          variant="pink"
+          variant="primary"
         />
         <DashboardStatsCard
           title="Vendedores Ativos"
-          value={loadingStats ? '...' : stats?.total_sellers ?? 0}
+          value={loadingStats ? '—' : stats?.total_sellers ?? 0}
           icon={TrendingUp}
-          variant="orange"
+          variant="accent"
         />
         <DashboardStatsCard
           title="Lojas Ativas"
-          value={loadingStats ? '...' : stats?.active_stores ?? 0}
+          value={loadingStats ? '—' : stats?.active_stores ?? 0}
           icon={Store}
-          variant="green"
+          variant="success"
         />
         <DashboardStatsCard
           title="Receita do Mês"
-          value={loadingStats ? '...' : formatCurrency(stats?.monthly_revenue ?? 0)}
+          value={loadingStats ? '—' : formatCurrency(stats?.monthly_revenue ?? 0)}
           icon={DollarSign}
-          variant="purple"
+          variant="warning"
         />
         <DashboardStatsCard
           title="Receita Total"
-          value={loadingStats ? '...' : formatCurrency(stats?.total_revenue ?? 0)}
+          value={loadingStats ? '—' : formatCurrency(stats?.total_revenue ?? 0)}
           icon={BarChart3}
-          variant="pink"
+          variant="primary"
         />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base font-semibold">Receita dos últimos 6 meses</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loadingRevenue ? (
-            <div className="h-64 flex items-center justify-center text-gray-400">Carregando...</div>
-          ) : (
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `R$ ${v}`} />
-                <Tooltip formatter={(v: number) => formatCurrency(v)} />
-                <Bar dataKey="receita" fill="#6366f1" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </CardContent>
-      </Card>
+      <SectionCard>
+        <SectionHeader
+          title="Receita dos últimos 6 meses"
+          description="Faturamento mensal consolidado"
+        />
+        {loadingRevenue ? (
+          <div className="flex h-64 items-center justify-center text-[13px] text-nxi3">
+            Carregando…
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--nxborder))" />
+              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `R$ ${v}`} />
+              <Tooltip formatter={(v: number) => formatCurrency(v)} />
+              <Bar dataKey="receita" fill="hsl(var(--nxp))" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </SectionCard>
     </div>
   )
 }
