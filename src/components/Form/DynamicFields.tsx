@@ -374,6 +374,41 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
           </div>
         )
 
+      case 'radio': {
+        // Escolha ÚNICA: o valor é uma string (diferente do 'select', que é multi/array).
+        const selectedOption = Array.isArray(fieldValue)
+          ? (fieldValue[0] || '')
+          : (fieldValue || '')
+        return (
+          <div key={field.id}>
+            <Label htmlFor={`field-${field.id}`} className="text-sm font-semibold text-gray-700 mb-2 block">
+              {field.name} {isRequired && <span className="text-red-500">*</span>}
+            </Label>
+            <div className={`flex flex-wrap gap-2 ${showError ? 'p-2 border border-red-500 rounded-xl' : ''}`}>
+              {field.options.map((option) => {
+                const isSelected = selectedOption === option
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => onFieldChange(field.id, isSelected ? '' : option)}
+                    className={`
+                      h-10 px-4 rounded-xl border text-sm font-medium transition-colors
+                      ${isSelected
+                        ? 'border-primary bg-primary text-white'
+                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                      }
+                    `}
+                  >
+                    {option}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )
+      }
+
       case 'color':
         // Processar o valor do campo - pode ser array, string única ou string com vírgulas
         let selectedColors: string[] = []
@@ -481,7 +516,27 @@ export function DynamicFields({ nicheId, fieldValues, onFieldChange }: DynamicFi
         )
 
       default:
-        return null
+        // field_type desconhecido não deve sumir silenciosamente: renderiza como
+        // texto e avisa no console (ajuda a flagrar drift entre seed/DTO e o render).
+        if (typeof window !== 'undefined') {
+          console.warn(
+            `[DynamicFields] field_type não suportado: "${field.field_type}" (campo "${field.name}"). Renderizando como texto.`
+          )
+        }
+        return (
+          <div key={field.id}>
+            <Label htmlFor={`field-${field.id}`} className="text-sm font-semibold text-gray-700 mb-2 block">
+              {field.name} {isRequired && <span className="text-red-500">*</span>}
+            </Label>
+            <Input
+              id={`field-${field.id}`}
+              value={fieldValue as string}
+              onChange={(e) => onFieldChange(field.id, e.target.value)}
+              placeholder={`Digite ${field.name.toLowerCase()}`}
+              className={`h-12 ${showError ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
+            />
+          </div>
+        )
     }
   }
 
