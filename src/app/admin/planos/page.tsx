@@ -1,11 +1,12 @@
-﻿'use client'
+'use client'
 
 import { useRouter } from 'next/navigation'
 import { CreditCard, Plus, Pencil } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { Table, Column, ConfirmDialog } from '@/components'
 import { AdminPlan } from '@/types/admin'
 import { usePlanosPage } from './usePlanosPage'
+import { SectionCard, NxButton } from '../_shared'
+import LoadingPage from '@/components/Layout/LoadingPage'
 
 export default function AdminPlanosPage() {
   const router = useRouter()
@@ -15,19 +16,9 @@ export default function AdminPlanosPage() {
 
   const columns: Column<AdminPlan>[] = [
     { key: 'name', header: 'Nome', accessor: 'name' },
-    {
-      key: 'price_monthly',
-      header: 'Preço Mensal',
-      accessor: (row) => formatBRL(Number(row.price_monthly)),
-      type: 'price',
-    },
-    {
-      key: 'price_yearly',
-      header: 'Preço Anual',
-      accessor: (row) => row.price_yearly != null ? formatBRL(Number(row.price_yearly)) : '—',
-      type: 'price',
-    },
-    { key: 'max_products', header: 'Produtos Máx.', accessor: (row) => row.max_products ?? 'Ilimitado' },
+    { key: 'price_monthly', header: 'Preço Mensal', accessor: (row) => formatBRL(Number(row.price_monthly)), type: 'price' },
+    { key: 'price_yearly',  header: 'Preço Anual',  accessor: (row) => row.price_yearly != null ? formatBRL(Number(row.price_yearly)) : '—', type: 'price' },
+    { key: 'max_products',  header: 'Produtos Máx.', accessor: (row) => row.max_products ?? 'Ilimitado' },
     {
       key: 'status',
       header: 'Status',
@@ -35,8 +26,8 @@ export default function AdminPlanosPage() {
       type: 'badge',
       options: {
         badgeColors: {
-          active: { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200' },
-          inactive: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200' },
+          active:   { bg: 'bg-nxs/[0.08]', text: 'text-nxs', border: 'ring-1 ring-nxs/20' },
+          inactive: { bg: 'bg-nxi3/[0.08]', text: 'text-nxi3', border: 'ring-1 ring-nxborder' },
         },
       },
     },
@@ -47,42 +38,39 @@ export default function AdminPlanosPage() {
       type: 'actions',
       options: {
         align: 'right',
-        actions: [
-          {
-            type: 'button',
-            icon: Pencil,
-            variant: 'ghost',
-            onClick: (row) => router.push(`/admin/planos/editar/${row.id}`),
-          },
-        ],
+        actions: [{ type: 'button', icon: Pencil, variant: 'ghost', onClick: (row) => router.push(`/admin/planos/editar/${row.id}`) }],
       },
     },
   ]
 
   return (
-    <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
+    <div className="flex flex-col gap-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Planos</h1>
-          <p className="text-gray-500 text-sm mt-1">Gerencie os planos de assinatura</p>
+          <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-nxi1">Planos</h1>
+          <p className="mt-0.5 text-[13px] text-nxi2">Gerencie os planos de assinatura</p>
         </div>
-        <Button onClick={() => router.push('/admin/planos/criar')} className="flex items-center gap-2">
+        <NxButton variant="primary" onClick={() => router.push('/admin/planos/criar')}>
           <Plus className="h-4 w-4" />
           Novo Plano
-        </Button>
+        </NxButton>
       </div>
 
-      {isLoading ? (
-        <div className="text-center py-16 text-gray-400">Carregando...</div>
-      ) : (
-        <Table
-          columns={columns}
-          data={plans}
-          meta={meta as any}
-          onPageChange={setPage}
-          emptyState={{ icon: CreditCard, title: 'Nenhum plano encontrado', description: 'Crie um plano para começar.' }}
-        />
-      )}
+      <SectionCard flush>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <LoadingPage />
+          </div>
+        ) : (
+          <Table
+            columns={columns}
+            data={plans}
+            meta={meta as any}
+            onPageChange={setPage}
+            emptyState={{ icon: CreditCard, title: 'Nenhum plano encontrado', description: 'Crie um plano para começar.' }}
+          />
+        )}
+      </SectionCard>
 
       <ConfirmDialog
         open={!!confirmDelete}

@@ -78,7 +78,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <SidebarAdmin currentPath={pathname} />
       <div className="flex-1 lg:ml-0 flex flex-col overflow-hidden">
         <UserHeader currentPath={pathname} />
-        <div className="flex-1 overflow-y-auto bg-[#FAFAFB]">
+        <div className="flex-1 overflow-y-auto bg-nxbg">
           <div className="px-4 py-8">
             {children}
           </div>

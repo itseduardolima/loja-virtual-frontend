@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation'
 import { ChevronLeft } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { useToastContext } from '@/contexts/ToastContext'
 import { useAdminCreatePlanCoupon } from '@/hooks/useAdminPlanCoupons'
 import { PlanCouponForm } from '../components/PlanCouponForm'
@@ -24,21 +23,25 @@ export default function AdminCriarPlanCouponPage() {
   }
 
   return (
-    <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => router.back()} className="shrink-0">
-          <ChevronLeft className="h-4 w-4 mr-2" />
+    <div className="flex flex-col gap-5">
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="flex items-center gap-1.5 text-[13px] font-medium text-nxi2 hover:text-nxi1"
+        >
+          <ChevronLeft className="h-4 w-4" />
           Voltar
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Criar Cupom de Plano</h1>
-          <p className="text-gray-600 mt-1">Configure um desconto promocional para assinaturas</p>
-        </div>
+        </button>
+      </div>
+      <div>
+        <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-nxi1">Novo cupom de plano</h1>
+        <p className="mt-0.5 text-[13px] text-nxi2">Configure um desconto promocional para assinaturas</p>
       </div>
 
       <PlanCouponForm
         isSubmitting={isPending}
-        submitLabel="Criar Cupom"
+        submitLabel="Criar cupom"
         onSubmit={onSubmit}
         onCancel={() => router.back()}
       />

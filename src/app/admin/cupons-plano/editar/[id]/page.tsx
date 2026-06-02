@@ -2,10 +2,10 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { ChevronLeft } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { useToastContext } from '@/contexts/ToastContext'
 import { useAdminPlanCoupon, useAdminUpdatePlanCoupon } from '@/hooks/useAdminPlanCoupons'
 import { PlanCouponForm } from '../../components/PlanCouponForm'
+import LoadingPage from '@/components/Layout/LoadingPage'
 
 export default function AdminEditarPlanCouponPage() {
   const router = useRouter()
@@ -28,30 +28,35 @@ export default function AdminEditarPlanCouponPage() {
   }
 
   if (isLoading || !coupon) {
-    return <div className="text-center py-16 text-gray-400">Carregando...</div>
+    return (
+      <div className="flex items-center justify-center py-16">
+        <LoadingPage />
+      </div>
+    )
   }
 
   return (
-    <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
-      <Button
-        variant="ghost"
+    <div className="flex flex-col gap-5">
+      <button
+        type="button"
         onClick={() => router.back()}
-        className="shrink-0 px-0 hover:bg-transparent text-base font-medium"
+        className="flex w-fit items-center gap-1.5 text-[13px] font-medium text-nxi2 hover:text-nxi1"
       >
-        <ChevronLeft className="h-6 w-6 mr-2" />
+        <ChevronLeft className="h-4 w-4" />
         Voltar
-      </Button>
+      </button>
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Editar Cupom</h1>
-        <p className="text-gray-600 mt-1">
-          Atualize o cupom <span className="font-mono font-bold">{coupon.code}</span>
+        <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-nxi1">Editar cupom</h1>
+        <p className="mt-0.5 text-[13px] text-nxi2">
+          Atualizando o cupom{' '}
+          <span className="font-mono font-bold text-nxi1">{coupon.code}</span>
         </p>
       </div>
 
       <PlanCouponForm
         initial={coupon}
         isSubmitting={isPending}
-        submitLabel="Salvar Alterações"
+        submitLabel="Salvar alterações"
         onSubmit={onSubmit}
         onCancel={() => router.back()}
       />

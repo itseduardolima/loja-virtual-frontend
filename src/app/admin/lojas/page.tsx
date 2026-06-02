@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { Store } from 'lucide-react'
 import { Table, Column } from '@/components'
@@ -8,20 +8,18 @@ import { ptBR } from 'date-fns/locale'
 import { SearchInput } from '@/components/ui/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useLojasPage } from './useLojasPage'
+import { SectionCard } from '../_shared'
+import LoadingPage from '@/components/Layout/LoadingPage'
 
 export default function AdminLojasPage() {
   const { stores, meta, isLoading, page, setPage, search, setSearch, statusFilter, setStatusFilter, handleToggle } = useLojasPage()
 
   const columns: Column<AdminStore>[] = [
-    { key: 'name', header: 'Nome', accessor: 'name' },
-    { key: 'slug', header: 'Slug', accessor: 'slug' },
-    { key: 'owner', header: 'Dono', accessor: (row) => row.user?.name ?? '-' },
-    { key: 'email', header: 'Email', accessor: (row) => row.user?.email ?? '-' },
-    {
-      key: 'location',
-      header: 'Cidade/Estado',
-      accessor: (row) => [row.city, row.state].filter(Boolean).join(' / ') || '-',
-    },
+    { key: 'name',     header: 'Nome',        accessor: 'name' },
+    { key: 'slug',     header: 'Slug',        accessor: 'slug' },
+    { key: 'owner',    header: 'Dono',        accessor: (row) => row.user?.name ?? '-' },
+    { key: 'email',    header: 'Email',       accessor: (row) => row.user?.email ?? '-' },
+    { key: 'location', header: 'Cidade/Estado', accessor: (row) => [row.city, row.state].filter(Boolean).join(' / ') || '-' },
     {
       key: 'created_at',
       header: 'Criada em',
@@ -35,22 +33,16 @@ export default function AdminLojasPage() {
       type: 'actions',
       options: {
         align: 'right',
-        actions: [
-          {
-            type: 'switch',
-            getChecked: (row) => row.status === 1,
-            onClick: handleToggle,
-          },
-        ],
+        actions: [{ type: 'switch', getChecked: (row) => row.status === 1, onClick: handleToggle }],
       },
     },
   ]
 
   return (
-    <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
+    <div className="flex flex-col gap-5">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Lojas</h1>
-        <p className="text-gray-500 text-sm mt-1">Gerencie todas as lojas da plataforma</p>
+        <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-nxi1">Lojas</h1>
+        <p className="mt-0.5 text-[13px] text-nxi2">Gerencie todas as lojas da plataforma</p>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -58,8 +50,8 @@ export default function AdminLojasPage() {
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1) }}
           onClear={() => { setSearch(''); setPage(1) }}
-          placeholder="Buscar por nome ou slug..."
-          className="w-full sm:max-w-xs bg-white"
+          placeholder="Buscar por nome ou slug…"
+          className="w-full sm:max-w-xs bg-white h-12 rounded-xl"
         />
         <Select value={statusFilter || 'all'} onValueChange={(v) => { setStatusFilter(v === 'all' ? '' : v); setPage(1) }}>
           <SelectTrigger className="w-36">
@@ -73,17 +65,21 @@ export default function AdminLojasPage() {
         </Select>
       </div>
 
-      {isLoading ? (
-        <div className="text-center py-16 text-gray-400">Carregando...</div>
-      ) : (
-        <Table
-          columns={columns}
-          data={stores}
-          meta={meta as any}
-          onPageChange={setPage}
-          emptyState={{ icon: Store, title: 'Nenhuma loja encontrada' }}
-        />
-      )}
+      <SectionCard flush>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <LoadingPage />
+          </div>
+        ) : (
+          <Table
+            columns={columns}
+            data={stores}
+            meta={meta as any}
+            onPageChange={setPage}
+            emptyState={{ icon: Store, title: 'Nenhuma loja encontrada' }}
+          />
+        )}
+      </SectionCard>
     </div>
   )
 }
