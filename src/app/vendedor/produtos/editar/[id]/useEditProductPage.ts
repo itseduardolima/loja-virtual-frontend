@@ -247,6 +247,12 @@ export function useEditProductPage(productId: string, user: any) {
     if (data.unidade !== undefined) formData.append('unidade', data.unidade || '')
     if (data.gtin !== undefined) formData.append('gtin', data.gtin || '')
 
+    // Envia o nicho sempre que selecionado (mesmo sem valores), para o backend cobrar
+    // os campos obrigatórios do nicho — não só quando há dynamic_fields.
+    if (selectedNicheId) {
+      formData.append('niche_id', selectedNicheId.toString())
+    }
+
     if (selectedNicheId && Object.keys(dynamicFieldValues).length > 0) {
       const dynamicFields = Object.values(dynamicFieldValues).map((fieldValue) => ({
         field_id: fieldValue.field_id,
@@ -324,7 +330,8 @@ export function useEditProductPage(productId: string, user: any) {
 
   const availableColors = useMemo(() => {
     if (!nicheFields || nicheFields.length === 0) return []
-    const colorField = nicheFields.find(f => f.name.toLowerCase() === 'cor')
+    const colorField = nicheFields.find(f => f.variant_dimension === 'color')
+      || nicheFields.find(f => f.name.toLowerCase() === 'cor')
     if (!colorField) return []
     const colorFieldValue = dynamicFieldValues[colorField.id.toString()]
     if (!colorFieldValue) return []
@@ -336,9 +343,10 @@ export function useEditProductPage(productId: string, user: any) {
 
   const availableSizes = useMemo(() => {
     if (!nicheFields || nicheFields.length === 0) return []
-    const sizeField = nicheFields.find(f =>
-      f.name.toLowerCase() === 'tamanho' || f.name.toLowerCase() === 'tamanhos'
-    )
+    const sizeField = nicheFields.find(f => f.variant_dimension === 'size')
+      || nicheFields.find(f =>
+        f.name.toLowerCase() === 'tamanho' || f.name.toLowerCase() === 'tamanhos'
+      )
     if (!sizeField) return []
     const sizeFieldValue = dynamicFieldValues[sizeField.id.toString()]
     if (!sizeFieldValue) return []

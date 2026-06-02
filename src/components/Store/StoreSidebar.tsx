@@ -83,7 +83,10 @@ export function StoreSidebar({
   // Mostra campos personalizados apenas quando há uma categoria aplicada,
   // filtrando pelos nomes de campos que existem nos produtos dessa categoria
   const fieldsWithOptions = fields.filter(field => {
-    if (!(field.field_type === 'select' || field.field_type === 'color')) return false
+    // Campos de variante (Cor/Tamanho/Numeração) não viram filtro de spec: já existe o
+    // filtro nativo de cor/tamanho. Evita facetas duplicadas no mesmo painel.
+    if (field.variant_dimension) return false
+    if (!(field.field_type === 'select' || field.field_type === 'radio' || field.field_type === 'color')) return false
     if (!field.options || !Array.isArray(field.options) || field.options.length === 0) return false
     // Só mostra campos personalizados quando uma categoria está aplicada
     if (!appliedCategoryId) return false

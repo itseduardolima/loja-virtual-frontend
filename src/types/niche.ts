@@ -18,7 +18,10 @@ export interface NicheField {
   id: number
   name: string
   slug: string
-  field_type: 'text' | 'select' | 'color' | 'number' | 'textarea'
+  field_type: 'text' | 'select' | 'radio' | 'color' | 'number' | 'textarea'
+  // Dimensão de variante: campo que alimenta PRODUCT.colors/sizes + PRODUCT_STOCK.
+  // null/ausente = campo de especificação pura.
+  variant_dimension?: 'color' | 'size' | null
   options: string[]
   required: number
   sort_order: number
