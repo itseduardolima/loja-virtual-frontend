@@ -158,7 +158,7 @@ export default function ProdutosPage() {
               products={products}
               storeSlug={storeSlug}
               onEdit={(id) => router.push(`/vendedor/produtos/editar/${id}`)}
-              onView={(id) => router.push(`/vendedor/produtos/${id}`)}
+              onView={(id) => router.push(`/vendedor/produtos/editar/${id}`)}
               onDuplicate={handleDuplicate}
               onToggleStatus={handleToggleStatus}
               onDelete={setDeleteTarget}
