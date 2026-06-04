@@ -1,6 +1,5 @@
 'use client'
 
-import { Badge } from '@/components/ui/badge'
 import { formatPrice } from '@/lib/utils'
 
 interface ProductPricingProps {
@@ -10,19 +9,20 @@ interface ProductPricingProps {
 }
 
 export function ProductPricing({ finalPrice, originalPrice, discountPercentage }: ProductPricingProps) {
+  const hasDiscount = discountPercentage > 0
   return (
-    <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
-      <span className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary">
+    <div className="flex flex-wrap items-end gap-3">
+      <span className="text-[40px] font-extrabold leading-none tracking-[-0.03em] text-nxi1">
         {formatPrice(finalPrice?.toString() || originalPrice)}
       </span>
-      {discountPercentage > 0 && (
+      {hasDiscount && (
         <>
-          <span className="text-lg sm:text-xl lg:text-2xl text-primary/30 line-through font-bold">
+          <span className="mb-1 text-[18px] font-medium text-nxi3 line-through">
             {formatPrice(originalPrice)}
           </span>
-          <Badge className="bg-[#FF3333]/10 text-[#FF3333] px-2 py-1 text-xs sm:text-sm">
+          <span className="mb-1 rounded-full bg-nxa px-2.5 py-1 text-[12px] font-bold text-white">
             -{Math.floor(discountPercentage)}%
-          </Badge>
+          </span>
         </>
       )}
     </div>

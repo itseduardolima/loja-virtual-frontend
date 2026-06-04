@@ -98,6 +98,18 @@
   .nx-fade { animation: none; }
 }
 
+/* Galeria da página de produto — troca de cor (transform-only, iframe-safe) */
+@keyframes nxGallerySwap {
+  from { transform: translateX(14px); }
+  to   { transform: translateX(0); }
+}
+.nx-gallery-swap {
+  animation: nxGallerySwap 0.42s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nx-gallery-swap { animation: none; }
+}
+
 /* Custom scrollbar styles */
 .scrollbar-thin::-webkit-scrollbar {
   width: 6px;

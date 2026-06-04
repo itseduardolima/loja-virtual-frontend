@@ -1,30 +1,37 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { Heart, Share2, Link as LinkIcon, MessageCircle } from 'lucide-react'
 import { CartSidebar, ErrorState, StoreHeader, ProductReviews } from '@/components'
 import { useProductQuestionsCount } from '@/hooks/useProductQuestions'
 import { useProductDetailPage } from './useProductDetailPage'
 import { useProductReviews } from '@/hooks/useProductReviews'
 import { useStoreInfo } from '@/hooks/useStoreInfo'
+import { useWishlist } from '@/hooks/useWishlist'
+import { useToastContext } from '@/contexts/ToastContext'
 import { useAddToCartAnimation } from '@/hooks/useAddToCartAnimation'
 import { AddToCartAnimation } from '@/components/Animation/AddToCartAnimation'
-import { AppFooter } from '@/components/Layout/AppFooter'
 import { RelatedProducts } from '@/components/Product/RelatedProducts'
 import { WhatsAppChatWidget } from '@/components/Store/WhatsAppChatWidget'
-import { WishlistButton } from '@/components/Product/WishlistButton'
-import { ShareButtons } from '@/components/Product/ShareButtons'
 import { ProductQuestions } from '@/components/Product/ProductQuestions'
-import { Breadcrumbs } from '@/components/ui/Breadcrumbs'
 import LoadingPage from '@/components/Layout/LoadingPage'
+import { AnnouncementBar } from '@/components/Store/AnnouncementBar'
+import { StoreNewFooter } from '@/components/Store/StoreNewFooter'
 import { ProductImageGallery } from '@/components/Store/Product/ProductImageGallery'
-import { ProductRating } from '@/components/Store/Product/ProductRating'
 import { ProductPricing } from '@/components/Store/Product/ProductPricing'
 import { ProductColorSelector } from '@/components/Store/Product/ProductColorSelector'
 import { ProductSizeSelector } from '@/components/Store/Product/ProductSizeSelector'
 import { ProductAddToCart } from '@/components/Store/Product/ProductAddToCart'
-import { ProductSpecsTab } from '@/components/Store/Product/ProductSpecsTab'
-import { ProductTabBar, TabKey } from '@/components/Store/Product/ProductTabBar'
+import { ProductMobileBuyBar } from '@/components/Store/Product/ProductMobileBuyBar'
+import { ProductStockLine } from '@/components/Store/Product/ProductStockLine'
+import { ProductSubNav, SubNavSection } from '@/components/Store/Product/ProductSubNav'
+import { ProductDescriptionSection } from '@/components/Store/Product/ProductDescriptionSection'
+import { ProductSpecsSection } from '@/components/Store/Product/ProductSpecsSection'
+import { Stars } from '@/components/Store/Product/Stars'
+import { cn } from '@/lib/utils'
+
+const NAV_OFFSET = 64 + 48
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -34,9 +41,13 @@ export default function ProductDetailPage() {
 
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
-  const [activeTab, setActiveTab] = useState<TabKey>('specs')
+  const [barVisible, setBarVisible] = useState(true)
+  const [shareOpen, setShareOpen] = useState(false)
+  const shareRef = useRef<HTMLDivElement>(null)
 
   const { storeInfo } = useStoreInfo(slug)
+  const { isInWishlist, toggleWishlist, isLoading: wishlistLoading } = useWishlist()
+  const { success: showSuccess } = useToastContext()
   const { triggerAnimation, animationData, onAnimationComplete } = useAddToCartAnimation()
 
   const {
@@ -50,9 +61,6 @@ export default function ProductDetailPage() {
     currentStock,
     currentImages,
     buildImageUrls,
-    selectImage,
-    previousImage,
-    nextImage,
     selectSize,
     selectColor,
     increaseQuantity,
@@ -64,25 +72,19 @@ export default function ProductDetailPage() {
   const { summary: reviewsSummary } = useProductReviews(slug, productId)
   const questionsTotal = useProductQuestionsCount(slug, productId)
 
+  // fecha o dropdown de compartilhar ao clicar fora
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (currentImages && currentImages.length > 1) {
-        if (event.key === 'ArrowLeft') {
-          event.preventDefault()
-          previousImage()
-        } else if (event.key === 'ArrowRight') {
-          event.preventDefault()
-          nextImage()
-        }
-      }
+    if (!shareOpen) return
+    const onClick = (e: MouseEvent) => {
+      if (shareRef.current && !shareRef.current.contains(e.target as Node)) setShareOpen(false)
     }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [currentImages, previousImage, nextImage])
+    document.addEventListener('mousedown', onClick)
+    return () => document.removeEventListener('mousedown', onClick)
+  }, [shareOpen])
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-nxbg">
         <LoadingPage />
       </div>
     )
@@ -90,7 +92,7 @@ export default function ProductDetailPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-nxbg">
         <ErrorState
           message="Erro ao carregar produto"
           onRetry={() => router.refresh()}
@@ -102,7 +104,7 @@ export default function ProductDetailPage() {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-nxbg">
         <ErrorState
           message="Produto não encontrado"
           onRetry={() => router.push(`/loja/${slug}`)}
@@ -112,19 +114,56 @@ export default function ProductDetailPage() {
     )
   }
 
-  const hasColors = !!(
-    product.color || product.dynamic_fields?.find((f) => f.field_name.toLowerCase() === 'cor')
-  )
-  const hasSizes = !!product.dynamic_fields?.find(
-    (f) => f.field_name.toLowerCase() === 'tamanho'
-  )
-
   const dynamicColorField = product.dynamic_fields?.find(
     (f) => f.field_name.toLowerCase() === 'cor'
   )
   const dynamicSizeField = product.dynamic_fields?.find(
     (f) => f.field_name.toLowerCase() === 'tamanho'
   )
+  const hasColors = !!(product.color || dynamicColorField)
+  const hasSizes = !!dynamicSizeField
+
+  // campos descritivos = dynamic_fields que não são as dimensões de variação
+  const descriptiveFields = (product.dynamic_fields ?? []).filter((f) => {
+    const name = f.field_name.toLowerCase()
+    return name !== 'cor' && name !== 'tamanho'
+  })
+
+  // estoque por tamanho considerando a cor ativa (para riscar pills esgotadas)
+  const variantStocks = product.variant_stocks ?? []
+  const stockForSize = (size: string): number | null => {
+    if (variantStocks.length === 0) return null
+    const match = variantStocks.find(
+      (v) => (!v.color || v.color === selectedColor) && v.size === size,
+    )
+    return match ? match.stock : 0
+  }
+  const colorTotal =
+    selectedColor && variantStocks.length > 0
+      ? variantStocks
+          .filter((v) => v.color === selectedColor)
+          .reduce((sum, v) => sum + v.stock, 0)
+      : null
+
+  const favorited = isInWishlist(product.id)
+  const averageRating = reviewsSummary?.average_rating ?? 0
+  const totalReviews = reviewsSummary?.total_reviews ?? 0
+
+  const sections: SubNavSection[] = [
+    { id: 'descricao', label: 'Descrição' },
+    { id: 'especificacoes', label: 'Especificações' },
+    { id: 'avaliacoes', label: 'Avaliações', count: totalReviews || null },
+    { id: 'perguntas', label: 'Perguntas', count: questionsTotal || null },
+  ]
+
+  const jumpTo = (id: string) => {
+    const el = document.getElementById(id)
+    if (!el) return
+    window.scrollTo({
+      top: el.getBoundingClientRect().top + window.scrollY - NAV_OFFSET,
+      behavior: 'smooth',
+    })
+  }
 
   const handleSearchSubmit = (value: string) => {
     router.push(`/loja/${slug}/produtos?search=${encodeURIComponent(value)}`)
@@ -138,28 +177,26 @@ export default function ProductDetailPage() {
     addToCart()
   }
 
-  const tabs = [
-    {
-      key: 'specs' as TabKey,
-      label: 'Especificações',
-      show: !!(product.description || product.specifications),
-    },
-    {
-      key: 'reviews' as TabKey,
-      label: 'Avaliações',
-      badge: reviewsSummary?.total_reviews ?? 0,
-      show: true,
-    },
-    {
-      key: 'questions' as TabKey,
-      label: 'Perguntas',
-      badge: questionsTotal,
-      show: true,
-    },
-  ]
+  const handleCopyLink = async () => {
+    setShareOpen(false)
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      showSuccess('Link copiado!', 'Compartilhar')
+    } catch {
+      // clipboard indisponível — ignora
+    }
+  }
+
+  const handleWhatsAppShare = () => {
+    setShareOpen(false)
+    const url = encodeURIComponent(`Veja este produto: ${window.location.href}`)
+    window.open(`https://wa.me/?text=${url}`, '_blank', 'noopener,noreferrer')
+  }
 
   return (
     <div className="min-h-screen bg-white">
+      {barVisible && <AnnouncementBar onDismiss={() => setBarVisible(false)} />}
+
       <StoreHeader
         storeInfo={storeInfo}
         slug={slug}
@@ -169,66 +206,74 @@ export default function ProductDetailPage() {
         onCartClick={() => setIsCartOpen(true)}
       />
 
-      <div className="px-4 sm:px-6 lg:px-20 pt-3 pb-1">
-        <Breadcrumbs
-          items={[
-            { label: 'Início', href: `/loja/${slug}` },
-            {
-              label: product.category?.name || 'Categoria',
-              href: product.category?.id
-                ? `/loja/${slug}/produtos?category=${product.category.id}`
-                : `/loja/${slug}/produtos`,
-            },
-            { label: product.name },
-          ]}
-        />
-      </div>
+      <ProductSubNav sections={sections} storeHref={`/loja/${slug}`} />
 
-      <div className="px-4 sm:px-6 lg:px-20 py-4 sm:py-6 lg:py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-16">
+      <main className="mx-auto w-full max-w-[1180px] px-4 md:px-10">
+        {/* breadcrumb */}
+        <nav className="flex items-center gap-1.5 pt-5 text-[11px] font-medium text-nxi3">
+          <button onClick={() => router.push(`/loja/${slug}`)} className="hover:text-nxi1">
+            Início
+          </button>
+          <span>›</span>
+          <button
+            onClick={() =>
+              router.push(
+                product.category?.id
+                  ? `/loja/${slug}/produtos?category=${product.category.id}`
+                  : `/loja/${slug}/produtos`,
+              )
+            }
+            className="hover:text-nxi1"
+          >
+            {product.category?.name || 'Produtos'}
+          </button>
+          <span>›</span>
+          <span className="truncate text-nxi2">{product.name}</span>
+        </nav>
+
+        {/* gallery + sticky buy box */}
+        <div className="grid grid-cols-1 gap-8 pb-12 pt-5 lg:grid-cols-[1fr_400px] lg:gap-14">
           <ProductImageGallery
             images={currentImages}
-            selectedIndex={selectedImageIndex}
             productName={product.name}
+            discountPercentage={product.discount_percentage}
             buildImageUrls={buildImageUrls}
-            onSelectImage={selectImage}
-            onPrevious={previousImage}
-            onNext={nextImage}
+            galleryKey={selectedColor ?? 'default'}
           />
 
-          <div className="space-y-4 sm:space-y-6 min-w-0">
-            <div>
-              <div className="flex items-start justify-between gap-3 mb-3 sm:mb-4">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary break-words flex-1">
-                  {product.name}
-                </h1>
-                <WishlistButton productId={product.id} className="flex-shrink-0 mt-1" />
-              </div>
-              <ShareButtons />
-              <ProductRating
-                rating={reviewsSummary?.average_rating ?? 0}
-                totalReviews={reviewsSummary?.total_reviews ?? 0}
+          <aside className="lg:sticky lg:top-28 lg:self-start">
+            <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-nxi3">
+              {product.category?.name}
+            </span>
+            <h1 className="mt-1.5 break-words text-[26px] font-extrabold leading-[1.06] tracking-[-0.025em] text-nxi1 sm:text-[30px]">
+              {product.name}
+            </h1>
+
+            <button
+              onClick={() => jumpTo('avaliacoes')}
+              className="mt-2 flex items-center gap-2 text-[12.5px] text-nxi3 transition-colors hover:text-nxi1"
+            >
+              <Stars rating={averageRating} size={14} />
+              <span className="font-medium underline-offset-2 hover:underline">
+                {totalReviews
+                  ? `${averageRating.toFixed(1)} · ${totalReviews} ${totalReviews === 1 ? 'avaliação' : 'avaliações'}`
+                  : 'Sem avaliações ainda'}
+              </span>
+            </button>
+
+            <div className="mt-5">
+              <ProductPricing
+                finalPrice={product.final_price}
+                originalPrice={product.price}
+                discountPercentage={product.discount_percentage}
               />
             </div>
 
-            <ProductPricing
-              finalPrice={product.final_price}
-              originalPrice={product.price}
-              discountPercentage={product.discount_percentage}
-            />
-
-            <div className="flex items-center gap-2 text-primary font-integral text-sm sm:text-base">
-              <span className="font-integral tracking-wide">Estoque:</span>
-              <span>
-                {currentStock > 0
-                  ? `${currentStock} unidade${currentStock > 1 ? 's' : ''}`
-                  : 'Sem estoque'}
-              </span>
-            </div>
-
-            <p className="hidden sm:block text-primary/60 text-sm sm:text-base leading-relaxed break-words">
-              {product.description}
-            </p>
+            {product.description && (
+              <p className="mt-2.5 max-w-[46ch] break-words text-[13.5px] leading-relaxed text-nxi2">
+                {product.description}
+              </p>
+            )}
 
             <ProductColorSelector
               singleColor={product.color}
@@ -242,8 +287,17 @@ export default function ProductDetailPage() {
                 sizes={dynamicSizeField.value}
                 selectedSize={selectedSize}
                 onSelectSize={selectSize}
+                stockForSize={stockForSize}
               />
             )}
+
+            <ProductStockLine
+              currentStock={currentStock}
+              hasSizes={hasSizes}
+              selectedColor={selectedColor}
+              selectedSize={selectedSize}
+              colorTotal={colorTotal}
+            />
 
             <ProductAddToCart
               quantity={quantity}
@@ -257,30 +311,92 @@ export default function ProductDetailPage() {
               onDecrease={decreaseQuantity}
               onAddToCart={handleAddToCart}
             />
-          </div>
+
+            {/* favoritar + compartilhar */}
+            <div className="mt-3 flex items-center gap-2">
+              <button
+                onClick={() => toggleWishlist(product.id)}
+                disabled={wishlistLoading}
+                className={cn(
+                  'flex h-10 flex-1 items-center justify-center gap-2 rounded-full border text-[12.5px] font-semibold transition-colors disabled:opacity-60',
+                  favorited
+                    ? 'border-nxd/30 bg-nxd/[0.06] text-nxd'
+                    : 'border-nxborder text-nxi2 hover:border-nxi3',
+                )}
+              >
+                <Heart size={15} fill={favorited ? 'currentColor' : 'none'} />
+                {favorited ? 'Favoritado' : 'Favoritar'}
+              </button>
+              <div className="relative" ref={shareRef}>
+                <button
+                  onClick={() => setShareOpen((o) => !o)}
+                  className="flex h-10 items-center justify-center gap-2 rounded-full border border-nxborder px-4 text-[12.5px] font-semibold text-nxi2 transition-colors hover:border-nxi3"
+                >
+                  <Share2 size={15} /> Compartilhar
+                </button>
+                {shareOpen && (
+                  <div className="absolute right-0 z-20 mt-2 w-44 rounded-xl border border-nxborder bg-white p-1.5 shadow-xl">
+                    <button
+                      onClick={handleCopyLink}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] font-medium text-nxi2 hover:bg-nxbg"
+                    >
+                      <LinkIcon size={14} /> Copiar link
+                    </button>
+                    <button
+                      onClick={handleWhatsAppShare}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] font-medium text-nxi2 hover:bg-nxbg"
+                    >
+                      <MessageCircle size={14} /> WhatsApp
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </aside>
         </div>
-      </div>
 
-      <div className="bg-white">
-        <div className="px-4 sm:px-6 lg:px-20">
-          <ProductTabBar activeTab={activeTab} tabs={tabs} onSelect={setActiveTab} />
+        {/* seções contínuas */}
+        <ProductDescriptionSection
+          description={product.description}
+          category={product.category?.name}
+          dynamicFields={descriptiveFields}
+        />
 
-          {activeTab === 'specs' && (
-            <ProductSpecsTab
-              description={product.description}
-              specifications={product.specifications}
-            />
-          )}
-        </div>
+        <ProductSpecsSection
+          specifications={product.specifications}
+          category={product.category?.name}
+          dynamicFields={descriptiveFields}
+        />
 
-        {activeTab === 'reviews' && (
+        <section id="avaliacoes" className="border-t border-nxborder">
           <ProductReviews slug={slug} productId={productId} productName={product.name} />
-        )}
+        </section>
 
-        {activeTab === 'questions' && (
+        <section id="perguntas" className="border-t border-nxborder">
           <ProductQuestions slug={slug} productId={productId} />
-        )}
-      </div>
+        </section>
+
+        <RelatedProducts
+          slug={slug}
+          currentProductId={product.id}
+          categoryId={product.category?.id}
+        />
+      </main>
+
+      {storeInfo && <StoreNewFooter storeInfo={storeInfo} />}
+
+      <ProductMobileBuyBar
+        finalPrice={product.final_price}
+        originalPrice={product.price}
+        hasDiscount={product.discount_percentage > 0}
+        currentStock={currentStock}
+        hasColors={hasColors}
+        hasSizes={hasSizes}
+        selectedColor={selectedColor}
+        selectedSize={selectedSize}
+        isAddingToCart={isAddingToCart}
+        onAddToCart={handleAddToCart}
+      />
 
       <CartSidebar
         isOpen={isCartOpen}
@@ -298,14 +414,6 @@ export default function ProductDetailPage() {
           onComplete={onAnimationComplete}
         />
       )}
-
-      <RelatedProducts
-        slug={slug}
-        currentProductId={product.id}
-        categoryId={product.category?.id}
-      />
-
-      <AppFooter />
 
       <WhatsAppChatWidget whatsapp={storeInfo?.whatsapp} storeName={storeInfo?.name} />
     </div>

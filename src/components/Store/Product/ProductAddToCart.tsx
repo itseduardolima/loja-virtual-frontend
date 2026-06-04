@@ -1,8 +1,7 @@
 'use client'
 
-import { Plus, Minus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { LoadingSpinner } from '@/components'
+import { Plus, Minus, ShoppingBag, Ban, Loader2 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface ProductAddToCartProps {
   quantity: number
@@ -29,66 +28,61 @@ export function ProductAddToCart({
   onDecrease,
   onAddToCart,
 }: ProductAddToCartProps) {
-  const isOutOfStock = currentStock === 0
-  const canAddToCart =
-    !isOutOfStock &&
-    (!hasColors || !!selectedColor) &&
-    (!hasSizes || !!selectedSize) &&
-    quantity > 0
+  const needsSize = hasSizes && !selectedSize
+  const needsColor = hasColors && !selectedColor
+  const isSoldOut = !needsSize && !needsColor && currentStock === 0
+  const canAdd = !isSoldOut && !needsSize && !needsColor && quantity > 0
 
-  const buttonLabel = isAddingToCart ? null
-    : hasSizes && !selectedSize ? 'Selecione o tamanho'
-    : hasColors && !selectedColor ? 'Selecione a cor'
-    : isOutOfStock ? 'Produto Esgotado'
-    : 'Adicionar ao Carrinho'
-
-  const showHint = !canAddToCart && !isOutOfStock
-  const needsBoth = hasSizes && !selectedSize && hasColors && !selectedColor
-  const needsSize = hasSizes && !selectedSize && (!hasColors || !!selectedColor)
-  const needsColor = hasColors && !selectedColor && (!hasSizes || !!selectedSize)
+  const label = isSoldOut
+    ? 'Esgotado'
+    : needsSize
+      ? 'Selecione o tamanho'
+      : needsColor
+        ? 'Selecione a cor'
+        : 'Adicionar à sacola'
 
   return (
-    <>
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2 sm:pt-0">
-        <div className="flex items-center bg-gray-100 rounded-full shadow-sm w-auto justify-center">
-          <button
-            onClick={onDecrease}
-            disabled={quantity <= 1}
-            className="p-2 disabled:opacity-50 disabled:cursor-not-allowed rounded-l-full active:bg-gray-200 touch-manipulation flex items-center justify-center"
-            aria-label="Diminuir quantidade"
-          >
-            <Minus className="h-4 w-4 text-primary" />
-          </button>
-          <span className="px-3 sm:px-4 py-2 font-medium min-w-[2.5rem] text-center text-primary text-sm sm:text-base">
-            {quantity}
-          </span>
-          <button
-            onClick={onIncrease}
-            disabled={quantity >= currentStock}
-            className="p-2 disabled:opacity-50 disabled:cursor-not-allowed rounded-r-full active:bg-gray-200 touch-manipulation flex items-center justify-center"
-            aria-label="Aumentar quantidade"
-          >
-            <Plus className="h-4 w-4 text-primary" />
-          </button>
-        </div>
-
-        <Button
-          id="add-to-cart-button"
-          className="flex-1 h-12 text-base sm:text-lg font-medium shadow-sm active:scale-[0.98] transition-transform touch-manipulation"
-          onClick={onAddToCart}
-          disabled={!canAddToCart || isAddingToCart}
+    <div className="mt-5 flex items-stretch gap-2.5">
+      <div className="flex items-center rounded-full bg-nxbg">
+        <button
+          onClick={onDecrease}
+          disabled={quantity <= 1}
+          className="flex h-12 w-11 items-center justify-center text-nxi1 disabled:opacity-30"
+          aria-label="Diminuir quantidade"
         >
-          {isAddingToCart ? <LoadingSpinner size="sm" /> : buttonLabel}
-        </Button>
+          <Minus size={16} />
+        </button>
+        <span className="w-7 text-center text-[15px] font-semibold tabular-nums text-nxi1">
+          {quantity}
+        </span>
+        <button
+          onClick={onIncrease}
+          disabled={currentStock > 0 && quantity >= currentStock}
+          className="flex h-12 w-11 items-center justify-center text-nxi1 disabled:opacity-30"
+          aria-label="Aumentar quantidade"
+        >
+          <Plus size={16} />
+        </button>
       </div>
 
-      {showHint && (
-        <p className="text-xs sm:text-sm text-gray-500 text-center mt-1 sm:mt-2 px-2">
-          {needsBoth && 'Selecione o tamanho e a cor'}
-          {needsSize && 'Selecione o tamanho'}
-          {needsColor && 'Selecione a cor'}
-        </p>
-      )}
-    </>
+      <button
+        id="add-to-cart-button"
+        onClick={onAddToCart}
+        disabled={!canAdd || isAddingToCart}
+        className={cn(
+          'flex h-12 flex-1 items-center justify-center gap-2 rounded-full text-[14px] font-semibold transition-transform active:scale-[0.99]',
+          canAdd ? 'bg-nxp text-white hover:bg-nxp/90' : 'cursor-not-allowed bg-nxbg text-nxi3',
+        )}
+      >
+        {isAddingToCart ? (
+          <Loader2 size={17} className="animate-spin" />
+        ) : (
+          <>
+            {isSoldOut ? <Ban size={17} /> : <ShoppingBag size={17} />}
+            {label}
+          </>
+        )}
+      </button>
+    </div>
   )
 }

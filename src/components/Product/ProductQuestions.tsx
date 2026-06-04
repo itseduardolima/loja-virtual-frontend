@@ -1,31 +1,23 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { MessageCircle, ChevronDown, Send, CheckCircle } from "lucide-react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { useProductQuestions } from "@/hooks/useProductQuestions";
-
-import { useAuth } from "@/contexts/AuthContext";
-import { formatDate } from "@/lib/utils";
+import { useState } from 'react'
+import { HelpCircle, Send, CheckCircle, Store } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
+import { useProductQuestions } from '@/hooks/useProductQuestions'
+import { useAuth } from '@/contexts/AuthContext'
+import { formatDate, cn } from '@/lib/utils'
 
 interface ProductQuestionsProps {
-  slug: string;
-  productId: string;
-  enabled?: boolean;
+  slug: string
+  productId: string
+  enabled?: boolean
 }
 
-export function ProductQuestions({
-  slug,
-  productId,
-  enabled = true,
-}: ProductQuestionsProps) {
-  const { user } = useAuth();
+export function ProductQuestions({ slug, productId, enabled = true }: ProductQuestionsProps) {
+  const { user } = useAuth()
   const {
     questions,
-    meta,
     isLoading,
     loadMore,
     hasMore,
@@ -33,198 +25,186 @@ export function ProductQuestions({
     isCreating,
     isSuccess,
     resetForm,
-  } = useProductQuestions(slug, productId, enabled);
+  } = useProductQuestions(slug, productId, enabled)
 
-  const [showForm, setShowForm] = useState(false);
-  const [askerName, setAskerName] = useState(user?.name ?? "");
-  const [questionText, setQuestionText] = useState("");
+  const [showForm, setShowForm] = useState(false)
+  const [askerName, setAskerName] = useState(user?.name ?? '')
+  const [questionText, setQuestionText] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!askerName.trim() || !questionText.trim()) return;
+    e.preventDefault()
+    if (!askerName.trim() || !questionText.trim()) return
     createQuestion({
       asker_name: askerName.trim(),
       question: questionText.trim(),
-    });
-  };
+    })
+  }
 
   const handleNewQuestion = () => {
-    setQuestionText("");
-    resetForm();
-    setShowForm(true);
-  };
+    setQuestionText('')
+    resetForm()
+    setShowForm(true)
+  }
 
   return (
-    <div className="mt-2 md:mt-8 px-4 sm:px-6 lg:px-20 py-8 sm:py-12" id="perguntas">
-      <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
-        Perguntas e Respostas{" "}
-        {meta && <span>({meta.total})</span>}
-      </h2>
-      <Card className="border border-gray-100 shadow-none">
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900"></h2>
-            </div>
-            {!showForm && !isSuccess && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowForm(true)}
-                className="shrink-0"
-              >
-                Fazer uma pergunta
-              </Button>
-            )}
-          </div>
-        </CardHeader>
+    <div className="py-12 md:py-14">
+      {/* header */}
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-nxi3">
+            Dúvidas
+          </span>
+          <h2 className="mt-2 text-[22px] font-extrabold tracking-[-0.02em] text-nxi1 sm:text-[26px]">
+            Perguntas e respostas
+          </h2>
+        </div>
+        {!showForm && !isSuccess && (
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center gap-2 rounded-full border border-nxp px-4 py-2.5 text-[12.5px] font-semibold text-nxp transition-colors hover:bg-nxp hover:text-white"
+          >
+            <HelpCircle size={15} /> Fazer pergunta
+          </button>
+        )}
+      </div>
 
-        <CardContent className="pt-0">
-          {/* Formulário */}
-          {showForm && !isSuccess && (
-            <form
-              onSubmit={handleSubmit}
-              className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3"
-            >
-              {!user && (
-                <Input
-                  placeholder="Seu nome *"
-                  value={askerName}
-                  onChange={(e) => setAskerName(e.target.value)}
-                  maxLength={100}
-                  required
-                  className="bg-white"
-                />
-              )}
-              <Textarea
-                placeholder="Digite sua pergunta sobre este produto..."
-                value={questionText}
-                onChange={(e) => setQuestionText(e.target.value)}
-                maxLength={500}
-                rows={3}
-                required
-                className="bg-white resize-none"
-              />
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs text-gray-400">
-                  {questionText.length}/500
+      {/* formulário */}
+      {showForm && !isSuccess && (
+        <form
+          onSubmit={handleSubmit}
+          className="mt-6 space-y-3 rounded-2xl border border-nxborder bg-nxbg/60 p-4"
+        >
+          <p className="text-[13px] leading-relaxed text-nxi2">
+            Sua dúvida será respondida pela loja e ficará visível para outros clientes.
+          </p>
+          {!user && (
+            <Input
+              placeholder="Seu nome *"
+              value={askerName}
+              onChange={(e) => setAskerName(e.target.value)}
+              maxLength={100}
+              required
+              className="bg-white"
+            />
+          )}
+          <Textarea
+            placeholder="ex.: O tecido é quente? Serve para o verão?"
+            value={questionText}
+            onChange={(e) => setQuestionText(e.target.value)}
+            maxLength={500}
+            rows={3}
+            required
+            className="resize-none bg-white"
+          />
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs text-nxi3">{questionText.length}/500</span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="h-9 rounded-full px-4 text-[12.5px] font-semibold text-nxi2 hover:text-nxi1"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={isCreating || !askerName.trim() || !questionText.trim()}
+                className={cn(
+                  'flex h-9 items-center gap-1.5 rounded-full px-4 text-[12.5px] font-semibold transition-colors',
+                  isCreating || !askerName.trim() || !questionText.trim()
+                    ? 'cursor-not-allowed bg-nxbg text-nxi3'
+                    : 'bg-nxp text-white hover:bg-nxp/90',
+                )}
+              >
+                <Send size={13} />
+                {isCreating ? 'Enviando...' : 'Enviar pergunta'}
+              </button>
+            </div>
+          </div>
+        </form>
+      )}
+
+      {/* confirmação */}
+      {isSuccess && (
+        <div className="mt-6 flex items-start gap-3 rounded-2xl border border-nxs/20 bg-nxs/[0.06] p-4">
+          <CheckCircle size={18} className="mt-0.5 flex-shrink-0 text-nxs" />
+          <div className="flex-1">
+            <p className="text-[13.5px] font-semibold text-nxi1">Pergunta enviada!</p>
+            <p className="mt-0.5 text-[13px] text-nxi2">
+              O vendedor responderá em breve. A resposta aparecerá aqui assim que estiver
+              disponível.
+            </p>
+          </div>
+          <button
+            onClick={handleNewQuestion}
+            className="shrink-0 text-[12.5px] font-semibold text-nxs hover:underline"
+          >
+            Nova pergunta
+          </button>
+        </div>
+      )}
+
+      {/* lista */}
+      {isLoading && questions.length === 0 ? (
+        <div className="py-10 text-center">
+          <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-nxborder border-t-nxp" />
+        </div>
+      ) : questions.length === 0 ? (
+        <div className="mt-7 flex flex-col items-center justify-center rounded-2xl border border-nxborder bg-nxbg py-14 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-nxp shadow-sm">
+            <HelpCircle size={24} />
+          </div>
+          <h3 className="mt-4 text-[15px] font-bold tracking-tight text-nxi1">
+            Nenhuma pergunta ainda
+          </h3>
+          <p className="mt-1.5 max-w-[34ch] text-[13px] leading-relaxed text-nxi2">
+            Tem alguma dúvida sobre este produto? Pergunte e a loja responde.
+          </p>
+        </div>
+      ) : (
+        <div className="mt-7 space-y-3">
+          {questions.map((q) => (
+            <div key={q.id} className="rounded-2xl border border-nxborder p-5">
+              <div className="flex gap-3">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-nxbg text-[11px] font-bold text-nxi2">
+                  P
                 </span>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowForm(false)}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    type="submit"
-                    size="sm"
-                    disabled={
-                      isCreating || !askerName.trim() || !questionText.trim()
-                    }
-                  >
-                    <Send className="w-3.5 h-3.5 mr-1.5" />
-                    {isCreating ? "Enviando..." : "Enviar"}
-                  </Button>
+                <div className="min-w-0 flex-1">
+                  <p className="break-words text-[14px] font-semibold text-nxi1">{q.question}</p>
+                  <span className="text-[11px] text-nxi3">
+                    {q.asker_name} · {formatDate(q.created_at)}
+                  </span>
                 </div>
               </div>
-            </form>
-          )}
-
-          {/* Confirmação inline */}
-          {isSuccess && (
-            <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-100 flex items-start gap-3">
-              <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="text-sm font-medium text-green-800">
-                  Pergunta enviada!
-                </p>
-                <p className="text-sm text-green-700 mt-0.5">
-                  O vendedor responderá em breve. A resposta aparecerá aqui
-                  assim que estiver disponível.
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleNewQuestion}
-                className="text-green-700 hover:text-green-900 shrink-0"
-              >
-                Nova pergunta
-              </Button>
-            </div>
-          )}
-
-          {/* Lista */}
-          {isLoading && questions.length === 0 ? (
-            <div className="py-8 text-center">
-              <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin mx-auto" />
-            </div>
-          ) : questions.length === 0 ? (
-            <div className="py-10 text-center">
-              <MessageCircle className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-              <p className="text-sm text-gray-400">
-                Nenhuma pergunta respondida ainda. Seja o primeiro a perguntar!
-              </p>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-100">
-              {questions.map((q) => (
-                <div key={q.id} className="py-5 first:pt-0">
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-xs font-semibold text-gray-500 uppercase">
-                        {q.asker_name.charAt(0)}
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm font-medium text-gray-800">
-                          {q.asker_name}
-                        </span>
-                        <span className="text-xs text-gray-400">
-                          {formatDate(q.created_at)}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-700 leading-relaxed break-words overflow-hidden">
-                        {q.question}
-                      </p>
-
-                      {q.answer && (
-                        <div className="mt-3 pl-3 border-l-2 border-gray-200">
-                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                            Resposta da loja
-                          </p>
-                          <p className="text-sm text-gray-700 leading-relaxed break-words overflow-hidden">
-                            {q.answer}
-                          </p>
-                        </div>
-                      )}
-                    </div>
+              {q.answer && (
+                <div className="mt-3 flex gap-3">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-nxp text-[11px] font-bold text-white">
+                    R
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="break-words text-[13.5px] leading-relaxed text-nxi2">
+                      {q.answer}
+                    </p>
+                    <span className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-nxp">
+                      <Store size={11} /> Resposta da loja
+                    </span>
                   </div>
                 </div>
-              ))}
+              )}
             </div>
-          )}
+          ))}
+        </div>
+      )}
 
-          {hasMore && (
-            <div className="mt-4 text-center">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={loadMore}
-                disabled={isLoading}
-                className="gap-1.5"
-              >
-                <ChevronDown className="w-4 h-4" />
-                Ver mais perguntas
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {hasMore && (
+        <button
+          onClick={loadMore}
+          disabled={isLoading}
+          className="mt-4 w-full rounded-xl border border-dashed border-nxborder py-3 text-[12.5px] font-semibold text-nxi3 transition-colors hover:border-nxi3 hover:text-nxp disabled:opacity-50"
+        >
+          {isLoading ? 'Carregando...' : 'Ver todas as perguntas'}
+        </button>
+      )}
     </div>
-  );
+  )
 }
