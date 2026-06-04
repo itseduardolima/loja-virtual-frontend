@@ -95,7 +95,7 @@ export default function ProdutosPage() {
   const hasFilters = !!(filters.search || filters.status !== undefined || filters.featured)
 
   return (
-    <div className="mx-auto w-full max-w-[1180px] pb-16 pt-2 sm:pt-4">
+    <div className="w-full">
       <ListPageHeader
         title="Produtos"
         subtitle={`${stats.total} ${stats.total === 1 ? 'produto' : 'produtos'} · ${stats.active} ativos na sua vitrine.`}

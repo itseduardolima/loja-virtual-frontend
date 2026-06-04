@@ -196,7 +196,7 @@ export default function CuponsPage() {
   const hasFilters = !!search.trim() || activeFilter !== 'all'
 
   return (
-    <div className="mx-auto w-full max-w-[1180px] pb-16 pt-2 sm:pt-4">
+    <div className="w-full">
       <ListPageHeader
         title="Cupons"
         subtitle={`${stats.total} ${stats.total === 1 ? 'cupom' : 'cupons'} · ${stats.active} ativos na sua loja.`}
