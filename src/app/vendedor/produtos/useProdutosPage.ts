@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
-import { useProducts, useUpdateProductStatus, useDuplicateProduct } from '@/hooks/useProducts'
+import { useProducts, useUpdateProductStatus, useDuplicateProduct, useDeleteProduct } from '@/hooks/useProducts'
 import { useDebounce } from '@/hooks/useDebounce'
 import { formatPrice } from '@/lib/utils'
 import { useToastContext } from '@/contexts/ToastContext'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useStore } from '@/hooks/useStore'
+import type { Product } from '@/types'
 
 export function useProdutosPage() {
   const router = useRouter()
@@ -11,7 +13,10 @@ export function useProdutosPage() {
   const initialSearch = searchParams?.get('search') ?? ''
   const updateStatusMutation = useUpdateProductStatus()
   const duplicateMutation = useDuplicateProduct()
+  const deleteMutation = useDeleteProduct()
   const { success: showSuccess, error: showError } = useToastContext()
+  const { data: storeData } = useStore()
+  const [deleteTarget, setDeleteTarget] = useState<Product | null>(null)
 
   const [filters, setFilters] = useState({
     search: initialSearch,
@@ -113,9 +118,25 @@ export function useProdutosPage() {
     }
   }
 
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return
+    try {
+      await deleteMutation.mutateAsync(deleteTarget.id)
+      showSuccess('Produto excluído com sucesso!', 'Excluído')
+      setDeleteTarget(null)
+    } catch (error) {
+      showError('Erro ao excluir produto', 'Erro')
+    }
+  }
+
   return {
     filters,
     setFilters,
+    storeSlug: storeData?.slug as string | undefined,
+    deleteTarget,
+    setDeleteTarget,
+    handleConfirmDelete,
+    isDeleting: deleteMutation.isPending,
     products,
     meta,
     availableSizes,
