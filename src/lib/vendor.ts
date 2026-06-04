@@ -88,7 +88,6 @@ export function getBreadcrumb(path: string): { parent: string; current: string }
   if (exact) return { parent: 'Vendedor', current: exact }
   if (path.startsWith('/vendedor/produtos/criar')) return { parent: 'Produtos', current: 'Criar' }
   if (path.startsWith('/vendedor/produtos/editar')) return { parent: 'Produtos', current: 'Editar' }
-  if (path.startsWith('/vendedor/produtos/')) return { parent: 'Produtos', current: 'Detalhes' }
   if (path.startsWith('/vendedor/configuracoes'))
     return { parent: 'Configurações', current: 'Configurações' }
   return { parent: 'Vendedor', current: 'Início' }
