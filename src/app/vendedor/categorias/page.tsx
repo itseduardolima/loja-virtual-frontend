@@ -98,7 +98,7 @@ export default function CategoriesPage() {
   const total = meta?.total ?? categories.length
 
   return (
-    <div className="mx-auto w-full max-w-[1180px] pb-16 pt-2 sm:pt-4">
+    <div className="w-full">
       <ListPageHeader
         title="Categorias"
         subtitle={`${total} ${total === 1 ? 'categoria' : 'categorias'} para organizar seus produtos.`}
