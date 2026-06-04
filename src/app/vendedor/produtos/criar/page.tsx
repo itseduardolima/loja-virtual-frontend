@@ -1,44 +1,39 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { Input, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Card, ErrorState, ImageUpload, ImageUploadByColor, ProductPreview, CreateCategoryModal, Button, ProductSteps, ConfirmDialog } from '@/components'
-import { RichTextEditor } from '@/components/ui/rich-text-editor'
-import { DateTimePicker } from '@/components/ui/date-time-picker'
-import { DynamicFields } from '@/components/Form/DynamicFields'
-import { Package, X, Star, Plus, ChevronLeft, ChevronRight, Calendar, Layers, ChevronDown } from 'lucide-react'
-import { useRouter, usePathname } from 'next/navigation'
-import { useCreateProductPage } from './useCreateProductPage'
-import { useStore } from '@/hooks/useStore'
-import { useBlingStatus } from '@/hooks/useBlingStatus'
-import LoadingPage from '@/components/Layout/LoadingPage'
-import { useState, useMemo, useEffect } from 'react'
+import { CreateCategoryModal, ConfirmDialog, ErrorState } from '@/components'
+import { useEffect, useMemo, useState } from 'react'
+import { Eye, X } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
-const STEPS = [
-  { id: 1, title: 'Informações Básicas', description: 'Dados essenciais' },
-  { id: 2, title: 'Tipo de Produto', description: 'Nicho e campos' },
-  { id: 3, title: 'Imagens', description: 'Fotos do produto' },
-  { id: 4, title: 'Especificações', description: 'Detalhes adicionais' },
-]
+import { useStore } from '@/hooks/useStore'
+import { useToastContext } from '@/contexts/ToastContext'
+import LoadingPage from '@/components/Layout/LoadingPage'
+
+import { useCreateProductPage } from './useCreateProductPage'
+import { computeCompletion } from '@/components/ProductForm/completion'
+import type { OrderedImage } from '@/components/ProductForm/types'
+import { NxBadge, NxButton } from '@/components/ProductForm/primitives'
+import { ImagesSection } from '@/components/ProductForm/sections/ImagesSection'
+import { CompletionMeter } from '@/components/ProductForm/CompletionMeter'
+import { PreviewCard } from '@/components/ProductForm/PreviewCard'
+import { PublishCard } from '@/components/ProductForm/PublishCard'
+import { StorefrontPreviewModal } from '@/components/ProductForm/StorefrontPreviewModal'
+import { ProductFormSections } from '@/components/ProductForm/ProductFormSections'
+import { useFormWatchers } from '@/components/ProductForm/useFormWatchers'
+import { usePreviewUrlCache, buildPreviewData } from '@/components/ProductForm/previewUtils'
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges'
+import { buildImageUrl } from '@/lib/imageUtils'
 
 export default function CreateProductPage() {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
-  const pathname = usePathname()
   const { data: storeData, isLoading: storeLoading } = useStore()
-  const { data: blingStatus } = useBlingStatus()
-  const isBlingConnected = !!blingStatus?.connected && !!blingStatus?.syncEnabled
-  const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] = useState(false)
-  const [currentStep, setCurrentStep] = useState(1)
-  const [completedSteps, setCompletedSteps] = useState<number[]>([])
-  const [showCancelDialog, setShowCancelDialog] = useState(false)
-  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
-  const [shouldBlockNavigation, setShouldBlockNavigation] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [allowNavigation, setAllowNavigation] = useState(false)
+  const { error: showError } = useToastContext()
 
   const {
     form,
+    store,
     selectedImages,
     orderedImagesByColor,
     handleOrderedImagesChange,
@@ -52,1193 +47,291 @@ export default function CreateProductPage() {
     variantStocks,
     setVariantStocks,
     isLoading,
-    error,
     handleImageChange,
     removeImage,
     reorderImages,
     handleNicheChange,
     handleDynamicFieldChange,
-    onSubmit
+    onSubmit,
   } = useCreateProductPage(user)
 
-  const [bulkStockValue, setBulkStockValue] = useState('')
-  const [showPromo, setShowPromo] = useState(false)
+  const { handleSubmit, setValue } = form
+  const { name, description, price, promoPrice, promoEndsAt, featured, categoryId, specifications, stockValue } =
+    useFormWatchers(form)
 
-  const { register, handleSubmit, formState: { errors }, setValue, watch, trigger, resetField } = form
+  const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] = useState(false)
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [showErrors, setShowErrors] = useState(false)
+  const [saveAction, setSaveAction] = useState<'publish' | 'draft' | null>(null)
 
-  const formatBRL = (cents: number) =>
-    (cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const colors = availableColors
+  const sizes = availableSizes
+  const hasColorImages = Object.values(orderedImagesByColor).some((items) => items.length > 0)
+  const hasImages = selectedImages.length > 0 || hasColorImages
 
-  const parseBRL = (v: unknown): number | undefined => {
-    if (typeof v === 'number') return isNaN(v) ? undefined : v
-    if (!v) return undefined
-    const num = parseFloat(String(v).replace(/\./g, '').replace(',', '.'))
-    return isNaN(num) ? undefined : num
-  }
-
-  const handleCurrencyInput = (field: 'price' | 'promo_price') =>
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const digits = e.target.value.replace(/\D/g, '')
-      const cents = parseInt(digits, 10) || 0
-      if (cents > 99999999) return
-      setValue(field, cents > 0 ? cents / 100 : undefined, { shouldValidate: digits.length > 0 })
+  const imagesOk = useMemo(() => {
+    if (colors.length > 0) {
+      return colors.every((c) => {
+        const len = orderedImagesByColor[c]?.length || 0
+        return len >= 2 && len <= 5
+      })
     }
+    return selectedImages.length >= 2 && selectedImages.length <= 5
+  }, [colors, orderedImagesByColor, selectedImages.length])
 
-  const categoryIdValue = watch('category_id')
+  const completion = useMemo(
+    () =>
+      computeCompletion({
+        values: { name, price, category_id: categoryId, stock: stockValue, specifications },
+        selectedNicheId,
+        nicheFields,
+        dynamicFieldValues,
+        colors,
+        sizes,
+        variantStocks,
+        imagesOk,
+      }),
+    [name, price, categoryId, stockValue, specifications, selectedNicheId, nicheFields, dynamicFieldValues, colors, sizes, variantStocks, imagesOk],
+  )
 
-  const handleVariantStockChange = (color: string, size: string, stock: number) => {
-    setVariantStocks(prev => {
-      const existing = prev.findIndex(v => v.color === color && v.size === size)
-      if (existing >= 0) {
-        const updated = [...prev]
-        updated[existing] = { color, size, stock }
-        return updated
-      }
-      return [...prev, { color, size, stock }]
-    })
-  }
+  const canPublish = completion.filter((c) => c.required).every((c) => c.done)
 
-  const getVariantStock = (color: string, size: string) =>
-    variantStocks.find(v => v.color === color && v.size === size)?.stock ?? 0
+  // Unsaved changes guard
+  const hasUnsaved = !!(name || price || description || hasImages)
+  const {
+    showCancelDialog,
+    setShowCancelDialog,
+    setIsSubmitting,
+    setAllowNavigation,
+    handleConfirmCancel,
+    handleCancelDialogClose,
+  } = useUnsavedChanges({ hasUnsaved, isLoading })
 
-  const handleBulkStockFill = () => {
-    const value = parseInt(bulkStockValue, 10)
-    if (isNaN(value) || value < 0) return
-    const combinations: {color: string, size: string, stock: number}[] = []
-    if (availableColors.length > 0 && availableSizes.length > 0) {
-      for (const color of availableColors) {
-        for (const size of availableSizes) {
-          combinations.push({ color, size, stock: value })
-        }
-      }
-    } else if (availableColors.length > 0) {
-      for (const color of availableColors) {
-        combinations.push({ color, size: '', stock: value })
-      }
-    } else {
-      for (const size of availableSizes) {
-        combinations.push({ color: '', size, stock: value })
-      }
+  // Cover image URL for preview card
+  const coverFile = useMemo<File | null>(() => {
+    if (colors.length > 0) {
+      const first = colors.map((c) => orderedImagesByColor[c]?.[0]).find(Boolean) as
+        | OrderedImage
+        | undefined
+      return first?.type === 'new' ? first.file : null
     }
-    setVariantStocks(combinations)
-    setBulkStockValue('')
+    return selectedImages[0] ?? null
+  }, [colors, orderedImagesByColor, selectedImages])
+
+  const coverUrl = useMemo(() => (coverFile ? URL.createObjectURL(coverFile) : null), [coverFile])
+  useEffect(() => () => { if (coverUrl) URL.revokeObjectURL(coverUrl) }, [coverUrl])
+
+  // Name/category resolution for preview
+  const nicheName = useMemo(
+    () => niches.find((n: { id: number }) => n.id === selectedNicheId)?.name ?? null,
+    [niches, selectedNicheId],
+  )
+  const categoryName = useMemo(
+    () => categories.find((c: { id: number }) => c.id === categoryId)?.name ?? null,
+    [categories, categoryId],
+  )
+
+  const { orderedImageSrc, fileSrc } = usePreviewUrlCache()
+
+  const previewData = useMemo(
+    () =>
+      buildPreviewData({
+        name, description, price, promoPrice, promoEndsAt,
+        nicheName, categoryName, colors, sizes, variantStocks,
+        stockValue, orderedImagesByColor, selectedImages,
+        nicheFields, dynamicFieldValues, specifications,
+        orderedImageSrc, fileSrc,
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [name, description, price, promoPrice, promoEndsAt, nicheName, categoryName, colors, sizes, variantStocks, stockValue, orderedImagesByColor, selectedImages, nicheFields, dynamicFieldValues, specifications],
+  )
+
+  const scrollToAnchor = (anchor: string) =>
+    document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+
+  const submitForm = () => {
+    setIsSubmitting(true)
+    setAllowNavigation(true)
+    handleSubmit(
+      (data) => onSubmit(data),
+      (errors) => {
+        setShowErrors(true)
+        setIsSubmitting(false)
+        setAllowNavigation(false)
+        const first = completion.find((c) => c.required && !c.done)
+        scrollToAnchor(first?.anchor ?? 'sec-basico')
+        void errors
+      },
+    )()
   }
 
-  const handleCategoryCreated = (categoryId: number) => {
-    setValue('category_id', categoryId)
+  const handlePublish = () => {
+    const first = completion.find((c) => c.required && !c.done)
+    if (first) {
+      setShowErrors(true)
+      showError('Preencha os campos obrigatórios destacados.', 'Não foi possível publicar')
+      scrollToAnchor(first.anchor)
+      return
+    }
+    setValue('save_as_draft', false)
+    setSaveAction('publish')
+    submitForm()
+  }
+
+  const handleDraft = () => {
+    setValue('save_as_draft', true)
+    setSaveAction('draft')
+    submitForm()
+  }
+
+  const handleDiscard = () => {
+    if (hasUnsaved) setShowCancelDialog(true)
+    else router.push('/vendedor/produtos')
+  }
+
+  const handleCategoryCreated = (id: number) => {
+    setValue('category_id', id, { shouldValidate: true })
     setIsCreateCategoryModalOpen(false)
   }
 
-  // Validar etapa atual
-  const validateStep = async (step: number): Promise<boolean> => {
-    switch (step) {
-      case 1:
-        // Validar campos básicos obrigatórios
-        const nameValid = await trigger('name')
-        const priceValid = await trigger('price')
-        return nameValid && priceValid
-      case 2:
-        // Etapa 2 é opcional (tipo de produto)
-        return true
-      case 3:
-        if (availableColors.length > 0) {
-          return availableColors.every(color => (orderedImagesByColor[color]?.length || 0) >= 2)
-        }
-        return selectedImages.length >= 2 || Object.values(orderedImagesByColor).reduce((sum, items) => sum + items.length, 0) >= 2
-      case 4:
-        // Etapa 4 é opcional (especificações)
-        return true
-      default:
-        return true
-    }
-  }
+  if (authLoading || storeLoading) return <LoadingPage />
+  if (!user) return <ErrorState message="Você precisa estar logado para criar produtos" />
+  if (!storeData) return <ErrorState message="Erro ao carregar informações da loja" />
 
-  const handleNext = async () => {
-    const isValid = await validateStep(currentStep)
-    if (isValid) {
-      if (!completedSteps.includes(currentStep)) {
-        setCompletedSteps([...completedSteps, currentStep])
-      }
-      if (currentStep < STEPS.length) {
-        setCurrentStep(currentStep + 1)
-      }
-    }
-  }
-
-  const handlePrevious = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
-    }
-  }
-
-  const handleStepClick = async (step: number) => {
-    // Validar etapas anteriores antes de permitir navegação
-    for (let i = 1; i < step; i++) {
-      const isValid = await validateStep(i)
-      if (!isValid && !completedSteps.includes(i)) {
-        return // Não permite pular etapas não validadas
-      }
-    }
-    setCurrentStep(step)
-  }
-
-  // Valores do formulário para validação e detecção de mudanças
-  const nameValue = watch('name')
-  const priceValue = watch('price')
-  const descriptionValue = watch('description')
-  const hasImages = selectedImages.length > 0 || Object.values(orderedImagesByColor).some(items => items.length > 0)
-
-  // Verificar se há mudanças não salvas
-  useEffect(() => {
-    const hasData = !!(nameValue || priceValue || descriptionValue || hasImages)
-    setHasUnsavedChanges(hasData)
-  }, [nameValue, priceValue, descriptionValue, hasImages])
-
-  // Permitir navegação quando o produto for criado com sucesso
-  useEffect(() => {
-    // Se estava carregando e parou, pode ser que o produto foi criado
-    // Nesse caso, permitir navegação
-    if (isSubmitting && !isLoading && allowNavigation) {
-      // Navegação já foi permitida, manter assim
-    }
-  }, [isLoading, isSubmitting, allowNavigation])
-
-  // Interceptar mudanças de rota via pathname
-  useEffect(() => {
-    if (hasUnsavedChanges && !showCancelDialog && shouldBlockNavigation) {
-      // Se o pathname mudou mas ainda estamos na mesma página, pode ser um problema
-      // Vamos apenas resetar o bloqueio se necessário
-      setShouldBlockNavigation(false)
-    }
-  }, [pathname, hasUnsavedChanges, showCancelDialog, shouldBlockNavigation])
-
-  // Bloquear navegação se houver mudanças não salvas
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (hasUnsavedChanges) {
-        e.preventDefault()
-        e.returnValue = ''
-        return ''
-      }
-    }
-
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [hasUnsavedChanges])
-
-  // Interceptar navegação do Next.js
-  useEffect(() => {
-    if (!hasUnsavedChanges) {
-      setShouldBlockNavigation(false)
-      return
-    }
-
-    // Interceptar cliques em links
-    const handleLinkClick = (e: MouseEvent) => {
-      // Não interceptar se estiver submetendo o formulário ou se a navegação foi permitida
-      if (isSubmitting || allowNavigation) return
-      
-      const target = e.target as HTMLElement
-      
-      // Não interceptar se for um botão de submit
-      const button = target.closest('button[type="submit"]')
-      if (button) {
-        return
-      }
-      
-      const link = target.closest('a')
-      if (link && hasUnsavedChanges && !showCancelDialog) {
-        const href = link.getAttribute('href')
-        if (href && href.startsWith('/') && href !== pathname) {
-          e.preventDefault()
-          e.stopPropagation()
-          setPendingNavigation(href)
-          setShowCancelDialog(true)
-          setShouldBlockNavigation(true)
-        }
-      }
-    }
-
-    // Interceptar navegação do router do Next.js
-    const originalPush = router.push.bind(router) as typeof router.push
-    const originalBack = router.back.bind(router) as typeof router.back
-    const originalReplace = router.replace.bind(router) as typeof router.replace
-
-    const handleRouterPush: typeof router.push = (url: any, options?: any) => {
-      // Não bloquear se estiver submetendo o formulário ou se a navegação foi permitida
-      if (hasUnsavedChanges && !showCancelDialog && !isLoading && !isSubmitting && !allowNavigation) {
-        let targetUrl = ''
-        if (typeof url === 'string') {
-          targetUrl = url
-        } else if (typeof url === 'object' && url !== null) {
-          targetUrl = url.pathname || url.href || ''
-        }
-        
-        const currentPath = window.location.pathname
-        if (targetUrl && targetUrl !== pathname && targetUrl !== currentPath) {
-          // Bloquear navegação
-          setPendingNavigation(targetUrl)
-          setShowCancelDialog(true)
-          setShouldBlockNavigation(true)
-          return Promise.resolve()
-        }
-      }
-      return originalPush(url, options)
-    }
-
-    const handleRouterBack: typeof router.back = () => {
-      if (hasUnsavedChanges && !showCancelDialog && !isSubmitting && !allowNavigation) {
-        setPendingNavigation(null)
-        setShowCancelDialog(true)
-        setShouldBlockNavigation(true)
-        return
-      }
-      return originalBack()
-    }
-
-    const handleRouterReplace: typeof router.replace = (url: any, options?: any) => {
-      if (hasUnsavedChanges && !showCancelDialog && !isSubmitting && !allowNavigation) {
-        let targetUrl = ''
-        if (typeof url === 'string') {
-          targetUrl = url
-        } else if (typeof url === 'object' && url !== null) {
-          targetUrl = url.pathname || url.href || ''
-        }
-        
-        const currentPath = window.location.pathname
-        if (targetUrl && targetUrl !== pathname && targetUrl !== currentPath) {
-          // Bloquear navegação
-          setPendingNavigation(targetUrl)
-          setShowCancelDialog(true)
-          setShouldBlockNavigation(true)
-          return Promise.resolve()
-        }
-      }
-      return originalReplace(url, options)
-    }
-
-    // Sobrescrever métodos do router
-    ;(router as any).push = handleRouterPush
-    ;(router as any).back = handleRouterBack
-    ;(router as any).replace = handleRouterReplace
-
-    document.addEventListener('click', handleLinkClick, true)
-
-    return () => {
-      document.removeEventListener('click', handleLinkClick, true)
-      ;(router as any).push = originalPush
-      ;(router as any).back = originalBack
-      ;(router as any).replace = originalReplace
-    }
-  }, [hasUnsavedChanges, showCancelDialog, pathname, router, isLoading, isSubmitting, allowNavigation])
-
-  const handleCancel = () => {
-    if (hasUnsavedChanges) {
-      setShowCancelDialog(true)
-    } else {
-      router.back()
-    }
-  }
-
-  const handleConfirmCancel = () => {
-    setShowCancelDialog(false)
-    setHasUnsavedChanges(false)
-    setShouldBlockNavigation(false)
-    if (pendingNavigation) {
-      router.push(pendingNavigation)
-      setPendingNavigation(null)
-    } else {
-      router.back()
-    }
-  }
-
-  const handleCancelDialogClose = () => {
-    setShowCancelDialog(false)
-    setPendingNavigation(null)
-  }
-
-  // Validar se todos os campos obrigatórios estão preenchidos
-  const isFormValid = useMemo(() => {
-    // Se há cores disponíveis, validar que cada cor tem pelo menos uma imagem
-    let hasImages = false
-    
-    if (availableColors.length > 0) {
-      hasImages = availableColors.every(color => (orderedImagesByColor[color]?.length || 0) >= 2)
-    } else {
-      hasImages = selectedImages.length >= 2 || Object.values(orderedImagesByColor).reduce((sum, items) => sum + items.length, 0) >= 2
-    }
-
-    return !!(
-      nameValue &&
-      nameValue.trim().length >= 3 &&
-      priceValue &&
-      priceValue > 0 &&
-      hasImages
-    )
-  }, [nameValue, priceValue, selectedImages.length, orderedImagesByColor, availableColors])
-
-  const isNextDisabled = useMemo(() => {
-    switch (currentStep) {
-      case 1:
-        return !nameValue || nameValue.trim().length < 3 || !priceValue || priceValue <= 0
-      case 2:
-        if (!categoryIdValue) return true
-        if (!selectedNicheId || nicheFields.length === 0) return false
-        return nicheFields.some(field => {
-          if (field.required !== 1) return false
-          const val = dynamicFieldValues[field.id.toString()]?.value
-          if (Array.isArray(val)) return val.length === 0
-          return !val || String(val).trim() === ''
-        })
-      case 3:
-        if (availableColors.length > 0) {
-          return !availableColors.every(color => (orderedImagesByColor[color]?.length || 0) >= 2)
-        }
-        return selectedImages.length < 2 && Object.values(orderedImagesByColor).reduce((sum, items) => sum + items.length, 0) < 2
-      default:
-        return false
-    }
-  }, [currentStep, nameValue, priceValue, selectedNicheId, categoryIdValue, nicheFields, dynamicFieldValues, availableColors, orderedImagesByColor, selectedImages])
-
-  if (authLoading || storeLoading) {
-    return <LoadingPage />
-  }
-
-  if (!user) {
-    return <ErrorState message="Você precisa estar logado para criar produtos" />
-  }
-
-  if (!storeData) {
-    return <ErrorState message="Erro ao carregar informações da loja" />
-  }
-
-  const renderNavigationButtons = () => (
-    <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-0 pt-4 sm:pt-6 mt-6 sm:mt-8 border-t border-gray-200">
-      <Button
-        type="button"
-        variant="outline"
-        onClick={handlePrevious}
-        disabled={currentStep === 1}
-        className="flex items-center justify-center gap-2 w-full sm:w-auto order-2 sm:order-1"
-      >
-        <ChevronLeft className="h-4 w-4" />
-        <span className="sm:inline">Anterior</span>
-      </Button>
-
-      <div className="flex gap-3 w-full sm:w-auto order-1 sm:order-2">
-        {currentStep < STEPS.length ? (
-          <Button
-            type="button"
-            onClick={handleNext}
-            disabled={isNextDisabled}
-            className="flex items-center justify-center gap-2 flex-1 sm:flex-initial"
-          >
-            <span className="sm:inline">Próximo</span>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        ) : (
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCancel}
-              className="flex items-center justify-center gap-2 flex-1 sm:flex-initial"
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={!nameValue || nameValue.trim().length < 3 || !priceValue || priceValue <= 0 || isLoading}
-              onClick={() => {
-                setValue('save_as_draft', true)
-                setIsSubmitting(true)
-                setAllowNavigation(true)
-                handleSubmit(onSubmit as any)()
-              }}
-              className="flex items-center justify-center gap-2 flex-1 sm:flex-initial"
-            >
-              {isLoading ? 'Salvando...' : 'Salvar rascunho'}
-            </Button>
-            <Button
-              type="submit"
-              disabled={!isFormValid || isLoading}
-              className="flex items-center justify-center gap-2 flex-1 sm:flex-initial"
-            >
-              {isLoading ? 'Salvando...' : 'Publicar'}
-            </Button>
-          </>
-        )}
-      </div>
-    </div>
+  const completionMeter = <CompletionMeter items={completion} />
+  const previewCard = (
+    <PreviewCard
+      name={name}
+      price={price}
+      promoPrice={promoPrice}
+      featured={featured}
+      nicheName={nicheName}
+      colors={colors}
+      coverUrl={coverUrl}
+    />
   )
 
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <Card className="p-4 sm:p-6 lg:p-8 bg-white border-gray-200 shadow-sm">
-            <div className="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
-              <div className="p-2 sm:p-3 bg-gray-50 rounded-xl flex-shrink-0">
-                <Package className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-              </div>
-              <div>
-                <h2 className="text-lg sm:text-xl font-bold text-primary">Informações Básicas</h2>
-                <p className="text-xs sm:text-sm text-gray-500">Dados essenciais do produto</p>
-              </div>
-            </div>
-
-            <div className="space-y-4 sm:space-y-6">
-              {/* Nome */}
-              <div>
-                <Label htmlFor="name" className="text-sm font-semibold text-gray-700 mb-2 block">
-                  Nome do Produto *
-                </Label>
-                <Input
-                  id="name"
-                  {...register('name')}
-                  placeholder="Ex: Camiseta Básica Feminina"
-                  maxLength={100}
-                  className={`h-11 sm:h-12 text-sm sm:text-base ${errors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
-                />
-                <div className="flex items-center justify-between mt-1">
-                  {errors.name ? (
-                    <p className="text-red-500 text-sm flex items-center gap-1">
-                      <X className="h-3 w-3" />
-                      {errors.name.message}
-                    </p>
-                  ) : <span />}
-                  <span className={`text-xs ${(nameValue?.length || 0) > 85 ? 'text-orange-500' : 'text-gray-400'}`}>
-                    {nameValue?.length || 0}/100
-                  </span>
-                </div>
-              </div>
-
-              {/* Descrição */}
-              <div>
-                <Label htmlFor="description" className="text-sm font-semibold text-gray-700 mb-2 block">
-                  Descrição do Produto
-                </Label>
-                <Textarea
-                  id="description"
-                  {...register('description')}
-                  placeholder="Descreva as características, materiais e benefícios do produto..."
-                  rows={5}
-                  maxLength={500}
-                  className={`text-sm sm:text-base ${errors.description ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors resize-none`}
-                />
-                <div className="flex items-center justify-between mt-1">
-                  {errors.description ? (
-                    <p className="text-red-500 text-sm flex items-center gap-1">
-                      <X className="h-3 w-3" />
-                      {errors.description.message}
-                    </p>
-                  ) : <span />}
-                  <span className={`text-xs ${(descriptionValue?.length || 0) > 450 ? 'text-orange-500' : 'text-gray-400'}`}>
-                    {descriptionValue?.length || 0}/500
-                  </span>
-                </div>
-              </div>
-
-              {/* Preço, Estoque e Desconto */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                <div>
-                  <Label htmlFor="price" className="text-sm font-semibold text-gray-700 mb-2 block">
-                    Preço de Venda *
-                  </Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm sm:text-base">R$</span>
-                    <Input
-                      id="price"
-                      type="text"
-                      inputMode="numeric"
-                      {...register('price', { setValueAs: parseBRL })}
-                      onChange={handleCurrencyInput('price')}
-                      placeholder="0,00"
-                      value={priceValue ? formatBRL(Math.round(priceValue * 100)) : ''}
-                      className={`h-11 sm:h-12 pl-7 sm:pl-9 text-base sm:text-lg ${errors.price ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}
-                    />
-                  </div>
-                  {errors.price && (
-                    <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                      <X className="h-3 w-3" />
-                      {errors.price.message}
-                    </p>
-                  )}
-                </div>
-
-              </div>
-
-              {/* Promoção Agendada */}
-              <div className="border border-gray-200 rounded-xl overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => setShowPromo(prev => !prev)}
-                  className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-primary flex-shrink-0" />
-                    <h3 className="text-sm font-semibold text-gray-700">Promoção Agendada <span className="text-gray-400 font-normal">(opcional)</span></h3>
-                  </div>
-                  <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${showPromo ? 'rotate-180' : ''}`} />
-                </button>
-
-                {showPromo && (
-                  <div className="px-4 pb-4 space-y-4 border-t border-gray-100">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
-                      <div>
-                        <Label className="text-xs font-medium text-gray-600 mb-1 block">Preço Promocional</Label>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">R$</span>
-                          <Input
-                            type="text"
-                            inputMode="numeric"
-                            {...register('promo_price', { setValueAs: (v: any) => {
-                              if (!v) return undefined
-                              const num = parseFloat(String(v).replace(/\./g, '').replace(',', '.'))
-                              return isNaN(num) ? undefined : num
-                            }})}
-                            onChange={handleCurrencyInput('promo_price')}
-                            placeholder="0,00"
-                            value={watch('promo_price') ? formatBRL(Math.round((watch('promo_price') as number) * 100)) : ''}
-                            className='pl-8'
-                          
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label className="text-xs font-medium text-gray-600 mb-1 block">Início da promoção</Label>
-                        <DateTimePicker
-                          value={watch('promo_starts_at')}
-                          onChange={(v) => setValue('promo_starts_at', v)}
-                          placeholder="Selecionar data"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-xs font-medium text-gray-600 mb-1 block">Fim da promoção</Label>
-                        <DateTimePicker
-                          value={watch('promo_ends_at')}
-                          onChange={(v) => setValue('promo_ends_at', v)}
-                          placeholder="Selecionar data"
-                        />
-                        {errors.promo_ends_at && (
-                          <p className="text-red-500 text-xs mt-1">{errors.promo_ends_at.message}</p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex justify-end">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="text-xs text-gray-500 h-8"
-                        onClick={() => {
-                          setValue('promo_price', undefined)
-                          setValue('promo_starts_at', null)
-                          setValue('promo_ends_at', null)
-                        }}
-                      >
-                        Limpar promoção
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Destaque */}
-              <div className="flex items-center justify-start sm:justify-center">
-                <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-50 rounded-xl border border-gray-200 w-full sm:w-auto">
-                  <input
-                    type="checkbox"
-                    id="featured"
-                    {...register('featured')}
-                    className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600 focus:ring-yellow-500 border-yellow-300 rounded flex-shrink-0"
-                  />
-                  <Label htmlFor="featured" className="flex items-center gap-2 text-sm sm:text-base text-gray-800 font-medium cursor-pointer">
-                    <Star className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500 flex-shrink-0" />
-                    <span>Produto em Destaque</span>
-                  </Label>
-                </div>
-              </div>
-            </div>
-
-            {renderNavigationButtons()}
-          </Card>
-        )
-
-      case 2:
-        return (
-          niches.length > 0 ? (
-            <Card className="p-4 sm:p-6 lg:p-8 bg-white border-gray-200 shadow-sm">
-              <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-                <div className="p-2 sm:p-3 bg-gray-50 rounded-xl flex-shrink-0">
-                  <Package className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                </div>
-                <div>
-                  <h2 className="text-lg sm:text-xl font-bold text-primary">Tipo de Produto</h2>
-                  <p className="text-xs sm:text-sm text-gray-500">Selecione o nicho para campos personalizados</p>
-                </div>
-              </div>
-
-              <div className="space-y-4 sm:space-y-6">
-                {/* Tipo de Produto + Categoria na mesma linha */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Seleção de Nicho */}
-                  <div>
-                    <Label htmlFor="niche" className="text-sm font-semibold text-gray-700 mb-2 block">
-                      Tipo de Produto <span className="text-red-500">*</span>
-                    </Label>
-                    <Select
-                      value={selectedNicheId?.toString() || ''}
-                      onValueChange={(value) => {
-                        handleNicheChange(parseInt(value))
-                        resetField('category_id')
-                      }}
-                    >
-                      <SelectTrigger className="h-11 sm:h-12 text-sm sm:text-base border-gray-200">
-                        <SelectValue placeholder="Selecione um tipo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {niches.map((niche: any) => (
-                          <SelectItem key={niche.id} value={niche.id.toString()}>
-                            {niche.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Categoria */}
-                  {selectedNicheId && <div>
-                    <Label htmlFor="category_id" className="text-sm font-semibold text-gray-700 mb-2 block">
-                      Categoria <span className="text-red-500">*</span>
-                    </Label>
-                    {Array.isArray(categories) && categories.length > 0 ? (
-                      <Select
-                        value={watch('category_id')?.toString() || ''}
-                        onValueChange={(value) => setValue('category_id', parseInt(value))}
-                      >
-                        <SelectTrigger className={`h-11 sm:h-12 text-sm sm:text-base ${errors.category_id ? 'border-red-500 focus:border-red-500' : 'border-gray-200'} transition-colors`}>
-                          <SelectValue placeholder="Selecione uma categoria" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.map((category: any) => (
-                            <SelectItem key={category.id} value={category.id.toString()}>
-                              {category.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <div className="p-3 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-between gap-3">
-                        <p className="text-gray-500 text-sm">Nenhuma categoria disponível</p>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setIsCreateCategoryModalOpen(true)}
-                          className="flex-shrink-0 text-xs"
-                        >
-                          <Plus className="h-3 w-3 mr-1" />
-                          Nova
-                        </Button>
-                      </div>
-                    )}
-                    {errors.category_id && (
-                      <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                        <X className="h-3 w-3" />
-                        {errors.category_id.message}
-                      </p>
-                    )}
-                  </div>}
-                </div>
-
-                {/* Campos Dinâmicos */}
-                {selectedNicheId && (
-                  <DynamicFields
-                    nicheId={selectedNicheId}
-                    fieldValues={dynamicFieldValues}
-                    onFieldChange={handleDynamicFieldChange}
-                  />
-                )}
-
-                {/* Grade de estoque por variação */}
-                {(availableColors.length > 0 || availableSizes.length > 0) ? (() => {
-                  const hasColors = availableColors.length > 0
-                  const hasSizes = availableSizes.length > 0
-                  const totalVariantStock = variantStocks.reduce((sum, v) => sum + (v.stock || 0), 0)
-
-                  return (
-                    <div className="border border-indigo-200 bg-indigo-50/40 rounded-xl p-4 space-y-4">
-                      {/* Header */}
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-2">
-                          <Layers className="h-4 w-4 text-indigo-500 flex-shrink-0 mt-0.5" />
-                          <div>
-                            <h3 className="text-sm font-semibold text-gray-800">Estoque por variação</h3>
-                            <p className="text-xs text-gray-500 mt-0.5">
-                              {hasColors && hasSizes
-                                ? 'Defina o estoque para cada combinação de cor e tamanho'
-                                : hasColors
-                                  ? 'Defina o estoque disponível por cor'
-                                  : 'Defina o estoque disponível por tamanho'}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <p className="text-xs text-gray-400">Total em estoque</p>
-                          <p className="text-xl font-bold text-indigo-600 leading-tight">{totalVariantStock}</p>
-                        </div>
-                      </div>
-
-                      {/* Preencher todos */}
-                      <div className="flex items-center gap-2 bg-white rounded-lg border border-indigo-100 px-3 py-2">
-                        <span className="text-xs text-gray-500 whitespace-nowrap">Preencher todos com:</span>
-                        <Input
-                          type="number"
-                          min="0"
-                          max="999999"
-                          placeholder="qtd"
-                          value={bulkStockValue}
-                          onChange={(e) => setBulkStockValue(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleBulkStockFill())}
-                          className="h-8 text-sm w-20 text-center border-gray-200 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
-                        />
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={handleBulkStockFill}
-                          className="h-8 px-3 text-xs border-indigo-200 text-indigo-700 hover:bg-indigo-50"
-                        >
-                          Aplicar
-                        </Button>
-                      </div>
-
-                      {/* Tabela: cores × tamanhos */}
-                      {hasColors && hasSizes && (
-                        <div className="overflow-x-auto rounded-lg border border-indigo-100 bg-white">
-                          <table className="text-sm w-full border-collapse">
-                            <thead>
-                              <tr className="bg-gray-50">
-                                <th className="text-left text-xs text-gray-500 font-medium py-2 px-3 border-b border-gray-100">
-                                  Cor / Tamanho
-                                </th>
-                                {availableSizes.map(size => (
-                                  <th key={size} className="text-center text-xs text-gray-500 font-medium py-2 border-b border-gray-100 w-20">
-                                    {size}
-                                  </th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {availableColors.map((color, ci) => (
-                                <tr key={color} className={ci > 0 ? 'border-t border-gray-100' : ''}>
-                                  <td className="py-2 px-3 whitespace-nowrap">
-                                    <span className="text-xs font-medium text-gray-700">{color}</span>
-                                  </td>
-                                  {availableSizes.map(size => (
-                                    <td key={size} className="py-1.5 w-20 text-center">
-                                      <Input
-                                        type="number"
-                                        min="0"
-                                        max="999999"
-                                        value={getVariantStock(color, size) || ''}
-                                        placeholder="0"
-                                        onChange={(e) => {
-                                          const val = e.target.value === '' ? 0 : parseInt(e.target.value, 10)
-                                          handleVariantStockChange(color, size, isNaN(val) ? 0 : val)
-                                        }}
-                                        className="h-9 text-center text-sm w-full border-gray-200 focus:border-indigo-400 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
-                                      />
-                                    </td>
-                                  ))}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
-
-                      {/* Lista simples: apenas cores */}
-                      {hasColors && !hasSizes && (
-                        <div className="space-y-2">
-                          {availableColors.map(color => (
-                            <div key={color} className="flex items-center justify-between bg-white rounded-lg border border-indigo-100 px-3 py-2">
-                              <span className="text-sm font-medium text-gray-700">{color}</span>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-gray-400">Estoque</span>
-                                <Input
-                                  type="number"
-                                  min="0"
-                                  max="999999"
-                                  value={getVariantStock(color, '') || ''}
-                                  placeholder="0"
-                                  onChange={(e) => {
-                                    const val = e.target.value === '' ? 0 : parseInt(e.target.value, 10)
-                                    handleVariantStockChange(color, '', isNaN(val) ? 0 : val)
-                                  }}
-                                  className="h-9 text-center text-sm w-24 border-gray-200 focus:border-indigo-400 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
-                                />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Lista simples: apenas tamanhos */}
-                      {!hasColors && hasSizes && (
-                        <div className="space-y-2">
-                          {availableSizes.map(size => (
-                            <div key={size} className="flex items-center justify-between bg-white rounded-lg border border-indigo-100 px-3 py-2">
-                              <span className="text-sm font-medium text-gray-700">{size}</span>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-gray-400">Estoque</span>
-                                <Input
-                                  type="number"
-                                  min="0"
-                                  max="999999"
-                                  value={getVariantStock('', size) || ''}
-                                  placeholder="0"
-                                  onChange={(e) => {
-                                    const val = e.target.value === '' ? 0 : parseInt(e.target.value, 10)
-                                    handleVariantStockChange('', size, isNaN(val) ? 0 : val)
-                                  }}
-                                  className="h-9 text-center text-sm w-24 border-gray-200 focus:border-indigo-400 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
-                                />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                    </div>
-                  )
-                })() : selectedNicheId && (
-                  <div className="flex items-start gap-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                    <Layers className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-xs text-gray-500">
-                      Preencha os campos <strong>Cor</strong> e/ou <strong>Tamanho</strong> acima para habilitar o controle de estoque por variação.
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {renderNavigationButtons()}
-            </Card>
-          ) : (
-            <Card className="p-4 sm:p-6 lg:p-8 bg-white border-gray-200 shadow-sm">
-              <div className="text-center py-6 sm:py-8">
-                <p className="text-sm sm:text-base text-gray-500">Nenhum nicho disponível. Esta etapa é opcional.</p>
-              </div>
-              {renderNavigationButtons()}
-            </Card>
-          )
-        )
-
-      case 3:
-        // Função helper para verificar quais cores têm menos de 4 imagens
-        const getColorsWithoutMinImages = () => {
-          if (availableColors.length === 0) return []
-          return availableColors.filter(color => (orderedImagesByColor[color]?.length || 0) < 2)
-        }
-
-        const colorsWithoutMinImages = getColorsWithoutMinImages()
-
-        return (
-          <div className="space-y-4 sm:space-y-6">
-            {availableColors.length > 0 ? (
-              <>
-                <ImageUploadByColor
-                  orderedImagesByColor={orderedImagesByColor}
-                  onOrderedImagesChange={handleOrderedImagesChange}
-                  availableColors={availableColors}
-                />
-                {colorsWithoutMinImages.length > 0 && (
-                  <Card className="p-3 sm:p-4 bg-red-50 border-red-200 border-2">
-                    <div className="flex items-start gap-2 sm:gap-3">
-                      <X className="h-4 w-4 sm:h-5 sm:w-5 text-red-600 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-xs sm:text-sm font-semibold text-red-900 mb-1">
-                          Cada cor precisa de no mínimo 2 imagens
-                        </p>
-                        <p className="text-xs sm:text-sm text-red-700">
-                          {colorsWithoutMinImages.map(color => {
-                            const count = orderedImagesByColor[color]?.length || 0
-                            return `${color} (${count}/5)`
-                          }).join(', ')}
-                        </p>
-                      </div>
-                    </div>
-                  </Card>
-                )}
-              </>
-            ) : (
-              <ImageUpload
-                selectedImages={selectedImages}
-                onImageChange={handleImageChange}
-                onRemoveImage={removeImage}
-                onReorderImages={reorderImages}
-              />
-            )}
-            <Card className="p-4 sm:p-6 bg-white border-gray-200 shadow-sm">
-              {renderNavigationButtons()}
-            </Card>
-          </div>
-        )
-
-      case 4:
-        return (
-          <Card className="p-4 sm:p-6 lg:p-8 bg-white border-gray-200 shadow-sm">
-            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-              <div className="p-2 sm:p-3 bg-gray-50 rounded-xl flex-shrink-0">
-                <Package className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-              </div>
-              <div>
-                <h2 className="text-lg sm:text-xl font-bold text-primary">Especificações do Produto</h2>
-                <p className="text-xs sm:text-sm text-gray-500">Informações adicionais sobre o produto</p>
-              </div>
-            </div>
-
-            <div className="space-y-4 sm:space-y-6">
-              <div>
-                <Label htmlFor="specifications" className="text-sm font-semibold text-gray-700 mb-2 block">
-                  Especificações <span className="text-gray-400 font-normal">(opcional)</span>
-                </Label>
-                <p className="text-xs text-gray-500 mb-2">
-                  Informações detalhadas sobre o produto (material, composição, cuidados, etc.)
-                </p>
-                <RichTextEditor
-                  content={watch('specifications') || ''}
-                  onChange={(html) => setValue('specifications', html)}
-                  placeholder="Ex: Material: 100% algodão. Lavagem: à mão. Composição detalhada..."
-                  error={!!errors.specifications}
-                />
-                {errors.specifications && (
-                  <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                    <X className="h-3 w-3" />
-                    {errors.specifications.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Dados Fiscais — necessários para emissão de NF-e via Bling */}
-              <details
-                className="border border-gray-200 rounded-lg overflow-hidden group"
-                open={isBlingConnected}
-              >
-                <summary className="cursor-pointer px-4 py-3 bg-gray-50 hover:bg-gray-100 flex items-center justify-between text-sm font-semibold text-gray-700">
-                  <span>
-                    Dados fiscais (NF-e){' '}
-                    <span className="text-gray-400 font-normal">— necessários para emitir NF-e</span>
-                    {isBlingConnected && (
-                      <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">
-                        Recomendado (Bling conectado)
-                      </span>
-                    )}
-                  </span>
-                  <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
-                </summary>
-                <div className="p-4 space-y-4 border-t border-gray-200">
-                  {isBlingConnected ? (
-                    <div className="bg-orange-50 border border-orange-200 rounded-md p-3 text-xs text-orange-900">
-                      Sua loja está integrada ao Bling. Sem o NCM preenchido, a emissão de NF-e
-                      deste produto será rejeitada pela SEFAZ.
-                    </div>
-                  ) : (
-                    <p className="text-xs text-gray-500">
-                      Preencha estes campos se você pretende emitir NF-e via Bling. Sem eles, a
-                      emissão será rejeitada.
-                    </p>
-                  )}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="ncm" className="text-sm font-semibold text-gray-700 mb-2 block">
-                        NCM *
-                      </Label>
-                      <Input
-                        id="ncm"
-                        {...register('ncm')}
-                        placeholder="Ex: 61091000"
-                        maxLength={8}
-                        className={`h-11 ${errors.ncm ? 'border-red-500' : 'border-gray-200'}`}
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        8 dígitos. Consulte o NCM correto em{' '}
-                        <a
-                          href="https://portalunico.siscomex.gov.br/classif/#/sumario"
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-primary hover:underline"
-                        >
-                          Portal Único Siscomex
-                        </a>
-                        .
-                      </p>
-                      {errors.ncm && (
-                        <p className="text-red-500 text-sm mt-1">{errors.ncm.message}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <Label htmlFor="origem" className="text-sm font-semibold text-gray-700 mb-2 block">
-                        Origem
-                      </Label>
-                      <Select
-                        value={String(watch('origem') ?? 0)}
-                        onValueChange={(v) => setValue('origem', Number(v))}
-                      >
-                        <SelectTrigger className="h-11">
-                          <SelectValue placeholder="Selecione" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="0">0 — Nacional</SelectItem>
-                          <SelectItem value="1">1 — Estrangeira (importação direta)</SelectItem>
-                          <SelectItem value="2">2 — Estrangeira (mercado interno)</SelectItem>
-                          <SelectItem value="3">3 — Nacional, com conteúdo importado &gt;40%</SelectItem>
-                          <SelectItem value="4">4 — Nacional (processos básicos)</SelectItem>
-                          <SelectItem value="5">5 — Nacional, com conteúdo importado ≤40%</SelectItem>
-                          <SelectItem value="6">6 — Estrangeira (importação direta, sem similar)</SelectItem>
-                          <SelectItem value="7">7 — Estrangeira (mercado interno, sem similar)</SelectItem>
-                          <SelectItem value="8">8 — Nacional, com conteúdo importado &gt;70%</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="unidade" className="text-sm font-semibold text-gray-700 mb-2 block">
-                        Unidade de medida
-                      </Label>
-                      <Input
-                        id="unidade"
-                        {...register('unidade')}
-                        placeholder="UN"
-                        maxLength={6}
-                        className="h-11 border-gray-200"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">UN, KG, PC, M, M2, etc. (default: UN)</p>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="gtin" className="text-sm font-semibold text-gray-700 mb-2 block">
-                        GTIN/EAN <span className="text-gray-400 font-normal">(opcional)</span>
-                      </Label>
-                      <Input
-                        id="gtin"
-                        {...register('gtin')}
-                        placeholder="Código de barras"
-                        maxLength={14}
-                        className="h-11 border-gray-200"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Deixe em branco se não tiver.</p>
-                    </div>
-
-                    <div className="sm:col-span-2">
-                      <Label htmlFor="cest" className="text-sm font-semibold text-gray-700 mb-2 block">
-                        CEST <span className="text-gray-400 font-normal">(opcional, somente se ICMS-ST)</span>
-                      </Label>
-                      <Input
-                        id="cest"
-                        {...register('cest')}
-                        placeholder="7 dígitos"
-                        maxLength={7}
-                        className={`h-11 ${errors.cest ? 'border-red-500' : 'border-gray-200'}`}
-                      />
-                      {errors.cest && (
-                        <p className="text-red-500 text-sm mt-1">{errors.cest.message}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </details>
-
-            </div>
-
-            {renderNavigationButtons()}
-          </Card>
-        )
-
-      default:
-        return null
-    }
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto sm:px-6 lg:px-8 sm:py-6">
-        <form onSubmit={(e) => {
-          setIsSubmitting(true)
-          setAllowNavigation(true) // Permitir navegação após submit
-          handleSubmit(onSubmit as any)(e)
-        }} className="space-y-4 sm:space-y-6 lg:space-y-8">
-          {/* Header */}
-          <div className="mb-4 sm:mb-6 lg:mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-primary mb-1 sm:mb-2">Criar Novo Produto</h1>
-            <p className="text-sm sm:text-base text-gray-600">Preencha as informações abaixo para adicionar um novo produto à sua loja</p>
-          </div>
+    <div className="pb-28 lg:pb-0">
+      {/* header */}
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-[26px] font-extrabold leading-none tracking-[-0.03em] text-nxi1">
+            Novo produto
+          </h1>
+          <p className="mt-1.5 text-[13px] text-nxi2">
+            Preencha as seções abaixo. Você pode editar em qualquer ordem.
+          </p>
+        </div>
+        <div className="hidden items-center gap-2 lg:flex">
+          <NxButton variant="ghost" icon={Eye} onClick={() => setPreviewOpen(true)}>
+            Pré-visualizar
+          </NxButton>
+          <NxButton variant="ghost" icon={X} onClick={handleDiscard}>
+            Descartar
+          </NxButton>
+        </div>
+      </div>
 
-          {/* Steps Navigation */}
-          <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
-            <ProductSteps
-              steps={STEPS}
-              currentStep={currentStep}
-              onStepClick={handleStepClick}
-              completedSteps={completedSteps}
+      {/* mobile: completion + preview */}
+      <div className="mb-5 flex flex-col gap-5 lg:hidden">
+        {completionMeter}
+        {previewCard}
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="flex flex-col gap-5">
+          <ProductFormSections
+            form={form}
+            showErrors={showErrors}
+            niches={niches}
+            categories={categories}
+            selectedNicheId={selectedNicheId}
+            onNicheChange={handleNicheChange}
+            nicheFields={nicheFields}
+            dynamicFieldValues={dynamicFieldValues}
+            onDynamicFieldChange={handleDynamicFieldChange}
+            onCreateCategory={() => setIsCreateCategoryModalOpen(true)}
+            colors={colors}
+            sizes={sizes}
+            variantStocks={variantStocks}
+            setVariantStocks={setVariantStocks}
+          />
+          <ImagesSection
+            colors={colors}
+            selectedImages={selectedImages}
+            onImageChange={handleImageChange}
+            onRemoveImage={removeImage}
+            onReorderImages={reorderImages}
+            orderedImagesByColor={orderedImagesByColor}
+            onOrderedImagesChange={handleOrderedImagesChange}
+            showErrors={showErrors}
+          />
+        </div>
+
+        <div className="hidden lg:block">
+          <div className="flex flex-col gap-5 lg:sticky lg:top-6 lg:self-start">
+            {completionMeter}
+            {previewCard}
+            <PublishCard
+              mode="create"
+              status="draft"
+              onPublish={handlePublish}
+              onDraft={handleDraft}
+              saving={isLoading && saveAction === 'publish'}
+              savingDraft={isLoading && saveAction === 'draft'}
+              canPublish={canPublish}
             />
           </div>
-
-          {/* Step Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-            <div className="lg:col-span-2">
-              {renderStepContent()}
-            </div>
-
-            {/* Sidebar - Preview (oculto no mobile, visível apenas em desktop) */}
-            <div className="hidden lg:block lg:col-span-1">
-              <div className="sticky top-8">
-                <ProductPreview
-                  name={watch('name') || ''}
-                  description={watch('description') || ''}
-                  price={watch('price') || 0}
-                  featured={watch('featured') || false}
-                  selectedImages={selectedImages}
-                  imagesByColor={Object.fromEntries(
-                    Object.entries(orderedImagesByColor).map(([c, items]) => [
-                      c,
-                      items.filter(i => i.type === 'new').map(i => (i as any).file as File)
-                    ])
-                  )}
-                  category={categories.find(cat => cat.id === watch('category_id'))}
-                  stock={watch('stock') || 0}
-                  isLoading={isLoading}
-                  isDisabled={!isFormValid}
-                  showActions={false}
-                />
-              </div>
-            </div>
-          </div>
-        </form>
-
-        {/* Modal para criar categoria */}
-        <CreateCategoryModal
-          isOpen={isCreateCategoryModalOpen}
-          onClose={() => setIsCreateCategoryModalOpen(false)}
-          onCategoryCreated={handleCategoryCreated}
-        />
-
-        {/* Modal de confirmação de cancelamento */}
-        <ConfirmDialog
-          open={showCancelDialog}
-          onOpenChange={handleCancelDialogClose}
-          title="Descartar alterações?"
-          description="Você tem alterações não salvas. Tem certeza que deseja sair? Todas as informações preenchidas serão perdidas."
-          confirmText="Sim, descartar"
-          cancelText="Cancelar"
-          variant="destructive"
-          onConfirm={handleConfirmCancel}
-          isLoading={false}
-        />
+        </div>
       </div>
+
+      {/* mobile action bar */}
+      <div className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-2 border-t border-nxborder bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
+        <NxBadge tone="nxi3">Rascunho</NxBadge>
+        <div className="ml-auto flex items-center gap-2">
+          <NxButton
+            variant="ghost"
+            onClick={handleDraft}
+            loading={isLoading && saveAction === 'draft'}
+            disabled={isLoading && saveAction === 'publish'}
+          >
+            Rascunho
+          </NxButton>
+          <NxButton
+            onClick={handlePublish}
+            loading={isLoading && saveAction === 'publish'}
+            disabled={isLoading && saveAction === 'draft'}
+          >
+            Publicar
+          </NxButton>
+        </div>
+      </div>
+
+      <CreateCategoryModal
+        isOpen={isCreateCategoryModalOpen}
+        onClose={() => setIsCreateCategoryModalOpen(false)}
+        onCategoryCreated={handleCategoryCreated}
+      />
+
+      <StorefrontPreviewModal
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        data={previewData}
+        storeName={store?.name}
+        storeDomain={store?.slug}
+      />
+
+      <ConfirmDialog
+        open={showCancelDialog}
+        onOpenChange={handleCancelDialogClose}
+        title="Descartar alterações?"
+        description="Você tem alterações não salvas. Tem certeza que deseja sair? Todas as informações preenchidas serão perdidas."
+        confirmText="Sim, descartar"
+        cancelText="Continuar editando"
+        variant="destructive"
+        onConfirm={handleConfirmCancel}
+      />
     </div>
   )
 }
