@@ -12,30 +12,37 @@ import { useToastContext } from '@/contexts/ToastContext'
 import { useStore } from '@/hooks/useStore'
 import { useNiches, useNicheFields } from '@/hooks/useNiches'
 import { NicheFieldValue } from '@/types'
-import { OrderedImage } from '@/components/Form/ImageUploadByColor'
+import { useSharedProductState } from '@/components/ProductForm/useSharedProductState'
+import { buildProductFormData } from '@/components/ProductForm/buildProductFormData'
+import type { OrderedImage } from '@/components/ProductForm/types'
 
 export function useEditProductPage(productId: string, user: any) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const { error: showError, success: showSuccess } = useToastContext()
 
-  // Unified ordered image state per color
-  const [orderedImagesByColor, setOrderedImagesByColor] = useState<Record<string, OrderedImage[]>>({})
-
-  // Simple images (no-color path)
-  const [selectedImages, setSelectedImages] = useState<File[]>([])
   const [removedExistingImages, setRemovedExistingImages] = useState<number[]>([])
-
   const [isInitialized, setIsInitialized] = useState(false)
-  const [selectedNicheId, setSelectedNicheId] = useState<number | null>(null)
-  const [dynamicFieldValues, setDynamicFieldValues] = useState<Record<string, NicheFieldValue>>({})
-  const [variantStocks, setVariantStocks] = useState<{color: string, size: string, stock: number}[]>([])
+
+  const shared = useSharedProductState()
+  const {
+    selectedImages,
+    orderedImagesByColor,
+    setOrderedImagesByColor,
+    selectedNicheId,
+    setSelectedNicheId,
+    dynamicFieldValues,
+    setDynamicFieldValues,
+    variantStocks,
+    setVariantStocks,
+  } = shared
 
   const { data: storeData } = useStore()
   const storeId = storeData?.id || null
   const { data: nichesData } = useNiches(storeId)
   const niches = nichesData?.data || []
-  const { data: nicheFields } = useNicheFields(selectedNicheId)
+  const { data: nicheFieldsRaw } = useNicheFields(selectedNicheId)
+  const nicheFields = nicheFieldsRaw || []
 
   const { data: product, isLoading: productLoading, error: productError } = useQuery({
     queryKey: ['product', productId],
@@ -53,13 +60,11 @@ export function useEditProductPage(productId: string, user: any) {
       const params = new URLSearchParams()
       params.append('status', '1')
       params.append('limit', '1000')
-      if (selectedNicheId) {
-        params.append('niche_id', selectedNicheId.toString())
-      }
+      if (selectedNicheId) params.append('niche_id', selectedNicheId.toString())
       const response = await api.get(`/categories?${params.toString()}`)
       return response.data.data || []
     },
-    enabled: !!user
+    enabled: !!user,
   })
 
   const categories = Array.isArray(categoriesData) ? categoriesData : []
@@ -78,10 +83,10 @@ export function useEditProductPage(productId: string, user: any) {
       promo_price: undefined,
       promo_starts_at: null,
       promo_ends_at: null,
-    }
+    },
   })
 
-  // Initialize form fields and ordered images from product data
+  // Initialize form from product data
   useEffect(() => {
     if (product && !isInitialized) {
       form.setValue('name', product.name || '')
@@ -89,7 +94,7 @@ export function useEditProductPage(productId: string, user: any) {
       let description = product.description || ''
       let specifications = product.specifications || ''
 
-      if (!specifications && description && description.includes('\n\nEspecificações:\n')) {
+      if (!specifications && description.includes('\n\nEspecificações:\n')) {
         const parts = description.split('\n\nEspecificações:\n')
         description = parts[0].trim()
         specifications = parts[1]?.trim() || ''
@@ -104,108 +109,96 @@ export function useEditProductPage(productId: string, user: any) {
       form.setValue('promo_price', product.promo_price ? parseFloat(String(product.promo_price)) : undefined)
       form.setValue('promo_starts_at', product.promo_starts_at ? product.promo_starts_at.slice(0, 16) : null)
       form.setValue('promo_ends_at', product.promo_ends_at ? product.promo_ends_at.slice(0, 16) : null)
-      // Dados fiscais (NF-e)
-      form.setValue('ncm', (product as any).ncm || '')
-      form.setValue('cest', (product as any).cest || '')
-      form.setValue('origem', (product as any).origem ?? 0)
-      form.setValue('unidade', (product as any).unidade || 'UN')
-      form.setValue('gtin', (product as any).gtin || '')
-      if (product.stock_variants && product.stock_variants.length > 0) {
+
+      if (product.stock_variants?.length > 0) {
         setVariantStocks(product.stock_variants)
       }
 
-      // Initialize ordered images from product.images_by_color
-      const imagesByColorRaw = product.images_by_color ||
-        (typeof product.images === 'object' && !Array.isArray(product.images) ? product.images : null)
+      const imagesByColorRaw =
+        product.images_by_color ||
+        (typeof product.images === 'object' && !Array.isArray(product.images)
+          ? product.images
+          : null)
 
       if (imagesByColorRaw && typeof imagesByColorRaw === 'object' && !Array.isArray(imagesByColorRaw)) {
         const initial: Record<string, OrderedImage[]> = {}
         for (const [color, urls] of Object.entries(imagesByColorRaw as Record<string, string[]>)) {
-          initial[color] = (urls || []).map(url => ({ type: 'existing' as const, url }))
+          initial[color] = (urls || []).map((url) => ({ type: 'existing' as const, url }))
         }
         setOrderedImagesByColor(initial)
       }
 
       setIsInitialized(true)
     }
-  }, [product, form, isInitialized])
+  }, [product, form, isInitialized, setOrderedImagesByColor, setVariantStocks])
 
-  // Load niche and dynamic fields
+  // Load niche and dynamic fields from product
   useEffect(() => {
-    if (product && product.dynamic_fields && product.dynamic_fields.length > 0) {
-      if (product.niche && product.niche.id) {
-        const nicheId = typeof product.niche.id === 'number'
+    if (product?.dynamic_fields?.length > 0 && product.niche?.id) {
+      const nicheId =
+        typeof product.niche.id === 'number'
           ? product.niche.id
           : parseInt(String(product.niche.id), 10)
 
-        if (!isNaN(nicheId) && nicheId > 0) {
-          setSelectedNicheId(nicheId)
-        }
+      if (!isNaN(nicheId) && nicheId > 0) {
+        setSelectedNicheId(nicheId)
       }
 
-      const dynamicFieldsMap: Record<string, NicheFieldValue> = {}
+      const map: Record<string, NicheFieldValue> = {}
       product.dynamic_fields.forEach((field: any) => {
-        if (field.field_id) {
-          const fieldId = typeof field.field_id === 'number'
+        if (!field.field_id) return
+        const fieldId =
+          typeof field.field_id === 'number'
             ? field.field_id
             : parseInt(String(field.field_id), 10)
-
-          if (!isNaN(fieldId) && fieldId > 0) {
-            dynamicFieldsMap[fieldId.toString()] = {
-              field_id: fieldId,
-              value: field.value
-            }
-          }
+        if (!isNaN(fieldId) && fieldId > 0) {
+          map[fieldId.toString()] = { field_id: fieldId, value: field.value }
         }
       })
-
-      if (Object.keys(dynamicFieldsMap).length > 0) {
-        setDynamicFieldValues(dynamicFieldsMap)
-      }
+      if (Object.keys(map).length > 0) setDynamicFieldValues(map)
     }
-  }, [product])
+  }, [product, setSelectedNicheId, setDynamicFieldValues])
 
   const updateProductMutation = useUpdateProduct()
 
-  // Simple images handlers (no-color path)
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
-    setSelectedImages(prev => [...prev, ...files])
-  }
+  const availableColors = useMemo(() => {
+    if (!nicheFields.length) return []
+    const colorField =
+      nicheFields.find((f) => f.variant_dimension === 'color') ||
+      nicheFields.find((f) => f.name.toLowerCase() === 'cor')
+    if (!colorField) return []
+    const v = dynamicFieldValues[colorField.id.toString()]?.value
+    if (!v) return []
+    if (Array.isArray(v)) return v
+    return String(v).split(',').map((c) => c.trim()).filter(Boolean)
+  }, [dynamicFieldValues, nicheFields])
 
-  const removeImage = (index: number) => {
-    setSelectedImages(prev => prev.filter((_, i) => i !== index))
-  }
+  const availableSizes = useMemo(() => {
+    if (!nicheFields.length) return []
+    const sizeField =
+      nicheFields.find((f) => f.variant_dimension === 'size') ||
+      nicheFields.find((f) =>
+        f.name.toLowerCase() === 'tamanho' || f.name.toLowerCase() === 'tamanhos',
+      )
+    if (!sizeField) return []
+    const v = dynamicFieldValues[sizeField.id.toString()]?.value
+    if (!v) return []
+    if (Array.isArray(v)) return v
+    return String(v).split(',').map((s) => s.trim()).filter(Boolean)
+  }, [dynamicFieldValues, nicheFields])
 
-  const reorderImages = (newImages: File[]) => {
-    setSelectedImages(newImages)
+  const handleNicheChange = (nicheId: number | null) => {
+    if (nicheId === null || (typeof nicheId === 'number' && !isNaN(nicheId) && nicheId > 0)) {
+      setSelectedNicheId(nicheId)
+    }
   }
 
   const removeExistingImage = (index: number) => {
-    setRemovedExistingImages(prev => [...prev, index])
-  }
-
-  // Color images handlers (unified ordered model)
-  const handleOrderedImagesChange = (color: string, newOrder: OrderedImage[]) => {
-    setOrderedImagesByColor(prev => ({
-      ...prev,
-      [color]: newOrder,
-    }))
+    setRemovedExistingImages((prev) => [...prev, index])
   }
 
   const onSubmit = (data: CreateProductFormData) => {
-    const hasColorImages = Object.values(orderedImagesByColor).some(items => items.length > 0)
-
-    // Validate image count (min 2, max 5)
-    let totalImages: number
-    if (hasColorImages) {
-      totalImages = Object.values(orderedImagesByColor).reduce((sum, items) => sum + items.length, 0)
-    } else {
-      const remainingExistingImages = Array.isArray(product?.images)
-        ? (product?.images || []).filter((_: any, index: number) => !removedExistingImages.includes(index))
-        : []
-      totalImages = selectedImages.length + remainingExistingImages.length
-    }
+    const hasColorImages = Object.values(orderedImagesByColor).some((items) => items.length > 0)
 
     if (hasColorImages) {
       for (const [color, items] of Object.entries(orderedImagesByColor)) {
@@ -213,90 +206,24 @@ export function useEditProductPage(productId: string, user: any) {
         if (items.length > 5) { showError(`A cor "${color}" pode ter no máximo 5 imagens`, 'Validação'); return }
       }
     } else {
-      if (totalImages < 2) { showError('O produto deve ter no mínimo 2 imagens', 'Validação'); return }
-      if (totalImages > 5) { showError('O produto pode ter no máximo 5 imagens', 'Validação'); return }
+      const remainingExisting = Array.isArray(product?.images)
+        ? (product.images as any[]).filter((_, i) => !removedExistingImages.includes(i)).length
+        : 0
+      const total = selectedImages.length + remainingExisting
+      if (total < 2) { showError('O produto deve ter no mínimo 2 imagens', 'Validação'); return }
+      if (total > 5) { showError('O produto pode ter no máximo 5 imagens', 'Validação'); return }
     }
 
-    const formData = new FormData()
-
-    formData.append('name', data.name)
-    if (data.description && data.description.trim()) {
-      formData.append('description', data.description.trim())
-    }
-    formData.append('price', (data.price || 0).toString())
-    const stockTotal = variantStocks.length > 0
-      ? variantStocks.reduce((sum, v) => sum + (v.stock || 0), 0)
-      : (data.stock || 0)
-    formData.append('stock', stockTotal.toString())
-    if (data.category_id && data.category_id > 0) {
-      formData.append('category_id', data.category_id.toString())
-    }
-    formData.append('featured', data.featured ? 'true' : 'false')
-
-    if (data.specifications !== undefined) {
-      formData.append('specifications', data.specifications.trim() || '')
-    }
-    if (data.promo_price) formData.append('promo_price', data.promo_price.toString())
-    if (data.promo_starts_at) formData.append('promo_starts_at', data.promo_starts_at)
-    if (data.promo_ends_at) formData.append('promo_ends_at', data.promo_ends_at)
-    if (variantStocks.length > 0) formData.append('variant_stocks', JSON.stringify(variantStocks))
-    // Dados fiscais (NF-e)
-    if (data.ncm !== undefined) formData.append('ncm', data.ncm || '')
-    if (data.cest !== undefined) formData.append('cest', data.cest || '')
-    if (data.origem !== undefined && data.origem !== null) formData.append('origem', String(data.origem))
-    if (data.unidade !== undefined) formData.append('unidade', data.unidade || '')
-    if (data.gtin !== undefined) formData.append('gtin', data.gtin || '')
-
-    // Envia o nicho sempre que selecionado (mesmo sem valores), para o backend cobrar
-    // os campos obrigatórios do nicho — não só quando há dynamic_fields.
-    if (selectedNicheId) {
-      formData.append('niche_id', selectedNicheId.toString())
-    }
-
-    if (selectedNicheId && Object.keys(dynamicFieldValues).length > 0) {
-      const dynamicFields = Object.values(dynamicFieldValues).map((fieldValue) => ({
-        field_id: fieldValue.field_id,
-        value: Array.isArray(fieldValue.value) ? fieldValue.value.join(', ') : fieldValue.value
-      }))
-      formData.append('dynamic_fields', JSON.stringify(dynamicFields))
-    }
-
-    if (hasColorImages) {
-      // Decompose orderedImagesByColor into:
-      // - existing_images_order: ordered existing URLs (defines order + removals)
-      // - images_by_color: new file indices appended at end
-      const existing_images_order: Record<string, string[]> = {}
-      const allNewFiles: File[] = []
-      const images_by_color: Record<string, number[]> = {}
-
-      for (const [color, items] of Object.entries(orderedImagesByColor)) {
-        // Existing URLs in order (omitted URLs are effectively removed)
-        existing_images_order[color] = items
-          .filter(i => i.type === 'existing')
-          .map(i => (i as { type: 'existing'; url: string }).url)
-
-        // New files
-        const newItems = items.filter(i => i.type === 'new') as { type: 'new'; file: File }[]
-        if (newItems.length > 0) {
-          images_by_color[color] = newItems.map(i => {
-            const idx = allNewFiles.length
-            allNewFiles.push(i.file)
-            return idx
-          })
-        }
-      }
-
-      formData.append('existing_images_order', JSON.stringify(existing_images_order))
-
-      if (allNewFiles.length > 0) {
-        allNewFiles.forEach(f => formData.append('images', f))
-        formData.append('images_by_color', JSON.stringify(images_by_color))
-      }
-    } else {
-      // Simple images path (no colors)
-      selectedImages.forEach(image => formData.append('images', image))
-      removedExistingImages.forEach(index => formData.append('remove_images[]', index.toString()))
-    }
+    const formData = buildProductFormData({
+      data,
+      variantStocks,
+      selectedNicheId,
+      dynamicFieldValues,
+      orderedImagesByColor,
+      selectedImages,
+      mode: 'edit',
+      removedExistingImages,
+    })
 
     updateProductMutation.mutate(
       { id: productId, data: formData },
@@ -308,79 +235,29 @@ export function useEditProductPage(productId: string, user: any) {
           router.push('/vendedor/produtos')
         },
         onError: (error: any) => {
-          const errorMessage = error.response?.data?.message || error.message || 'Erro ao atualizar produto'
-          showError(errorMessage, 'Erro ao atualizar produto')
-        }
-      }
+          const msg = error.response?.data?.message || error.message || 'Erro ao atualizar produto'
+          showError(msg, 'Erro ao atualizar produto')
+        },
+      },
     )
   }
 
-  const handleNicheChange = (nicheId: number | null) => {
-    if (nicheId === null || (typeof nicheId === 'number' && !isNaN(nicheId) && nicheId > 0)) {
-      setSelectedNicheId(nicheId)
-    }
-  }
-
-  const handleDynamicFieldChange = (fieldId: number, value: string | string[]) => {
-    setDynamicFieldValues(prev => ({
-      ...prev,
-      [fieldId.toString()]: { field_id: fieldId, value }
-    }))
-  }
-
-  const availableColors = useMemo(() => {
-    if (!nicheFields || nicheFields.length === 0) return []
-    const colorField = nicheFields.find(f => f.variant_dimension === 'color')
-      || nicheFields.find(f => f.name.toLowerCase() === 'cor')
-    if (!colorField) return []
-    const colorFieldValue = dynamicFieldValues[colorField.id.toString()]
-    if (!colorFieldValue) return []
-    const value = colorFieldValue.value
-    if (Array.isArray(value)) return value
-    if (typeof value === 'string') return value.split(',').map(c => c.trim()).filter(Boolean)
-    return []
-  }, [dynamicFieldValues, nicheFields])
-
-  const availableSizes = useMemo(() => {
-    if (!nicheFields || nicheFields.length === 0) return []
-    const sizeField = nicheFields.find(f => f.variant_dimension === 'size')
-      || nicheFields.find(f =>
-        f.name.toLowerCase() === 'tamanho' || f.name.toLowerCase() === 'tamanhos'
-      )
-    if (!sizeField) return []
-    const sizeFieldValue = dynamicFieldValues[sizeField.id.toString()]
-    if (!sizeFieldValue) return []
-    const value = sizeFieldValue.value
-    if (Array.isArray(value)) return value
-    if (typeof value === 'string') return value.split(',').map(s => s.trim()).filter(Boolean)
-    return []
-  }, [dynamicFieldValues, nicheFields])
-
   return {
     form,
+    store: storeData,
     product,
-    selectedImages,
-    orderedImagesByColor,
-    handleOrderedImagesChange,
+    ...shared,
     categories,
     niches,
-    nicheFields: nicheFields || [],
-    selectedNicheId,
-    dynamicFieldValues,
+    nicheFields,
     availableColors,
     availableSizes,
-    variantStocks,
-    setVariantStocks,
     removedExistingImages,
     isInitialized,
     isLoading: productLoading || updateProductMutation.isPending,
     error: productError || updateProductMutation.error,
-    handleImageChange,
-    removeImage,
-    reorderImages,
-    removeExistingImage,
     handleNicheChange,
-    handleDynamicFieldChange,
-    onSubmit
+    removeExistingImage,
+    onSubmit,
   }
 }
