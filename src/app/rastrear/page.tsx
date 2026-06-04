@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -79,7 +79,7 @@ function OrderSkeleton() {
   )
 }
 
-export default function RastrearPedidoPage() {
+function RastrearPedidoContent() {
   const searchParams = useSearchParams()
   const codeFromUrl = searchParams.get('code')
 
@@ -367,5 +367,13 @@ export default function RastrearPedidoPage() {
         </DialogContent>
       </Dialog>
     </div>
+  )
+}
+
+export default function RastrearPedidoPage() {
+  return (
+    <Suspense fallback={<OrderSkeleton />}>
+      <RastrearPedidoContent />
+    </Suspense>
   )
 }

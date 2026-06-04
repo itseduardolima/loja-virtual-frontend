@@ -157,9 +157,11 @@ const PaymentMethodsVisual = () => {
 const QuestionVisual = () => (
   <div style={{ background: '#F8F9FB', borderRadius: 10, padding: 10, fontSize: 12 }}>
     <div style={{ fontWeight: 500 }}>Carla pergunta:</div>
-    <div style={{ color: 'var(--ink-3)', marginTop: 2 }}>"Vocês fazem entrega em Niterói?"</div>
+    <div style={{ color: 'var(--ink-3)', marginTop: 2 }}>&quot;Vocês fazem entrega em Niterói?&quot;</div>
     <div style={{ fontWeight: 500, marginTop: 8, color: '#4F46E5' }}>Você respondeu:</div>
-    <div style={{ color: 'var(--ink-3)', marginTop: 2 }}>"Sim! Entregamos toda a região metropolitana."</div>
+    <div style={{ color: 'var(--ink-3)', marginTop: 2 }}>
+      &quot;Sim! Entregamos toda a região metropolitana.&quot;
+    </div>
   </div>
 )
 
