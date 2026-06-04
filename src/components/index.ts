@@ -29,7 +29,6 @@ export { UserHeaderCliente } from './Layout/UserHeaderCliente'
 export { ProductCard } from './Product/ProductCard'
 export { ProductFilters } from './Product/ProductFilters'
 export { EmptyImageState } from './Product/EmptyImageState'
-export { ProductPreview } from './Product/ProductPreview'
 export { ProductVariations } from './Product/ProductVariations'
 export { ProductReviews } from './Product/ProductReviews'
 
@@ -60,11 +59,17 @@ export { CheckoutModal } from './Checkout/CheckoutModal'
 // Order Components
 export { OrderTrackingTimeline } from './Order/OrderTrackingTimeline'
 
-// Form Components
-export { DynamicFields } from './Form/DynamicFields'
-export { ImageUpload } from './Form/ImageUpload'
-export { ImageUploadByColor } from './Form/ImageUploadByColor'
-export { ProductSteps } from './Form/ProductSteps'
+// Product Form Components (redesign criar/editar produto)
+export { BasicInfoSection } from './ProductForm/sections/BasicInfoSection'
+export { NicheSection } from './ProductForm/sections/NicheSection'
+export { VariantsSection } from './ProductForm/sections/VariantsSection'
+export { ImagesSection } from './ProductForm/sections/ImagesSection'
+export { SpecsSection } from './ProductForm/sections/SpecsSection'
+export { ColorPickerField } from './ProductForm/ColorPickerField'
+export { CompletionMeter } from './ProductForm/CompletionMeter'
+export { PreviewCard } from './ProductForm/PreviewCard'
+export { PublishCard } from './ProductForm/PublishCard'
+export { StorefrontPreviewModal } from './ProductForm/StorefrontPreviewModal'
 
 // Dialog Components
 export { ConfirmDialog } from './Dialog/ConfirmDialog'
