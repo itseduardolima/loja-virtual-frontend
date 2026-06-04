@@ -6,151 +6,274 @@
 
 ## Visão geral
 
-O cadastro de produto é um **wizard multi-step** com 4 etapas sequenciais. O mesmo layout é usado em criação (`/vendedor/produtos/criar`) e edição (`/vendedor/produtos/editar/[id]`), com diferença apenas na carga inicial de dados e no endpoint chamado.
+O cadastro de produto usa um **layout de página única com seções ancoradas** (estilo Shopify). O vendedor preenche as seções em qualquer ordem; uma sidebar sticky exibe progresso, preview e ações de publicação. O mesmo layout é usado em criação e edição — diferem apenas na carga inicial de dados, endpoint chamado e ações disponíveis.
 
-**Arquivos principais:**
-- `src/app/vendedor/produtos/criar/page.tsx` + `useCreateProductPage.ts`
-- `src/app/vendedor/produtos/editar/[id]/page.tsx` + `useEditProductPage.ts`
-- `src/components/Form/ProductSteps.tsx` — componente de navegação entre etapas
-- `src/components/Form/DynamicFields.tsx` — campos dinâmicos por nicho
-- `src/components/Form/ImageUploadByColor.tsx` — upload de imagens agrupadas por cor
+**Rotas:**
+- Criar: `/vendedor/produtos/criar`
+- Editar: `/vendedor/produtos/editar/[id]`
 
----
+### Estrutura de arquivos
 
-## Estrutura do wizard
-
-### Etapas
-
-| # | Título real no código | Conteúdo |
-|---|---|---|
-| 1 | Informações básicas | Nome, descrição, preço, preço promocional, destaque, rascunho |
-| 2 | Tipo de Produto | Categoria, nicho, `DynamicFields` do nicho, estoque por variante (grid cor × tamanho) |
-| 3 | Imagens | `ImageUploadByColor` (se produto tem cores) ou `ImageUpload` simples |
-| 4 | Especificações | Editor rich-text para especificações técnicas + dados fiscais NF-e (`<details>` colapsável) |
-
-> **Atenção:** Etapa 2 agrupa seleção de nicho/categoria, campos dinâmicos e estoque por variante em uma única tela. Etapa 4 não é uma tela de revisão — é o editor de especificações. Não há tela de resumo/revisão no fluxo atual.
-
-### Navegação entre etapas (`ProductSteps.tsx`)
-
-```tsx
-<ProductSteps currentStep={step} totalSteps={4} onStepClick={goToStep} />
+```
+src/
+├── app/vendedor/produtos/
+│   ├── criar/
+│   │   ├── page.tsx                  # página de criação (~340 linhas)
+│   │   └── useCreateProductPage.ts   # hook: estado + mutação POST /products
+│   └── editar/[id]/
+│       ├── page.tsx                  # página de edição (~430 linhas)
+│       └── useEditProductPage.ts     # hook: estado + mutação PATCH /products/:id
+├── components/ProductForm/
+│   ├── sections/
+│   │   ├── BasicInfoSection.tsx      # seção "Informações básicas"
+│   │   ├── NicheSection.tsx          # seção "Tipo e nicho"
+│   │   ├── VariantsSection.tsx       # seção "Variantes e estoque"
+│   │   ├── ImagesSection.tsx         # seção "Imagens"
+│   │   └── SpecsSection.tsx          # seção "Especificações"
+│   ├── ProductFormSections.tsx       # wrapper das 4 seções compartilhadas (exceto Imagens)
+│   ├── CompletionMeter.tsx           # anel SVG de progresso + checklist ancorável
+│   ├── PreviewCard.tsx               # card de preview do produto (sidebar)
+│   ├── PublishCard.tsx               # ações de publicação + segmented status (sidebar)
+│   ├── StorefrontPreviewModal.tsx    # modal de pré-visualização da vitrine
+│   ├── ColorPickerField.tsx          # popover de seleção de cor com famílias
+│   ├── buildProductFormData.ts       # constrói o FormData para POST e PATCH
+│   ├── previewUtils.ts               # usePreviewUrlCache + buildPreviewData
+│   ├── useSharedProductState.ts      # estados e handlers comuns (imagens, nicho, variantes)
+│   ├── useFormWatchers.ts            # centraliza os watch() do RHF
+│   ├── primitives.tsx                # SectionCard, NxButton, RadioPills, CheckChips, etc.
+│   ├── inputs.tsx                    # NxInput, NxSelectNative, NxTextarea
+│   ├── completion.ts                 # computeCompletion() — 5 itens de progresso
+│   ├── data.ts                       # COLOR_FAMILIES, getColorHex, slugify, getNicheIcon
+│   └── types.ts                      # OrderedImage, CompletionItem, StorefrontPreviewData
+└── hooks/
+    └── useUnsavedChanges.ts          # guard de navegação (beforeunload + router interception)
 ```
 
-- Exibir progresso visual: círculo numerado ou barra.
-- Etapas anteriores são clicáveis (permite voltar).
-- Etapa atual: destaque `nxp`.
-- Etapas futuras: cinza `nxi3`, não clicáveis.
-- Botões "Anterior" / "Próximo" ao rodapé de cada etapa.
-- Última etapa: botão "Salvar produto" (`NxButton loading={isSaving}`).
+---
+
+## Layout da página
+
+```
+[Header: título + botões Pré-visualizar / Descartar]          (desktop)
+
+[Seções principais]                  [Sidebar sticky 340px]   (desktop)
+  BasicInfoSection                     CompletionMeter
+  NicheSection                         PreviewCard
+  VariantsSection                      PublishCard
+  ImagesSection
+  SpecsSection
+
+[Barra de ação fixa no bottom]                                 (mobile)
+```
+
+**Mobile:** CompletionMeter e PreviewCard aparecem no topo da página (acima das seções). A barra de ação fixa no bottom tem os botões de salvar.
 
 ---
 
-## Etapa 1 — Informações básicas
+## Seções
 
-### Campos obrigatórios
+### 1 — Informações básicas (`sec-basico`)
 
-| Campo | Tipo | Notas |
+| Campo | Obrigatório | Notas |
 |---|---|---|
-| Nome | text | min 3, max 200 chars |
-| Preço | number (R$) | Decimal 10,2 |
-| Estoque | number | inteiro ≥ 0 |
+| Nome | Sim | min 3, max 200 chars; contador inline |
+| Preço | Sim | decimal R$; `parseBRL` / `formatBRL` |
+| Preço promocional | Não | deve ser < preço; exige datas |
+| Data início promoção | Condicional | obrigatório se `promo_price` preenchido |
+| Data fim promoção | Condicional | obrigatório se `promo_price` preenchido |
+| Descrição | Não | TipTap rich-text; HTML sanitizado |
+| Produto em destaque | Não | toggle; exibe badge "Destaque" na vitrine |
 
-### Campos opcionais
+### 2 — Tipo e nicho (`sec-nicho`)
 
-| Campo | Tipo | Notas |
-|---|---|---|
-| Descrição | textarea (rich text TipTap) | HTML sanitizado |
-| Especificações | textarea (rich text TipTap) | HTML sanitizado |
-| Categoria | select | lista das categorias da loja |
-| Nicho | select/radio | define os campos da etapa 2 |
-| Preço promocional | number (R$) | exige `promo_starts_at` + `promo_ends_at` |
-| Produto em destaque | toggle |  |
-| Salvar como rascunho | toggle | status = 2, não aparece na vitrine |
+Seção dividida em três partes em sequência:
 
-### Dados fiscais (Bling / NF-e) — collapsible
+**2a. Grade de nichos**
+- Grid de cards com ícone Lucide (mapeado por slug em `data.ts`) + nome
+- Seleção altera os campos dinâmicos exibidos abaixo
+- Ao mudar nicho: `dynamicFieldValues` é limpo (create) ou preservado (edit)
 
-Exibir em seção colapsável "Dados fiscais (NF-e)" com `ToggleRow`:
+**2b. Categoria**
+- Select das categorias da loja filtradas pelo nicho selecionado
+- Botão "Nova categoria" abre `CreateCategoryModal`
 
-| Campo | Tipo | Notas |
-|---|---|---|
-| NCM | text | 8 dígitos, máscara |
-| CEST | text | 7 dígitos, opcional |
-| GTIN (EAN) | text | 14 chars |
-| Origem | select | 0–8 (tabela ICMS) |
-| Unidade | select | UN, KG, PC, M, M2, L |
+**2c. Campos dinâmicos do nicho**
+- Renderizados conforme `field_type` retornado pela API (`useNicheFields`)
 
----
-
-## Etapa 2 — Tipo de Produto
-
-Esta etapa contém três seções em sequência:
-
-### 2a. Seleção de categoria e nicho
-- Select de categoria (lista das categorias da loja; botão "Nova categoria" inline)
-- Select/radio de nicho → carrega `DynamicFields` ao mudar
-
-### 2b. Campos dinâmicos do nicho (`DynamicFields`)
-- Se nenhum nicho selecionado: `Notice variant="amber"` orientando selecionar primeiro
-- Campos `required: true` devem bloquear avanço se vazios (borda `nxd`)
-
-| `field_type` | UX |
+| `field_type` | Componente |
 |---|---|
-| `text` | `<input>` simples |
-| `textarea` | `<textarea>` 3 linhas |
-| `number` | `<input type="number">` |
-| `select` | Multi-select com checkboxes (array de valores) |
-| `radio` | Pills de escolha única (valor string) |
-| `color` | Grid de bolinhas coloridas com paleta `COLOR_OPTIONS`; cores normalizadas lowercase; ordenadas por família/luminosidade |
+| `text` | `NxInput` |
+| `textarea` | `NxTextarea` |
+| `number` | `NxInput type="number"` |
+| `select` | `CheckChips` (multi-valor, comma-separated) |
+| `radio` | `RadioPills` (valor único) |
+| `color` | `ColorPickerField` (famílias, busca, max 5) |
 
-Campos com `variant_dimension === 'color'` alimentam `availableColors`; `variant_dimension === 'size'` alimentam `availableSizes`.
+- Campos com `variant_dimension === 'color'` populam `availableColors`
+- Campos com `variant_dimension === 'size'` populam `availableSizes`
+- Campos `required: true` são marcados com asterisco e bloqueiam publicação
 
-### 2c. Estoque por variante
-Exibido ao final da etapa 2 (não em etapa separada):
+### 3 — Variantes e estoque (`sec-estoque`)
+
+Exibida somente se `availableColors` ou `availableSizes` não estiverem vazios.
 
 ```
-Cor × Tamanho  → input de quantidade
-Preto × P      → [  0 ]
-Preto × M      → [  0 ]
-Branco × P     → [  0 ]
+         P    M    G
+Preto   [0]  [0]  [0]
+Branco  [0]  [0]  [0]
 ```
 
-- Se só cores: lista por cor. Se só tamanhos: lista por tamanho. Se ambos: grid 2D.
+- Só cores: lista por cor. Só tamanhos: lista por tamanho. Ambos: grid 2D.
+- Stepper (`+` / `-`) por célula; bulk fill por linha (hover).
+- Badge "Total X unidades" atualizado em tempo real.
+- Se sem variantes: campo de estoque único (texto simples) na BasicInfoSection.
 - Payload: `variant_stocks: [{color, size, stock}]`
 
----
+### 4 — Imagens (`sec-imagens`)
 
-## Etapa 3 — Imagens por cor
-
-Componente: `ImageUploadByColor`.
-
-- Uma aba por cor de `availableColors`.
+**Modo com cores:** uma aba por cor de `availableColors`.
 - Cada cor: mínimo 2, máximo 5 imagens.
-- Upload por drag-and-drop ou clique.
-- Preview com reordenação.
-- Imagem na posição 0 é a capa da cor.
-- Ao editar: imagens existentes são exibidas; novas são appended no multipart.
+- Drag-and-drop para reordenar dentro da aba.
+- Badge de contagem por aba; badge "Principal" na posição 0.
+- Aviso âmbar se a cor tiver imagens insuficientes.
 
-Payload gerado:
-- `images`: array de arquivos File
-- `images_by_color`: JSON `{[cor]: [índices do array images]}`
+**Modo simples (sem cores):** zona de upload única.
+- Mínimo 2, máximo 5 imagens.
+- Edição: imagens existentes exibidas com botão de remoção.
+
+**Tipo de estado interno:**
+```typescript
+type OrderedImage =
+  | { type: 'existing'; url: string }   // URL existente no backend
+  | { type: 'new'; file: File }         // arquivo novo a ser enviado
+```
+
+### 5 — Especificações (`sec-specs`)
+
+- Editor TipTap rich-text (barra de formatação: negrito, itálico, lista).
+- Contador de caracteres (max 2000 em texto puro).
+- Conteúdo salvo no campo `specifications` (HTML).
+
+> **Dados fiscais (NCM, CEST, GTIN, Origem, Unidade) foram removidos do frontend e do backend.** Não há mais campos fiscais no formulário.
 
 ---
 
-## Etapa 4 — Especificações
+## Sidebar — CompletionMeter
 
-- Editor rich-text (TipTap) para especificações técnicas detalhadas do produto
-- Seção colapsável "Dados fiscais (NF-e)" via `<details>` HTML nativo (não `ToggleRow`):
+5 itens de progresso, calculados por `computeCompletion()` em `completion.ts`:
+
+| Item | Âncora | Obrigatório | Condição de conclusão |
+|---|---|---|---|
+| Informações básicas | `sec-basico` | Sim | nome ≥ 3 chars e preço > 0 |
+| Tipo e nicho | `sec-nicho` | Sim | nicho + categoria + campos required preenchidos |
+| Variantes e estoque | `sec-estoque` | Não | estoque total > 0 |
+| Imagens | `sec-imagens` | Sim | 2–5 imagens por cor (ou 2–5 simples) |
+| Especificações | `sec-specs` | Não | texto puro não-vazio |
+
+- Anel SVG mostra % de itens obrigatórios concluídos.
+- Clicar num item rola suavemente (`scrollIntoView`) até a âncora correspondente.
+
+---
+
+## Sidebar — PublishCard
+
+### Modo criação
+
+- Botão "Publicar" (primário): valida itens obrigatórios, submete com `save_as_draft=false`.
+- Botão "Salvar rascunho" (ghost): submete sem validação de campos opcionais.
+- Loaders independentes: `saving` e `savingDraft` evitam loader no botão errado.
+
+### Modo edição
+
+- Segmented control de status: **Rascunho** | **Ativo** | **Inativo**
+  - Cada mudança dispara `PATCH /products/:id/status` imediatamente (sem aguardar o save).
+  - Em caso de erro: status revertido ao anterior + toast de erro.
+- Botão "Salvar alterações" (primário): submete `PATCH /products/:id`.
+- O save **não altera** o status — apenas os dados do produto.
+
+---
+
+## Guard de navegação (`useUnsavedChanges`)
+
+Intercepta qualquer tentativa de sair da página quando há alterações não salvas:
+- `beforeunload` nativo (fechar aba / reload).
+- Cliques em `<a>` internos.
+- `router.push`, `router.back`, `router.replace`.
+
+Exibe `ConfirmDialog` com opções "Sim, descartar" / "Continuar editando".
+
+**Criação:** detecta mudança por `!!name || !!price || !!description || hasImages`.  
+**Edição:** detecta por `formState.isDirty` (RHF) OU snapshot JSON do estado extra (imagens, variantes, nicho, campos dinâmicos).
+
+---
+
+## Payload da API
+
+### Criar — `POST /products` (multipart/form-data, timeout 120s)
 
 | Campo | Tipo | Notas |
 |---|---|---|
-| NCM | text | 8 dígitos |
-| CEST | text | 7 dígitos, opcional |
-| GTIN (EAN) | text | 14 chars |
-| Origem | select | 0–8 (tabela ICMS) |
-| Unidade | select | UN, KG, PC, M, M2, L |
+| `name` | string | obrigatório |
+| `price` | string | decimal como string |
+| `stock` | string | soma das variantes ou estoque único |
+| `category_id` | string | opcional |
+| `featured` | `'true'`/`'false'` | |
+| `save_as_draft` | `'true'` | omitido se publicar |
+| `description` | string | HTML |
+| `specifications` | string | HTML |
+| `promo_price` | string | opcional |
+| `promo_starts_at` | string | ISO datetime |
+| `promo_ends_at` | string | ISO datetime |
+| `niche_id` | string | sempre que nicho selecionado |
+| `dynamic_fields` | JSON string | `[{field_id: number, value: string}]` |
+| `variant_stocks` | JSON string | `[{color, size, stock}]` |
+| `images` | File[] | todos os arquivos novos |
+| `images_by_color` | JSON string | `{[cor]: [índices em images]}` |
 
-- Seção fiscal auto-expande se o vendedor tiver Bling conectado
-- Botões finais: "Salvar rascunho" e "Publicar" (não há tela de revisão/resumo)
+> `dynamic_fields` usa `field_id` (número), **não** slug.
+
+### Editar — `PATCH /products/:id` (multipart/form-data, timeout 120s)
+
+Mesmo payload, sem `save_as_draft`. Campos adicionais:
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| `existing_images_order` | JSON string | `{[cor]: [urls existentes em ordem]}` — URLs omitidas são removidas |
+| `remove_images[]` | string[] | índices de imagens simples a remover (modo sem cor) |
+
+### Alterar status — `PATCH /products/:id/status`
+
+```json
+{ "status": 0 }   // 0 = inativo, 1 = ativo, 2 = rascunho
+```
+
+O endpoint aceita `status` no body. Se omitido, faz toggle.
+
+---
+
+## Validações frontend (Yup — `productSchemas.ts`)
+
+- `name`: obrigatório, 3–200 chars
+- `price`: obrigatório, > 0
+- `stock`: ≥ 0
+- `promo_price`: se presente, deve ser < `price`
+- `promo_starts_at` / `promo_ends_at`: obrigatórios se `promo_price` preenchido
+
+Validações fora do Yup (no hook, antes de montar o FormData):
+- Cada cor: 2–5 imagens
+- Modo simples: 2–5 imagens (existentes remanescentes + novas)
+
+---
+
+## Estados de carregamento
+
+| Situação | Comportamento |
+|---|---|
+| Submit em curso | `NxButton loading={true}`; botão oposto `disabled` |
+| Carregando produto (edit) | `<LoadingPage />` até `isInitialized === true` |
+| Produto não encontrado | `<ErrorState message="Produto não encontrado" />` |
+| Erro de API | `showError(message, título)` via `ToastContext` |
+| Alteração de status com erro | Toast de erro + rollback do segmented control |
 
 ---
 
@@ -170,91 +293,41 @@ Arquivo: `src/app/vendedor/produtos/page.tsx`
 
 ### KPI cards
 
-4 cards no padrão do design system:
-- Total de produtos
-- Ativos (status = 1)
-- Em destaque (featured = 1)
-- Inativos/Rascunhos (status = 0 ou 2)
+| Card | Dado |
+|---|---|
+| Total de produtos | `stats.total` |
+| Ativos | `stats.total_active` (status = 1) |
+| Em destaque | `stats.total_featured` |
+| Em estoque | `stats.total_in_stock` |
 
-### Card de produto (`ProductCard.tsx`)
+### Card de produto
 
-- Imagem com hover (2ª imagem aparece no hover)
-- Nome truncado (max ~30 chars, `line-clamp-2`)
-- Preço com destaque se houver `promo_price`
-- Badge de desconto (%) em `nxa`
-- Badge "Destaque" em `nxp`
-- Badge "Rascunho" em `nxi3`
-- Status toggle (ativo/inativo) diretamente no card
+- Imagem com hover (2ª imagem no hover)
+- Nome truncado (`line-clamp-2`)
+- Preço com badge de desconto (%) em `nxa` se houver `promo_price`
+- Badge "Destaque" em `nxp`; badge "Rascunho" em `nxi3`
+- Toggle ativo/inativo diretamente no card
 - Context menu: Editar, Duplicar, Ativar/Desativar
 
 ### Filtros
 
-- Busca por nome: `SearchInput` com debounce 300ms
+- Busca por nome: debounce 300ms
 - Status: Todos | Ativos | Inativos | Rascunhos
 - Ordenação: Mais recentes | Preço ↑ | Preço ↓ | Nome A-Z
-
-### Estado vazio
-
-```
-Ícone Package (lucide, 48px, nxi3)
-"Nenhum produto ainda"
-"Crie seu primeiro produto para começar a vender."
-[Botão "+ Criar produto"]
-```
-
----
-
-## Payload da API
-
-### Criar produto — `POST /products` (multipart/form-data)
-
-Campos obrigatórios:
-- `name`, `price`, `images` (arquivos), `images_by_color` (JSON)
-
-Campos opcionais relevantes:
-- `description`, `stock`, `category_id`, `niche_id`
-- `dynamic_fields` (JSON array `[{field_id, value}]`)
-- `variant_stocks` (JSON array `[{color, size, stock}]`)
-- `save_as_draft` (boolean)
-- `ncm`, `cest`, `gtin`, `origem`, `unidade`
-
-### Editar produto — `PATCH /products/:id` (multipart/form-data)
-
-Mesmo payload, adicional:
-- `existing_images_order` (JSON — quais URLs existentes manter e em que ordem)
-
----
-
----
-
-## Validações frontend (Yup)
-
-- `name`: obrigatório, 3–200 chars
-- `price`: obrigatório, > 0
-- `stock`: ≥ 0
-- `promo_price`: se presente, deve ser < `price`
-- `promo_starts_at` / `promo_ends_at`: ambos obrigatórios se `promo_price` preenchido
-- Campos `required: true` do nicho: verificar antes de avançar da etapa 2
-
----
-
-## Estados de carregamento e erro
-
-- Submit: `NxButton loading={isSaving}` + campos bloqueados
-- Erro de API: `Notice variant="error"` acima do formulário
-- Upload de imagem: spinner overlay por imagem
-- Carregamento de categorias/nicho: skeleton nos selects
 
 ---
 
 ## Referências de código
 
-| Padrão | Arquivo |
+| Responsabilidade | Arquivo |
 |---|---|
-| Wizard / steps | `src/components/Form/ProductSteps.tsx` |
-| Campos dinâmicos | `src/components/Form/DynamicFields.tsx` |
-| Upload por cor | `src/components/Form/ImageUploadByColor.tsx` |
+| Construção do FormData | `src/components/ProductForm/buildProductFormData.ts` |
+| Estado compartilhado (imagens, nicho, variantes) | `src/components/ProductForm/useSharedProductState.ts` |
+| Cache de object URLs + buildPreviewData | `src/components/ProductForm/previewUtils.ts` |
+| Guard de navegação (unsaved changes) | `src/hooks/useUnsavedChanges.ts` |
+| Progresso de conclusão | `src/components/ProductForm/completion.ts` |
+| Primitivos de UI | `src/components/ProductForm/primitives.tsx` |
 | Hook de criação | `src/app/vendedor/produtos/criar/useCreateProductPage.ts` |
 | Hook de edição | `src/app/vendedor/produtos/editar/[id]/useEditProductPage.ts` |
-| Primitivos de form | `src/app/vendedor/configuracoes/_shared.tsx` |
-| DTO backend | `src/products/dto/create-product.dto.ts` |
+| DTO backend | `loja-virtual/src/products/dto/create-product.dto.ts` |
+| Controller de status | `loja-virtual/src/products/products.controller.ts` — `PATCH /:id/status` |
