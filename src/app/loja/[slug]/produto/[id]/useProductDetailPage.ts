@@ -1,17 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 import { buildImageUrl } from '@/lib/utils'
-import { useToast } from '@/hooks/useToast'
 import { useCart } from '@/hooks/useCart'
 import { ProductDetail, ProductDetailResponse } from '@/types/product'
 
 export function useProductDetailPage(slug: string, productId: string) {
-  const router = useRouter()
-  const queryClient = useQueryClient()
-  const { toast } = useToast()
-  
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [selectedSize, setSelectedSize] = useState<string | null>(null)
   const [selectedColor, setSelectedColor] = useState<string | null>(null)
@@ -52,20 +46,6 @@ export function useProductDetailPage(slug: string, productId: string) {
     }
   }, [product])
 
-  // Função para processar cores (separar por vírgula se necessário)
-  const processColors = (colors: string[]): string[] => {
-    return colors.flatMap(color => 
-      typeof color === 'string' ? color.split(',').map(c => c.trim()) : [color]
-    ).filter(Boolean)
-  }
-
-  // Função para processar tamanhos (separar por vírgula se necessário)
-  const processSizes = (sizes: string[]): string[] => {
-    return sizes.flatMap(size => 
-      typeof size === 'string' ? size.split(',').map(s => s.trim()) : [size]
-    ).filter(Boolean)
-  }
-
   // Função para obter imagens baseado na cor selecionada
   const getImagesForColor = (): string[] => {
     if (!product) return []
@@ -101,31 +81,6 @@ export function useProductDetailPage(slug: string, productId: string) {
 
   // Obter imagens atuais baseado na cor selecionada
   const currentImages = getImagesForColor()
-
-  // Função para selecionar imagem
-  const selectImage = (index: number) => {
-    if (index >= 0 && index < currentImages.length) {
-      setSelectedImageIndex(index)
-    }
-  }
-
-  // Função para navegar para a imagem anterior
-  const previousImage = () => {
-    if (currentImages.length > 0) {
-      setSelectedImageIndex(prev => 
-        prev === 0 ? currentImages.length - 1 : prev - 1
-      )
-    }
-  }
-
-  // Função para navegar para a próxima imagem
-  const nextImage = () => {
-    if (currentImages.length > 0) {
-      setSelectedImageIndex(prev => 
-        prev === currentImages.length - 1 ? 0 : prev + 1
-      )
-    }
-  }
 
   // Função para selecionar tamanho
   const selectSize = (size: string) => {
@@ -181,65 +136,6 @@ export function useProductDetailPage(slug: string, productId: string) {
     }
   }
 
-  // Mutation para adicionar ao carrinho
-  const addToCartMutation = useMutation({
-    mutationFn: async () => {
-      if (!product) throw new Error('Produto não encontrado')
-      
-      const response = await api.post('/cart', {
-        product_id: product.id,
-        quantity,
-        size: selectedSize || '',
-        color: selectedColor || '',
-        notes: ''
-      }, {
-        params: {
-          store_id: product.store.id
-        }
-      })
-      
-      return response.data
-    },
-    onSuccess: () => {
-      // Toast removido - a animação visual substitui o toast
-    },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.message || 'Não foi possível adicionar o produto ao carrinho'
-      toast({
-        title: 'Erro!',
-        description: errorMessage,
-        variant: 'destructive'
-      })
-    }
-  })
-
-  // Mutation para adicionar aos favoritos
-  const addToFavoritesMutation = useMutation({
-    mutationFn: async () => {
-      // Aqui você implementaria a lógica para adicionar aos favoritos
-      // Por enquanto, apenas simula uma requisição
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      return {
-        productId: product?.id
-      }
-    },
-    onSuccess: () => {
-      toast({
-        title: 'Adicionado aos favoritos!',
-        description: `${product?.name} foi adicionado aos seus favoritos`,
-        variant: 'success'
-      })
-    },
-    onError: () => {
-      toast({
-        title: 'Erro!',
-        description: 'Não foi possível adicionar aos favoritos',
-        variant: 'destructive'
-      })
-    }
-  })
-
   // Função para adicionar ao carrinho
   const addToCart = () => {
     if (!product) return
@@ -254,13 +150,6 @@ export function useProductDetailPage(slug: string, productId: string) {
     })
   }
 
-  // Função para adicionar aos favoritos
-  const addToFavorites = () => {
-    if (!product) return
-    
-    addToFavoritesMutation.mutate()
-  }
-
   return {
     product,
     isLoading,
@@ -270,20 +159,13 @@ export function useProductDetailPage(slug: string, productId: string) {
     selectedColor,
     quantity,
     currentStock,
-    processColors,
-    processSizes,
     currentImages,
     buildImageUrls,
-    selectImage,
-    previousImage,
-    nextImage,
     selectSize,
     selectColor,
     increaseQuantity,
     decreaseQuantity,
     addToCart,
-    addToFavorites,
     isAddingToCart,
-    isAddingToFavorites: addToFavoritesMutation.isPending
   }
 }

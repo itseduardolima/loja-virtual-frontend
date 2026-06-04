@@ -8,9 +8,9 @@ import {
   Pencil,
   Check,
   MoreHorizontal,
-  SlidersHorizontal,
+  PenLine,
+  MessageSquarePlus,
 } from 'lucide-react'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import {
@@ -19,24 +19,27 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { useProductReviews } from '@/hooks/useProductReviews'
 import { useAuth } from '@/contexts/AuthContext'
 import { ProductReview } from '@/types/review'
-import { buildImageUrl } from '@/lib/utils'
+import { buildImageUrl, cn } from '@/lib/utils'
+import { Stars } from '@/components/Store/Product/Stars'
 
 function formatReviewDate(date: Date): string {
   return date.toLocaleDateString('pt-BR', {
     day: 'numeric',
-    month: 'long',
+    month: 'short',
     year: 'numeric',
   })
+}
+
+function initialsOf(name: string): string {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join('')
 }
 
 interface ProductReviewsProps {
@@ -45,32 +48,7 @@ interface ProductReviewsProps {
   productName: string
 }
 
-function StarRating({ rating }: { rating: number }) {
-  const fullStars = Math.floor(rating)
-  const hasHalfStar = rating % 1 >= 0.5
-
-  return (
-    <div className="flex items-center gap-0.5">
-      {[...Array(fullStars)].map((_, i) => (
-        <Star
-          key={i}
-          className="h-4 w-4 fill-yellow-400 text-yellow-400"
-        />
-      ))}
-      {hasHalfStar && (
-        <Star
-          className="h-4 w-4 fill-yellow-400 text-yellow-400"
-          style={{ clipPath: 'inset(0 50% 0 0)' }}
-        />
-      )}
-      {[...Array(5 - fullStars - (hasHalfStar ? 1 : 0))].map((_, i) => (
-        <Star key={i} className="h-4 w-4 text-gray-300" />
-      ))}
-    </div>
-  )
-}
-
-interface ReviewCardProps {
+interface ReviewItemProps {
   review: ProductReview
   currentUserId?: number
   onEdit?: (
@@ -82,7 +60,13 @@ interface ReviewCardProps {
 
 const MAX_IMAGES = 5
 
-function ReviewCard({ review, currentUserId, onEdit, isUpdating }: ReviewCardProps) {
+const SORT_OPTIONS: Array<['latest' | 'highest' | 'images', string]> = [
+  ['latest', 'Recentes'],
+  ['highest', 'Maior nota'],
+  ['images', 'Com fotos'],
+]
+
+function ReviewItem({ review, currentUserId, onEdit, isUpdating }: ReviewItemProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [editRating, setEditRating] = useState(review.rating)
@@ -118,18 +102,8 @@ function ReviewCard({ review, currentUserId, onEdit, isUpdating }: ReviewCardPro
       (f) => f.type.startsWith('image/') && f.size <= 5 * 1024 * 1024
     )
     const totalCount = editKeepImages.length + editNewImages.length
-    setEditNewImages((prev) =>
-      [...prev, ...validFiles].slice(0, MAX_IMAGES - totalCount)
-    )
+    setEditNewImages((prev) => [...prev, ...validFiles].slice(0, MAX_IMAGES - totalCount))
     e.target.value = ''
-  }
-
-  const removeKeepImage = (index: number) => {
-    setEditKeepImages((prev) => prev.filter((_, i) => i !== index))
-  }
-
-  const removeNewImage = (index: number) => {
-    setEditNewImages((prev) => prev.filter((_, i) => i !== index))
   }
 
   const handleSaveEdit = () => {
@@ -143,32 +117,43 @@ function ReviewCard({ review, currentUserId, onEdit, isUpdating }: ReviewCardPro
   }
 
   return (
-    <Card className="rounded-2xl border bg-white overflow-hidden">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <StarRating rating={review.rating} />
+    <div className="py-6">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-nxbg text-[12px] font-bold text-nxi2">
+            {initialsOf(review.user.name)}
+          </div>
+          <div>
+            <span className="text-[13.5px] font-bold text-nxi1">{review.user.name}</span>
+            <div className="mt-1">
+              <Stars rating={review.rating} size={12} />
+            </div>
+          </div>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="text-[11.5px] text-nxi3">
+            {formatReviewDate(new Date(review.created_at))}
+          </span>
           {isOwner && !isEditing && (
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="p-1 rounded hover:bg-gray-100 text-gray-500"
+                className="rounded p-1 text-nxi3 hover:bg-nxbg"
+                aria-label="Opções da avaliação"
               >
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreHorizontal size={16} />
               </button>
               {menuOpen && (
                 <>
-                  <div
-                    className="fixed inset-0 z-10"
-                    onClick={() => setMenuOpen(false)}
-                  />
-                  <div className="absolute right-0 top-full mt-1 z-20 py-1 bg-white rounded-lg shadow-lg border border-gray-200 min-w-[120px]">
+                  <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+                  <div className="absolute right-0 top-full z-20 mt-1 min-w-[120px] rounded-xl border border-nxborder bg-white py-1 shadow-lg">
                     <button
                       type="button"
                       onClick={handleStartEdit}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-[12.5px] font-medium text-nxi2 hover:bg-nxbg"
                     >
-                      <Pencil className="h-3.5 w-3.5" />
+                      <Pencil size={13} />
                       Editar
                     </button>
                   </div>
@@ -177,155 +162,157 @@ function ReviewCard({ review, currentUserId, onEdit, isUpdating }: ReviewCardPro
             </div>
           )}
         </div>
+      </div>
 
-        <div className="flex items-center gap-2 mb-2">
-          <span className="font-semibold text-gray-900">{review.user.name}</span>
-        </div>
-
-        {isEditing ? (
-          <div className="space-y-3 mt-3">
-            <div>
-              <label className="text-xs font-medium text-gray-600 block mb-1">
-                Sua nota
-              </label>
-              <div className="flex gap-0.5">
-                {[1, 2, 3, 4, 5].map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => setEditRating(value)}
-                    onMouseEnter={() => setEditHoverRating(value)}
-                    onMouseLeave={() => setEditHoverRating(0)}
-                    className="p-0.5"
-                  >
-                    <Star
-                      className={`h-6 w-6 ${
-                        value <= displayRating
-                          ? 'fill-yellow-400 text-yellow-400'
-                          : 'text-gray-300'
-                      }`}
-                    />
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label className="text-xs font-medium text-gray-600 block mb-1">
-                Comentário
-              </label>
-              <Textarea
-                value={editComment}
-                onChange={(e) => setEditComment(e.target.value)}
-                className="min-h-[80px] resize-none text-sm"
-                maxLength={1000}
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-gray-600 block mb-1">
-                Imagens
-              </label>
-              <input
-                ref={editFileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/jpg"
-                multiple
-                onChange={handleEditImageChange}
-                className="hidden"
-              />
-              <div className="flex flex-wrap gap-2">
-                {editKeepImages.map((img, idx) => (
-                  <div key={`keep-${idx}`} className="relative group">
-                    <img
-                      src={buildImageUrl(img)}
-                      alt={`Manter ${idx + 1}`}
-                      className="w-16 h-16 object-cover rounded-lg border border-gray-200"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeKeepImage(idx)}
-                      className="absolute -top-0.5 -right-0.5 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600"
-                    >
-                      <X className="h-2.5 w-2.5" />
-                    </button>
-                  </div>
-                ))}
-                {editNewImages.map((img, idx) => (
-                  <div key={`new-${idx}`} className="relative group">
-                    <img
-                      src={URL.createObjectURL(img)}
-                      alt={`Nova ${idx + 1}`}
-                      className="w-16 h-16 object-cover rounded-lg border border-gray-200"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeNewImage(idx)}
-                      className="absolute -top-0.5 -right-0.5 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600"
-                    >
-                      <X className="h-2.5 w-2.5" />
-                    </button>
-                  </div>
-                ))}
-                {editKeepImages.length + editNewImages.length < MAX_IMAGES && (
-                  <button
-                    type="button"
-                    onClick={() => editFileInputRef.current?.click()}
-                    className="w-16 h-16 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:bg-gray-50 text-gray-500"
-                  >
-                    <ImagePlus className="h-4 w-4 mb-0.5" />
-                    <span className="text-xs">Adicionar</span>
-                  </button>
-                )}
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button size="sm" onClick={handleSaveEdit} disabled={editRating < 1 || isUpdating}>
-                {isUpdating ? (
-                  <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent" />
-                ) : (
-                  <>
-                    <Check className="h-3.5 w-3.5 mr-1" />
-                    Salvar
-                  </>
-                )}
-              </Button>
-              <Button size="sm" variant="outline" onClick={handleCancelEdit} disabled={isUpdating}>
-                Cancelar
-              </Button>
+      {isEditing ? (
+        <div className="mt-4 space-y-3">
+          <div>
+            <label className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-nxi3">
+              Sua nota
+            </label>
+            <div className="mt-1.5 flex gap-0.5">
+              {[1, 2, 3, 4, 5].map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setEditRating(value)}
+                  onMouseEnter={() => setEditHoverRating(value)}
+                  onMouseLeave={() => setEditHoverRating(0)}
+                  className="p-0.5"
+                >
+                  <Star
+                    size={24}
+                    className={
+                      value <= displayRating
+                        ? 'fill-amber-400 text-amber-400'
+                        : 'fill-nxborder text-nxborder'
+                    }
+                  />
+                </button>
+              ))}
             </div>
           </div>
-        ) : (
-          <>
-            {review.comment && (
-              <p className="text-gray-600 text-sm leading-relaxed mb-3">
-                {review.comment}
-              </p>
-            )}
-            {review.images && review.images.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-3">
-                {review.images.map((img, idx) => (
-                  <a
-                    key={idx}
-                    href={buildImageUrl(img)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block"
+          <div>
+            <label className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-nxi3">
+              Comentário
+            </label>
+            <Textarea
+              value={editComment}
+              onChange={(e) => setEditComment(e.target.value)}
+              className="mt-1.5 min-h-[80px] resize-none text-sm"
+              maxLength={1000}
+            />
+          </div>
+          <div>
+            <label className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-nxi3">
+              Imagens
+            </label>
+            <input
+              ref={editFileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/jpg"
+              multiple
+              onChange={handleEditImageChange}
+              className="hidden"
+            />
+            <div className="mt-1.5 flex flex-wrap gap-2">
+              {editKeepImages.map((img, idx) => (
+                <div key={`keep-${idx}`} className="relative">
+                  <img
+                    src={buildImageUrl(img)}
+                    alt={`Manter ${idx + 1}`}
+                    className="h-16 w-16 rounded-lg border border-nxborder object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setEditKeepImages((prev) => prev.filter((_, i) => i !== idx))}
+                    className="absolute -right-0.5 -top-0.5 rounded-full bg-nxd p-0.5 text-white"
                   >
-                    <img
-                      src={buildImageUrl(img)}
-                      alt={`Avaliação ${idx + 1}`}
-                      className="w-16 h-16 object-cover rounded-lg border border-gray-200 hover:opacity-90 transition-opacity"
-                    />
-                  </a>
-                ))}
-              </div>
-            )}
-            <p className="text-xs text-gray-500">
-              Publicado em {formatReviewDate(new Date(review.created_at))}
+                    <X size={10} />
+                  </button>
+                </div>
+              ))}
+              {editNewImages.map((img, idx) => (
+                <div key={`new-${idx}`} className="relative">
+                  <img
+                    src={URL.createObjectURL(img)}
+                    alt={`Nova ${idx + 1}`}
+                    className="h-16 w-16 rounded-lg border border-nxborder object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setEditNewImages((prev) => prev.filter((_, i) => i !== idx))}
+                    className="absolute -right-0.5 -top-0.5 rounded-full bg-nxd p-0.5 text-white"
+                  >
+                    <X size={10} />
+                  </button>
+                </div>
+              ))}
+              {editKeepImages.length + editNewImages.length < MAX_IMAGES && (
+                <button
+                  type="button"
+                  onClick={() => editFileInputRef.current?.click()}
+                  className="flex h-16 w-16 flex-col items-center justify-center rounded-lg border-2 border-dashed border-nxborder text-nxi3 hover:border-nxi3"
+                >
+                  <ImagePlus size={15} className="mb-0.5" />
+                  <span className="text-[10px]">Adicionar</span>
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleSaveEdit}
+              disabled={editRating < 1 || isUpdating}
+              className="flex h-9 items-center gap-1.5 rounded-full bg-nxp px-4 text-[12.5px] font-semibold text-white disabled:opacity-50"
+            >
+              {isUpdating ? (
+                <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              ) : (
+                <>
+                  <Check size={13} />
+                  Salvar
+                </>
+              )}
+            </button>
+            <button
+              onClick={handleCancelEdit}
+              disabled={isUpdating}
+              className="h-9 rounded-full border border-nxborder px-4 text-[12.5px] font-semibold text-nxi2 hover:border-nxi3"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {review.comment && (
+            <p className="mt-3 max-w-[68ch] text-[13.5px] leading-relaxed text-nxi2">
+              {review.comment}
             </p>
-          </>
-        )}
-      </CardContent>
-    </Card>
+          )}
+          {review.images && review.images.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {review.images.map((img, idx) => (
+                <a
+                  key={idx}
+                  href={buildImageUrl(img)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block"
+                >
+                  <img
+                    src={buildImageUrl(img)}
+                    alt={`Avaliação ${idx + 1}`}
+                    className="h-16 w-16 rounded-lg border border-nxborder object-cover transition-opacity hover:opacity-90"
+                  />
+                </a>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
   )
 }
 
@@ -386,6 +373,7 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
 
   const displayRating = hoverRating || rating
   const totalReviews = summary?.total_reviews ?? 0
+  const averageRating = summary?.average_rating ?? 0
   const hasMore = meta && meta.currentPage < meta.lastPage
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -395,10 +383,6 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
     )
     setSelectedImages((prev) => [...prev, ...validFiles].slice(0, MAX_IMAGES))
     e.target.value = ''
-  }
-
-  const removeImage = (index: number) => {
-    setSelectedImages((prev) => prev.filter((_, i) => i !== index))
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -418,189 +402,232 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
     setWriteReviewOpen(false)
   }
 
+  const changeSort = (value: 'latest' | 'highest' | 'images') => {
+    setSort(value)
+    setPage(1)
+    setAllReviews([])
+  }
+
   return (
-    <div className="mt-2 md:mt-8 bg-white">
-      <div className="px-4 sm:px-6 lg:px-20 py-8 sm:py-12">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            Todas as Avaliações ({totalReviews})
+    <div className="py-12 md:py-14">
+      {/* header */}
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-nxi3">
+            O que dizem
+          </span>
+          <h2 className="mt-2 text-[22px] font-extrabold tracking-[-0.02em] text-nxi1 sm:text-[26px]">
+            Avaliações
           </h2>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 text-gray-600"
-              aria-label="Filtros"
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-            </button>
-            <Select
-              value={sort}
-              onValueChange={(v) => {
-                setSort(v as 'latest' | 'highest' | 'images')
-                setPage(1)
-                setAllReviews([])
-              }}
-            >
-              <SelectTrigger className="w-[140px] h-10 bg-gray-100 border-0">
-                <SelectValue placeholder="Ordenar" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="latest">Mais recentes</SelectItem>
-                <SelectItem value="images">Com imagens</SelectItem>
-                <SelectItem value="highest">Maior nota</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              onClick={() => setWriteReviewOpen(true)}
-              className="bg-gray-900 hover:bg-gray-800 text-white rounded-lg"
-            >
-              Escrever avaliação
-            </Button>
-          </div>
         </div>
+        <button
+          onClick={() => setWriteReviewOpen(true)}
+          className="flex items-center gap-2 rounded-full border border-nxp px-4 py-2.5 text-[12.5px] font-semibold text-nxp transition-colors hover:bg-nxp hover:text-white"
+        >
+          <PenLine size={15} /> Escrever avaliação
+        </button>
+      </div>
 
-        {/* Write Review Dialog */}
-        <Dialog open={writeReviewOpen} onOpenChange={setWriteReviewOpen}>
-          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Escrever avaliação</DialogTitle>
-            </DialogHeader>
-            {isAuthenticated ? (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-2">
-                    Sua nota
-                  </label>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((value) => (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() => setRating(value)}
-                        onMouseEnter={() => setHoverRating(value)}
-                        onMouseLeave={() => setHoverRating(0)}
-                        className="p-1"
-                      >
-                        <Star
-                          className={`h-8 w-8 ${
-                            value <= displayRating
-                              ? 'fill-yellow-400 text-yellow-400'
-                              : 'text-gray-300'
-                          }`}
-                        />
-                      </button>
-                    ))}
-                  </div>
+      {/* dialog */}
+      <Dialog open={writeReviewOpen} onOpenChange={setWriteReviewOpen}>
+        <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Escrever avaliação</DialogTitle>
+          </DialogHeader>
+          {isAuthenticated ? (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="mb-2 block font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-nxi3">
+                  Sua nota
+                </label>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setRating(value)}
+                      onMouseEnter={() => setHoverRating(value)}
+                      onMouseLeave={() => setHoverRating(0)}
+                      className="p-1"
+                    >
+                      <Star
+                        size={28}
+                        className={cn(
+                          'transition-transform hover:scale-110',
+                          value <= displayRating
+                            ? 'fill-amber-400 text-amber-400'
+                            : 'fill-nxborder text-nxborder',
+                        )}
+                      />
+                    </button>
+                  ))}
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-2">
-                    Comentário (opcional)
-                  </label>
-                  <Textarea
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    placeholder="Conte sua experiência com este produto..."
-                    className="min-h-[100px] resize-none"
-                    maxLength={1000}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-2">
-                    Imagens (opcional)
-                  </label>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,image/jpg"
-                    multiple
-                    onChange={handleImageChange}
-                    className="hidden"
-                  />
-                  <div className="flex flex-wrap gap-2">
-                    {selectedImages.map((img, idx) => (
-                      <div key={idx} className="relative">
-                        <img
-                          src={URL.createObjectURL(img)}
-                          alt={`Preview ${idx + 1}`}
-                          className="w-20 h-20 object-cover rounded-lg border"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(idx)}
-                          className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
-                    {selectedImages.length < MAX_IMAGES && (
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="w-20 h-20 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 text-gray-500"
-                      >
-                        <ImagePlus className="h-5 w-5 mb-0.5" />
-                        <span className="text-xs">Adicionar</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-                <Button type="submit" disabled={rating < 1 || isCreating} className="w-full">
-                  {isCreating ? 'Enviando...' : 'Enviar avaliação'}
-                </Button>
-              </form>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-600 mb-4">
-                  Faça login para avaliar este produto
-                </p>
-                <Button onClick={loginWithGoogle} variant="outline">
-                  Entrar com Google
-                </Button>
               </div>
-            )}
-          </DialogContent>
-        </Dialog>
-
-        {/* Review Grid */}
-        {isLoading && allReviews.length === 0 ? (
-          <div className="flex justify-center py-16">
-            <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 border-t-gray-900" />
-          </div>
-        ) : allReviews.length === 0 ? (
-          <p className="text-center text-gray-500 py-16">
-            Nenhuma avaliação ainda. Seja o primeiro a avaliar!
-          </p>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {allReviews.map((review) => (
-                <ReviewCard
-                  key={review.id}
-                  review={review}
-                  currentUserId={user?.id}
-                  onEdit={updateReview}
-                  isUpdating={isUpdating}
+              <div>
+                <label className="mb-2 block font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-nxi3">
+                  Comentário (opcional)
+                </label>
+                <Textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Conte sua experiência com este produto..."
+                  className="min-h-[100px] resize-none"
+                  maxLength={1000}
                 />
+              </div>
+              <div>
+                <label className="mb-2 block font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-nxi3">
+                  Imagens (opcional)
+                </label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/jpg"
+                  multiple
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+                <div className="flex flex-wrap gap-2">
+                  {selectedImages.map((img, idx) => (
+                    <div key={idx} className="relative">
+                      <img
+                        src={URL.createObjectURL(img)}
+                        alt={`Preview ${idx + 1}`}
+                        className="h-20 w-20 rounded-lg border border-nxborder object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSelectedImages((prev) => prev.filter((_, i) => i !== idx))
+                        }
+                        className="absolute -right-1 -top-1 rounded-full bg-nxd p-1 text-white"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))}
+                  {selectedImages.length < MAX_IMAGES && (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex h-20 w-20 flex-col items-center justify-center rounded-lg border-2 border-dashed border-nxborder text-nxi3 hover:border-nxi3"
+                    >
+                      <ImagePlus size={18} className="mb-0.5" />
+                      <span className="text-xs">Adicionar</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+              <button
+                type="submit"
+                disabled={rating < 1 || isCreating}
+                className={cn(
+                  'h-11 w-full rounded-full text-[14px] font-semibold transition-colors',
+                  rating >= 1 && !isCreating
+                    ? 'bg-nxp text-white hover:bg-nxp/90'
+                    : 'cursor-not-allowed bg-nxbg text-nxi3',
+                )}
+              >
+                {isCreating ? 'Enviando...' : 'Enviar avaliação'}
+              </button>
+            </form>
+          ) : (
+            <div className="py-8 text-center">
+              <p className="mb-4 text-nxi2">Faça login para avaliar este produto</p>
+              <Button onClick={loginWithGoogle} variant="outline">
+                Entrar com Google
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* content */}
+      {isLoading && allReviews.length === 0 ? (
+        <div className="flex justify-center py-16">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-nxborder border-t-nxp" />
+        </div>
+      ) : allReviews.length === 0 ? (
+        <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-nxborder bg-nxbg py-16 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-nxp shadow-sm">
+            <MessageSquarePlus size={28} />
+          </div>
+          <h3 className="mt-4 text-[16px] font-bold tracking-tight text-nxi1">
+            Seja o primeiro a avaliar
+          </h3>
+          <p className="mt-1.5 max-w-[34ch] text-[13px] leading-relaxed text-nxi2">
+            Já comprou este produto? Conte como foi sua experiência. Sua opinião ajuda outros
+            clientes.
+          </p>
+          <button
+            onClick={() => setWriteReviewOpen(true)}
+            className="mt-5 rounded-full bg-nxp px-5 py-2.5 text-[12.5px] font-semibold text-white hover:bg-nxp/90"
+          >
+            Escrever a primeira avaliação
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* summary */}
+          <div className="mt-7 flex flex-col items-center gap-1 sm:items-start">
+            <div className="text-[56px] font-extrabold leading-none tracking-[-0.04em] text-nxi1">
+              {averageRating.toFixed(1)}
+            </div>
+            <div className="mt-2">
+              <Stars rating={averageRating} size={15} />
+            </div>
+            <div className="mt-1 text-[12px] text-nxi3">
+              {totalReviews} {totalReviews === 1 ? 'avaliação' : 'avaliações'}
+            </div>
+          </div>
+
+          {/* sort + list */}
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-2 border-b border-nxborder pb-3">
+            <span className="text-[12.5px] font-semibold text-nxi2">
+              {allReviews.length} comentário{allReviews.length !== 1 ? 's' : ''}
+            </span>
+            <div className="flex items-center gap-1.5 text-[12px]">
+              <span className="text-nxi3">Ordenar:</span>
+              {SORT_OPTIONS.map(([value, label]) => (
+                <button
+                  key={value}
+                  onClick={() => changeSort(value)}
+                  className={cn(
+                    'rounded-full px-2.5 py-1 font-semibold transition-colors',
+                    sort === value ? 'bg-nxp text-white' : 'text-nxi2 hover:text-nxp',
+                  )}
+                >
+                  {label}
+                </button>
               ))}
             </div>
+          </div>
 
-            {hasMore && (
-              <div className="flex justify-center mt-8">
-                <Button
-                  variant="outline"
-                  className="bg-gray-100 hover:bg-gray-200 border-0 text-gray-700 rounded-lg px-8"
-                  onClick={() => setPage((p) => p + 1)}
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Carregando...' : 'Carregar mais avaliações'}
-                </Button>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+          <div className="divide-y divide-nxborder">
+            {allReviews.map((review) => (
+              <ReviewItem
+                key={review.id}
+                review={review}
+                currentUserId={user?.id}
+                onEdit={updateReview}
+                isUpdating={isUpdating}
+              />
+            ))}
+          </div>
+
+          {hasMore && (
+            <div className="mt-4 flex justify-center">
+              <button
+                onClick={() => setPage((p) => p + 1)}
+                disabled={isLoading}
+                className="w-full rounded-xl border border-dashed border-nxborder py-3 text-[12.5px] font-semibold text-nxi3 transition-colors hover:border-nxi3 hover:text-nxp disabled:opacity-50"
+              >
+                {isLoading ? 'Carregando...' : 'Ver mais avaliações'}
+              </button>
+            </div>
+          )}
+        </>
+      )}
     </div>
   )
 }

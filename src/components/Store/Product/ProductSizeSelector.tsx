@@ -1,33 +1,61 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 interface ProductSizeSelectorProps {
   sizes: string
   selectedSize: string | null
   onSelectSize: (size: string) => void
+  /** estoque por tamanho (considerando a cor ativa); undefined = sem dado de variante */
+  stockForSize?: (size: string) => number | null
 }
 
-export function ProductSizeSelector({ sizes, selectedSize, onSelectSize }: ProductSizeSelectorProps) {
+export function ProductSizeSelector({
+  sizes,
+  selectedSize,
+  onSelectSize,
+  stockForSize,
+}: ProductSizeSelectorProps) {
   const sizeList = sizes.split(',').map((s) => s.trim())
 
   return (
-    <div className="space-y-2 sm:space-y-3">
-      <span className="text-sm font-medium text-primary/60">Tamanhos disponíveis:</span>
-      <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
-        {sizeList.map((size, index) => (
-          <Button
-            key={index}
-            onClick={() => onSelectSize(size)}
-            className={`px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3 text-sm sm:text-base font-medium transition-all active:scale-95 touch-manipulation ${
-              selectedSize === size
-                ? 'border-primary bg-primary text-white'
-                : 'bg-[#F0F0F0] text-primary/60 hover:bg-[#c7c6c6] active:bg-[#c7c6c6]'
-            }`}
-          >
-            {size}
-          </Button>
-        ))}
+    <div className="mt-6">
+      <div className="mb-2.5 flex items-baseline gap-2">
+        <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-nxi3">
+          Tamanho
+        </span>
+        {selectedSize && <span className="text-[13px] font-semibold text-nxi1">{selectedSize}</span>}
+      </div>
+      <div className="grid grid-cols-4 gap-2">
+        {sizeList.map((size) => {
+          const stock = stockForSize ? stockForSize(size) : null
+          const isOut = stock === 0
+          const isSelected = selectedSize === size
+          return (
+            <button
+              key={size}
+              type="button"
+              onClick={() => !isOut && onSelectSize(size)}
+              disabled={isOut}
+              aria-pressed={isSelected}
+              className={cn(
+                'relative h-11 rounded-lg text-[13.5px] font-semibold transition-all active:scale-95',
+                isOut
+                  ? 'cursor-not-allowed bg-nxbg text-nxi3'
+                  : isSelected
+                    ? 'bg-nxp text-white'
+                    : 'bg-nxbg text-nxi2 hover:bg-nxborder',
+              )}
+            >
+              {size}
+              {isOut && (
+                <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <span className="h-px w-7 rotate-[-18deg] bg-nxi3" />
+                </span>
+              )}
+            </button>
+          )
+        })}
       </div>
     </div>
   )
