@@ -76,7 +76,9 @@ export function useUpdateProduct() {
       const response = await api.patch(`/products/${id}`, data, {
         headers: {
           'Content-Type': 'multipart/form-data'
-        }
+        },
+        // Upload multipart pesado (até 25 imagens + S3 no backend) — não usar o timeout global de 10s
+        timeout: 120000
       })
       return response.data
     },
