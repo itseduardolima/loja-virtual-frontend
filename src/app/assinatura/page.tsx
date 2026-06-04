@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { LoadingPage } from '@/components'
@@ -93,7 +94,7 @@ function PanelContent({ step }: { step: Step }) {
   )
 }
 
-export default function AssinaturaPage() {
+function AssinaturaContent() {
   const router = useRouter()
   const {
     selectedMethod,
@@ -316,5 +317,13 @@ export default function AssinaturaPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function AssinaturaPage() {
+  return (
+    <Suspense fallback={<LoadingPage />}>
+      <AssinaturaContent />
+    </Suspense>
   )
 }
