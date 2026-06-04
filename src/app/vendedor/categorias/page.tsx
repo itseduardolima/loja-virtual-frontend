@@ -1,13 +1,54 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { Button, ErrorState, ConfirmDialog } from '@/components'
-import { TableFilters } from '@/components/Table/TableFilters'
-import { Table } from '@/components/Table/Table'
-import { Plus, Tag } from 'lucide-react'
+import { ErrorState, ConfirmDialog } from '@/components'
+import {
+  ListPageHeader,
+  StatusTabs,
+  SearchField,
+  TableCard,
+  TableToolbar,
+  TableEmptyState,
+  TablePagination,
+  RowActionsMenu,
+  thClass,
+  type StatusTab,
+  type RowAction,
+} from '@/components/VendorList'
+import { NxButton, NxBadge } from '@/components/ProductForm/primitives'
+import { NxSelectNative } from '@/components/ProductForm/inputs'
+import {
+  Plus,
+  Tag,
+  Pencil,
+  Trash2,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  CircleSlash,
+} from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCategoriesPage } from './useCategoriesPage'
 import LoadingPage from '@/components/Layout/LoadingPage'
+import { cn } from '@/lib/utils'
+import type { Category } from '@/types/category'
+
+const SORT_OPTIONS = [
+  { value: 'ASC', label: 'Nome A–Z' },
+  { value: 'DESC', label: 'Nome Z–A' },
+  { value: 'DATE_DESC', label: 'Mais recentes' },
+  { value: 'DATE_ASC', label: 'Mais antigas' },
+]
+
+const STATUS_TABS: StatusTab<number | undefined>[] = [
+  { value: undefined, label: 'Todas' },
+  { value: 1, label: 'Ativas' },
+  { value: 0, label: 'Inativas' },
+]
+
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleDateString('pt-BR')
+}
 
 export default function CategoriesPage() {
   const { user, isLoading: authLoading } = useAuth()
@@ -15,112 +56,180 @@ export default function CategoriesPage() {
 
   const {
     filters,
+    setFilters,
     categories,
     isLoading,
     error,
     meta,
-
-    handlePageChange,
-    handleSearchChange,
-    handleSortChange,
-    setFilters,
     isSearching,
-
-    columns,
-    deleteDialogOpen,
-    setDeleteDialogOpen,
-    categoryToDelete,
-    handleDeleteConfirm,
+    handleEdit,
+    handlePageChange,
+    handleToggleStatus,
+    isUpdatingStatus,
+    deleteTarget,
+    setDeleteTarget,
+    handleConfirmDelete,
     isDeleting,
   } = useCategoriesPage()
 
-  if (authLoading) {
-    return <LoadingPage />
-  }
+  if (authLoading) return <LoadingPage />
+  if (!user) return <ErrorState message="Você precisa estar logado para gerenciar categorias" />
+  if (isLoading) return <LoadingPage />
+  if (error) return <ErrorState message="Erro ao carregar categorias" />
 
-  if (!user) {
-    return <ErrorState message="Você precisa estar logado para gerenciar categorias" />
-  }
+  const rowActions = (category: Category): RowAction[] => [
+    { label: 'Editar', icon: Pencil, onClick: () => handleEdit(category) },
+    {
+      label: category.status === 1 ? 'Desativar' : 'Ativar',
+      icon: category.status === 1 ? EyeOff : Eye,
+      onClick: () => handleToggleStatus(category),
+      disabled: isUpdatingStatus,
+    },
+    {
+      label: 'Excluir',
+      icon: Trash2,
+      onClick: () => setDeleteTarget(category),
+      destructive: true,
+      separatorBefore: true,
+    },
+  ]
 
-  if (isLoading) {
-    return <LoadingPage />
-  }
-
-  if (error) {
-    return <ErrorState message="Erro ao carregar categorias" />
-  }
+  const hasFilters = !!(filters.search || filters.status !== undefined)
+  const total = meta?.total ?? categories.length
 
   return (
-    <div className="min-h-screen">
+    <div className="mx-auto w-full max-w-[1180px] pb-16 pt-2 sm:pt-4">
+      <ListPageHeader
+        title="Categorias"
+        subtitle={`${total} ${total === 1 ? 'categoria' : 'categorias'} para organizar seus produtos.`}
+        action={
+          <NxButton icon={Plus} onClick={() => router.push('/vendedor/categorias/criar')}>
+            Nova categoria
+          </NxButton>
+        }
+      />
 
-      <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
-        {/* Título */}
-        <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Categorias</h1>
-            <p className="text-gray-600">Gerencie as categorias dos seus produtos</p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Button
-              onClick={() => router.push('/vendedor/categorias/criar')}
-              className="flex items-center gap-2 px-6 py-2 transition-all duration-200"
-            >
-              <Plus className="h-4 w-4" />
-              Nova Categoria
-            </Button>
-          </div>
-        </div>
-
-
-
-        {/* Filtros */}
-        <div className="mb-8">
-          <TableFilters
-            filters={filters}
-            setFilters={setFilters}
-            onSearchChange={handleSearchChange}
-            onSortChange={handleSortChange}
-            isSearching={isSearching}
+      <TableCard>
+        <TableToolbar>
+          <StatusTabs
+            tabs={STATUS_TABS}
+            active={filters.status}
+            onChange={(status) => setFilters((prev) => ({ ...prev, status, page: 1 }))}
           />
-        </div>
 
-        {/* Lista de Categorias em Tabela */}
-        {!isLoading && (
-          <Table
-            columns={columns}
-            data={categories}
-            hasFilters={!!filters.search || filters.status !== undefined}
-            meta={meta}
-            onPageChange={handlePageChange}
-            emptyState={{
-              icon: Tag,
-              title: 'Nenhuma categoria encontrada',
-              description: (hasFilters) =>
-                hasFilters
-                  ? 'Tente ajustar os filtros de busca'
-                  : 'Comece criando sua primeira categoria para organizar seus produtos',
-              action: {
-                label: 'Criar Primeira Categoria',
-                icon: Plus,
-                onClick: () => router.push('/vendedor/categorias/criar'),
-                show: (hasFilters) => !hasFilters,
-              },
-            }}
+          <SearchField
+            value={filters.search ?? ''}
+            onChange={(search) => setFilters((prev) => ({ ...prev, search, page: 1 }))}
+            placeholder="Buscar categorias…"
+            isSearching={isSearching}
+            className="ml-auto w-full sm:w-64"
+          />
+
+          <div className="w-40">
+            <NxSelectNative
+              value={filters.sort ?? 'ASC'}
+              onChange={(sort) => setFilters((prev) => ({ ...prev, sort, page: 1 }))}
+              options={SORT_OPTIONS}
+            />
+          </div>
+        </TableToolbar>
+
+        {categories.length > 0 ? (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-left">
+                <thead>
+                  <tr>
+                    <th className={cn(thClass, 'px-4')}>Nome</th>
+                    <th className={cn(thClass, 'hidden md:table-cell')}>Descrição</th>
+                    <th className={thClass}>Produtos</th>
+                    <th className={cn(thClass, 'hidden sm:table-cell')}>Criada em</th>
+                    <th className={thClass}>Status</th>
+                    <th className={cn(thClass, 'w-12')}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {categories.map((category) => {
+                    const isActive = category.status === 1
+                    return (
+                      <tr
+                        key={category.id}
+                        className="border-t border-nxborder text-[13px] transition-colors hover:bg-nxbg/60"
+                      >
+                        <td className="px-4 py-3">
+                          <button
+                            type="button"
+                            onClick={() => handleEdit(category)}
+                            className="max-w-[260px] truncate text-left font-semibold text-nxi1 transition-colors hover:text-nxp"
+                          >
+                            {category.name}
+                          </button>
+                        </td>
+                        <td className="hidden px-2 py-3 md:table-cell">
+                          <span className="line-clamp-1 max-w-xs text-[12.5px] text-nxi2">
+                            {category.description || '—'}
+                          </span>
+                        </td>
+                        <td className="px-2 py-3 font-bold tabular-nums text-nxi1">
+                          {category._count?.products ?? 0}
+                        </td>
+                        <td className="hidden px-2 py-3 text-[12.5px] text-nxi2 sm:table-cell">
+                          {fmtDate(category.created_at)}
+                        </td>
+                        <td className="px-2 py-3">
+                          <NxBadge
+                            tone={isActive ? 'nxs' : 'nxw'}
+                            icon={isActive ? CheckCircle2 : CircleSlash}
+                          >
+                            {isActive ? 'Ativa' : 'Inativa'}
+                          </NxBadge>
+                        </td>
+                        <td className="px-2 py-3">
+                          <RowActionsMenu actions={rowActions(category)} />
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <TablePagination
+              shown={categories.length}
+              total={total}
+              currentPage={meta?.currentPage ?? 1}
+              lastPage={meta?.lastPage ?? 1}
+              onPageChange={handlePageChange}
+            />
+          </>
+        ) : (
+          <TableEmptyState
+            icon={Tag}
+            title={hasFilters ? 'Nenhuma categoria encontrada' : 'Nenhuma categoria cadastrada'}
+            description={
+              hasFilters
+                ? 'Ajuste os filtros ou o termo de busca para encontrar o que procura.'
+                : 'Crie sua primeira categoria para organizar seus produtos.'
+            }
+            action={
+              !hasFilters && (
+                <NxButton icon={Plus} onClick={() => router.push('/vendedor/categorias/criar')}>
+                  Criar primeira categoria
+                </NxButton>
+              )
+            }
           />
         )}
-      </div>
+      </TableCard>
 
-      {/* Modal de Confirmação de Exclusão */}
       <ConfirmDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        title="Excluir Categoria"
-        description={`Tem certeza que deseja excluir a categoria "${categoryToDelete?.name}"? Esta ação não pode ser desfeita.`}
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Excluir categoria"
+        description={`Tem certeza que deseja excluir a categoria "${deleteTarget?.name ?? ''}"? Esta ação não pode ser desfeita.`}
         confirmText="Excluir"
         cancelText="Cancelar"
         variant="destructive"
-        onConfirm={handleDeleteConfirm}
+        onConfirm={handleConfirmDelete}
         isLoading={isDeleting}
       />
     </div>
