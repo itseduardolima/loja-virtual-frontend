@@ -74,6 +74,7 @@ const BREADCRUMB_MAP: Record<string, string> = {
   '/vendedor/perguntas': 'Perguntas',
   '/vendedor/plano': 'Plano',
   '/vendedor/configuracoes/informacoes-basicas': 'Informações Básicas',
+  '/vendedor/configuracoes/vitrine': 'Vitrine',
   '/vendedor/configuracoes/endereco': 'Endereço',
   '/vendedor/configuracoes/contatos': 'Contatos',
   '/vendedor/configuracoes/documentos': 'Documentos',
