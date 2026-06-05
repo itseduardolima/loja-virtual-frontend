@@ -1,15 +1,24 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { useStoreInfo } from '@/hooks/useStoreInfo'
 import { useStoreCategories } from '@/hooks/useStoreCategories'
 import { useStoreProducts } from '@/hooks/useStoreProducts'
-import { useTopRatedProducts } from '@/hooks/useTopRatedProducts'
+import { useWishlist } from '@/hooks/useWishlist'
+import { useCart } from '@/hooks/useCart'
 import { useDebounce } from '@/hooks/useDebounce'
 import { Product } from '@/types/product'
-import type { StoreCategory, StoreInfo } from '@/types/store'
+import type { StoreCategory, StoreInfo, CollectionSort, CollectionView } from '@/types/store'
 
 const MAX_CATEGORIES = 5
+
+const SORT_TO_PARAMS: Record<CollectionSort, { sort: 'ASC' | 'DESC'; sort_field: string }> = {
+  relevancia: { sort: 'DESC', sort_field: 'created_at' },
+  menor: { sort: 'ASC', sort_field: 'price' },
+  maior: { sort: 'DESC', sort_field: 'price' },
+  avaliados: { sort: 'DESC', sort_field: 'average_rating' },
+}
 
 export interface UseStoreHomePageReturn {
   slug: string
@@ -18,35 +27,60 @@ export interface UseStoreHomePageReturn {
   categoriesToShow: StoreCategory[]
   products: Product[]
   featuredProducts: Product[]
-  topRatedProducts: Product[]
+  newProducts: Product[]
+  promoProducts: Product[]
+  showcaseProduct: Product | null
   loading: boolean
   productsLoading: boolean
-  hasCategorySections: boolean
   search: string
   setSearch: (value: string) => void
+  sort: CollectionSort
+  setSort: (sort: CollectionSort) => void
+  view: CollectionView
+  setView: (view: CollectionView) => void
+  activeCategory: string
+  setActiveCategory: (cat: string) => void
   isCartOpen: boolean
   setIsCartOpen: (open: boolean) => void
-  handleViewDetails: (product: Product) => void
-  handleAddToFavorites: (product: Product) => void
+  openProduct: (product: Product) => void
+  quickAdd: (product: Product) => void
+  toggleWishlist: (product: Product) => void
+  isWished: (productId: number) => boolean
   handleSearchSubmit: (value: string) => void
 }
 
 export function useStoreHomePage(slug: string): UseStoreHomePageReturn {
+  const router = useRouter()
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [search, setSearch] = useState('')
+  const [sort, setSort] = useState<CollectionSort>('relevancia')
+  const [view, setView] = useState<CollectionView>('grid')
+  const [activeCategory, setActiveCategory] = useState('Todos')
   const debouncedSearch = useDebounce(search, 500)
 
   const { storeInfo, loading: storeLoading, error: storeError } = useStoreInfo(slug)
   const { categories: allCategories, loading: categoriesLoading } = useStoreCategories(slug)
-  const { products, loading: productsLoading, updateParams } = useStoreProducts({
+  const { isInWishlist, toggleWishlist: toggleWishlistId } = useWishlist()
+  const { addToCart } = useCart(storeInfo?.id)
+
+  const sortParams = SORT_TO_PARAMS[sort]
+  const categoryId = useMemo(() => {
+    if (activeCategory === 'Todos') return undefined
+    return (allCategories ?? []).find((c: StoreCategory) => c.name === activeCategory)?.id
+  }, [activeCategory, allCategories])
+
+  // Coleção principal (busca, categoria e ordenação reais no backend)
+  const { products, loading: productsLoading } = useStoreProducts({
     slug,
     page: 1,
     limit: 24,
-    sort: 'DESC',
-    sort_field: 'created_at',
+    sort: sortParams.sort,
+    sort_field: sortParams.sort_field,
     search: debouncedSearch || undefined,
+    category_id: categoryId,
   })
 
+  // Destaques (1º vira o showcase do hero)
   const { products: featuredRaw } = useStoreProducts({
     slug,
     page: 1,
@@ -56,7 +90,24 @@ export function useStoreHomePage(slug: string): UseStoreHomePageReturn {
     sort_field: 'created_at',
   })
 
-  const { data: topRatedData } = useTopRatedProducts(slug, 8)
+  // Novidades — mais recentes
+  const { products: newRaw } = useStoreProducts({
+    slug,
+    page: 1,
+    limit: 8,
+    sort: 'DESC',
+    sort_field: 'created_at',
+  })
+
+  // Ofertas — promoção ativa
+  const { products: promoRaw } = useStoreProducts({
+    slug,
+    page: 1,
+    limit: 8,
+    promo: true,
+    sort: 'DESC',
+    sort_field: 'created_at',
+  })
 
   const categoriesToShow = useMemo(() => {
     const list = allCategories || []
@@ -68,20 +119,31 @@ export function useStoreHomePage(slug: string): UseStoreHomePageReturn {
   }, [allCategories])
 
   const featuredProducts = featuredRaw ?? []
-  const topRatedProducts = topRatedData?.data ?? []
+  const newProducts = newRaw ?? []
+  const promoProducts = promoRaw ?? []
+  const showcaseProduct = featuredProducts[0] ?? newProducts[0] ?? null
 
-  const loading = storeLoading || categoriesLoading
-  const hasCategorySections = categoriesToShow.length > 0
-
-  const handleViewDetails = (product: Product) => {
-    window.location.href = `/loja/${slug}/produto/${product.id}`
+  const openProduct = (product: Product) => {
+    router.push(`/loja/${slug}/produto/${product.id}`)
   }
 
-  const handleAddToFavorites = () => {}
+  // Quick-add: apenas produtos sem variação (validado no card)
+  const quickAdd = (product: Product) => {
+    addToCart({
+      productId: product.id,
+      quantity: 1,
+      size: '',
+      color: '',
+      notes: '',
+      storeId: product.store_id ?? storeInfo?.id,
+    })
+    setIsCartOpen(true)
+  }
+
+  const toggleWishlist = (product: Product) => toggleWishlistId(product.id)
 
   const handleSearchSubmit = (value: string) => {
     setSearch(value)
-    updateParams({ search: value || undefined, page: 1 })
   }
 
   return {
@@ -91,16 +153,25 @@ export function useStoreHomePage(slug: string): UseStoreHomePageReturn {
     categoriesToShow,
     products,
     featuredProducts,
-    topRatedProducts,
-    loading,
+    newProducts,
+    promoProducts,
+    showcaseProduct,
+    loading: storeLoading || categoriesLoading,
     productsLoading,
-    hasCategorySections,
     search,
     setSearch,
+    sort,
+    setSort,
+    view,
+    setView,
+    activeCategory,
+    setActiveCategory,
     isCartOpen,
     setIsCartOpen,
-    handleViewDetails,
-    handleAddToFavorites,
+    openProduct,
+    quickAdd,
+    toggleWishlist,
+    isWished: isInWishlist,
     handleSearchSubmit,
   }
 }

@@ -21,6 +21,15 @@ export interface StoreInfo {
   number?: string
   complement?: string
   payment_methods?: string[]
+  delivery_fee?: string | number | null
+  free_delivery_min?: string | number | null
+  delivery_time?: string
+  hero_eyebrow?: string
+  hero_title?: string
+  hero_subtitle?: string
+  announcement_text?: string
+  campaign_title?: string
+  campaign_text?: string
   created_at: string
   _count?: {
     products: number
@@ -50,6 +59,9 @@ export interface StoreCategoriesResponse {
   data: StoreCategory[]
 }
 
+export type CollectionSort = 'relevancia' | 'menor' | 'maior' | 'avaliados'
+export type CollectionView = 'grid' | 'list'
+
 export interface StoreProductsParams {
   slug: string
   page?: number
@@ -58,6 +70,7 @@ export interface StoreProductsParams {
   sort?: 'ASC' | 'DESC'
   sort_field?: string
   featured?: boolean
+  promo?: boolean
   color?: string
   size?: string
   max_price?: number

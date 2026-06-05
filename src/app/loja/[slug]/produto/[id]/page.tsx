@@ -195,7 +195,7 @@ export default function ProductDetailPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {barVisible && <AnnouncementBar onDismiss={() => setBarVisible(false)} />}
+      {barVisible && <AnnouncementBar storeInfo={storeInfo} onDismiss={() => setBarVisible(false)} />}
 
       <StoreHeader
         storeInfo={storeInfo}

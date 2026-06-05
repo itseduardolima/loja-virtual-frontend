@@ -18,6 +18,13 @@ export function useStoreProducts(params: StoreProductsParams): UseStoreProductsR
     paramsRef.current = currentParams
   }, [currentParams])
 
+  // Sincroniza mudanças nos params vindos do componente (busca, categoria, ordenação)
+  const incomingKey = useMemo(() => JSON.stringify(params), [params])
+  useEffect(() => {
+    setCurrentParams((prev) => (JSON.stringify(prev) === incomingKey ? prev : params))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [incomingKey])
+
   const paramsKey = useMemo(() => JSON.stringify(currentParams), [currentParams])
 
   const buildQuery = (p: StoreProductsParams, cursorOverride?: number): URLSearchParams => {
@@ -33,6 +40,7 @@ export function useStoreProducts(params: StoreProductsParams): UseStoreProductsR
     if (p.sort) q.append('sort', p.sort)
     if (p.sort_field) q.append('sort_field', p.sort_field)
     if (p.featured) q.append('featured', 'true')
+    if (p.promo) q.append('promo', 'true')
     if (p.color) q.append('color', p.color)
     if (p.size) q.append('size', p.size)
     if (p.max_price) q.append('max_price', p.max_price.toString())

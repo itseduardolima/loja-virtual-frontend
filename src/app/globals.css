@@ -110,6 +110,43 @@
   .nx-gallery-swap { animation: none; }
 }
 
+/* Marquee de promessas da home da loja (transform-only) */
+@keyframes nxMarquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.nx-marquee {
+  animation: nxMarquee 28s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nx-marquee { animation: none; }
+}
+
+/* Bento da coleção (home da loja) — 1º card em destaque 2×2 */
+.home-bento {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.home-bento .feat {
+  grid-column: span 2;
+}
+@media (min-width: 768px) {
+  .home-bento {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .home-bento .feat {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+}
+@media (min-width: 1024px) {
+  .home-bento {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 /* Custom scrollbar styles */
 .scrollbar-thin::-webkit-scrollbar {
   width: 6px;

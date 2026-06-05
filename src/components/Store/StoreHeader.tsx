@@ -17,6 +17,35 @@ import { VendorSettingsDrawer } from './VendorSettingsDrawer'
 import { AdminProfileMenuDrawer } from './AdminProfileMenuDrawer'
 import { StoreSearchDropdown } from './StoreSearchDropdown'
 import { PROFILE_IDS } from '@/types/auth'
+import Image from 'next/image'
+import { buildImageUrl } from '@/lib/imageUtils'
+
+function StoreLogoMark({ storeInfo }: { storeInfo: StoreInfo | null | undefined }) {
+  if (storeInfo?.logo) {
+    return (
+      <span className="relative h-7 w-7 flex-shrink-0 overflow-hidden rounded-lg bg-nxbg">
+        <Image
+          src={buildImageUrl(storeInfo.logo)}
+          alt=""
+          fill
+          sizes="28px"
+          className="object-cover"
+        />
+      </span>
+    )
+  }
+  const initials = (storeInfo?.name ?? '')
+    .split(' ')
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+  return (
+    <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-nxp text-[11px] font-bold text-white">
+      {initials || 'N'}
+    </span>
+  )
+}
 
 interface StoreHeaderProps {
   storeInfo: StoreInfo | null | undefined
@@ -150,12 +179,12 @@ export function StoreHeader({
             setIsUserMenuOpen(!isUserMenuOpen)
           }
         }}
-        className="flex items-center gap-1.5 p-2 hover:bg-gray-100 h-9 rounded-full"
+        className="flex items-center gap-1.5 p-2 hover:bg-nxbg h-9 rounded-full"
         aria-label={isAuthenticated ? 'Menu do perfil' : 'Login'}
       >
-        <User className="w-[19px] h-[19px] text-[#111827]" />
+        <User className="w-[19px] h-[19px] text-nxi1" />
         {isAuthenticated && user && (
-          <span className="text-[13px] font-medium text-[#111827] hidden sm:inline max-w-[100px] truncate">
+          <span className="text-[13px] font-medium text-nxi1 hidden sm:inline max-w-[100px] truncate">
             {user.name}
           </span>
         )}
@@ -164,7 +193,7 @@ export function StoreHeader({
       {isUserMenuOpen && !isAuthenticated && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsUserMenuOpen(false)} />
-          <div className="absolute right-0 mt-2 w-40 sm:w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
+          <div className="absolute right-0 mt-2 w-40 sm:w-48 bg-white rounded-lg shadow-lg border border-nxborder z-20">
             <div className="p-1.5 sm:p-2">
               <Button
                 variant="ghost"
@@ -211,12 +240,12 @@ export function StoreHeader({
       id="cart-icon-button"
       variant="ghost"
       onClick={onCartClick}
-      className="relative p-2 hover:bg-gray-100 h-9 w-9 rounded-full flex-shrink-0"
+      className="relative p-2 hover:bg-nxbg h-9 w-9 rounded-full flex-shrink-0"
       aria-label="Carrinho"
     >
-      <ShoppingBag className="w-[19px] h-[19px] text-[#111827]" />
+      <ShoppingBag className="w-[19px] h-[19px] text-nxi1" />
       {totalItems > 0 && (
-        <Badge className="absolute top-0.5 right-0.5 h-[15px] min-w-[15px] px-1 flex items-center justify-center bg-red-500 text-white text-[9.5px] rounded-full border-0 font-bold">
+        <Badge className="absolute top-0.5 right-0.5 h-[15px] min-w-[15px] px-1 flex items-center justify-center bg-nxp text-white text-[9.5px] rounded-full border-0 font-bold">
           {totalItems > 99 ? '99+' : totalItems}
         </Badge>
       )}
@@ -225,7 +254,7 @@ export function StoreHeader({
 
   return (
     <>
-      <div className="sticky top-0 z-50 w-full h-16 flex items-center transition-[background,border-color,backdrop-filter] duration-300 bg-[rgba(255,255,255,0.97)] border-b border-[#F3F4F6] backdrop-blur-[12px]">
+      <div className="sticky top-0 z-50 w-full h-16 flex items-center transition-[background,border-color,backdrop-filter] duration-300 bg-white/95 border-b border-nxborder backdrop-blur-[12px]">
         {/* MOBILE layout */}
         <div className="flex md:hidden w-full items-center px-4 gap-2">
           <div
@@ -236,9 +265,12 @@ export function StoreHeader({
           >
             <button
               onClick={handleStoreNameClick}
-              className="text-[15px] font-semibold text-[#111827] hover:opacity-75 transition-opacity tracking-[-0.01em] whitespace-nowrap pr-1"
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity pr-1"
             >
-              {storeInfo?.name}
+              <StoreLogoMark storeInfo={storeInfo} />
+              <span className="text-[15px] font-bold text-nxi1 tracking-[-0.01em] whitespace-nowrap">
+                {storeInfo?.name}
+              </span>
             </button>
           </div>
 
@@ -248,8 +280,8 @@ export function StoreHeader({
               mobileSearchOpen ? 'flex-[1_1_0%] opacity-100' : 'flex-[0_0_0%] opacity-0 overflow-hidden',
             ].join(' ')}
           >
-            <div className="flex items-center gap-2 bg-[#F9FAFB] border border-[#E5E7EB] rounded-full px-3 h-9 focus-within:border-gray-400 transition-[border-color]">
-              <Search className="w-[14px] h-[14px] text-gray-400 flex-shrink-0" />
+            <div className="flex items-center gap-2 bg-nxbg border border-nxborder rounded-full px-3 h-9 focus-within:border-nxp transition-[border-color]">
+              <Search className="w-[14px] h-[14px] text-nxi3 flex-shrink-0" />
               <input
                 ref={mobileSearchInputRef}
                 type="text"
@@ -257,7 +289,7 @@ export function StoreHeader({
                 value={searchValue || ''}
                 onChange={handleInputChange}
                 onKeyDown={handleSearchKeyDown}
-                className="bg-transparent flex-1 border-0 outline-none text-[13px] text-[#374151] placeholder-gray-400 min-w-0"
+                className="bg-transparent flex-1 border-0 outline-none text-[13px] text-nxi2 placeholder:text-nxi3 min-w-0"
               />
             </div>
           </div>
@@ -267,17 +299,17 @@ export function StoreHeader({
           {!mobileSearchOpen && (
             <button
               onClick={openMobileSearch}
-              className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors flex-shrink-0"
+              className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-nxbg transition-colors flex-shrink-0"
               aria-label="Buscar"
             >
-              <Search className="w-[19px] h-[19px] text-[#111827]" />
+              <Search className="w-[19px] h-[19px] text-nxi1" />
             </button>
           )}
 
           {mobileSearchOpen && (
             <button
               onClick={closeMobileSearch}
-              className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors flex-shrink-0 text-gray-500 text-lg leading-none"
+              className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-nxbg transition-colors flex-shrink-0 text-nxi3 text-lg leading-none"
               aria-label="Fechar busca"
             >
               ×
@@ -308,9 +340,12 @@ export function StoreHeader({
           <div className="flex-shrink-0 min-w-[176px]">
             <button
               onClick={handleStoreNameClick}
-              className="text-[15px] font-semibold text-[#111827] hover:opacity-75 transition-opacity tracking-[-0.01em] whitespace-nowrap"
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             >
-              {storeInfo?.name}
+              <StoreLogoMark storeInfo={storeInfo} />
+              <span className="text-[15px] font-bold text-nxi1 tracking-[-0.01em] whitespace-nowrap">
+                {storeInfo?.name}
+              </span>
             </button>
           </div>
 
@@ -318,13 +353,13 @@ export function StoreHeader({
             <div className="relative w-full max-w-[380px]" ref={searchContainerRef}>
               <div
                 className={[
-                  'flex items-center gap-2.5 bg-[#F9FAFB] rounded-full px-4 h-9 transition-[border-color,border-width]',
+                  'flex items-center gap-2.5 bg-nxbg rounded-full px-4 h-9 transition-[border-color,border-width]',
                   searchFocused
-                    ? 'border-[1.5px] border-[#111]'
-                    : 'border border-[#E5E7EB]',
+                    ? 'border-[1.5px] border-nxp'
+                    : 'border border-nxborder',
                 ].join(' ')}
               >
-                <Search className="w-[15px] h-[15px] text-gray-400 flex-shrink-0" />
+                <Search className="w-[15px] h-[15px] text-nxi3 flex-shrink-0" />
                 <input
                   ref={searchInputRef}
                   type="text"
@@ -333,12 +368,12 @@ export function StoreHeader({
                   onChange={handleInputChange}
                   onKeyDown={handleSearchKeyDown}
                   onFocus={() => setSearchFocused(true)}
-                  className="bg-transparent flex-1 border-0 outline-none text-[13px] text-[#374151] placeholder-gray-400 min-w-0"
+                  className="bg-transparent flex-1 border-0 outline-none text-[13px] text-nxi2 placeholder:text-nxi3 min-w-0"
                 />
                 {searchFocused && searchValue && (
                   <button
                     onClick={() => { onSearchChange?.(''); setSuggestions([]) }}
-                    className="bg-transparent border-0 text-[#9CA3AF] text-[18px] cursor-pointer p-0 leading-none flex-shrink-0"
+                    className="bg-transparent border-0 text-nxi3 text-[18px] cursor-pointer p-0 leading-none flex-shrink-0"
                   >
                     ×
                   </button>

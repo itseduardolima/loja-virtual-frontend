@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useStoreProducts } from '@/hooks/useStoreProducts'
-import { getProductImageUrl } from '@/components/Store/StoreEditorialCard'
+import { getProductImageUrl } from '@/lib/imageUtils'
 import { Stars } from '@/components/Store/Product/Stars'
 import { formatPrice } from '@/lib/utils'
 import type { Product } from '@/types/product'

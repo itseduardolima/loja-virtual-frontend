@@ -43,6 +43,7 @@ export interface Product {
   color?: string
   specifications?: string
   stock_variants?: StockVariant[]
+  variant_stocks?: Array<{ color: string; size: string; stock: number }>
   category?: {
     id: number
     name: string

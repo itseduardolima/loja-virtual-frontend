@@ -33,37 +33,36 @@ export function StoreCategoryPills({ categories, active, onSelect, counts }: Sto
   }, [updateIndicator])
 
   return (
-    <div className="sticky top-16 z-40 bg-white border-b border-gray-100">
+    <div className="sticky top-16 z-40 border-b border-nxborder bg-white/95 backdrop-blur">
       <div
         ref={trackRef}
-        className="relative overflow-x-auto [&::-webkit-scrollbar]:hidden h-11 flex items-center justify-center"
+        className="relative mx-auto flex h-12 max-w-[1180px] items-center overflow-x-auto px-4 [&::-webkit-scrollbar]:hidden md:px-10"
       >
-        {/* Sliding underline indicator */}
+        {/* underline deslizante */}
         <div
-          className="absolute bottom-0 h-[1.5px] bg-[#111] pointer-events-none z-0"
+          className="pointer-events-none absolute bottom-0 z-0 h-[2px] bg-nxp"
           style={{
             left: indicator.left,
             width: indicator.width,
-            transition: 'left .3s cubic-bezier(.22,1,.36,1), width .24s cubic-bezier(.22,1,.36,1)',
+            transition: 'left .34s cubic-bezier(.22,1,.36,1), width .26s cubic-bezier(.22,1,.36,1)',
           }}
         />
 
         {categories.map((cat, index) => (
           <button
             key={cat}
-            ref={(el) => { pillRefs.current[index] = el }}
+            ref={(el) => {
+              pillRefs.current[index] = el
+            }}
             onClick={() => onSelect(cat)}
             className={[
-              'px-[22px] h-full text-[10.5px] font-semibold tracking-[.12em] uppercase whitespace-nowrap',
-              'bg-transparent border-none cursor-pointer relative z-10 transition-colors',
-              active === cat
-                ? 'text-[#111]'
-                : 'text-[#AFAFAF] hover:text-gray-600',
+              'relative z-10 h-full whitespace-nowrap px-4 font-mono text-[10.5px] font-semibold uppercase tracking-[0.14em] transition-colors first:pl-0',
+              active === cat ? 'text-nxi1' : 'text-nxi3 hover:text-nxi2',
             ].join(' ')}
           >
             {cat}
             {counts && cat !== 'Todos' && counts[cat] != null && counts[cat]! > 0 && (
-              <span className="text-[9px] opacity-60 ml-[3px]">({counts[cat]})</span>
+              <span className="ml-1 text-[9px] opacity-60">{counts[cat]}</span>
             )}
           </button>
         ))}

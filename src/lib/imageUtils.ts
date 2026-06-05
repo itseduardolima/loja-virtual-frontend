@@ -25,6 +25,38 @@ export function buildImageUrls(imagePaths: string[]): string[] {
 }
 
 /**
+ * Retorna a URL completa da primeira imagem de um produto (prioriza images_by_color).
+ */
+export function getProductImageUrl(product: {
+  images?: string[] | Record<string, string[]>
+  images_by_color?: Record<string, string[]>
+}): string | null {
+  const fromColor = getFirstProductImage(product.images_by_color)
+  if (fromColor) return buildImageUrl(fromColor)
+  const fromImages = getFirstProductImage(product.images)
+  return fromImages ? buildImageUrl(fromImages) : null
+}
+
+/**
+ * Retorna até `max` URLs de imagem de um produto (achata o objeto por cor).
+ */
+export function getProductImageUrls(
+  product: {
+    images?: string[] | Record<string, string[]>
+    images_by_color?: Record<string, string[]>
+  },
+  max = 2,
+): string[] {
+  const source =
+    product.images_by_color && Object.keys(product.images_by_color).length > 0
+      ? product.images_by_color
+      : product.images
+  if (!source) return []
+  const flat = Array.isArray(source) ? source : Object.values(source).flat()
+  return flat.slice(0, max).map(buildImageUrl)
+}
+
+/**
  * Retorna a primeira URL de imagem de um produto.
  * Suporta dois formatos: array simples ou objeto por cor { "Preto": ["url"] }.
  */

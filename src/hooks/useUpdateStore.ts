@@ -39,7 +39,23 @@ export interface UpdateStoreData {
   free_shipping_enabled?: boolean
   payment_methods?: string[]
   business_hours?: Record<string, string>
+  hero_eyebrow?: string
+  hero_title?: string
+  hero_subtitle?: string
+  announcement_text?: string
+  campaign_title?: string
+  campaign_text?: string
 }
+
+// Campos de conteúdo da vitrine: string vazia é enviada para limpar o override
+const CLEARABLE_FIELDS = new Set([
+  'hero_eyebrow',
+  'hero_title',
+  'hero_subtitle',
+  'announcement_text',
+  'campaign_title',
+  'campaign_text',
+])
 
 export function useUpdateStore(options: UpdateStoreOptions = {}) {
   const { redirectOnSuccess = false, silent = false } = options
@@ -53,7 +69,7 @@ export function useUpdateStore(options: UpdateStoreOptions = {}) {
       
       // Adicionar apenas os campos que foram fornecidos
       Object.entries(data).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
+        if (value !== undefined && value !== null && (value !== '' || CLEARABLE_FIELDS.has(key))) {
           if (key === 'logo' || key === 'banner') {
             if (value instanceof File) {
               formData.append(key, value)
