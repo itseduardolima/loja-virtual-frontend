@@ -105,7 +105,14 @@ Consome 0.2. Atacar por lote:
 
 ---
 
-## Fase 2 — Page/Hook separation (8 pages) · ~3 dias
+## Fase 2 — Page/Hook separation (8 pages) · ~3 dias ✅ CONCLUÍDA (2026-06-05)
+
+> **Status:** 5 agentes + verificador; `tsc`/`build` verdes; 14 pages conformes por grep (useState residual só de UI trivial documentado). Resultados:
+> - Pages encolheram: rastrear 380→281 (só JSX), admin/cupons-plano 437→131 (+8 componentes em `_components/`), equipe 570→292 (+InviteModal extraído).
+> - Novos page-hooks: useRastrearPage, useAdminPlanCouponsPage, useAdminUserDetailPage, useEquipePage, usePedidoSucessoPage, useLoginPage. Consolidados: useVendedorPage, useDashboardPage (+useStore), useStorePage (+useStoreInfo/Categories/Niches/Fields), useProductDetailPage (+useStoreInfo, useAddToCartAnimation inlined, +reviews/questions/wishlist via fix do verificador), useStoreHomePage (+jumpTo), useCheckoutPage (+focusedField).
+> - **Equipe redesenhada** com DESIGN_SPEC (tokens nx*, NxButton/_shared, padrão de horario/pagamento); mock isolado no hook com TODO p/ backend.
+> - Checkout: blocos de endereço NÃO extraídos (17 props acopladas, sem ganho — anotado); diff mínimo 9+/3−.
+> - Pendências anotadas: STATUS_CONFIG do rastrear em `_components/statusConfig.tsx` com TODO de unificação; `fmtDateShortMonth` local no hook de cupons-plano (formato month:'short' difere de formatDateShort); useProductDetailPage tem useQuery inline com api.get (contido no hook — split em data hook é Fase 3).
 
 Por ordem de severidade. **Nota:** nas pages que serão reescritas aqui, aplicar o DESIGN_SPEC junto (não tocar o mesmo arquivo duas vezes) — ver Fase D.
 
