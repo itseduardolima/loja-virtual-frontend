@@ -1,21 +1,25 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import * as yup from 'yup'
+import isEqual from 'lodash/isEqual'
 import { useStore } from '@/hooks/useStore'
 import { useUpdateStore } from '@/hooks/useUpdateStore'
 import { useCountries } from '@/hooks/useCountries'
 import { updateContatosSchema } from '@/schemas'
 
+const initial = {
+  whatsapp: '',
+  instagram: '',
+  facebook: '',
+  email: ''
+}
+
 export function useContatos() {
   const { data: store, isLoading } = useStore()
   const { updateStore, isUpdating } = useUpdateStore()
   const { data: countriesData, isLoading: countriesLoading } = useCountries()
-  
-  const [formData, setFormData] = useState({
-    whatsapp: '',
-    instagram: '',
-    facebook: '',
-    email: ''
-  })
+
+  const [formData, setFormData] = useState(initial)
+  const [server, setServer] = useState(initial)
 
   const [errors, setErrors] = useState<{
     whatsapp?: string
@@ -25,6 +29,7 @@ export function useContatos() {
   }>({})
 
   const [selectedCountry, setSelectedCountry] = useState('BR')
+  const [serverCountry, setServerCountry] = useState('BR')
   const [showCountryDropdown, setShowCountryDropdown] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -64,13 +69,16 @@ export function useContatos() {
         }
       }
 
-      setSelectedCountry(countryCode)
-      setFormData({
+      const next = {
         whatsapp: whatsappNumber,
         instagram: store.instagram || '',
         facebook: store.facebook || '',
         email: store.email || ''
-      })
+      }
+      setSelectedCountry(countryCode)
+      setServerCountry(countryCode)
+      setFormData(next)
+      setServer(next)
     }
   }, [store, countriesData])
 
@@ -136,6 +144,12 @@ export function useContatos() {
     setSelectedCountry(countryCode)
     setShowCountryDropdown(false)
   }
+
+  // País conta como dirty: trocar o DDI altera o whatsapp salvo
+  const isDirty = useMemo(
+    () => !isEqual(formData, server) || selectedCountry !== serverCountry,
+    [formData, server, selectedCountry, serverCountry],
+  )
 
   // Verificar se o formulário é válido (sem erros e campos obrigatórios preenchidos)
   const isFormValid = useMemo(() => {
@@ -209,6 +223,8 @@ export function useContatos() {
         storeId: store.id,
         data: updateData
       })
+      setServer(formData)
+      setServerCountry(selectedCountry)
     } catch (error) {
       if (error instanceof yup.ValidationError) {
         // Mapear erros do Yup para o estado de erros
@@ -225,12 +241,19 @@ export function useContatos() {
     }
   }
 
+  const handleReset = () => {
+    setFormData(server)
+    setSelectedCountry(serverCountry)
+    setErrors({})
+  }
+
   return {
     store,
     isLoading,
     isUpdating,
     formData,
     errors,
+    isDirty,
     isFormValid,
     selectedCountry,
     showCountryDropdown,
@@ -242,7 +265,8 @@ export function useContatos() {
     getCountryCallingCode,
     handleCountrySelect,
     setShowCountryDropdown,
-    handleSave
+    handleSave,
+    handleReset
   }
 }
 

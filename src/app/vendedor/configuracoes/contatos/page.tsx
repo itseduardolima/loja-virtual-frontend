@@ -24,6 +24,7 @@ export default function ContatosPage() {
     isUpdating,
     formData,
     errors,
+    isDirty,
     isFormValid,
     selectedCountry,
     countriesData,
@@ -31,6 +32,7 @@ export default function ContatosPage() {
     handleInputChange,
     handleCountrySelect,
     handleSave,
+    handleReset,
   } = useContatos()
 
   if (isLoading) {
@@ -202,10 +204,13 @@ export default function ContatosPage() {
         </FieldGrid>
 
         <FormActions>
+          <NxButton variant="ghost" onClick={handleReset} disabled={!isDirty || isUpdating}>
+            Descartar alterações
+          </NxButton>
           <NxButton
             variant="primary"
             onClick={handleSave}
-            disabled={!isFormValid}
+            disabled={!isDirty || !isFormValid}
             loading={isUpdating}
           >
             {isUpdating ? 'Salvando…' : 'Salvar alterações'}

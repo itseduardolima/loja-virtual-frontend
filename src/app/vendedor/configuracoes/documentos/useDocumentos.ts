@@ -1,18 +1,19 @@
 import { useState, useEffect, useMemo } from 'react'
 import * as yup from 'yup'
+import isEqual from 'lodash/isEqual'
 import { useStore } from '@/hooks/useStore'
 import { useUpdateStore } from '@/hooks/useUpdateStore'
 import { formatCNPJ, formatCPF } from '@/lib/utils'
 import { updateDocumentosSchema } from '@/schemas'
 
+const initial = { cnpj: '', cpf: '' }
+
 export function useDocumentos() {
   const { data: store, isLoading } = useStore()
   const { updateStore, isUpdating } = useUpdateStore()
-  
-  const [formData, setFormData] = useState({
-    cnpj: '',
-    cpf: ''
-  })
+
+  const [formData, setFormData] = useState(initial)
+  const [server, setServer] = useState(initial)
 
   const [errors, setErrors] = useState<{
     cnpj?: string
@@ -21,10 +22,13 @@ export function useDocumentos() {
 
   useEffect(() => {
     if (store) {
-      setFormData({
-        cnpj: store.cnpj || '',
-        cpf: store.cpf || ''
-      })
+      // Normaliza com a mesma máscara do onChange p/ o dirty-check não acusar falso positivo
+      const next = {
+        cnpj: formatCNPJ(store.cnpj || ''),
+        cpf: formatCPF(store.cpf || '')
+      }
+      setFormData(next)
+      setServer(next)
     }
   }, [store])
 
@@ -58,6 +62,8 @@ export function useDocumentos() {
     handleInputChange('cpf', formatted)
   }
 
+  const isDirty = useMemo(() => !isEqual(formData, server), [formData, server])
+
   // Verificar se o formulário é válido
   const isFormValid = useMemo(() => {
     const hasErrors = Object.values(errors).some(error => error !== undefined && error !== '')
@@ -70,6 +76,11 @@ export function useDocumentos() {
       return false
     }
   }, [formData, errors])
+
+  const handleReset = () => {
+    setFormData(server)
+    setErrors({})
+  }
 
   const handleSave = async () => {
     if (!store?.id) return
@@ -85,6 +96,7 @@ export function useDocumentos() {
           cpf: formData.cpf.trim() || undefined
         }
       })
+      setServer(formData)
     } catch (error) {
       if (error instanceof yup.ValidationError) {
         const validationErrors: { [key: string]: string } = {}
@@ -106,10 +118,12 @@ export function useDocumentos() {
     isUpdating,
     formData,
     errors,
+    isDirty,
     isFormValid,
     handleCNPJChange,
     handleCPFChange,
-    handleSave
+    handleSave,
+    handleReset
   }
 }
 

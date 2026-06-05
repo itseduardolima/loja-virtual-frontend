@@ -42,6 +42,7 @@ export default function InformacoesBasicasPage() {
     isUpdating,
     formData,
     errors,
+    isDirty,
     isFormValid,
     logoPreview,
     bannerPreview,
@@ -51,6 +52,7 @@ export default function InformacoesBasicasPage() {
     handleFileSelect,
     handleCropDone,
     handleSave,
+    handleReset,
   } = useInformacoesBasicas()
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL
@@ -251,10 +253,13 @@ export default function InformacoesBasicasPage() {
         </div>
 
         <FormActions>
+          <NxButton variant="ghost" onClick={handleReset} disabled={!isDirty || isUpdating}>
+            Descartar alterações
+          </NxButton>
           <NxButton
             variant="primary"
             onClick={handleSave}
-            disabled={!isFormValid}
+            disabled={!isDirty || !isFormValid}
             loading={isUpdating}
           >
             {isUpdating ? 'Salvando…' : 'Salvar alterações'}

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import isEqual from 'lodash/isEqual'
 import { useStore } from '@/hooks/useStore'
 import { useUpdateStore } from '@/hooks/useUpdateStore'
 
@@ -37,10 +38,7 @@ export function useEntrega() {
     setServer(next)
   }, [store])
 
-  const isDirty = useMemo(
-    () => JSON.stringify(formData) !== JSON.stringify(server),
-    [formData, server],
-  )
+  const isDirty = useMemo(() => !isEqual(formData, server), [formData, server])
 
   const validate = (data: EntregaFormData) => {
     const errs: typeof errors = {}

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import * as yup from 'yup'
+import isEqual from 'lodash/isEqual'
 import { useStore } from '@/hooks/useStore'
 import { useUpdateStore } from '@/hooks/useUpdateStore'
 import { updateHorarioSchema } from '@/schemas'
@@ -73,7 +74,7 @@ export function useHorario() {
   }, [store])
 
   const isDirty = useMemo(
-    () => JSON.stringify(businessHours) !== JSON.stringify(serverHours),
+    () => !isEqual(businessHours, serverHours),
     [businessHours, serverHours],
   )
 

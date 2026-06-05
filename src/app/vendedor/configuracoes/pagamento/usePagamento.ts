@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import * as yup from 'yup'
+import isEqual from 'lodash/isEqual'
 import { useStore } from '@/hooks/useStore'
 import { useUpdateStore } from '@/hooks/useUpdateStore'
 import { updatePagamentoSchema } from '@/schemas'
@@ -53,8 +54,9 @@ export function usePagamento() {
     })
   }
 
+  // Compara como conjunto: ordem de seleção não conta como alteração
   const isDirty = useMemo(
-    () => JSON.stringify([...selectedMethods].sort()) !== JSON.stringify([...serverMethods].sort()),
+    () => !isEqual([...selectedMethods].sort(), [...serverMethods].sort()),
     [selectedMethods, serverMethods],
   )
 
