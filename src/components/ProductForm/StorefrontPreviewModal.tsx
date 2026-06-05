@@ -15,16 +15,12 @@ import {
   Heart,
   Image as ImageIcon,
   Lock,
-  RotateCcw,
   Search,
-  ShieldCheck,
   ShoppingBag,
   Star,
-  Truck,
   X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { sanitizeHtml } from '@/lib/sanitize'
 import type { StorefrontPreviewData } from './types'
 import { formatBRL, getColorHex, slugify } from './data'
 import { NxBadge, Swatch } from './primitives'
@@ -141,9 +137,6 @@ export function StorefrontPreviewModal({
   const promo = data.promoPrice && data.promoPrice > 0 ? data.promoPrice : null
   const off = promo && price ? Math.round((1 - promo / price) * 100) : 0
   const installments = (promo || price) / 10
-
-  const specsHtml = data.specificationsHtml || ''
-  const specRows = data.dynSpecs.filter(([, v]) => v != null && String(v).trim() !== '')
 
   const domainBase = (storeDomain && storeDomain.trim()) || slugify(storeName) || 'minha-loja'
   const productSlug = data.slug || slugify(data.name) || 'produto'
@@ -394,55 +387,9 @@ export function StorefrontPreviewModal({
                 </button>
               </div>
 
-              {/* trust strip */}
-              <div className="mt-5 grid grid-cols-3 gap-2 border-t border-nxborder pt-4 text-center">
-                {(
-                  [
-                    [Truck, 'Frete grátis', 'acima de R$199'],
-                    [ShieldCheck, 'Compra segura', 'dados protegidos'],
-                    [RotateCcw, 'Troca fácil', 'até 30 dias'],
-                  ] as const
-                ).map(([Ic, t, s]) => (
-                  <div key={t} className="flex flex-col items-center gap-1">
-                    <Ic size={18} className="text-nxp" />
-                    <span className="text-[11px] font-bold text-nxi1">{t}</span>
-                    <span className="text-[10px] text-nxi3">{s}</span>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
 
-          {/* descrição + specs */}
-          {(data.description || specsHtml || specRows.length > 0) && (
-            <div className="border-t border-nxborder px-5 py-7">
-              <h2 className="text-[18px] font-extrabold tracking-[-0.02em] text-nxi1">Descrição</h2>
-              {data.description && (
-                <p className="mt-2 max-w-[70ch] text-[14px] leading-relaxed text-nxi2">
-                  {data.description}
-                </p>
-              )}
-              {specRows.length > 0 && (
-                <div className="mt-5 grid grid-cols-1 gap-x-8 gap-y-2 sm:grid-cols-2">
-                  {specRows.map(([k, v]) => (
-                    <div
-                      key={k}
-                      className="flex items-center justify-between gap-3 border-b border-nxborder py-1.5 text-[13px]"
-                    >
-                      <span className="font-semibold text-nxi3">{k}</span>
-                      <span className="text-right font-semibold text-nxi1">{v}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {specsHtml && (
-                <div
-                  className="prose-nx mt-5 max-w-[70ch] text-[14px] leading-relaxed text-nxi2 [&_h3]:mb-1 [&_h3]:mt-3 [&_h3]:text-[15px] [&_h3]:font-bold [&_h3]:text-nxi1 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
-                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(specsHtml) }}
-                />
-              )}
-            </div>
-          )}
 
           {/* rodapé */}
           <div className="flex items-center justify-center gap-2 border-t border-nxborder bg-nxbg/50 px-5 py-4 text-[11.5px] text-nxi3">
