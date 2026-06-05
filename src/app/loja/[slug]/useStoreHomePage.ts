@@ -12,6 +12,7 @@ import { Product } from '@/types/product'
 import type { StoreCategory, StoreInfo, CollectionSort, CollectionView } from '@/types/store'
 
 const MAX_CATEGORIES = 5
+const NAV_OFFSET = 64 + 48 // header (64px) + category bar (48px)
 
 const SORT_TO_PARAMS: Record<CollectionSort, { sort: 'ASC' | 'DESC'; sort_field: string }> = {
   relevancia: { sort: 'DESC', sort_field: 'created_at' },
@@ -47,6 +48,7 @@ export interface UseStoreHomePageReturn {
   toggleWishlist: (product: Product) => void
   isWished: (productId: number) => boolean
   handleSearchSubmit: (value: string) => void
+  jumpTo: (id: string) => void
   refetch: () => void
 }
 
@@ -147,6 +149,13 @@ export function useStoreHomePage(slug: string): UseStoreHomePageReturn {
     setSearch(value)
   }
 
+  const jumpTo = (id: string) => {
+    const el = document.getElementById(id)
+    if (!el) return
+    const top = el.getBoundingClientRect().top + window.scrollY - NAV_OFFSET
+    window.scrollTo({ top, behavior: 'smooth' })
+  }
+
   return {
     slug,
     storeInfo,
@@ -174,6 +183,7 @@ export function useStoreHomePage(slug: string): UseStoreHomePageReturn {
     toggleWishlist,
     isWished: isInWishlist,
     handleSearchSubmit,
+    jumpTo,
     refetch: refetchStore,
   }
 }

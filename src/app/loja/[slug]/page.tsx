@@ -22,15 +22,6 @@ import {
 } from '@/components/Store'
 import { marqueeItems } from '@/lib/storefront'
 
-const NAV_OFFSET = 64 + 48 // header + category bar
-
-function jumpTo(id: string) {
-  const el = document.getElementById(id)
-  if (!el) return
-  const top = el.getBoundingClientRect().top + window.scrollY - NAV_OFFSET
-  window.scrollTo({ top, behavior: 'smooth' })
-}
-
 export default function StoreHomePage() {
   const params = useParams()
   const slug = params.slug as string
@@ -60,6 +51,7 @@ export default function StoreHomePage() {
     toggleWishlist,
     isWished,
     handleSearchSubmit,
+    jumpTo,
     refetch,
   } = useStoreHomePage(slug)
 

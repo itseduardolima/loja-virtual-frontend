@@ -4,13 +4,8 @@ import { useState, useRef, useEffect } from 'react'
 import { useParams, useRouter, usePathname } from 'next/navigation'
 import { Heart, Share2, Link as LinkIcon, MessageCircle } from 'lucide-react'
 import { CartSidebar, ErrorState, StoreHeader, ProductReviews } from '@/components'
-import { useProductQuestionsCount } from '@/hooks/useProductQuestions'
 import { useProductDetailPage } from './useProductDetailPage'
-import { useProductReviews } from '@/hooks/useProductReviews'
-import { useStoreInfo } from '@/hooks/useStoreInfo'
-import { useWishlist } from '@/hooks/useWishlist'
 import { useToastContext } from '@/contexts/ToastContext'
-import { useAddToCartAnimation } from '@/hooks/useAddToCartAnimation'
 import { AddToCartAnimation } from '@/components/Animation'
 import { RelatedProducts, ProductQuestions } from '@/components/Product'
 import { AnnouncementBar, WhatsAppChatWidget, StoreNewFooter } from '@/components/Store'
@@ -46,10 +41,7 @@ export default function ProductDetailPage() {
   const [shareOpen, setShareOpen] = useState(false)
   const shareRef = useRef<HTMLDivElement>(null)
 
-  const { storeInfo } = useStoreInfo(slug)
-  const { isInWishlist, toggleWishlist, isLoading: wishlistLoading } = useWishlist()
   const { success: showSuccess } = useToastContext()
-  const { triggerAnimation, animationData, onAnimationComplete } = useAddToCartAnimation()
 
   const {
     product,
@@ -69,10 +61,16 @@ export default function ProductDetailPage() {
     decreaseQuantity,
     addToCart,
     isAddingToCart,
+    storeInfo,
+    animationData,
+    triggerAnimation,
+    onAnimationComplete,
+    reviewsSummary,
+    questionsTotal,
+    isInWishlist,
+    toggleWishlist,
+    wishlistLoading,
   } = useProductDetailPage(slug, productId)
-
-  const { summary: reviewsSummary } = useProductReviews(slug, productId)
-  const questionsTotal = useProductQuestionsCount(slug, productId)
 
   // fecha o dropdown de compartilhar ao clicar fora
   useEffect(() => {

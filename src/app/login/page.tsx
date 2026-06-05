@@ -6,10 +6,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Eye, EyeOff, Check, Loader2 } from 'lucide-react'
 import Link from 'next/link'
-import { useLogin } from '@/hooks/useLogin'
 import { GoogleIcon } from '@/public/assets/icons/GoogleIcon'
-import { useAuth } from '@/contexts/AuthContext'
 import { NexoLeftPanel } from '@/components/Layout'
+import { useLoginPage } from './useLoginPage'
 
 const BULLETS = [
   'Loja própria em minutos',
@@ -18,21 +17,16 @@ const BULLETS = [
 ]
 
 function LoginContent() {
-  const [login, setLogin] = useState('')
-  const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const { login: loginFunction, isLoading } = useLogin()
-  const { loginWithGoogle } = useAuth()
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!login || !password) return
-    try {
-      await loginFunction({ login, password })
-    } catch (error: any) {
-      console.error('Erro no login:', error)
-    }
-  }
+  const {
+    login,
+    setLogin,
+    password,
+    setPassword,
+    isLoading,
+    handleSubmit,
+    loginWithGoogle,
+  } = useLoginPage()
 
   return (
     <div className="flex h-screen overflow-hidden">

@@ -1,11 +1,14 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useStoreProducts } from '@/hooks/useStoreProducts'
+import { useStoreInfo } from '@/hooks/useStoreInfo'
+import { useStoreCategories } from '@/hooks/useStoreCategories'
+import { useNiches, useStoreFields } from '@/hooks/useNiches'
 import { useDebounce } from '@/hooks/useDebounce'
 import { Product } from '@/types/product'
-import { 
-  UseStorePageReturn, 
-  StoreFilters, 
+import {
+  UseStorePageReturn,
+  StoreFilters,
   SortOrder
 } from './types'
 
@@ -23,8 +26,14 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
     initialCategoryId ? { categoryId: initialCategoryId } : {}
   )
   const [isManualSearch, setIsManualSearch] = useState(false)
-  
+
   const debouncedSearch = useDebounce(search, 1000)
+
+  // Loja, categorias e nichos compostos aqui para que page.tsx não importe hooks de dado diretamente
+  const { storeInfo } = useStoreInfo(slug)
+  const { categories: storeCategories } = useStoreCategories(slug)
+  const { data: nichesData } = useNiches(storeInfo?.id ?? null)
+  const { data: allStoreFieldsData } = useStoreFields(storeInfo?.id ?? null)
 
   // Quando só o nicho está selecionado (sem categoria), busca todos os produtos
   // para filtrar client-side corretamente (o backend não filtra por niche_id)
@@ -237,6 +246,55 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
     router.push(`/loja/${slug}/produto/${product.id}`)
   }
 
+  // Sidebar: mapa categoria → nicho, acumulativo para não perder dados ao aplicar filtros
+  const allStoreFields = allStoreFieldsData ?? []
+  const categoryNicheMapRef = useRef<Record<number, number>>({})
+  const categoryNicheMap = useMemo(() => {
+    if (!allStoreFields.length || !products.length) return categoryNicheMapRef.current
+
+    const fieldNicheMap: Record<string, number> = {}
+    allStoreFields.forEach(field => {
+      fieldNicheMap[field.name] = field.niche_id
+    })
+
+    products.forEach(product => {
+      if (product.category?.id && product.dynamic_fields?.length > 0) {
+        if (categoryNicheMapRef.current[product.category.id] !== undefined) return
+        for (const df of product.dynamic_fields) {
+          const nicheId = fieldNicheMap[df.field_name]
+          if (nicheId) {
+            categoryNicheMapRef.current[product.category.id] = nicheId
+            break
+          }
+        }
+      }
+    })
+
+    return { ...categoryNicheMapRef.current }
+  }, [allStoreFields, products])
+
+  // Filtro client-side por nicho
+  const displayProducts = useMemo(() => {
+    if (filters.nicheId && !filters.categoryId && Object.keys(categoryNicheMap).length > 0) {
+      return products.filter(p => p.category?.id && categoryNicheMap[p.category.id] === filters.nicheId)
+    }
+    return products
+  }, [products, filters.nicheId, filters.categoryId, categoryNicheMap])
+
+  const niches = nichesData?.data ?? []
+
+  const getPageTitle = () => {
+    if (filters.nicheId && !filters.categoryId && niches.length > 0) {
+      const niche = niches.find(n => n.id === filters.nicheId)
+      if (niche) return niche.name
+    }
+    if (filters.categoryId && categories.length > 0) {
+      const selectedCategory = categories.find(cat => cat.id === filters.categoryId)
+      return selectedCategory ? selectedCategory.name : 'Todos os produtos'
+    }
+    return 'Todos os produtos'
+  }
+
   return {
     search,
     sort,
@@ -264,5 +322,13 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
     handleItemsPerPageChange,
     handleAddToFavorites,
     handleViewDetails,
+    // Sidebar data (compostos de useStoreInfo, useStoreCategories, useNiches, useStoreFields)
+    storeInfo: storeInfo ?? null,
+    storeCategories: storeCategories ?? [],
+    niches,
+    allStoreFields,
+    categoryNicheMap,
+    displayProducts,
+    getPageTitle,
   }
 }

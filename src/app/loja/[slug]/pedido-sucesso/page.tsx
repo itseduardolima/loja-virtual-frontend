@@ -1,41 +1,27 @@
 'use client'
 
-import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { StoreHeader, CartSidebar, ProductCard, ErrorState, LoadingPage } from '@/components'
-import { useStoreInfo } from '@/hooks/useStoreInfo'
-import { useStoreProducts } from '@/hooks/useStoreProducts'
-import { useCart } from '@/hooks/useCart'
 import { Button } from '@/components/ui/button'
 import { CheckCircle2, ShoppingBag, MessageCircle } from 'lucide-react'
-import { useState } from 'react'
 import { AppFooter } from '@/components/Layout'
-import { Product } from '@/types/product'
+import { usePedidoSucessoPage } from './usePedidoSucessoPage'
 
 export default function PedidoSucessoPage() {
-  const params = useParams()
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const slug = params.slug as string
-  const orderCode = searchParams.get('codigo') ?? ''
-
-  const [isCartOpen, setIsCartOpen] = useState(false)
-
-  const { storeInfo, loading: storeLoading, error: storeError, refetch: refetchStore } = useStoreInfo(slug)
-  const { products, loading: productsLoading } = useStoreProducts({
+  const {
     slug,
-    limit: 8,
-    page: 1,
-    sort: 'DESC',
-    sort_field: 'created_at',
-  })
-  const storeId = storeInfo?.id
-  useCart(storeId)
-
-  const handleViewDetails = (product: Product) => {
-    router.push(`/loja/${slug}/produto/${product.id}`)
-  }
+    orderCode,
+    isCartOpen,
+    setIsCartOpen,
+    storeInfo,
+    storeLoading,
+    storeError,
+    refetchStore,
+    storeId,
+    products,
+    productsLoading,
+    handleViewDetails,
+  } = usePedidoSucessoPage()
 
   if (storeLoading && !storeInfo) {
     return (

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ProductCard, StoreSidebar, ErrorState, CartSidebar, StoreHeader, LoadingPage } from '@/components'
@@ -8,10 +8,6 @@ import { Star, Package, Filter, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useStorePage } from './useStorePage'
-import { useStoreInfo } from '@/hooks/useStoreInfo'
-import { useStoreCategories } from '@/hooks/useStoreCategories'
-import { useNiches, useStoreFields } from '@/hooks/useNiches'
-import { useCart } from '@/hooks/useCart'
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs'
 
 export default function StorePage() {
@@ -72,67 +68,15 @@ export default function StorePage() {
     handleClearFilters,
     handlePageChange,
     handleAddToFavorites,
-    handleViewDetails
+    handleViewDetails,
+    // Sidebar data
+    storeInfo,
+    storeCategories,
+    niches,
+    categoryNicheMap,
+    displayProducts,
+    getPageTitle,
   } = useStorePage({ slug, initialCategoryId })
-
-  // Hook para buscar informações da loja
-  const { storeInfo } = useStoreInfo(slug)
-
-  // Categorias completas e niches para o sidebar
-  const { categories: storeCategories } = useStoreCategories(slug)
-  const { data: nichesData } = useNiches(storeInfo?.id || null)
-  const { data: allStoreFields } = useStoreFields(storeInfo?.id || null)
-
-  // Mapa categoria → nicho, acumulativo para não perder dados ao aplicar filtros
-  const categoryNicheMapRef = useRef<Record<number, number>>({})
-
-  const categoryNicheMap = useMemo(() => {
-    if (!allStoreFields?.length || !products?.length) return categoryNicheMapRef.current
-
-    // field_name → niche_id
-    const fieldNicheMap: Record<string, number> = {}
-    allStoreFields.forEach(field => {
-      fieldNicheMap[field.name] = field.niche_id
-    })
-
-    // Acumula novas entradas sem remover as existentes
-    products.forEach(product => {
-      if (product.category?.id && product.dynamic_fields?.length > 0) {
-        if (categoryNicheMapRef.current[product.category.id] !== undefined) return
-        for (const df of product.dynamic_fields) {
-          const nicheId = fieldNicheMap[df.field_name]
-          if (nicheId) {
-            categoryNicheMapRef.current[product.category.id] = nicheId
-            break
-          }
-        }
-      }
-    })
-
-    return { ...categoryNicheMapRef.current }
-  }, [allStoreFields, products])
-
-  // Filtro client-side por nicho: quando nicho selecionado sem categoria específica,
-  // filtra produtos cujo category.id pertence ao nicho selecionado
-  const displayProducts = useMemo(() => {
-    if (filters.nicheId && !filters.categoryId && Object.keys(categoryNicheMap).length > 0) {
-      return products.filter(p => p.category?.id && categoryNicheMap[p.category.id] === filters.nicheId)
-    }
-    return products
-  }, [products, filters.nicheId, filters.categoryId, categoryNicheMap])
-
-  // Função para determinar o título da página
-  const getPageTitle = () => {
-    if (filters.nicheId && !filters.categoryId && nichesData?.data) {
-      const niche = nichesData.data.find(n => n.id === filters.nicheId)
-      if (niche) return niche.name
-    }
-    if (filters.categoryId && categories.length > 0) {
-      const selectedCategory = categories.find(cat => cat.id === filters.categoryId)
-      return selectedCategory ? selectedCategory.name : 'Todos os produtos'
-    }
-    return 'Todos os produtos'
-  }
 
   if (loading) {
     return (
@@ -280,7 +224,7 @@ export default function StorePage() {
                   availableDynamicFieldNames={availableDynamicFieldNames}
                   storeId={storeInfo?.id || null}
                   storeCategories={storeCategories}
-                  niches={nichesData?.data || []}
+                  niches={niches}
                   categoryNicheMap={categoryNicheMap}
                 />
               </div>
@@ -309,7 +253,7 @@ export default function StorePage() {
                 availableDynamicFieldNames={availableDynamicFieldNames}
                 storeId={storeInfo?.id || null}
                 storeCategories={storeCategories}
-                niches={nichesData?.data || []}
+                niches={niches}
                 categoryNicheMap={categoryNicheMap}
               />
             </div>
@@ -363,7 +307,7 @@ export default function StorePage() {
                     className="flex flex-wrap items-center gap-2"
                   >
                     <AnimatePresence mode="popLayout">
-                      {filters.nicheId && nichesData?.data?.find(n => n.id === filters.nicheId) && (
+                      {filters.nicheId && niches.find(n => n.id === filters.nicheId) && (
                         <motion.div
                           key="niche"
                           initial={{ scale: 0, opacity: 0 }}
@@ -372,7 +316,7 @@ export default function StorePage() {
                           transition={{ duration: 0.2 }}
                         >
                           <Badge variant="secondary" className="text-xs">
-                            Tipo: {nichesData.data.find(n => n.id === filters.nicheId)?.name}
+                            Tipo: {niches.find(n => n.id === filters.nicheId)?.name}
                           </Badge>
                         </motion.div>
                       )}
