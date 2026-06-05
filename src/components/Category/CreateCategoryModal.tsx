@@ -12,6 +12,7 @@ import { createCategorySchema, CreateCategoryFormData } from '@/schemas'
 import { useCategories } from '@/hooks/useCategories'
 import { useToastContext } from '@/contexts/ToastContext'
 import { Tag, X, Info } from 'lucide-react'
+import { AxiosError } from 'axios'
 
 interface CreateCategoryModalProps {
   isOpen: boolean
@@ -25,6 +26,8 @@ export function CreateCategoryModal({ isOpen, onClose, onCategoryCreated }: Crea
   
   const { createCategory } = useCategories()
 
+  // yupResolver infers a slightly stricter type than CreateCategoryFormData (optional vs required description);
+  // as any is a necessary adapter for Yup-to-RHF resolver type mismatch.
   const form = useForm<CreateCategoryFormData>({
     resolver: yupResolver(createCategorySchema) as any,
     defaultValues: {
@@ -48,13 +51,15 @@ export function CreateCategoryModal({ isOpen, onClose, onCategoryCreated }: Crea
           reset()
           onClose()
         },
-        onError: (error: any) => {
-          const errorMessage = error.response?.data?.message || 'Erro ao criar categoria'
+        onError: (error: Error) => {
+          const axiosErr = error as AxiosError<{ message?: string }>
+          const errorMessage = axiosErr.response?.data?.message || axiosErr.message || 'Erro ao criar categoria'
           showError(errorMessage, 'Erro')
         }
       })
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Erro ao criar categoria'
+    } catch (error) {
+      const axiosErr = error as AxiosError<{ message?: string }>
+      const errorMessage = axiosErr.response?.data?.message || axiosErr.message || 'Erro ao criar categoria'
       showError(errorMessage, 'Erro')
     } finally {
       setIsCreating(false)

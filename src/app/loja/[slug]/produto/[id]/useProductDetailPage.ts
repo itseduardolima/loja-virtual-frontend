@@ -13,7 +13,7 @@ export function useProductDetailPage(slug: string, productId: string) {
   const colorInitialized = useRef(false)
 
   // Buscar dados do produto
-  const { data: product, isLoading, error } = useQuery({
+  const { data: product, isLoading, error, refetch } = useQuery({
     queryKey: ['product-detail', slug, productId],
     queryFn: async (): Promise<ProductDetail> => {
       const response = await api.get<ProductDetailResponse>(`/catalog/store/${slug}/products/${productId}`)
@@ -154,6 +154,7 @@ export function useProductDetailPage(slug: string, productId: string) {
     product,
     isLoading,
     error,
+    refetch,
     selectedImageIndex,
     selectedSize,
     selectedColor,

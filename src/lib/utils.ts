@@ -116,12 +116,13 @@ export function isExpired(date: string | Date | null | undefined): boolean {
   return daysUntil(date) <= 0
 }
 
-/** Data curta sem hora: dd/mm/aaaa. */
-export function formatDateShort(date: string | Date): string {
+/** Data curta sem hora: dd/mm/aaaa. Passa `{ utc: true }` para forçar fuso UTC. */
+export function formatDateShort(date: string | Date, options?: { utc?: boolean }): string {
   return new Date(date).toLocaleDateString('pt-BR', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
+    ...(options?.utc ? { timeZone: 'UTC' } : {}),
   })
 }
 

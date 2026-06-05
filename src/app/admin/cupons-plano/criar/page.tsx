@@ -2,21 +2,23 @@
 
 import { useRouter } from 'next/navigation'
 import { ChevronLeft } from 'lucide-react'
+import { AxiosError } from 'axios'
 import { useToastContext } from '@/contexts/ToastContext'
 import { useAdminCreatePlanCoupon } from '@/hooks/useAdminPlanCoupons'
-import { PlanCouponForm } from '../components/PlanCouponForm'
+import { PlanCouponForm, PlanCouponFormValues } from '../components/PlanCouponForm'
 
 export default function AdminCriarPlanCouponPage() {
   const router = useRouter()
   const { success, error } = useToastContext()
   const { mutateAsync, isPending } = useAdminCreatePlanCoupon()
 
-  const onSubmit = async (values: any) => {
+  const onSubmit = async (values: PlanCouponFormValues) => {
     try {
       await mutateAsync(values)
       success('Cupom criado com sucesso')
       router.push('/admin/cupons-plano')
-    } catch (err: any) {
+    } catch (e) {
+      const err = e as AxiosError<{ message?: string | string[] }>
       const msg = err?.response?.data?.message
       error(Array.isArray(msg) ? msg[0] : msg || 'Erro ao criar cupom')
     }

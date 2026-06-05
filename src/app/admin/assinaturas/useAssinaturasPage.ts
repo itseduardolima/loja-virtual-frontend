@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAdminSubscriptions, useSyncAdminSubscriptions } from '@/hooks/useAdminSubscriptions'
+import { SUBSCRIPTION_STATUS } from '@/lib/vendor'
 import toast from 'react-hot-toast'
 
 export function useAssinaturasPage() {
@@ -28,12 +29,10 @@ export function useAssinaturasPage() {
     }
   }
 
-  const statusMap: Record<string, { label: string; color: string }> = {
-    active: { label: 'Ativa', color: 'active' },
-    pending: { label: 'Pendente', color: 'pending' },
-    expired: { label: 'Expirada', color: 'expired' },
-    canceled: { label: 'Cancelada', color: 'canceled' },
-  }
+  // SUBSCRIPTION_STATUS.*.tone not used here — page.tsx badge colors are keyed by status string
+  const statusMap: Record<string, { label: string; color: string }> = Object.fromEntries(
+    Object.entries(SUBSCRIPTION_STATUS).map(([key, { label }]) => [key, { label, color: key }])
+  )
 
   const subs = data?.data ?? []
   const meta = data?.meta ?? null

@@ -3,19 +3,23 @@
 import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components'
 import { Search, Filter } from 'lucide-react'
 
+/** Estado de filtros do catálogo de produtos (loja pública).
+ * Exportado aqui temporariamente; candidato a mover para @/types/store.ts na Fase 2. */
+export interface FiltersState {
+  search: string
+  sort: 'price_asc' | 'price_desc' | 'name_asc' | 'name_desc' | 'newest'
+  category_id?: number
+  min_price?: number
+  max_price?: number
+  size: string
+  color: string
+  status?: number
+  featured?: boolean
+}
+
 interface ProductFiltersProps {
-  filters: {
-    search: string
-    sort: 'price_asc' | 'price_desc' | 'name_asc' | 'name_desc' | 'newest'
-    category_id?: number
-    min_price?: number
-    max_price?: number
-    size: string
-    color: string
-    status?: number
-    featured?: boolean
-  }
-  setFilters: (filters: any) => void
+  filters: FiltersState
+  setFilters: (updater: (prev: FiltersState) => FiltersState) => void
   availableSizes: string[]
   availableColors: string[]
   isSearching?: boolean
@@ -45,7 +49,7 @@ export function ProductFilters({
               type="text"
               placeholder="Buscar produtos..."
               value={filters.search}
-              onChange={(e) => setFilters((prev: any) => ({ ...prev, search: e.target.value }))}
+              onChange={(e) => setFilters((prev: FiltersState) => ({ ...prev, search: e.target.value }))}
               className="pl-10"
             />
             {isSearching && (
@@ -62,7 +66,7 @@ export function ProductFilters({
           <Select
             value={filters.sort}
             onValueChange={(value: 'price_asc' | 'price_desc' | 'name_asc' | 'name_desc' | 'newest') => 
-              setFilters((prev: any) => ({ ...prev, sort: value }))
+              setFilters((prev: FiltersState) => ({ ...prev, sort: value }))
             }
           >
             <SelectTrigger>
@@ -84,7 +88,7 @@ export function ProductFilters({
           <Select
             value={filters.status?.toString() || 'all'}
             onValueChange={(value: string) => 
-              setFilters((prev: any) => ({ ...prev, status: value === 'all' ? undefined : parseInt(value) }))
+              setFilters((prev: FiltersState) => ({ ...prev, status: value === 'all' ? undefined : parseInt(value) }))
             }
           >
             <SelectTrigger>
@@ -104,7 +108,7 @@ export function ProductFilters({
           <Select
             value={filters.featured === undefined ? 'all' : filters.featured.toString()}
             onValueChange={(value: string) => 
-              setFilters((prev: any) => ({ ...prev, featured: value === 'all' ? undefined : value === 'true' }))
+              setFilters((prev: FiltersState) => ({ ...prev, featured: value === 'all' ? undefined : value === 'true' }))
             }
           >
             <SelectTrigger>
@@ -128,7 +132,7 @@ export function ProductFilters({
                 placeholder="Preço mínimo"
                 value={filters.min_price || ''}
                 onChange={(e) => 
-                  setFilters((prev: any) => ({ 
+                  setFilters((prev: FiltersState) => ({ 
                     ...prev, 
                     min_price: e.target.value ? parseFloat(e.target.value) : undefined 
                   }))
@@ -147,7 +151,7 @@ export function ProductFilters({
                 placeholder="Preço máximo"
                 value={filters.max_price || ''}
                 onChange={(e) => 
-                  setFilters((prev: any) => ({ 
+                  setFilters((prev: FiltersState) => ({ 
                     ...prev, 
                     max_price: e.target.value ? parseFloat(e.target.value) : undefined 
                   }))
@@ -169,7 +173,7 @@ export function ProductFilters({
           <Select
             value={filters.size || 'all'}
             onValueChange={(value: string) => 
-              setFilters((prev: any) => ({ ...prev, size: value === 'all' ? '' : value }))
+              setFilters((prev: FiltersState) => ({ ...prev, size: value === 'all' ? '' : value }))
             }
           >
             <SelectTrigger>
@@ -192,7 +196,7 @@ export function ProductFilters({
           <Select
             value={filters.color || 'all'}
             onValueChange={(value: string) => 
-              setFilters((prev: any) => ({ ...prev, color: value === 'all' ? '' : value }))
+              setFilters((prev: FiltersState) => ({ ...prev, color: value === 'all' ? '' : value }))
             }
           >
             <SelectTrigger>

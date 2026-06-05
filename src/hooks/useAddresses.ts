@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { AxiosError } from 'axios'
 import { api } from '@/lib/api'
 import { useToastContext } from '@/contexts/ToastContext'
 
@@ -51,7 +52,7 @@ export function useAddresses(enabled = true) {
       queryClient.invalidateQueries({ queryKey: ['addresses'] })
       toast({ title: 'Endereço salvo!', variant: 'success' })
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       toast({
         title: 'Erro ao salvar endereço',
         description: error.response?.data?.message || 'Tente novamente',
@@ -69,7 +70,7 @@ export function useAddresses(enabled = true) {
       queryClient.invalidateQueries({ queryKey: ['addresses'] })
       toast({ title: 'Endereço atualizado!', variant: 'success' })
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       toast({
         title: 'Erro ao atualizar endereço',
         description: error.response?.data?.message || 'Tente novamente',
@@ -87,7 +88,7 @@ export function useAddresses(enabled = true) {
       queryClient.invalidateQueries({ queryKey: ['addresses'] })
       toast({ title: 'Endereço removido!', variant: 'success' })
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       toast({
         title: 'Erro ao remover endereço',
         description: error.response?.data?.message || 'Tente novamente',

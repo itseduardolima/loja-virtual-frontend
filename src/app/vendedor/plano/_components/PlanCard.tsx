@@ -2,10 +2,9 @@
 
 import { useRouter } from 'next/navigation'
 import { Check, X, ArrowUpRight } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, formatBRL } from '@/lib/utils'
 import { derivePlanFeaturesComparison, computeYearlySavings } from '@/lib/planUtils'
 import { SubscriptionPlan } from '@/types/subscription'
-import { fmtBRL } from '../_utils'
 
 interface PlanCardProps {
   plan: SubscriptionPlan
@@ -58,7 +57,7 @@ export function PlanCard({ plan, isCurrent, isUpgrade, isDowngrade, isFeatured, 
       </div>
       {cycle === 'yearly' && savings > 0 ? (
         <div className="mt-0.5 text-[11.5px] font-semibold text-green-700">
-          equivale a {fmtBRL(price / 12)}/mês · {savings}% de desconto
+          equivale a {formatBRL(price / 12)}/mês · {savings}% de desconto
         </div>
       ) : (
         <div className="mt-0.5 text-[11.5px] text-nxi3">cobrado mensalmente</div>

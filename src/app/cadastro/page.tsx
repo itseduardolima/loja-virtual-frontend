@@ -141,7 +141,7 @@ export default function CadastroPage() {
                       <PhoneCountryInput
                         id="whatsapp"
                         value={whatsapp}
-                        onValueChange={(val) => handleWhatsappChange({ target: { value: val } } as any)}
+                        onValueChange={(val) => handleWhatsappChange(val)}
                         placeholder="(11) 99999-9999"
                         minLength={8}
                         maxLength={15}

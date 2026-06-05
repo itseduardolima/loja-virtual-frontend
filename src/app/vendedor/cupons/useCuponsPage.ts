@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { AxiosError } from 'axios'
 import { api } from '@/lib/api'
 import { useToastContext } from '@/contexts/ToastContext'
 
@@ -60,8 +61,8 @@ export function useCuponsPage(options: { enabled?: boolean } = {}) {
       setDeleteDialogOpen(false)
       setCouponToDelete(null)
     },
-    onError: (err: any) => {
-      showError(err?.response?.data?.message || 'Erro ao excluir cupom', 'Erro')
+    onError: (err: AxiosError<{ message?: string }>) => {
+      showError(err.response?.data?.message || err.message || 'Erro ao excluir cupom', 'Erro')
     },
   })
 

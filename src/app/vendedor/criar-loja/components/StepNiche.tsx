@@ -2,10 +2,11 @@ import { LoadingSpinner } from '@/components'
 import { cn } from '@/lib/utils'
 import { Star } from 'lucide-react'
 import { getNicheIcon } from '@/components/ProductForm'
+import type { NicheResponse } from '@/types'
 
 interface StepNicheProps {
   selectedIds: string[]
-  nichesData: any
+  nichesData: NicheResponse | undefined
   nichesLoading: boolean
   errors: Record<string, string>
   onToggle: (id: string) => void
@@ -31,7 +32,7 @@ export function StepNiche({ selectedIds, nichesData, nichesLoading, errors, onTo
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-          {nichesData?.data.map((niche: any) => {
+          {nichesData?.data.map((niche) => {
             const id = niche.id.toString()
             const isSelected = selectedIds.includes(id)
             const isPrimary = isSelected && id === primaryId

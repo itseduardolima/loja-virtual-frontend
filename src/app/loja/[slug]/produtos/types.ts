@@ -69,6 +69,7 @@ export interface StorePageApiData {
   } | null
   nextCursor: number | null
   loadMore: () => void
+  refetch: () => void
 }
 
 // Tipo principal do hook useStorePage

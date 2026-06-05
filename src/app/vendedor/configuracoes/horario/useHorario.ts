@@ -67,7 +67,7 @@ export function useHorario() {
 
   useEffect(() => {
     if (!store) return
-    const parsed = parseBusinessHours((store as any)?.business_hours)
+    const parsed = parseBusinessHours(store.business_hours)
     setBusinessHours(parsed)
     setServerHours(parsed)
   }, [store])

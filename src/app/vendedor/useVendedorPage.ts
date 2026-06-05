@@ -84,10 +84,10 @@ export function useVendedorPage() {
     setContactForm({
       whatsapp: store?.whatsapp || '',
       instagram: store?.instagram || '',
-      facebook: (store as any)?.facebook || '',
-      website: (store as any)?.website || '',
-      email: (store as any)?.email || '',
-      phone: (store as any)?.phone || ''
+      facebook: store?.facebook || '',
+      website: store?.website || '',
+      email: store?.email || '',
+      phone: store?.phone || ''
     })
     setIsEditingContacts(true)
   }

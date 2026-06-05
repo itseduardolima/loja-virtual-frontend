@@ -7,7 +7,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useCreateStore, CreateStoreData } from '@/hooks/useCreateStore'
 import { useStore } from '@/hooks/useStore'
 import { useAllNiches } from '@/hooks/useNiches'
-import { useCountries } from '@/hooks/useCountries'
+import { useCountries, type Country } from '@/hooks/useCountries'
+import type { StoreInfo } from '@/types'
 import {
   createStoreStep1Schema,
   createStoreStep2Schema,
@@ -87,7 +88,7 @@ export function useCreateStorePage() {
     }
   }, [currentStep, formData, currentErrors])
 
-  const earlyReturn = (loading: boolean, hasStore: boolean, store?: any) => ({
+  const earlyReturn = (loading: boolean, hasStore: boolean, store?: StoreInfo) => ({
     loading,
     hasStore,
     store,
@@ -146,7 +147,7 @@ export function useCreateStorePage() {
     })
   }
 
-  const handleInputChange = (field: keyof CreateStoreData, value: any) => {
+  const handleInputChange = (field: keyof CreateStoreData, value: CreateStoreData[keyof CreateStoreData]) => {
     setFormData(prev => {
       const updated = { ...prev, [field]: value }
       const schema = schemaByStep[currentStep - 1]
@@ -196,7 +197,7 @@ export function useCreateStorePage() {
   }
 
   const getCountryCallingCode = () => {
-    const country = countriesData?.find((c: any) => c.cca2 === selectedCountry)
+    const country = countriesData?.find((c: Country) => c.cca2 === selectedCountry)
     return country?.callingCodes?.[0] || '55'
   }
 
@@ -251,7 +252,7 @@ export function useCreateStorePage() {
   return {
     loading: false,
     hasStore: false,
-    store: undefined as any,
+    store: undefined as StoreInfo | undefined,
     user,
     router,
     currentStep,

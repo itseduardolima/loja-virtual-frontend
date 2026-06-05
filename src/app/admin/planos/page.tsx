@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation'
 import { CreditCard, Plus, Pencil } from 'lucide-react'
 import { Table, Column, ConfirmDialog } from '@/components'
 import { AdminPlan } from '@/types/admin'
+import { formatBRL } from '@/lib/utils'
+import { Meta } from '@/types'
 import { usePlanosPage } from './usePlanosPage'
 import { SectionCard, NxButton } from '../_shared'
 import { LoadingPage } from '@/components/Layout'
@@ -11,8 +13,6 @@ import { LoadingPage } from '@/components/Layout'
 export default function AdminPlanosPage() {
   const router = useRouter()
   const { plans, meta, isLoading, page, setPage, confirmDelete, setConfirmDelete, handleDelete } = usePlanosPage()
-
-  const formatBRL = (n: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n)
 
   const columns: Column<AdminPlan>[] = [
     { key: 'name', header: 'Nome', accessor: 'name' },
@@ -65,7 +65,7 @@ export default function AdminPlanosPage() {
           <Table
             columns={columns}
             data={plans}
-            meta={meta as any}
+            meta={meta as Meta}
             onPageChange={setPage}
             emptyState={{ icon: CreditCard, title: 'Nenhum plano encontrado', description: 'Crie um plano para começar.' }}
           />

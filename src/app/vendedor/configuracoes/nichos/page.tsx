@@ -5,6 +5,7 @@ import { LoadingSpinner } from '@/components'
 import { cn } from '@/lib/utils'
 import { Layers, Star } from 'lucide-react'
 import { getNicheIcon } from '@/components/ProductForm'
+import type { Niche } from '@/types'
 import {
   SectionCard,
   SectionHeader,
@@ -62,7 +63,7 @@ export default function NichosPage() {
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-          {nichesData?.data?.map((niche: any) => {
+          {nichesData?.data?.map((niche: Niche) => {
             const id = niche.id.toString()
             const isSelected = nicheIds.includes(id)
             const isPrimary = isSelected && id === primaryNicheId

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { AxiosError } from 'axios'
 import { useAdminRefunds } from '@/hooks/useAdminRefunds'
 import { AdminRefund } from '@/types/admin'
 import { useToastContext } from '@/contexts/ToastContext'
@@ -24,8 +25,9 @@ export function useEstornosPage() {
       const res = await api.post(`/admin/refunds/${confirmAction.refund.id}/${confirmAction.action}`)
       success(res.data?.message ?? (confirmAction.action === 'approve' ? 'Estorno aprovado' : 'Estorno rejeitado'))
       qc.invalidateQueries({ queryKey: ['admin', 'refunds'] })
-    } catch (e: any) {
-      error(e?.response?.data?.message ?? 'Erro ao processar estorno')
+    } catch (e) {
+      const err = e as AxiosError<{ message?: string }>
+      error(err?.response?.data?.message ?? 'Erro ao processar estorno')
     } finally {
       setConfirmAction(null)
     }

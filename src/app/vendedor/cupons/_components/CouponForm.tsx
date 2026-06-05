@@ -8,14 +8,22 @@ import { ChevronLeft, CalendarIcon, Loader2, Tag } from 'lucide-react'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn, formatPrice } from '@/lib/utils'
+import type { CreateCouponFormData } from '@/schemas'
+
+/**
+ * Valores de formulário compartilhados entre criação e edição de cupom.
+ * Usa CreateCouponFormData como base — o campo `code` só é registrado
+ * no modo de criação; no modo de edição o campo não é montado no DOM.
+ */
+export type CouponFormValues = CreateCouponFormData
 
 const CODE_MAX = 20
 
 function clampInput(
   e: React.FormEvent<HTMLInputElement>,
   max: number,
-  setVal: (name: any, value: number) => void,
-  field: string,
+  setVal: UseFormSetValue<CouponFormValues>,
+  field: keyof CouponFormValues,
 ) {
   const input = e.currentTarget
   const num = parseFloat(input.value)
@@ -175,11 +183,11 @@ interface CouponFormProps {
   mode: 'create' | 'edit'
   couponCode?: string
   usedCount?: number
-  register: UseFormRegister<any>
-  control: Control<any>
-  watch: UseFormWatch<any>
-  setValue: UseFormSetValue<any>
-  errors: FieldErrors<any>
+  register: UseFormRegister<CouponFormValues>
+  control: Control<CouponFormValues>
+  watch: UseFormWatch<CouponFormValues>
+  setValue: UseFormSetValue<CouponFormValues>
+  errors: FieldErrors<CouponFormValues>
   isSubmitting: boolean
   onSubmit: (e: React.FormEvent) => void
   onCancel: () => void
@@ -208,7 +216,7 @@ export function CouponForm({
   const codeLength = watchedCode.length
 
   const minOrderReg = register('min_order', {
-    setValueAs: (v: any) => {
+    setValueAs: (v: unknown) => {
       if (!v && v !== 0) return undefined
       const num = parseFloat(String(v).replace(',', '.'))
       return isNaN(num) ? undefined : num
@@ -224,7 +232,7 @@ export function CouponForm({
       setValue('min_order', clamped)
     } else {
       e.target.value = ''
-      setValue('min_order', undefined as any)
+      setValue('min_order', undefined)
     }
     minOrderReg.onBlur(e)
   }

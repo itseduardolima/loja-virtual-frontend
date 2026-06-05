@@ -1,6 +1,7 @@
 'use client'
 
 import { AlertTriangle, AlertCircle, Zap, RefreshCw } from 'lucide-react'
+import { formatPrice } from '@/lib/utils'
 import { useGetPaymentLink } from '@/hooks/useGetPaymentLink'
 import { Payment } from '@/types/subscription'
 
@@ -18,7 +19,7 @@ export function TopBanner({ status, isCancelScheduled, pendingPayment, onReactiv
 
   if (status === 'pending') {
     const amount = pendingPayment
-      ? Number(pendingPayment.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
+      ? formatPrice(Number(pendingPayment.amount))
       : '—'
     return (
       <div className="flex items-center gap-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
@@ -26,7 +27,7 @@ export function TopBanner({ status, isCancelScheduled, pendingPayment, onReactiv
           <AlertTriangle className="h-5 w-5" strokeWidth={2} />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-[13.5px] font-bold text-amber-900">Pagamento pendente — R$ {amount}</div>
+          <div className="text-[13.5px] font-bold text-amber-900">Pagamento pendente — {amount}</div>
           <div className="text-[12.5px] font-medium text-amber-800/80 leading-snug">
             Sua última cobrança não foi confirmada. Pague para evitar suspensão da loja.
           </div>

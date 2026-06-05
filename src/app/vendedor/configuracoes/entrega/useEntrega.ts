@@ -25,13 +25,12 @@ export function useEntrega() {
   // Sincroniza com a loja
   useEffect(() => {
     if (!store) return
-    const s = store as any
-    const minVal = s?.free_delivery_min
+    const minVal = store.free_delivery_min
     const minStr = minVal != null && minVal !== '' && Number(minVal) > 0 ? String(minVal) : ''
 
     const next: EntregaFormData = {
-      pickup_enabled: !!s?.pickup_enabled,
-      free_shipping_enabled: !!s?.free_shipping_enabled || (minStr !== ''),
+      pickup_enabled: !!store.pickup_enabled,
+      free_shipping_enabled: minStr !== '',
       free_shipping_min: minStr,
     }
     setFormData(next)
@@ -106,9 +105,7 @@ export function useEntrega() {
         storeId: store.id,
         data: {
           pickup_enabled: formData.pickup_enabled,
-          free_shipping_enabled: formData.free_shipping_enabled,
           free_delivery_min: isNaN(minNum) ? 0 : minNum,
-          // Pickup is always free shipping cost-wise; keep delivery_fee at 0
           delivery_fee: 0,
         },
       })
@@ -137,13 +134,13 @@ export function useEntrega() {
     handleReset,
     storeAddress: store
       ? {
-          address: (store as any)?.address || '',
-          number: (store as any)?.number || '',
-          complement: (store as any)?.complement || '',
-          neighborhood: (store as any)?.neighborhood || '',
-          city: (store as any)?.city || '',
-          state: (store as any)?.state || '',
-          zipcode: (store as any)?.zipcode || '',
+          address: store.address || '',
+          number: store.number || '',
+          complement: store.complement || '',
+          neighborhood: store.neighborhood || '',
+          city: store.city || '',
+          state: store.state || '',
+          zipcode: store.zipcode || '',
         }
       : null,
   }

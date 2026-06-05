@@ -9,14 +9,16 @@ interface FilterOption {
   label: string
 }
 
+export interface TableFiltersState {
+  search?: string
+  status?: number
+  sort?: string
+  limit?: number
+}
+
 interface TableFiltersProps {
-  filters: {
-    search?: string
-    status?: number
-    sort?: string
-    limit?: number
-  }
-  setFilters: (filters: any) => void
+  filters: TableFiltersState
+  setFilters: (updater: (prev: TableFiltersState) => TableFiltersState) => void
   onSearchChange: (search: string) => void
   onSortChange?: (sort: string, sortField: string) => void
   isSearching?: boolean
@@ -59,7 +61,7 @@ export function TableFilters({
     if (onSortChange) {
       onSortChange(value, '')
     } else {
-      setFilters((prev: any) => ({ ...prev, sort: value }))
+      setFilters((prev: TableFiltersState) => ({ ...prev, sort: value }))
     }
   }
 
@@ -123,7 +125,7 @@ export function TableFilters({
             <Select
               value={filters.status?.toString() || 'all'}
               onValueChange={(value: string) =>
-                setFilters((prev: any) => ({ ...prev, status: value === 'all' ? undefined : parseInt(value) }))
+                setFilters((prev: TableFiltersState) => ({ ...prev, status: value === 'all' ? undefined : parseInt(value) }))
               }
             >
               <SelectTrigger>

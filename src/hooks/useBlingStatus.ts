@@ -37,6 +37,7 @@ export function useBlingConnect() {
       return res.data.authUrl
     },
     onSuccess: (authUrl) => {
+      // NAV exception: redirect para URL externa de OAuth do Bling — window.location.href é obrigatório.
       window.location.href = authUrl
     },
   })

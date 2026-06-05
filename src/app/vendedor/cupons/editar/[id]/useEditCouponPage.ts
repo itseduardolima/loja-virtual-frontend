@@ -5,23 +5,25 @@ import { useRouter, useParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { AxiosError } from 'axios'
 import { api } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToastContext } from '@/contexts/ToastContext'
-import { updateCouponSchema, UpdateCouponFormData } from '@/schemas'
+import { updateCouponSchema, CreateCouponFormData } from '@/schemas'
 import type { Coupon } from '../../useCuponsPage'
 
 export function useEditCouponPage() {
   const router = useRouter()
-  const params = useParams()
-  const id = Number(params.id)
+  const { id: rawId } = useParams() as { id: string }
+  const id = Number(rawId)
   const queryClient = useQueryClient()
   const { user, isLoading: authLoading } = useAuth()
   const { success, error: showError } = useToastContext()
 
-  const form = useForm<UpdateCouponFormData>({
+  const form = useForm<CreateCouponFormData>({
     resolver: yupResolver(updateCouponSchema) as any,
     defaultValues: {
+      code: '',
       type: 'percent',
       value: undefined,
       min_order: undefined,
@@ -47,7 +49,7 @@ export function useEditCouponPage() {
       type: coupon.type,
       value: parseFloat(coupon.value),
       min_order: coupon.min_order
-        ? (parseFloat(coupon.min_order).toFixed(2).replace('.', ',') as any)
+        ? parseFloat(coupon.min_order)
         : undefined,
       max_uses: coupon.max_uses ?? undefined,
       expires_at: coupon.expires_at ? new Date(coupon.expires_at) : undefined,
@@ -55,7 +57,7 @@ export function useEditCouponPage() {
   }, [coupon, reset])
 
   const updateMutation = useMutation({
-    mutationFn: async (data: UpdateCouponFormData) => {
+    mutationFn: async (data: CreateCouponFormData) => {
       const response = await api.patch(`/coupons/${id}`, {
         type: data.type,
         value: data.value,
@@ -71,12 +73,12 @@ export function useEditCouponPage() {
       success('Cupom atualizado com sucesso!', 'Sucesso')
       router.push('/vendedor/cupons')
     },
-    onError: (err: any) => {
-      showError(err?.response?.data?.message || 'Erro ao atualizar cupom', 'Erro')
+    onError: (err: AxiosError<{ message?: string }>) => {
+      showError(err.response?.data?.message || err.message || 'Erro ao atualizar cupom', 'Erro')
     },
   })
 
-  const onSubmit = (data: UpdateCouponFormData) => {
+  const onSubmit = (data: CreateCouponFormData) => {
     updateMutation.mutate(data)
   }
 

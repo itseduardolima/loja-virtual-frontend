@@ -6,6 +6,8 @@ import { Plus, Tag, ShoppingCart, Clock, Search, Edit, Trash2, MoreHorizontal } 
 import { ConfirmDialog } from '@/components'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
+import { daysUntil, isExpired } from '@/lib/utils'
+import { COUPON_STATUS, type StatusTone } from '@/lib/vendor'
 import { useAdminPlanCoupons, useAdminDeletePlanCoupon } from '@/hooks/useAdminPlanCoupons'
 import { useToastContext } from '@/contexts/ToastContext'
 import type { AdminPlanCoupon } from '@/types/admin'
@@ -28,14 +30,6 @@ function fmtDate(iso: string) {
   })
 }
 
-function daysUntil(iso: string) {
-  return Math.ceil((new Date(iso).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-}
-
-function isExpired(expires_at: string | null) {
-  return !!expires_at && daysUntil(expires_at) <= 0
-}
-
 type DisplayStatus = 'active' | 'inactive' | 'expired'
 
 function getStatus(c: AdminPlanCoupon): DisplayStatus {
@@ -44,10 +38,18 @@ function getStatus(c: AdminPlanCoupon): DisplayStatus {
   return 'active'
 }
 
+const TONE_TO_CLS: Record<StatusTone, string> = {
+  success: 'bg-green-50 text-green-700',
+  warning: 'bg-amber-50 text-amber-700',
+  danger:  'bg-red-50 text-red-700',
+  neutral: 'bg-nxbg text-nxi2 border border-nxborder',
+  primary: 'bg-nxp/10 text-nxp',
+}
+
 const STATUS_CONFIG: Record<DisplayStatus, { label: string; cls: string }> = {
-  active:   { label: 'Ativo',    cls: 'bg-green-50 text-green-700' },
-  inactive: { label: 'Inativo',  cls: 'bg-nxbg text-nxi2 border border-nxborder' },
-  expired:  { label: 'Expirado', cls: 'bg-amber-50 text-amber-700' },
+  active:   { label: COUPON_STATUS.active.label,   cls: TONE_TO_CLS[COUPON_STATUS.active.tone] },
+  inactive: { label: COUPON_STATUS.inactive.label, cls: TONE_TO_CLS[COUPON_STATUS.inactive.tone] },
+  expired:  { label: COUPON_STATUS.expired.label,  cls: TONE_TO_CLS[COUPON_STATUS.expired.tone] },
 }
 
 // ─── sub-components ───────────────────────────────────────────────────────────

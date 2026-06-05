@@ -5,7 +5,7 @@ import { Printer, FileText, Tag as LabelIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { type Order } from '@/types/order'
-import { formatDate, formatPrice } from '@/lib/utils'
+import { formatDate, formatDateShort, formatPrice } from '@/lib/utils'
 
 interface OrderPrintModalProps {
   order: Order
@@ -151,7 +151,7 @@ function generateInvoiceHTML(order: Order): string {
   ` : ''}
 
   <div style="margin-top:24px;text-align:center;font-size:10px;color:#9ca3af;">
-    Documento gerado em ${new Date().toLocaleDateString('pt-BR')} — Não possui valor fiscal
+    Documento gerado em ${formatDateShort(new Date())} — Não possui valor fiscal
   </div>
 </body>
 </html>`

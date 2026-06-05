@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { ShoppingBag, Search, User, LogIn } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -70,6 +70,7 @@ export function StoreHeader({
 }: StoreHeaderProps) {
   const router = useRouter()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [suggestions, setSuggestions] = useState<Product[]>([])
   const [searchFocused, setSearchFocused] = useState(false)
@@ -117,7 +118,8 @@ export function StoreHeader({
   }
 
   const handleLoginClick = () => {
-    const currentUrl = pathname + (window.location.search || '')
+    const qs = searchParams.toString()
+    const currentUrl = pathname + (qs ? `?${qs}` : '')
     router.push(`/login?redirect=${encodeURIComponent(currentUrl)}`)
     setIsUserMenuOpen(false)
   }

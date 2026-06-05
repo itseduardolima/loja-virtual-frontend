@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Meta } from '@/types/api'
+import type { Meta } from '@/types'
 
 export interface TablePaginationProps {
   meta: Meta | null | undefined

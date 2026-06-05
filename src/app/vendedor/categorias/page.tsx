@@ -29,7 +29,7 @@ import {
 import { useRouter } from 'next/navigation'
 import { useCategoriesPage } from './useCategoriesPage'
 import { LoadingPage } from '@/components/Layout'
-import { cn } from '@/lib/utils'
+import { cn, formatDateShort } from '@/lib/utils'
 import type { Category } from '@/types/category'
 
 const SORT_OPTIONS = [
@@ -44,10 +44,6 @@ const STATUS_TABS: StatusTab<number | undefined>[] = [
   { value: 1, label: 'Ativas' },
   { value: 0, label: 'Inativas' },
 ]
-
-function fmtDate(iso: string) {
-  return new Date(iso).toLocaleDateString('pt-BR')
-}
 
 export default function CategoriesPage() {
   const { user, isLoading: authLoading } = useAuth()
@@ -173,7 +169,7 @@ export default function CategoriesPage() {
                           {category._count?.products ?? 0}
                         </td>
                         <td className="hidden px-2 py-3 text-[12.5px] text-nxi2 sm:table-cell">
-                          {fmtDate(category.created_at)}
+                          {formatDateShort(category.created_at)}
                         </td>
                         <td className="px-2 py-3">
                           <NxBadge

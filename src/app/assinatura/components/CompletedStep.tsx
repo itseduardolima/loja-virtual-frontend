@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Check, Sparkles, Ticket } from "lucide-react";
+import { formatDateLong } from "@/lib/utils";
 
 export type CompletedReason = "paid" | "trial" | "coupon";
 
@@ -21,15 +22,6 @@ interface StepCopy {
   buttonLabel: string;
 }
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  });
-}
-
 function getCopy(props: CompletedStepProps): StepCopy {
   const { reason, trialDays, couponCode, freeAccessUntil } = props;
 
@@ -44,7 +36,7 @@ function getCopy(props: CompletedStepProps): StepCopy {
         ? `Você tem ${days} dias de acesso completo, sem cartão de crédito.`
         : "Seu acesso gratuito está liberado.",
       nextSteps: freeAccessUntil
-        ? `Aproveite até ${formatDate(freeAccessUntil)}. Para continuar depois desse prazo, você poderá assinar um plano em "Meu Plano".`
+        ? `Aproveite até ${formatDateLong(freeAccessUntil)}. Para continuar depois desse prazo, você poderá assinar um plano em "Meu Plano".`
         : 'Crie sua loja agora e comece a vender. Quando o trial acabar, você escolhe um plano em "Meu Plano".',
       buttonLabel: "Criar minha loja",
     };
@@ -60,7 +52,7 @@ function getCopy(props: CompletedStepProps): StepCopy {
         ? `Cupom ${couponCode} aplicado — você tem acesso gratuito durante o período do desconto.`
         : "Seu cupom foi aplicado e você tem acesso gratuito durante o período do desconto.",
       nextSteps: freeAccessUntil
-        ? `Sua conta é vendedor até ${formatDate(freeAccessUntil)}. Depois, será necessário assinar para continuar.`
+        ? `Sua conta é vendedor até ${formatDateLong(freeAccessUntil)}. Depois, será necessário assinar para continuar.`
         : "Sua conta foi atualizada para o perfil de vendedor. Crie sua loja e comece a vender agora.",
       buttonLabel: "Criar minha loja",
     };

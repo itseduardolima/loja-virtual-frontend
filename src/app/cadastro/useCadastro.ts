@@ -77,8 +77,8 @@ export function useCadastro() {
     })
   }
 
-  const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setWhatsapp(e.target.value.replace(/\D/g, ''))
+  const handleWhatsappChange = (value: string) => {
+    setWhatsapp(value.replace(/\D/g, ''))
   }
 
   const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {

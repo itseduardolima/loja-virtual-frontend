@@ -1,11 +1,10 @@
 'use client'
 
 import { ArrowUpRight, Check, RefreshCw, RotateCcw, Zap } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, formatBRL, formatDateShort, daysUntil } from '@/lib/utils'
 import { useGetPaymentLink } from '@/hooks/useGetPaymentLink'
 import { Subscription, SubscriptionPlan, Payment } from '@/types/subscription'
 import { StatusChip } from './StatusChip'
-import { fmtBRL, fmtDate, daysUntil } from '../_utils'
 
 interface SubscriptionCardProps {
   subscription: Subscription
@@ -61,12 +60,12 @@ export function SubscriptionCard({
             <StatusChip status={status} isCancelScheduled={isCancelScheduled} />
           </div>
           <div className="text-[13.5px] font-semibold text-nxi2">
-            <span className="font-bold text-nxi1">{fmtBRL(planPrice)}</span>
+            <span className="font-bold text-nxi1">{formatBRL(planPrice)}</span>
             {' '}/{billingCycle === 'yearly' ? 'ano' : 'mês'} · cobrado {billingCycle === 'yearly' ? 'anualmente' : 'mensalmente'}
           </div>
           {subscription.free_access_until && (
             <div className="mt-2 text-[12px] font-semibold text-amber-700">
-              Acesso gratuito até {fmtDate(subscription.free_access_until)}
+              Acesso gratuito até {formatDateShort(subscription.free_access_until, { utc: true })}
             </div>
           )}
           {subscription.applied_coupon_code && (
@@ -79,7 +78,7 @@ export function SubscriptionCard({
           )}
           {subscription.created_at && (
             <div className="mt-2 text-[12px] text-nxi3">
-              Membro desde {fmtDate(subscription.created_at)}
+              Membro desde {formatDateShort(subscription.created_at, { utc: true })}
             </div>
           )}
         </div>
@@ -92,8 +91,7 @@ export function SubscriptionCard({
           {subscription.current_period_end && (
             <>
               <div className="text-[28px] font-bold leading-tight tracking-tight text-nxi1">
-                {new Date(subscription.current_period_end).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', timeZone: 'UTC' })}
-                {' '}{new Date(subscription.current_period_end).getFullYear()}
+                {formatDateShort(subscription.current_period_end, { utc: true })}
               </div>
               <div className={cn('mt-1 text-[13px] font-semibold', status === 'pending' ? 'text-amber-700' : 'text-nxi2')}>
                 {daysLeft === 0 ? 'hoje' : `em ${daysLeft} dia${daysLeft !== 1 ? 's' : ''}`}
@@ -155,7 +153,7 @@ export function SubscriptionCard({
               <button disabled className="w-full rounded-xl border border-nxborder bg-nxbg py-2.5 text-center text-[12.5px] font-semibold text-nxi3 opacity-70">
                 Cancelamento agendado em{' '}
                 {subscription.current_period_end
-                  ? new Date(subscription.current_period_end).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'UTC' })
+                  ? formatDateShort(subscription.current_period_end, { utc: true })
                   : '—'}
               </button>
             </>

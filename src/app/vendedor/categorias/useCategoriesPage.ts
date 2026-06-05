@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useCategories } from '@/hooks/useCategories'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useToastContext } from '@/contexts/ToastContext'
+import { AxiosError } from 'axios'
 import { Category, CategoryFilters } from '@/types/category'
 
 export function useCategoriesPage() {
@@ -51,8 +52,8 @@ export function useCategoriesPage() {
         success('Categoria excluída com sucesso!', 'Sucesso')
         setDeleteTarget(null)
       },
-      onError: (err: any) => {
-        showError(err?.response?.data?.message || 'Erro ao excluir categoria', 'Erro')
+      onError: (err: AxiosError<{ message?: string }>) => {
+        showError(err.response?.data?.message || err.message || 'Erro ao excluir categoria', 'Erro')
       },
     })
   }

@@ -3,6 +3,8 @@
 import { RotateCcw, CheckCircle, XCircle } from 'lucide-react'
 import { Table, Column, ConfirmDialog } from '@/components'
 import { AdminRefund } from '@/types/admin'
+import { formatPrice } from '@/lib/utils'
+import { Meta } from '@/types'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { SearchInput } from '@/components/ui/search-input'
@@ -27,7 +29,7 @@ export default function AdminEstornosPage() {
     {
       key: 'amount',
       header: 'Valor',
-      accessor: (row) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(row.amount)),
+      accessor: (row) => formatPrice(row.amount),
       type: 'price',
     },
     { key: 'method', header: 'Método', accessor: (row) => methodMap[row.payment_method] ?? row.payment_method },
@@ -90,7 +92,7 @@ export default function AdminEstornosPage() {
           <Table
             columns={columns}
             data={refunds}
-            meta={meta as any}
+            meta={meta as Meta}
             onPageChange={setPage}
             emptyState={{ icon: RotateCcw, title: 'Nenhum estorno encontrado', description: 'Não há pedidos de estorno no momento.' }}
           />

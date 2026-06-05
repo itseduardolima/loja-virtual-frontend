@@ -3,6 +3,7 @@ import * as yup from 'yup'
 import { useStore } from '@/hooks/useStore'
 import { useUpdateStore } from '@/hooks/useUpdateStore'
 import { updateInformacoesBasicasSchema } from '@/schemas'
+import type { UpdateStoreData } from '@/types'
 
 export function useInformacoesBasicas() {
   const { data: store, isLoading } = useStore()
@@ -31,15 +32,15 @@ export function useInformacoesBasicas() {
   useEffect(() => {
     if (store) {
       setFormData({
-        name: (store as any)?.name || '',
-        description: (store as any)?.description || '',
+        name: store.name || '',
+        description: store.description || '',
       })
 
-      if ((store as any)?.logo) {
-        setLogoPreview((store as any).logo)
+      if (store.logo) {
+        setLogoPreview(store.logo)
       }
-      if ((store as any)?.banner) {
-        setBannerPreview((store as any).banner)
+      if (store.banner) {
+        setBannerPreview(store.banner)
       }
     }
   }, [store])
@@ -102,7 +103,7 @@ export function useInformacoesBasicas() {
       await updateInformacoesBasicasSchema.validate(formData, { abortEarly: false })
       setErrors({})
 
-      const updateData: any = {
+      const updateData: Partial<UpdateStoreData> = {
         name: formData.name,
         description: formData.description || undefined,
       }

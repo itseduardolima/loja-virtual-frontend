@@ -5,14 +5,16 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { AxiosError } from 'axios'
 import { api } from '@/lib/axios'
 import { createProductSchema, CreateProductFormData } from '@/schemas'
 import { useToastContext } from '@/contexts/ToastContext'
 import { useStore } from '@/hooks/useStore'
 import { useNiches, useNicheFields } from '@/hooks/useNiches'
 import { useSharedProductState, buildProductFormData } from '@/components/ProductForm'
+import type { User } from '@/types'
 
-export function useCreateProductPage(user: any) {
+export function useCreateProductPage(user: User | null) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const { error: showError, success: showSuccess } = useToastContext()
@@ -149,7 +151,7 @@ export function useCreateProductPage(user: any) {
       showSuccess('Produto criado com sucesso!', 'Sucesso')
       router.push('/vendedor/produtos')
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       const msg = error.response?.data?.message || error.message || 'Erro ao criar produto'
       showError(msg, 'Erro ao criar produto')
     },

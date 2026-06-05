@@ -1,18 +1,14 @@
 import type { SubscriptionPlan, NormalizedPlan } from '@/types'
+import { formatBRL } from '@/lib/utils'
 
 export type { NormalizedPlan }
+export { formatBRL }
 
 export const parsePrice = (value: string | null | undefined): number => {
   if (!value) return 0
   const n = Number(String(value).replace(',', '.'))
   return Number.isFinite(n) ? n : 0
 }
-
-export const formatBRL = (n: number, decimals = 2): string =>
-  n.toLocaleString('pt-BR', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  })
 
 export const formatYearlyTotal = (n: number): string =>
   Number.isInteger(n)

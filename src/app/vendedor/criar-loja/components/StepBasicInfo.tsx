@@ -9,7 +9,7 @@ interface StepBasicInfoProps {
   logoPreview: string | null
   bannerPreview: string | null
   errors: Record<string, string>
-  onChange: (field: keyof CreateStoreData, value: any) => void
+  onChange: (field: keyof CreateStoreData, value: CreateStoreData[keyof CreateStoreData]) => void
   onFile: (field: 'logo' | 'banner', file: File) => void
 }
 

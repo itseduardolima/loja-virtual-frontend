@@ -5,16 +5,17 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { AxiosError } from 'axios'
 import { api } from '@/lib/axios'
 import { createProductSchema, CreateProductFormData } from '@/schemas/productSchemas'
 import { useUpdateProduct } from '@/hooks/useProducts'
 import { useToastContext } from '@/contexts/ToastContext'
 import { useStore } from '@/hooks/useStore'
 import { useNiches, useNicheFields } from '@/hooks/useNiches'
-import { NicheFieldValue } from '@/types'
+import type { NicheField, NicheFieldValue, User } from '@/types'
 import { useSharedProductState, buildProductFormData, type OrderedImage } from '@/components/ProductForm'
 
-export function useEditProductPage(productId: string, user: any) {
+export function useEditProductPage(productId: string, user: User | null) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const { error: showError, success: showSuccess } = useToastContext()
@@ -143,7 +144,7 @@ export function useEditProductPage(productId: string, user: any) {
       }
 
       const map: Record<string, NicheFieldValue> = {}
-      product.dynamic_fields.forEach((field: any) => {
+      product.dynamic_fields.forEach((field: Pick<NicheField, 'id'> & { field_id?: number; value: string | string[] }) => {
         if (!field.field_id) return
         const fieldId =
           typeof field.field_id === 'number'
@@ -205,7 +206,7 @@ export function useEditProductPage(productId: string, user: any) {
       }
     } else {
       const remainingExisting = Array.isArray(product?.images)
-        ? (product.images as any[]).filter((_, i) => !removedExistingImages.includes(i)).length
+        ? (product.images as string[]).filter((_, i) => !removedExistingImages.includes(i)).length
         : 0
       const total = selectedImages.length + remainingExisting
       if (total < 2) { showError('O produto deve ter no mínimo 2 imagens', 'Validação'); return }
@@ -232,8 +233,9 @@ export function useEditProductPage(productId: string, user: any) {
           showSuccess('Produto atualizado com sucesso!', 'Sucesso')
           router.push('/vendedor/produtos')
         },
-        onError: (error: any) => {
-          const msg = error.response?.data?.message || error.message || 'Erro ao atualizar produto'
+        onError: (error: unknown) => {
+          const axiosErr = error as AxiosError<{ message?: string }>
+          const msg = axiosErr.response?.data?.message || axiosErr.message || 'Erro ao atualizar produto'
           showError(msg, 'Erro ao atualizar produto')
         },
       },

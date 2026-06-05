@@ -195,7 +195,7 @@ export default function OrdersPage() {
       <div className="min-h-screen flex items-center justify-center">
         <ErrorState
           message="Erro ao carregar pedidos"
-          onRetry={() => window.location.reload()}
+          onRetry={() => queryClient.invalidateQueries({ queryKey: ['orders'] })}
         />
       </div>
     )

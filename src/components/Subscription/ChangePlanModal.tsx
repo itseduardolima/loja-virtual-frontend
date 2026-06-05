@@ -10,7 +10,7 @@ import { useChangePlan } from '@/hooks/useChangePlan'
 import { useRenewSubscription } from '@/hooks/useRenewSubscription'
 import { usePreviewChangePlan } from '@/hooks/usePreviewChangePlan'
 import { derivePlanFeaturesComparison, computeYearlySavings } from '@/lib/planUtils'
-import { formatPrice, cn } from '@/lib/utils'
+import { formatPrice, formatDateShort, formatDateLong, cn } from '@/lib/utils'
 import type { BillingCycle, BillingType, ChangePlanRequest, SubscriptionPlan } from '@/types/subscription'
 
 type Mode = 'change' | 'renew'
@@ -307,7 +307,7 @@ export function ChangePlanModal({
                         <p className="text-[12.5px] text-nxi2">
                           Próxima cobrança em{' '}
                           <span className="font-semibold text-nxi1">
-                            {new Date(previewData.next_full_charge_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' })}
+                            {formatDateShort(previewData.next_full_charge_at, { utc: true })}
                           </span>
                         </p>
                         <p className="text-[14px] font-bold text-nxi1">{formatPrice(previewData.new_price)}</p>
@@ -329,7 +329,7 @@ export function ChangePlanModal({
                     <div className="px-4 py-3.5">
                       <p className="text-[12.5px] text-nxi2">Você continua no plano atual até</p>
                       <p className="mt-0.5 text-[16px] font-extrabold tracking-tight text-nxi1">
-                        {new Date(previewData.effective_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'UTC' })}
+                        {formatDateLong(previewData.effective_at)}
                       </p>
                       <p className="mt-2 text-[12px] text-nxi3">
                         Nenhuma cobrança agora. O novo plano começa a ser cobrado no próximo ciclo. Você pode cancelar o agendamento antes dessa data.

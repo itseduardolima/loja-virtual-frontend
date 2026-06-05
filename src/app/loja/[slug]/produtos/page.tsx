@@ -56,6 +56,7 @@ export default function StorePage() {
     meta,
     nextCursor,
     loadMore,
+    refetch,
 
     // Dados processados
     categories,
@@ -146,7 +147,7 @@ export default function StorePage() {
       <div className="min-h-screen flex items-center justify-center">
         <ErrorState
           message={error}
-          onRetry={() => window.location.reload()}
+          onRetry={refetch}
         />
       </div>
     )
