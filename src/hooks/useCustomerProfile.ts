@@ -24,7 +24,7 @@ export function useCustomerProfile() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['customer-profile'] })
-      toast.success(data.message || 'Perfil atualizado com sucesso')
+      
     },
     onError: (error: any) => {
       const raw = error.response?.data?.message ?? error.message ?? 'Erro ao atualizar perfil'
