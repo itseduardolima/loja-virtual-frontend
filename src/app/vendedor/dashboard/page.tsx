@@ -8,13 +8,9 @@ import {
   DashboardRevenueChart,
   DashboardTopProducts,
 } from '@/components/Vendor/Dashboard'
-import { usePlanFeatures } from '@/hooks/usePlanFeatures'
-import { useStore } from '@/hooks/useStore'
 import { useDashboardPage } from './useDashboardPage'
 
 export default function DashboardPage() {
-  const { features } = usePlanFeatures()
-  const { data: store } = useStore()
   const {
     summary,
     recentOrders,
@@ -27,6 +23,8 @@ export default function DashboardPage() {
     setPeriod,
     customRange,
     setCustomRange,
+    storeName,
+    advancedDashboard,
   } = useDashboardPage()
 
   if (isError) {
@@ -40,7 +38,7 @@ export default function DashboardPage() {
         onPeriodChange={setPeriod}
         customRange={customRange}
         onCustomRangeChange={setCustomRange}
-        storeName={store?.name}
+        storeName={storeName}
       />
 
       <DashboardKpiGrid summary={summary} isLoading={isLoading} period={period} />
@@ -48,7 +46,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[2fr_1fr]">
         <LockedFeatureOverlay
           feature="feature_advanced_dashboard"
-          locked={!features.feature_advanced_dashboard}
+          locked={!advancedDashboard}
         >
           <DashboardRevenueChart
             data={revenueData}
@@ -62,7 +60,7 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-4">
           <LockedFeatureOverlay
             feature="feature_advanced_dashboard"
-            locked={!features.feature_advanced_dashboard}
+            locked={!advancedDashboard}
           >
             <DashboardTopProducts products={topProducts} isLoading={isLoading} />
           </LockedFeatureOverlay>

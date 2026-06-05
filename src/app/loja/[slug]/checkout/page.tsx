@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -64,9 +63,9 @@ export default function CheckoutPage() {
     isCheckoutLoading,
     handleSubmit,
     handleSaveAndSelectAddress,
+    focusedField,
+    setFocusedField,
   } = useCheckoutPage();
-
-  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   if (storeLoading || isLoadingCart) {
     return (

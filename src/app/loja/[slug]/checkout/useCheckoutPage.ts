@@ -52,6 +52,9 @@ export function useCheckoutPage() {
   const params = useParams()
   const slug = params.slug as string
 
+  // UI state — focusedField controls character-count hints in the form
+  const [focusedField, setFocusedField] = useState<string | null>(null)
+
   const { storeInfo, loading: storeLoading } = useStoreInfo(slug)
   const storeId = storeInfo?.id
   const { cartItems, totalPrice, sessionId, isLoadingCart } = useCart(storeId)
@@ -278,6 +281,10 @@ export function useCheckoutPage() {
   return {
     // Route
     slug,
+
+    // UI
+    focusedField,
+    setFocusedField,
 
     // Store
     storeLoading,

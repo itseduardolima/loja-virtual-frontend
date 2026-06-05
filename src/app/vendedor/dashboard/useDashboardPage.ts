@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { useDashboard } from '@/hooks/useDashboard'
 import { useRevenueChart } from '@/hooks/useRevenueChart'
 import { usePlanFeatures } from '@/hooks/usePlanFeatures'
+import { useStore } from '@/hooks/useStore'
 import { getPreviousRange } from '@/lib/vendor'
 import type { PeriodKey } from '@/components/Vendor/Dashboard'
 
@@ -41,6 +42,7 @@ function rangeForPeriod(
 
 export function useDashboardPage() {
   const { features } = usePlanFeatures()
+  const { data: store } = useStore()
   const [period, setPeriodState] = useState<PeriodKey>('7d')
   const [customRange, setCustomRangeState] = useState<DashboardCustomRange | null>(null)
 
@@ -96,5 +98,7 @@ export function useDashboardPage() {
     customRange,
     setCustomRange,
     currentRange,
+    storeName: store?.name,
+    advancedDashboard: features.feature_advanced_dashboard,
   }
 }

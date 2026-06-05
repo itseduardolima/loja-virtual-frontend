@@ -1,19 +1,14 @@
 'use client'
 
-import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { useAdminUser } from '@/hooks/useAdminUsers'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { useAdminUserDetailPage } from './useAdminUserDetailPage'
 
 export default function AdminUsuarioDetailPage() {
-  const { id } = useParams() as { id: string }
-  const router = useRouter()
-  const { data: user, isLoading } = useAdminUser(Number(id))
-
-  const profileNames: Record<number, string> = { 1: 'Administrador', 2: 'Vendedor', 3: 'Cliente' }
+  const { user, isLoading, profileName, goBack } = useAdminUserDetailPage()
 
   if (isLoading) return <div className="text-center py-16 text-gray-400">Carregando...</div>
   if (!user) return <div className="text-center py-16 text-gray-400">Usuário não encontrado.</div>
@@ -21,7 +16,7 @@ export default function AdminUsuarioDetailPage() {
   return (
     <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="sm" onClick={() => router.back()}>
+        <Button variant="ghost" size="sm" onClick={goBack}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Voltar
         </Button>
@@ -53,7 +48,7 @@ export default function AdminUsuarioDetailPage() {
             </div>
             <div>
               <p className="text-xs text-gray-500 mb-1">Perfil</p>
-              <p className="font-medium">{profileNames[user.profile_id] ?? '-'}</p>
+              <p className="font-medium">{profileName}</p>
             </div>
             <div>
               <p className="text-xs text-gray-500 mb-1">Status</p>

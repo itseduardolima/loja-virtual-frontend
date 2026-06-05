@@ -1,24 +1,9 @@
 'use client'
 
-import { Suspense, useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { useTrackOrder } from '@/hooks/useTrackOrder'
-import { useCancelOrder } from '@/hooks/useCancelOrder'
-import { useAuth } from '@/contexts/AuthContext'
-import { buildImageUrl, formatDate, formatPrice } from '@/lib/utils'
-import {
-  Search,
-  Package,
-  Clock,
-  CheckCircle,
-  Truck,
-  XCircle,
-  Store,
-  AlertTriangle,
-} from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -27,89 +12,36 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
-
-const STATUS_CONFIG: Record<number, { label: string; color: string; icon: React.ReactNode }> = {
-  1: {
-    label: 'Pendente',
-    color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    icon: <Clock className="h-4 w-4" />,
-  },
-  2: {
-    label: 'Confirmado',
-    color: 'bg-blue-100 text-blue-800 border-blue-200',
-    icon: <CheckCircle className="h-4 w-4" />,
-  },
-  3: {
-    label: 'Enviado',
-    color: 'bg-purple-100 text-purple-800 border-purple-200',
-    icon: <Truck className="h-4 w-4" />,
-  },
-  4: {
-    label: 'Entregue',
-    color: 'bg-green-100 text-green-800 border-green-200',
-    icon: <CheckCircle className="h-4 w-4" />,
-  },
-  5: {
-    label: 'Cancelado',
-    color: 'bg-red-100 text-red-800 border-red-200',
-    icon: <XCircle className="h-4 w-4" />,
-  },
-}
-
-function OrderSkeleton() {
-  return (
-    <div className="animate-pulse space-y-4 mt-8">
-      <div className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
-        <div className="h-6 bg-gray-200 rounded w-1/3" />
-        <div className="h-4 bg-gray-200 rounded w-1/4" />
-        <div className="h-8 bg-gray-200 rounded-full w-24" />
-      </div>
-      <div className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="flex gap-3">
-            <div className="h-8 w-8 bg-gray-200 rounded-full flex-shrink-0" />
-            <div className="flex-1 space-y-2">
-              <div className="h-4 bg-gray-200 rounded w-1/3" />
-              <div className="h-3 bg-gray-200 rounded w-1/4" />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
+import {
+  Search,
+  Package,
+  XCircle,
+  Store,
+  AlertTriangle,
+} from 'lucide-react'
+import { buildImageUrl, formatDate, formatPrice } from '@/lib/utils'
+import { useRastrearPage } from './useRastrearPage'
+import { OrderSkeleton } from './_components/OrderSkeleton'
+import { STATUS_CONFIG } from './_components/statusConfig'
 
 function RastrearPedidoContent() {
-  const searchParams = useSearchParams()
-  const codeFromUrl = searchParams.get('code')
-
-  const [inputCode, setInputCode] = useState(codeFromUrl ?? '')
-  const [searchCode, setSearchCode] = useState<string | null>(codeFromUrl ?? null)
-  const [showCancelDialog, setShowCancelDialog] = useState(false)
-  const [cancelReason, setCancelReason] = useState('')
-  const [cancelResult, setCancelResult] = useState<'cancelled' | 'requested' | null>(null)
-
-  const { isAuthenticated } = useAuth()
-  const { data, isLoading, error } = useTrackOrder(searchCode)
-  const { mutate: cancelOrder, isPending: isCancelling } = useCancelOrder()
-
-  useEffect(() => {
-    if (codeFromUrl) {
-      setInputCode(codeFromUrl)
-      setSearchCode(codeFromUrl)
-    }
-  }, [codeFromUrl])
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    const trimmed = inputCode.trim().replace(/^#+/, '')
-    if (trimmed) {
-      setSearchCode(trimmed)
-      setCancelResult(null)
-    }
-  }
-
-  const order = data?.data
+  const {
+    inputCode,
+    setInputCode,
+    handleSearch,
+    order,
+    isLoading,
+    error,
+    showCancelDialog,
+    cancelReason,
+    setCancelReason,
+    isCancelling,
+    cancelResult,
+    canCancel,
+    handleOpenCancelDialog,
+    handleCloseCancelDialog,
+    handleConfirmCancel,
+  } = useRastrearPage()
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
@@ -186,7 +118,6 @@ function RastrearPedidoContent() {
                 <div>
                   <p className="text-xs text-gray-500 mb-0.5">Código do pedido</p>
                   <p className="font-bold text-gray-900 text-lg">{order.order_code}</p>
-                 
                 </div>
 
                 {/* Badge de status */}
@@ -218,7 +149,7 @@ function RastrearPedidoContent() {
               </div>
 
               {/* Solicitar cancelamento — apenas logado e status cancelável */}
-              {isAuthenticated && (order.status === 1 || order.status === 2) && (
+              {canCancel && (
                 <div className="mt-4 pt-4 border-t border-gray-100">
                   {cancelResult === 'cancelled' ? (
                     <div className="flex items-center justify-center gap-2 py-2 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-xl">
@@ -234,10 +165,7 @@ function RastrearPedidoContent() {
                     <Button
                       variant="outline"
                       className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 gap-2"
-                      onClick={() => {
-                        setCancelReason('')
-                        setShowCancelDialog(true)
-                      }}
+                      onClick={handleOpenCancelDialog}
                     >
                       <AlertTriangle className="h-4 w-4" />
                       Solicitar cancelamento
@@ -267,7 +195,7 @@ function RastrearPedidoContent() {
                           {!isLast && <div className="w-0.5 flex-1 bg-gray-200 my-1" />}
                         </div>
                         {/* Conteúdo */}
-                        <div className={`pb-5 ${isLast ? '' : ''}`}>
+                        <div className="pb-5">
                           <p className="font-semibold text-gray-900 text-sm">
                             {item.status_text ?? config?.label ?? `Status ${item.status}`}
                           </p>
@@ -304,15 +232,7 @@ function RastrearPedidoContent() {
       </div>
 
       {/* Dialog de cancelamento */}
-      <Dialog
-        open={showCancelDialog}
-        onOpenChange={(open) => {
-          if (!open) {
-            setShowCancelDialog(false)
-            setCancelReason('')
-          }
-        }}
-      >
+      <Dialog open={showCancelDialog} onOpenChange={(open) => { if (!open) handleCloseCancelDialog() }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Solicitar cancelamento</DialogTitle>
@@ -335,31 +255,13 @@ function RastrearPedidoContent() {
             </p>
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setShowCancelDialog(false)
-                setCancelReason('')
-              }}
-            >
+            <Button variant="ghost" onClick={handleCloseCancelDialog}>
               Voltar
             </Button>
             <Button
               variant="destructive"
               disabled={!cancelReason.trim() || isCancelling || !order?.id}
-              onClick={() => {
-                if (!order?.id || !cancelReason.trim()) return
-                cancelOrder(
-                  { orderId: order.id, data: { reason: cancelReason.trim() } },
-                  {
-                    onSuccess: (res: any) => {
-                      setShowCancelDialog(false)
-                      setCancelReason('')
-                      setCancelResult(res?.type === 'cancelled' ? 'cancelled' : 'requested')
-                    },
-                  }
-                )
-              }}
+              onClick={handleConfirmCancel}
             >
               {isCancelling ? 'Cancelando...' : 'Confirmar cancelamento'}
             </Button>

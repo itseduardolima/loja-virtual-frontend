@@ -1,9 +1,21 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 import { buildImageUrl } from '@/lib/utils'
 import { useCart } from '@/hooks/useCart'
+import { useStoreInfo } from '@/hooks/useStoreInfo'
+import { useProductReviews } from '@/hooks/useProductReviews'
+import { useProductQuestionsCount } from '@/hooks/useProductQuestions'
+import { useWishlist } from '@/hooks/useWishlist'
 import { ProductDetail, ProductDetailResponse } from '@/types/product'
+
+// useAddToCartAnimation inlined here — it is only used on this page.
+// The file src/hooks/useAddToCartAnimation.ts remains for Fase 3 cleanup.
+interface AnimationData {
+  imageUrl: string
+  startElement: HTMLElement | null
+  endElement: HTMLElement | null
+}
 
 export function useProductDetailPage(slug: string, productId: string) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
@@ -11,6 +23,23 @@ export function useProductDetailPage(slug: string, productId: string) {
   const [selectedColor, setSelectedColor] = useState<string | null>(null)
   const [quantity, setQuantity] = useState(1)
   const colorInitialized = useRef(false)
+
+  // Store info (used for AnnouncementBar, StoreHeader, footer, WhatsApp widget)
+  const { storeInfo } = useStoreInfo(slug)
+
+  // Add-to-cart animation state (inlined from useAddToCartAnimation)
+  const [animationData, setAnimationData] = useState<AnimationData | null>(null)
+
+  const triggerAnimation = useCallback((imageUrl: string, startElementId: string) => {
+    const startElement = document.getElementById(startElementId)
+    const endElement = document.getElementById('cart-icon-button')
+    if (!startElement || !endElement) return
+    setAnimationData({ imageUrl, startElement, endElement })
+  }, [])
+
+  const onAnimationComplete = useCallback(() => {
+    setAnimationData(null)
+  }, [])
 
   // Buscar dados do produto
   const { data: product, isLoading, error, refetch } = useQuery({
@@ -150,6 +179,15 @@ export function useProductDetailPage(slug: string, productId: string) {
     })
   }
 
+  // Reviews summary (used for rating display + section count badge)
+  const { summary: reviewsSummary } = useProductReviews(slug, productId)
+
+  // Questions count (used for section count badge)
+  const questionsTotal = useProductQuestionsCount(slug, productId)
+
+  // Wishlist
+  const { isInWishlist, toggleWishlist, isLoading: wishlistLoading } = useWishlist()
+
   return {
     product,
     isLoading,
@@ -168,5 +206,19 @@ export function useProductDetailPage(slug: string, productId: string) {
     decreaseQuantity,
     addToCart,
     isAddingToCart,
+    // Store info
+    storeInfo,
+    // Cart animation
+    animationData,
+    triggerAnimation,
+    onAnimationComplete,
+    // Reviews
+    reviewsSummary,
+    // Questions
+    questionsTotal,
+    // Wishlist
+    isInWishlist,
+    toggleWishlist,
+    wishlistLoading,
   }
 }

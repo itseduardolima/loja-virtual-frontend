@@ -1,4 +1,6 @@
 import { Product } from '@/types/product'
+import type { StoreInfo, StoreCategory as GlobalStoreCategory } from '@/types/store'
+import type { Niche, NicheField } from '@/types'
 
 // Tipos para os filtros da loja
 export interface StoreFilters {
@@ -72,8 +74,19 @@ export interface StorePageApiData {
   refetch: () => void
 }
 
+// Dados da loja e sidebar que o useStorePage agora compõe
+export interface StorePageSidebarData {
+  storeInfo: StoreInfo | null
+  storeCategories: GlobalStoreCategory[]
+  niches: Niche[]
+  allStoreFields: NicheField[]
+  categoryNicheMap: Record<number, number>
+  displayProducts: Product[]
+  getPageTitle: () => string
+}
+
 // Tipo principal do hook useStorePage
-export interface UseStorePageReturn extends StorePageState, StorePageApiData, ProcessedStoreData, StorePageHandlers {}
+export interface UseStorePageReturn extends StorePageState, StorePageApiData, ProcessedStoreData, StorePageHandlers, StorePageSidebarData {}
 
 // Tipos para as props dos componentes
 export interface StoreFiltersProps {
