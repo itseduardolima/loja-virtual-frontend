@@ -19,6 +19,7 @@ export function SectionCard({
     <div
       className={cn(
         'rounded-2xl border border-nxborder bg-white shadow-[0_1px_2px_hsl(0_0%_0%/0.04)]',
+        flush && 'overflow-hidden',
         !flush && 'p-5 md:p-6',
         className,
       )}
