@@ -11,7 +11,9 @@ import { useCustomerProfile } from '@/hooks/useCustomerProfile'
 import { useAddresses } from '@/hooks/useAddresses'
 import { checkoutFormSchema } from '@/schemas/checkoutSchemas'
 import { api } from '@/lib/api'
+import { getCartItemImage } from '@/lib/utils'
 import type { User } from '@/types/auth'
+import type { OrderSnapshot } from '@/hooks/useCheckout'
 
 export interface CouponResult {
   coupon_code: string
@@ -52,18 +54,20 @@ export function useCheckoutPage() {
   const params = useParams()
   const slug = params.slug as string
 
-  // UI state — focusedField controls character-count hints in the form
-  const [focusedField, setFocusedField] = useState<string | null>(null)
-
   const { storeInfo, loading: storeLoading } = useStoreInfo(slug)
   const storeId = storeInfo?.id
   const { cartItems, totalPrice, sessionId, isLoadingCart } = useCart(storeId)
   const { checkout, isCheckoutLoading } = useCheckout()
   const { user, isAuthenticated } = useAuth()
   const { fetchProfile } = useCustomerProfile()
-  const { addresses, isLoading: addressesLoading, createAddress, isCreating } = useAddresses(isAuthenticated)
+  const {
+    addresses,
+    isLoading: addressesLoading,
+    createAddress,
+    isCreating,
+  } = useAddresses(isAuthenticated)
 
-  // Customer form
+  // Formulário do cliente
   const [formData, setFormData] = useState({
     customer_name: '',
     customer_email: '',
@@ -73,33 +77,36 @@ export function useCheckoutPage() {
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  // Coupon
+  // Cupom
   const [couponInput, setCouponInput] = useState('')
   const [couponResult, setCouponResult] = useState<CouponResult | null>(null)
   const [couponError, setCouponError] = useState('')
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false)
 
-  // Delivery address
+  // Endereço de entrega
   const [addressError, setAddressError] = useState('')
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null)
   const [showAddressForm, setShowAddressForm] = useState(false)
   const [addressForm, setAddressForm] = useState<AddressFormData>(emptyAddressForm)
   const [useManualAddress, setUseManualAddress] = useState(false)
-  const [showAddresses, setShowAddresses] = useState(true)
   const [isFetchingCep, setIsFetchingCep] = useState(false)
   const [cepError, setCepError] = useState('')
 
-  // Load user data on mount
+  // Preenche formulário com dados do usuário autenticado
   useEffect(() => {
     const userDataStr = typeof window !== 'undefined' ? localStorage.getItem('user-data') : null
     let fallback: User | null = null
     if (user) fallback = user
     else if (userDataStr) {
-      try { fallback = JSON.parse(userDataStr) as User } catch { /* */ }
+      try {
+        fallback = JSON.parse(userDataStr) as User
+      } catch {
+        /* */
+      }
     }
 
     if (fallback) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         customer_name: fallback.name || prev.customer_name,
         customer_email: fallback.email || prev.customer_email,
@@ -111,7 +118,7 @@ export function useCheckoutPage() {
         .then((res) => {
           const data = res?.data
           if (data) {
-            setFormData(prev => ({
+            setFormData((prev) => ({
               ...prev,
               customer_name: data.name || prev.customer_name,
               customer_email: data.email || prev.customer_email,
@@ -124,17 +131,17 @@ export function useCheckoutPage() {
     }
   }, [user, isAuthenticated])
 
-  // Auto-select default address
+  // Seleciona endereço padrão automaticamente
   useEffect(() => {
     if (addresses.length > 0 && selectedAddressId === null) {
-      const def = addresses.find(a => a.is_default === 1)
+      const def = addresses.find((a) => a.is_default === 1)
       setSelectedAddressId(def?.id ?? addresses[0].id)
     }
   }, [addresses, selectedAddressId])
 
   const handleZipcodeChange = async (value: string) => {
     const formatted = value.slice(0, 9)
-    setAddressForm(p => ({ ...p, zipcode: formatted }))
+    setAddressForm((p) => ({ ...p, zipcode: formatted }))
     setCepError('')
 
     const digits = formatted.replace(/\D/g, '')
@@ -143,14 +150,16 @@ export function useCheckoutPage() {
       const controller = new AbortController()
       const timer = setTimeout(() => controller.abort(), 5000)
       try {
-        const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`, { signal: controller.signal })
+        const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`, {
+          signal: controller.signal,
+        })
         clearTimeout(timer)
         if (!res.ok) throw new Error('CEP inválido')
         const data = await res.json()
         if (data.erro) {
           setCepError('CEP não encontrado')
         } else {
-          setAddressForm(p => ({
+          setAddressForm((p) => ({
             ...p,
             zipcode: formatted,
             street: data.logradouro || p.street,
@@ -172,10 +181,24 @@ export function useCheckoutPage() {
   const hasItems = Array.isArray(cartItems) && cartItems.length > 0
   const finalTotal = couponResult ? couponResult.final_total : totalPrice
 
+  // Indicadores de seção completa — usados pelos SectionCards.
+  // Limiares espelham o checkoutFormSchema (telefone 8–15 dígitos, doc 11/14)
+  const dadosDone = !!(
+    formData.customer_name.trim() &&
+    /.+@.+\..+/.test(formData.customer_email) &&
+    formData.customer_phone.replace(/\D/g, '').length >= 8 &&
+    formData.customer_document.replace(/\D/g, '').length >= 11
+  )
+  const addrDone = !!getDeliveryAddressJson()
+
   const handleInput = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }))
     if (errors[field]) {
-      setErrors(prev => { const n = { ...prev }; delete n[field]; return n })
+      setErrors((prev) => {
+        const n = { ...prev }
+        delete n[field]
+        return n
+      })
     }
   }
 
@@ -185,10 +208,14 @@ export function useCheckoutPage() {
     setCouponError('')
     setCouponResult(null)
     try {
-      const res = await api.post<{ data: CouponResult }>('/coupons/validate', {
-        code: couponInput.trim(),
-        order_total: totalPrice,
-      }, { params: { store_id: storeId } })
+      const res = await api.post<{ data: CouponResult }>(
+        '/coupons/validate',
+        {
+          code: couponInput.trim(),
+          order_total: totalPrice,
+        },
+        { params: { store_id: storeId } },
+      )
       setCouponResult(res.data.data)
     } catch (err: unknown) {
       const axiosErr = err instanceof AxiosError ? err : null
@@ -204,9 +231,9 @@ export function useCheckoutPage() {
     setCouponError('')
   }
 
-  const getDeliveryAddressJson = (): string | undefined => {
+  function getDeliveryAddressJson(): string | undefined {
     if (selectedAddressId && !useManualAddress) {
-      const addr = addresses.find(a => a.id === selectedAddressId)
+      const addr = addresses.find((a) => a.id === selectedAddressId)
       if (addr) return JSON.stringify(addr)
     }
     if (useManualAddress && addressForm.street && addressForm.city) {
@@ -216,7 +243,14 @@ export function useCheckoutPage() {
   }
 
   const handleSaveAndSelectAddress = async () => {
-    if (!addressForm.name || !addressForm.street || !addressForm.city || !addressForm.state || !addressForm.zipcode) return
+    if (
+      !addressForm.name ||
+      !addressForm.street ||
+      !addressForm.city ||
+      !addressForm.state ||
+      !addressForm.zipcode
+    )
+      return
     const result = await createAddress({
       ...addressForm,
       is_default: addressForm.is_default,
@@ -262,6 +296,25 @@ export function useCheckoutPage() {
       api.patch('/customers/profile', { document: cleanDocument }).catch(() => {})
     }
 
+    // Snapshot para a página de pedido-sucesso
+    const snapshot: Omit<OrderSnapshot, 'order_code' | 'whatsapp_link'> = {
+      customer_name: formData.customer_name.trim(),
+      subtotal: totalPrice,
+      discount: couponResult?.discount ?? 0,
+      coupon_code: couponResult?.coupon_code,
+      total: finalTotal,
+      created_at: new Date().toISOString(),
+      items: cartItems.map((item) => ({
+        name: item.product.name,
+        image: getCartItemImage(item),
+        color: item.color || undefined,
+        size: item.size || undefined,
+        quantity: item.quantity,
+        unit_price: parseFloat(item.product.price),
+        subtotal: item.subtotal,
+      })),
+    }
+
     await checkout(
       sessionId,
       storeId,
@@ -275,21 +328,20 @@ export function useCheckoutPage() {
         delivery_address: deliveryAddress,
       },
       slug,
+      snapshot,
     )
   }
 
   return {
-    // Route
+    // Rota
     slug,
 
-    // UI
-    focusedField,
-    setFocusedField,
-
-    // Store
+    // Loja
+    storeInfo,
+    storeId,
     storeLoading,
 
-    // Cart
+    // Carrinho
     cartItems,
     totalPrice,
     isLoadingCart,
@@ -298,7 +350,7 @@ export function useCheckoutPage() {
     user,
     isAuthenticated,
 
-    // Addresses
+    // Endereços
     addresses,
     addressesLoading,
     isCreating,
@@ -314,15 +366,13 @@ export function useCheckoutPage() {
     setAddressForm,
     useManualAddress,
     setUseManualAddress,
-    showAddresses,
-    setShowAddresses,
 
-    // Customer form
+    // Formulário do cliente
     formData,
     errors,
     handleInput,
 
-    // Coupon
+    // Cupom
     couponInput,
     setCouponInput,
     couponResult,
@@ -332,9 +382,11 @@ export function useCheckoutPage() {
     handleValidateCoupon,
     handleRemoveCoupon,
 
-    // Computed
+    // Derivados
     hasItems,
     finalTotal,
+    dadosDone,
+    addrDone,
 
     // Submit
     isCheckoutLoading,

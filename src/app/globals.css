@@ -84,6 +84,7 @@
   --nxi2: 225 14% 38%;         /* ink-medium  */
   --nxi3: 225 10% 58%;         /* ink-faint   */
   --nxborder: 220 14% 92%;     /* border      */
+  --wa: 142 64% 38%;           /* verde WhatsApp */
 }
 
 /* Fade-in para campos dinâmicos / seções (fluxo Criar Produto) */
@@ -108,6 +109,44 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .nx-gallery-swap { animation: none; }
+}
+
+/* Fluxo sacola/checkout/sucesso — entrada de blocos */
+@keyframes ckRise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ck-rise {
+  animation: ckRise 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ck-rise { animation: none; }
+}
+
+/* Pedido confirmado — pop do círculo do check */
+@keyframes ckPop {
+  0%   { transform: scale(0.6); }
+  60%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+.ck-pop {
+  animation: ckPop 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ck-pop { animation: none; }
+}
+
+/* Pedido confirmado — desenho do traço do check (SVG) */
+@keyframes ckDash {
+  from { stroke-dashoffset: 64; }
+  to   { stroke-dashoffset: 0; }
+}
+.ck-check path {
+  stroke-dasharray: 64;
+  animation: ckDash 0.6s 0.25s cubic-bezier(0.65, 0, 0.35, 1) backwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ck-check path { animation: none; }
 }
 
 /* Marquee de promessas da home da loja (transform-only) */

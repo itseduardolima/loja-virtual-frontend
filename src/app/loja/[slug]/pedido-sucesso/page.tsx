@@ -1,11 +1,15 @@
 'use client'
 
 import Link from 'next/link'
-import { StoreHeader, CartSidebar, ProductCard, ErrorState, LoadingPage } from '@/components'
-import { Button } from '@/components/ui/button'
-import { CheckCircle2, ShoppingBag, MessageCircle } from 'lucide-react'
-import { AppFooter } from '@/components/Layout'
+import { ShoppingBag } from 'lucide-react'
+import { StoreHeader, CartSidebar, ErrorState, LoadingPage } from '@/components'
+import { WhatsAppChatWidget, StoreNewFooter } from '@/components/Store'
 import { usePedidoSucessoPage } from './usePedidoSucessoPage'
+import { SuccessHero } from './_components/SuccessHero'
+import { WhatsAppContinueCard } from './_components/WhatsAppContinueCard'
+import { OrderTimeline } from './_components/OrderTimeline'
+import { OrderRecap } from './_components/OrderRecap'
+import { SuggestionCard } from './_components/SuggestionCard'
 
 export default function PedidoSucessoPage() {
   const {
@@ -18,14 +22,18 @@ export default function PedidoSucessoPage() {
     storeError,
     refetchStore,
     storeId,
-    products,
     productsLoading,
-    handleViewDetails,
+    snapshot,
+    whatsappHref,
+    handleCopyCode,
+    handleTrack,
+    handleOpenProduct,
+    suggestions,
   } = usePedidoSucessoPage()
 
   if (storeLoading && !storeInfo) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center">
         <LoadingPage />
       </div>
     )
@@ -33,97 +41,89 @@ export default function PedidoSucessoPage() {
 
   if (storeError && !storeInfo) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center">
         <ErrorState message={storeError} onRetry={refetchStore} />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <StoreHeader
-        storeInfo={storeInfo}
-        slug={slug}
-        onCartClick={() => setIsCartOpen(true)}
+    <div className="min-h-screen bg-nxbg">
+      <StoreHeader storeInfo={storeInfo} slug={slug} onCartClick={() => setIsCartOpen(true)} />
+
+      <SuccessHero
+        orderCode={orderCode}
+        customerName={snapshot?.customer_name}
+        onCopy={handleCopyCode}
       />
 
-      <main className="flex-1 w-full px-4 sm:px-6 lg:px-20 py-8 sm:py-12">
-        {/* Sucesso */}
-        <section className="text-center mb-10 sm:mb-14">
-          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-green-100 text-green-600 mb-4 sm:mb-6">
-            <CheckCircle2 className="w-8 h-8 sm:w-10 sm:h-10" strokeWidth={2} />
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 font-integral mb-2">
-            Pedido realizado com sucesso
-          </h1>
-          {orderCode && (
-            <p className="text-gray-600 mb-1">
-              Código do pedido: <strong className="text-gray-900">#{orderCode}</strong>
-            </p>
-          )}
-          <p className="text-gray-500 text-sm sm:text-base max-w-lg mx-auto">
-            Você foi redirecionado ao WhatsApp para contato com o vendedor.
-          </p>
-        </section>
+      <div className="mx-auto max-w-[760px] px-4 py-10">
+        {/* card WhatsApp */}
+        {whatsappHref && (
+          <WhatsAppContinueCard storeName={storeInfo?.name} whatsappHref={whatsappHref} />
+        )}
 
-        {/* Aviso pagamento e entrega */}
-        <section className="max-w-2xl mx-auto mb-10 sm:mb-14">
-          <div className="flex gap-3 p-4 sm:p-5 rounded-xl bg-amber-50 border border-amber-200">
-            <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7 text-amber-600 shrink-0 mt-0.5" />
-            <div className="text-left">
-              <h2 className="font-bold text-amber-900 text-sm sm:text-base mb-1">
-                Próximos passos
-              </h2>
-              <p className="text-amber-800 text-sm sm:text-base">
-                As questões de <strong>pagamento e entrega</strong> devem ser alinhadas diretamente com o vendedor pelo WhatsApp.
-                Responda à conversa que abrimos para você e combine a forma de pagamento e o envio do pedido.
-              </p>
-            </div>
-          </div>
-        </section>
+        {/* timeline de passos */}
+        <div className="mt-8">
+          <OrderTimeline />
+        </div>
 
-        {/* Continuar comprando */}
-        <section className="text-center mb-10 sm:mb-14">
-          <Link href={`/loja/${slug}/produtos`}>
-            <Button size="lg" className="gap-2 rounded-full">
-              <ShoppingBag className="w-5 h-5" />
-              Continuar comprando
-            </Button>
+        {/* recap do pedido — só quando snapshot disponível */}
+        {snapshot && (
+          <div className="mt-8">
+            <OrderRecap snapshot={snapshot} />
+          </div>
+        )}
+
+        {/* continuar / acompanhar */}
+        <div className="mt-8 flex flex-col items-center gap-3">
+          <Link
+            href={`/loja/${slug}/produtos`}
+            className="flex h-12 items-center justify-center gap-2 rounded-full border border-nxborder bg-white px-6 text-[13.5px] font-bold text-nxi1 transition-colors hover:border-nxp hover:text-nxp"
+          >
+            <ShoppingBag size={17} />
+            Continuar comprando
           </Link>
-        </section>
 
-        {/* Sugestões de produtos */}
-        <section>
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900  mb-6">
+          {orderCode && (
+            <button
+              type="button"
+              onClick={handleTrack}
+              className="text-[12.5px] font-semibold text-nxi3 hover:text-nxi1"
+            >
+              Acompanhar pedido
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* seção de sugestões — oculta quando a loja não tem produtos */}
+      {(productsLoading || suggestions.length > 0) && (
+        <div className="mx-auto max-w-[1180px] border-t border-nxborder px-4 py-12 md:px-10">
+          <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-nxi3">
+            Você pode gostar
+          </span>
+          <h2 className="mb-6 mt-2 text-[22px] font-extrabold tracking-[-0.02em] text-nxi1 sm:text-[26px]">
             Sugestões para você
           </h2>
-          {productsLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="aspect-[3/4] rounded-xl bg-gray-200 animate-pulse" />
-              ))}
-            </div>
-          ) : products.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-              {products.slice(0, 8).map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onViewDetails={() => handleViewDetails(product)}
-                  onAddToFavorites={() => {}}
-                  showFavorites={false}
-                />
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-8">
-              Nenhum produto disponível no momento.
-            </p>
-          )}
-        </section>
-      </main>
 
-      <AppFooter />
+          <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4 md:gap-3">
+            {productsLoading
+              ? [0, 1, 2, 3].map((i) => (
+                  <div key={i} className="aspect-[3/4] animate-pulse rounded-2xl bg-nxbg" />
+                ))
+              : suggestions.map((product) => (
+                  <SuggestionCard
+                    key={product.id}
+                    product={product}
+                    onOpen={() => handleOpenProduct(product.id)}
+                  />
+                ))}
+          </div>
+        </div>
+      )}
+
+      {storeInfo && <StoreNewFooter storeInfo={storeInfo} />}
 
       <CartSidebar
         isOpen={isCartOpen}
@@ -131,6 +131,8 @@ export default function PedidoSucessoPage() {
         storeId={storeId}
         storeSlug={slug}
       />
+
+      <WhatsAppChatWidget whatsapp={storeInfo?.whatsapp} storeName={storeInfo?.name} />
     </div>
   )
 }
