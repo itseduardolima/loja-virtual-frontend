@@ -2,7 +2,7 @@
 
 import { AlertTriangle, AlertCircle, Zap, RefreshCw } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
-import { useGetPaymentLink } from '@/hooks/useGetPaymentLink'
+import { useGetPaymentLink } from '@/hooks/useSubscription'
 import { Payment } from '@/types/subscription'
 
 interface TopBannerProps {

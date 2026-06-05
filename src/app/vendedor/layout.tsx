@@ -6,7 +6,7 @@ import { SidebarVendedor, UserHeader } from '@/components'
 import { LoadingPage, AccessDenied, SubscriptionBlocked } from '@/components/Layout'
 import { useEffect, useState } from 'react'
 import { useValidateToken } from '@/hooks/useValidateToken'
-import { useMySubscription } from '@/hooks/useMySubscription'
+import { useMySubscription } from '@/hooks/useSubscription'
 import { useOrderNotifications } from '@/hooks/useOrderNotifications'
 
 export default function VendedorLayout({

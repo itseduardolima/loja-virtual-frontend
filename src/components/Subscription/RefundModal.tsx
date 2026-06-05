@@ -1,7 +1,7 @@
 'use client'
 
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { useRefundSubscription } from '@/hooks/useRefundSubscription'
+import { useRefundSubscription } from '@/hooks/useSubscription'
 import { formatPrice } from '@/lib/utils'
 
 interface RefundModalProps {

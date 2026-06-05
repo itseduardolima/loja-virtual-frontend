@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button, Input, Label } from '@/components'
 import { CreditCard, QrCode, FileText, Loader2 } from 'lucide-react'
-import { useRenewSubscription } from '@/hooks/useRenewSubscription'
+import { useRenewSubscription } from '@/hooks/useSubscription'
 import { BillingType } from '@/types/subscription'
 
 interface RenewSubscriptionModalProps {

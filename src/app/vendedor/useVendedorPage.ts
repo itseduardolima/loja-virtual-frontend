@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useStore } from '@/hooks/useStore'
 import { useUpdateStore } from '@/hooks/useUpdateStore'
 import { useDashboard, type DashboardComparison } from '@/hooks/useDashboard'
-import { useOnboardingChecklist } from '@/hooks/useOnboardingChecklist'
+import { useOnboardingChecklist } from './useOnboardingChecklist'
 import { usePendingQuestionsCount } from '@/hooks/usePendingQuestionsCount'
 import {
   formatBRL,

@@ -4,15 +4,17 @@ import { useAuth } from '@/contexts/AuthContext'
 import { LoginRequest } from '@/types/auth'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useToastContext } from '@/contexts/ToastContext'
+import { useQueryClient } from '@tanstack/react-query'
 import { useCheckout } from './useCheckout'
-import { api } from '@/lib/api'
+import { fetchMyStore, myStoreQueryKey } from './useStore'
 
 export function useLogin() {
   const { login, isLoading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const queryClient = useQueryClient()
   const { getCheckoutData, clearCheckoutData } = useCheckout()
-  const { success: showSuccess, error: showError } = useToastContext()
+  const { error: showError } = useToastContext()
 
   const isRedirectAllowed = (path: string) => {
     const normalized = path.replace(/^https?:\/\/[^/]+/, '').split('?')[0] || '/'
@@ -31,7 +33,10 @@ export function useLogin() {
 
       if (profile === 'Vendedor') {
         try {
-          await api.get('/stores/my-store')
+          await queryClient.fetchQuery({
+            queryKey: myStoreQueryKey,
+            queryFn: fetchMyStore,
+          })
           router.push('/vendedor')
         } catch (err: any) {
           const status = err?.response?.status

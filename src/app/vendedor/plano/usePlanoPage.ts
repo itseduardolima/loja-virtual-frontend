@@ -1,11 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useMySubscription } from '@/hooks/useMySubscription'
+import { useMySubscription, useCancelSubscription, useCancelScheduledChange, useSubscriptionPayments } from '@/hooks/useSubscription'
 import { useSubscriptionPlans } from '@/hooks/useSubscriptionPlans'
-import { useCancelSubscription } from '@/hooks/useCancelSubscription'
-import { useCancelScheduledChange } from '@/hooks/useCancelScheduledChange'
-import { useSubscriptionPayments } from '@/hooks/useSubscriptionPayments'
 import { derivePlanFeaturesList } from '@/lib/planUtils'
 
 export function usePlanoPage() {

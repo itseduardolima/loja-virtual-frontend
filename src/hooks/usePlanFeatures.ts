@@ -1,4 +1,4 @@
-import { useMySubscription } from './useMySubscription'
+import { useMySubscription } from './useSubscription'
 import { useAuth } from '@/contexts/AuthContext'
 
 /**

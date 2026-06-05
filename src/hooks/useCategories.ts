@@ -1,14 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '@/lib/axios'
+import { api } from '@/lib/api'
 import { PaginatedResponse, Meta } from '@/types/api'
 import { Category, CreateCategoryData, UpdateCategoryData, CategoryFilters } from '@/types/category'
 
-export function useCategories(filters?: CategoryFilters) {
+export function useCategories(filters?: CategoryFilters, options?: { enabled?: boolean }) {
   const queryClient = useQueryClient()
 
   // Buscar categorias com filtros
   const { data: categoriesResponse, isLoading, error } = useQuery({
     queryKey: ['categories', filters],
+    enabled: options?.enabled ?? true,
     queryFn: async (): Promise<PaginatedResponse<Category>> => {
       const params = new URLSearchParams()
       
