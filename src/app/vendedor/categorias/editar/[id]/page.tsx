@@ -25,7 +25,7 @@ export default function EditCategoryPage() {
   }
 
   if (!user) {
-    return null
+    return <LoadingPage />
   }
 
   if (error) {

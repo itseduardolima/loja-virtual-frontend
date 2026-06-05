@@ -1,6 +1,6 @@
 'use client'
 
-import { ErrorState, LockedFeatureOverlay } from '@/components/Layout'
+import { ErrorState, LoadingPage, LockedFeatureOverlay } from '@/components/Layout'
 import {
   DashboardHeader,
   DashboardKpiGrid,
@@ -18,6 +18,7 @@ export default function DashboardPage() {
     revenueData,
     previousRevenueData,
     isLoading,
+    isInitializing,
     isError,
     period,
     setPeriod,
@@ -26,6 +27,10 @@ export default function DashboardPage() {
     storeName,
     advancedDashboard,
   } = useDashboardPage()
+
+  if (isInitializing) {
+    return <LoadingPage />
+  }
 
   if (isError) {
     return <ErrorState message="Erro ao carregar dashboard" fullScreen={false} />

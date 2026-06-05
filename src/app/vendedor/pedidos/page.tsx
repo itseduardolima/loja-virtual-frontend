@@ -179,7 +179,7 @@ export default function OrdersPage() {
   }
 
   if (!isAuthenticated || user?.profile !== 'Vendedor') {
-    return null
+    return <LoadingPage />
   }
 
   if (isLoading) {

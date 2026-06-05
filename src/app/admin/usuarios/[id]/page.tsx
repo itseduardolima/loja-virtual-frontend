@@ -1,17 +1,32 @@
 'use client'
 
+import { notFound } from 'next/navigation'
 import { ArrowLeft, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { LoadingPage, ErrorState } from '@/components/Layout'
 import { useAdminUserDetailPage } from './useAdminUserDetailPage'
 
 export default function AdminUsuarioDetailPage() {
-  const { user, isLoading, profileName, goBack } = useAdminUserDetailPage()
+  const { user, isLoading, isError, refetch, userNotFound, profileName, goBack } = useAdminUserDetailPage()
 
-  if (isLoading) return <div className="text-center py-16 text-gray-400">Carregando...</div>
-  if (!user) return <div className="text-center py-16 text-gray-400">Usuário não encontrado.</div>
+  if (isLoading) return <LoadingPage />
+  if (userNotFound) return notFound()
+  if (isError) {
+    return (
+      <div className="py-16">
+        <ErrorState
+          fullScreen={false}
+          message="Erro ao carregar usuário"
+          onRetry={() => refetch()}
+          retryText="Tentar novamente"
+        />
+      </div>
+    )
+  }
+  if (!user) return null
 
   return (
     <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8 space-y-3 sm:space-y-4 md:space-y-6">

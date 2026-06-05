@@ -1,16 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { api } from '@/lib/api'
+import { AxiosError } from 'axios'
 import { buildImageUrl } from '@/lib/utils'
 import { useCart } from '@/hooks/useCart'
 import { useStoreInfo } from '@/hooks/useStoreInfo'
 import { useProductReviews } from '@/hooks/useProductReviews'
 import { useProductQuestionsCount } from '@/hooks/useProductQuestions'
 import { useWishlist } from '@/hooks/useWishlist'
-import { ProductDetail, ProductDetailResponse } from '@/types/product'
+import { useStoreProduct } from '@/hooks/useStoreProduct'
 
-// useAddToCartAnimation inlined here — it is only used on this page.
-// The file src/hooks/useAddToCartAnimation.ts remains for Fase 3 cleanup.
 interface AnimationData {
   imageUrl: string
   startElement: HTMLElement | null
@@ -42,14 +39,7 @@ export function useProductDetailPage(slug: string, productId: string) {
   }, [])
 
   // Buscar dados do produto
-  const { data: product, isLoading, error, refetch } = useQuery({
-    queryKey: ['product-detail', slug, productId],
-    queryFn: async (): Promise<ProductDetail> => {
-      const response = await api.get<ProductDetailResponse>(`/catalog/store/${slug}/products/${productId}`)
-      return response.data.data
-    },
-    enabled: !!slug && !!productId
-  })
+  const { data: product, isLoading, error, refetch } = useStoreProduct(slug, productId)
 
   // Hook do carrinho
   const { addToCart: addToCartHook, isAddingToCart } = useCart(product?.store?.id)
@@ -188,11 +178,15 @@ export function useProductDetailPage(slug: string, productId: string) {
   // Wishlist
   const { isInWishlist, toggleWishlist, isLoading: wishlistLoading } = useWishlist()
 
+  const productNotFound =
+    !isLoading && !!(error && (error as AxiosError)?.response?.status === 404)
+
   return {
     product,
     isLoading,
     error,
     refetch,
+    productNotFound,
     selectedImageIndex,
     selectedSize,
     selectedColor,

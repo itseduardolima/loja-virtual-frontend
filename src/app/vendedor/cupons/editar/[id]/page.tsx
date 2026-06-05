@@ -24,7 +24,7 @@ export default function EditarCupomPage() {
   } = useEditCouponPage()
 
   if (authLoading || isFetching) return <LoadingPage />
-  if (!user) return null
+  if (!user) return <LoadingPage />
   if (fetchError) return <ErrorState message="Erro ao carregar cupom" />
   if (!coupon) return <ErrorState message="Cupom não encontrado" />
 
