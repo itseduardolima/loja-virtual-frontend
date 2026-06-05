@@ -1,9 +1,13 @@
 'use client'
 
+import { useState } from 'react'
+import Image from 'next/image'
 import { useVitrine, type VitrineFormData } from './useVitrine'
+import { VitrinePreviewModal } from './VitrinePreviewModal'
 import { Input, LoadingSpinner } from '@/components'
 import { Textarea } from '@/components/ui/textarea'
-import { Megaphone, Sparkles, Store } from 'lucide-react'
+import { ImageCropDialog } from '@/components/Dialog/ImageCropDialog'
+import { Eye, ImagePlus, Megaphone, Sparkles, Store, Trash2 } from 'lucide-react'
 import {
   SectionCard,
   SectionHeader,
@@ -11,7 +15,6 @@ import {
   FieldGrid,
   FieldLabel,
   FieldHelp,
-  Notice,
   NxButton,
 } from '../_shared'
 
@@ -26,9 +29,17 @@ export default function VitrinePage() {
     setField,
     handleSave,
     handleReset,
-    defaults,
     limits,
+    previewStore,
+    campaignImagePreview,
+    cropTarget,
+    setCropTarget,
+    handleCampaignImageSelect,
+    handleCropDone,
+    handleRemoveCampaignImage,
   } = useVitrine()
+
+  const [previewOpen, setPreviewOpen] = useState(false)
 
   if (isLoading) {
     return (
@@ -55,10 +66,12 @@ export default function VitrinePage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Notice variant="info">
-        Todos os campos são opcionais. Quando vazios, a loja usa automaticamente os seus
-        dados reais (nome, descrição, frete grátis etc.) como padrão.
-      </Notice>
+      <div className="flex justify-end">
+        <NxButton variant="ghost" onClick={() => setPreviewOpen(true)} disabled={!previewStore}>
+          <Eye size={15} className="mr-1.5" />
+          Pré-visualizar
+        </NxButton>
+      </div>
 
       {/* Hero */}
       <SectionCard>
@@ -74,10 +87,10 @@ export default function VitrinePage() {
               id="hero_eyebrow"
               value={formData.hero_eyebrow}
               onChange={(e) => setField('hero_eyebrow', e.target.value)}
-              placeholder={defaults.hero_eyebrow}
+              placeholder="Ex.: Coleção Inverno 2026"
               maxLength={limits.hero_eyebrow}
             />
-            {fieldHelp('hero_eyebrow', `Padrão: “${defaults.hero_eyebrow}”`)}
+            {fieldHelp('hero_eyebrow', 'Padrão: ano de fundação da loja')}
           </Field>
           <Field>
             <FieldLabel htmlFor="hero_title">Título</FieldLabel>
@@ -85,7 +98,7 @@ export default function VitrinePage() {
               id="hero_title"
               value={formData.hero_title}
               onChange={(e) => setField('hero_title', e.target.value)}
-              placeholder={defaults.hero_title}
+              placeholder="Ex.: Vista o essencial."
               maxLength={limits.hero_title}
             />
             {fieldHelp('hero_title', 'Padrão: nome da loja')}
@@ -96,7 +109,7 @@ export default function VitrinePage() {
               id="hero_subtitle"
               value={formData.hero_subtitle}
               onChange={(e) => setField('hero_subtitle', e.target.value)}
-              placeholder={defaults.hero_subtitle}
+              placeholder="Ex.: Peças atemporais em algodão e linho."
               maxLength={limits.hero_subtitle}
               rows={2}
             />
@@ -118,7 +131,7 @@ export default function VitrinePage() {
             id="announcement_text"
             value={formData.announcement_text}
             onChange={(e) => setField('announcement_text', e.target.value)}
-            placeholder={defaults.announcement_text}
+            placeholder="Ex.: Frete grátis acima de R$ 199"
             maxLength={limits.announcement_text}
           />
           {fieldHelp('announcement_text', 'Padrão: frete grátis configurado em Entrega')}
@@ -129,10 +142,10 @@ export default function VitrinePage() {
       <SectionCard>
         <SectionHeader
           title="Campanha em destaque"
-          description="Seção promocional no meio da loja, com a imagem de capa. Sem título, a seção não aparece."
+          description="Seção promocional no meio da loja. Sem título, a seção não aparece."
           right={<Sparkles size={18} className="text-nxi3" strokeWidth={2} />}
         />
-        <FieldGrid columns={2}>
+        <div className="flex flex-col gap-4">
           <Field>
             <FieldLabel htmlFor="campaign_title">Título da campanha</FieldLabel>
             <Input
@@ -156,23 +169,109 @@ export default function VitrinePage() {
             />
             {fieldHelp('campaign_text', 'Aparece abaixo do título da campanha')}
           </Field>
-        </FieldGrid>
+          <Field>
+            <FieldLabel>Imagem da campanha</FieldLabel>
+            <label
+              htmlFor="campaign-image-upload"
+              className="group relative flex cursor-pointer overflow-hidden rounded-xl border border-dashed border-nxborder bg-nxbg/60 transition-colors hover:border-nxp/40 hover:bg-nxbg"
+              style={{ minHeight: 140 }}
+            >
+              {campaignImagePreview ? (
+                <>
+                  <Image
+                    src={campaignImagePreview}
+                    alt="Imagem da campanha"
+                    fill
+                    unoptimized={
+                      campaignImagePreview.startsWith('blob:') ||
+                      campaignImagePreview.startsWith('data:')
+                    }
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 700px"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-nxi1/30 opacity-0 transition-opacity group-hover:opacity-100">
+                    <span className="rounded-full bg-white/90 px-3 py-1.5 text-[12px] font-bold text-nxi1">
+                      Trocar imagem
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-nxi3">
+                  <ImagePlus size={24} />
+                  <span className="text-[12.5px] font-semibold">Adicionar imagem</span>
+                  <span className="text-[11px]">Máx. 5 MB · proporção 16:9 recomendada</span>
+                </div>
+              )}
+            </label>
+            <input
+              id="campaign-image-upload"
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={(e) => {
+                handleCampaignImageSelect(e.target.files?.[0] ?? null)
+                e.target.value = ''
+              }}
+            />
+            {campaignImagePreview && (
+              <button
+                type="button"
+                onClick={handleRemoveCampaignImage}
+                className="mt-1.5 flex items-center gap-1.5 text-[11.5px] font-semibold text-nxd hover:underline"
+              >
+                <Trash2 size={13} /> Remover imagem
+              </button>
+            )}
+            <FieldHelp>
+              Aparece no fundo direito da seção de campanha. Sem imagem, usa a capa da loja como fallback.
+            </FieldHelp>
+          </Field>
+        </div>
       </SectionCard>
 
       {/* Form actions */}
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        <NxButton variant="ghost" onClick={handleReset} disabled={!isDirty || isUpdating}>
-          Descartar alterações
-        </NxButton>
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <NxButton
-          variant="primary"
-          onClick={handleSave}
-          disabled={!isDirty || !isFormValid}
-          loading={isUpdating}
+          variant="ghost"
+          onClick={() => setPreviewOpen(true)}
+          disabled={!previewStore}
         >
-          {isUpdating ? 'Salvando…' : 'Salvar vitrine'}
+          <Eye size={15} className="mr-1.5" />
+          Pré-visualizar
         </NxButton>
+        <div className="flex items-center gap-2">
+          <NxButton variant="ghost" onClick={handleReset} disabled={!isDirty || isUpdating}>
+            Descartar alterações
+          </NxButton>
+          <NxButton
+            variant="primary"
+            onClick={handleSave}
+            disabled={!isDirty || !isFormValid}
+            loading={isUpdating}
+          >
+            {isUpdating ? 'Salvando…' : 'Salvar vitrine'}
+          </NxButton>
+        </div>
       </div>
+
+      {/* Dialog de crop da imagem de campanha */}
+      <ImageCropDialog
+        open={!!cropTarget}
+        onClose={() => setCropTarget(null)}
+        imageSrc={cropTarget?.imageSrc ?? ''}
+        aspect={16 / 9}
+        cropShape="rect"
+        fileName={cropTarget?.fileName ?? 'campanha.jpg'}
+        onCropDone={handleCropDone}
+      />
+
+      {previewStore && (
+        <VitrinePreviewModal
+          open={previewOpen}
+          onClose={() => setPreviewOpen(false)}
+          storeInfo={previewStore}
+        />
+      )}
     </div>
   )
 }
