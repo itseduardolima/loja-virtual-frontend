@@ -3,6 +3,7 @@ import * as yup from 'yup'
 import { useStore } from '@/hooks/useStore'
 import { useUpdateStore } from '@/hooks/useUpdateStore'
 import { updatePagamentoSchema } from '@/schemas'
+import type { StoreInfo } from '@/types/store'
 
 export const PAYMENT_METHODS = [
   { id: 'pix', name: 'PIX', description: 'Pagamento instantâneo via PIX' },
@@ -16,16 +17,15 @@ export const PAYMENT_METHODS = [
 export function usePagamento() {
   const { data: store, isLoading } = useStore()
   const { updateStore, isUpdating } = useUpdateStore()
-  
+
   const [selectedMethods, setSelectedMethods] = useState<string[]>([])
-  const [errors, setErrors] = useState<{
-    payment_methods?: string
-  }>({})
+  const [serverMethods, setServerMethods] = useState<string[]>([])
+  const [errors, setErrors] = useState<{ payment_methods?: string }>({})
 
   useEffect(() => {
-    if ((store as any)?.payment_methods) {
-      setSelectedMethods((store as any).payment_methods)
-    }
+    const methods = (store as StoreInfo | undefined)?.payment_methods ?? []
+    setSelectedMethods(methods)
+    setServerMethods(methods)
   }, [store])
 
   const handleMethodToggle = (methodId: string) => {
@@ -53,6 +53,11 @@ export function usePagamento() {
     })
   }
 
+  const isDirty = useMemo(
+    () => JSON.stringify([...selectedMethods].sort()) !== JSON.stringify([...serverMethods].sort()),
+    [selectedMethods, serverMethods],
+  )
+
   // Verificar se o formulário é válido
   const isFormValid = useMemo(() => {
     const hasErrors = Object.values(errors).some(error => error !== undefined && error !== '')
@@ -75,8 +80,9 @@ export function usePagamento() {
       
       await updateStore({
         storeId: store.id,
-        data: { payment_methods: selectedMethods }
+        data: { payment_methods: selectedMethods },
       })
+      setServerMethods(selectedMethods)
     } catch (error) {
       if (error instanceof yup.ValidationError) {
         const validationErrors: { [key: string]: string } = {}
@@ -92,15 +98,22 @@ export function usePagamento() {
     }
   }
 
+  const handleReset = () => {
+    setSelectedMethods(serverMethods)
+    setErrors({})
+  }
+
   return {
     store,
     isLoading,
     isUpdating,
+    isDirty,
     selectedMethods,
     errors,
     isFormValid,
     handleMethodToggle,
-    handleSave
+    handleSave,
+    handleReset,
   }
 }
 
