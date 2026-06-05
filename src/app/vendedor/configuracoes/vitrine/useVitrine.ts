@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import isEqual from 'lodash/isEqual'
 import { useStore } from '@/hooks/useStore'
 import { useUpdateStore } from '@/hooks/useUpdateStore'
 import { heroContent, announcementText } from '@/lib/storefront'
@@ -89,10 +90,7 @@ export function useVitrine() {
   }
 
   const isDirty = useMemo(
-    () =>
-      JSON.stringify(formData) !== JSON.stringify(server) ||
-      campaignImageFile !== null ||
-      campaignImageRemoved,
+    () => !isEqual(formData, server) || campaignImageFile !== null || campaignImageRemoved,
     [formData, server, campaignImageFile, campaignImageRemoved],
   )
 

@@ -49,10 +49,12 @@ export default function DocumentosPage() {
     isUpdating,
     formData,
     errors,
+    isDirty,
     isFormValid,
     handleCNPJChange,
     handleCPFChange,
     handleSave,
+    handleReset,
   } = useDocumentos()
 
   const [docType, setDocType] = useState<DocType>('cnpj')
@@ -203,10 +205,13 @@ export default function DocumentosPage() {
       </div>
 
       <FormActions>
+        <NxButton variant="ghost" onClick={handleReset} disabled={!isDirty || isUpdating}>
+          Descartar alterações
+        </NxButton>
         <NxButton
           variant="primary"
           onClick={handleSave}
-          disabled={!isFormValid}
+          disabled={!isDirty || !isFormValid}
           loading={isUpdating}
         >
           {isUpdating ? 'Salvando…' : 'Salvar alterações'}

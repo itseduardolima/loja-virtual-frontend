@@ -1,18 +1,19 @@
 import { useState, useEffect, useMemo } from 'react'
 import * as yup from 'yup'
+import isEqual from 'lodash/isEqual'
 import { useStore } from '@/hooks/useStore'
 import { useUpdateStore } from '@/hooks/useUpdateStore'
 import { updateInformacoesBasicasSchema } from '@/schemas'
 import type { UpdateStoreData } from '@/types'
 
+const initial = { name: '', description: '' }
+
 export function useInformacoesBasicas() {
   const { data: store, isLoading } = useStore()
   const { updateStore, isUpdating } = useUpdateStore()
 
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-  })
+  const [formData, setFormData] = useState(initial)
+  const [server, setServer] = useState(initial)
 
   const [errors, setErrors] = useState<{
     name?: string
@@ -31,10 +32,12 @@ export function useInformacoesBasicas() {
 
   useEffect(() => {
     if (store) {
-      setFormData({
+      const next = {
         name: store.name || '',
         description: store.description || '',
-      })
+      }
+      setFormData(next)
+      setServer(next)
 
       if (store.logo) {
         setLogoPreview(store.logo)
@@ -84,6 +87,11 @@ export function useInformacoesBasicas() {
     setCropTarget(null)
   }
 
+  const isDirty = useMemo(
+    () => !isEqual(formData, server) || logoFile !== null || bannerFile !== null,
+    [formData, server, logoFile, bannerFile],
+  )
+
   const isFormValid = useMemo(() => {
     const hasErrors = Object.values(errors).some(error => error !== undefined && error !== '')
     if (hasErrors) return false
@@ -95,6 +103,16 @@ export function useInformacoesBasicas() {
       return false
     }
   }, [formData, errors])
+
+  const handleReset = () => {
+    setFormData(server)
+    setErrors({})
+    setLogoFile(null)
+    setBannerFile(null)
+    setLogoPreview(store?.logo || null)
+    setBannerPreview(store?.banner || null)
+    setCropTarget(null)
+  }
 
   const handleSave = async () => {
     if (!store?.id) return
@@ -115,6 +133,9 @@ export function useInformacoesBasicas() {
         storeId: store.id,
         data: updateData,
       })
+      setServer(formData)
+      setLogoFile(null)
+      setBannerFile(null)
     } catch (error) {
       if (error instanceof yup.ValidationError) {
         const validationErrors: { [key: string]: string } = {}
@@ -136,6 +157,7 @@ export function useInformacoesBasicas() {
     isUpdating,
     formData,
     errors,
+    isDirty,
     isFormValid,
     logoFile,
     bannerFile,
@@ -147,5 +169,6 @@ export function useInformacoesBasicas() {
     cropTarget,
     setCropTarget,
     handleSave,
+    handleReset,
   }
 }
