@@ -16,6 +16,7 @@ Ao criar uma feature nova que ainda não tem spec, crie o arquivo aqui antes de 
 | Arquivo | Conteúdo |
 |---|---|
 | [`DESIGN_SPEC.md`](./DESIGN_SPEC.md) | **Leia primeiro.** Tokens de cor, tipografia, espaçamento, componentes, padrões de página — a lei de design do sistema |
+| [`SPEC_arquitetura-frontend.md`](./SPEC_arquitetura-frontend.md) | **Leia segundo.** Divisão page/hook, componentes feature-scoped, onde ficam tipos/helpers, React Query, formulários, checklist |
 | [`SPEC_formularios.md`](./SPEC_formularios.md) | Primitivos de formulário (`_shared.tsx`), hook customizado, validação Yup em 3 momentos, upload com crop, wizard multi-step, estados visuais |
 | [`SPEC_produto-crud.md`](./SPEC_produto-crud.md) | Wizard de criação/edição de produto, listagem, campos dinâmicos, variantes, imagens por cor |
 | [`SPEC_pedidos.md`](./SPEC_pedidos.md) | Listagem de pedidos, drawer de detalhe, status, WhatsApp, exportação Excel, notificações real-time |
