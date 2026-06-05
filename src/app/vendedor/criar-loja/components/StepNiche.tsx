@@ -1,5 +1,7 @@
 import { LoadingSpinner } from '@/components'
-import { NAVY } from '../constants'
+import { cn } from '@/lib/utils'
+import { Star } from 'lucide-react'
+import { getNicheIcon } from '@/components/ProductForm/data'
 
 interface StepNicheProps {
   selectedIds: string[]
@@ -10,15 +12,15 @@ interface StepNicheProps {
 }
 
 export function StepNiche({ selectedIds, nichesData, nichesLoading, errors, onToggle }: StepNicheProps) {
-  const count = selectedIds.length
+  const primaryId = selectedIds[0]
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-semibold text-gray-900 leading-tight text-2xl sm:text-3xl">
+        <h2 className="text-2xl font-semibold leading-tight text-gray-900 sm:text-3xl">
           O que você vai vender?
         </h2>
-        <p className="text-sm text-gray-500 mt-1.5">
+        <p className="mt-1.5 text-sm text-gray-500">
           Selecione todos que se aplicam — pode ser mais de um.
         </p>
       </div>
@@ -28,38 +30,57 @@ export function StepNiche({ selectedIds, nichesData, nichesLoading, errors, onTo
           <LoadingSpinner size="sm" />
         </div>
       ) : (
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
           {nichesData?.data.map((niche: any) => {
-            const selected = selectedIds.includes(niche.id.toString())
+            const id = niche.id.toString()
+            const isSelected = selectedIds.includes(id)
+            const isPrimary = isSelected && id === primaryId
+            const NicheIcon = getNicheIcon(niche.slug)
+
             return (
               <button
                 key={niche.id}
                 type="button"
-                onClick={() => onToggle(niche.id.toString())}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm border transition-all"
-                style={
-                  selected
-                    ? { background: NAVY, borderColor: NAVY, color: '#fff', fontWeight: 600 }
-                    : { background: '#fff', borderColor: '#E5E7EB', color: '#374151' }
-                }
+                onClick={() => onToggle(id)}
+                className={cn(
+                  'group relative flex flex-col items-start gap-2 rounded-xl border p-3 text-left transition-all',
+                  isSelected
+                    ? 'border-nxp bg-nxp/[0.06] shadow-[0_1px_2px_hsl(237_49%_33%/0.12)]'
+                    : 'border-nxborder bg-white hover:border-nxp/40 hover:bg-nxbg',
+                )}
               >
-                {niche.name}
+                {isPrimary && (
+                  <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-nxp px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.06em] text-white">
+                    <Star className="h-2 w-2" fill="currentColor" strokeWidth={0} />
+                    Primário
+                  </span>
+                )}
+
+                <span
+                  className={cn(
+                    'flex h-9 w-9 items-center justify-center rounded-lg transition-colors',
+                    isSelected ? 'bg-nxp text-white' : 'bg-nxi3/10 text-nxi2 group-hover:text-nxp',
+                  )}
+                >
+                  <NicheIcon size={18} />
+                </span>
+
+                <span
+                  className={cn(
+                    'text-[12.5px] font-semibold leading-tight',
+                    isSelected ? 'text-nxp' : 'text-nxi1',
+                  )}
+                >
+                  {niche.name}
+                </span>
               </button>
             )
           })}
         </div>
       )}
 
-      {errors.niche_ids && <p className="text-sm text-red-400">{errors.niche_ids}</p>}
-
-      {!nichesLoading && (
-        count === 0 ? (
-          <p className="text-[13px] italic text-gray-400">Nenhum selecionado</p>
-        ) : (
-          <p className="text-[13px] text-green-600">
-            {count} nicho{count > 1 ? 's' : ''} selecionado{count > 1 ? 's' : ''} ✓
-          </p>
-        )
+      {errors.niche_ids && (
+        <p className="text-[12.5px] text-nxd">{errors.niche_ids}</p>
       )}
     </div>
   )
