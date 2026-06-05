@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Loader2, Package, Search, ShoppingBag } from 'lucide-react'
 import { useDebounce } from '@/hooks/useDebounce'
-import { useHeaderSearch } from '@/hooks/useHeaderSearch'
+import { useHeaderSearch } from './useHeaderSearch'
 import { buildImageUrl, cn } from '@/lib/utils'
 import { formatBRL } from '@/lib/vendor'
 

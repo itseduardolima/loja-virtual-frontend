@@ -4,7 +4,7 @@ import { ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn, formatPrice, formatDateShort } from '@/lib/utils'
 import { PAYMENT_STATUS } from '@/lib/vendor'
 import type { StatusTone } from '@/lib/vendor'
-import { useGetPaymentLink } from '@/hooks/useGetPaymentLink'
+import { useGetPaymentLink } from '@/hooks/useSubscription'
 import { LoadingSpinner } from '@/components'
 import { Payment } from '@/types/subscription'
 

@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useStore } from '@/hooks/useStore'
-import { useMySubscription } from '@/hooks/useMySubscription'
+import { useMySubscription } from '@/hooks/useSubscription'
 import { usePlanFeatures } from '@/hooks/usePlanFeatures'
 import { useFeatureLockedModal } from '@/hooks/useFeatureLockedModal'
 import { FeatureLockedModal } from './FeatureLockedModal'

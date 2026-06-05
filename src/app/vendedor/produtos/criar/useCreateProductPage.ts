@@ -4,12 +4,13 @@ import { useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
-import { api } from '@/lib/axios'
+import { api } from '@/lib/api'
 import { createProductSchema, CreateProductFormData } from '@/schemas'
 import { useToastContext } from '@/contexts/ToastContext'
 import { useStore } from '@/hooks/useStore'
+import { useCategories } from '@/hooks/useCategories'
 import { useNiches, useNicheFields } from '@/hooks/useNiches'
 import { useSharedProductState, buildProductFormData } from '@/components/ProductForm'
 import type { User } from '@/types'
@@ -57,26 +58,14 @@ export function useCreateProductPage(user: User | null) {
     },
   })
 
-  const { data: categoriesData = [] } = useQuery({
-    queryKey: ['categories', selectedNicheId],
-    queryFn: async () => {
-      try {
-        const params = new URLSearchParams()
-        params.append('status', '1')
-        params.append('limit', '1000')
-        if (selectedNicheId) params.append('niche_id', selectedNicheId.toString())
-        const response = await api.get(`/categories?${params.toString()}`)
-        return response.data.data || []
-      } catch {
-        return []
-      }
+  const { categories } = useCategories(
+    {
+      status: 1,
+      limit: 1000,
+      ...(selectedNicheId != null ? { niche_id: selectedNicheId } : {}),
     },
-    retry: false,
-    refetchOnWindowFocus: false,
-    enabled: !!user,
-  })
-
-  const categories = Array.isArray(categoriesData) ? categoriesData : []
+    { enabled: !!user }, // não busca antes do auth resolver (paridade com o inline anterior)
+  )
 
   const availableColors = useMemo(() => {
     if (!nicheFields.length) return []

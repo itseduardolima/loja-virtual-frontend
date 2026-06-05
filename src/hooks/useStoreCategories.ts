@@ -1,44 +1,30 @@
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 import { StoreCategory, StoreCategoriesResponse, UseStoreCategoriesReturn } from '@/types/store'
 
 export function useStoreCategories(slug: string): UseStoreCategoriesReturn {
-  const [categories, setCategories] = useState<StoreCategory[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const fetchCategories = async () => {
-    if (!slug) return
-
-    setLoading(true)
-    setError(null)
-
-    try {
+  const { data, isLoading, error, refetch } = useQuery<StoreCategory[], Error>({
+    queryKey: ['store-categories', slug],
+    queryFn: async () => {
       const response = await api.get<StoreCategoriesResponse>(
         `/catalog/store/${slug}/categories`
       )
+      return response.data.data
+    },
+    enabled: !!slug,
+    staleTime: 60 * 1000,
+    retry: 3,
+  })
 
-      setCategories(response.data.data)
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao carregar categorias')
-      setCategories([])
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchCategories()
-  }, [slug])
-
-  const refetch = () => {
-    fetchCategories()
-  }
+  const errorMessage = error
+    ? ((error as { response?: { data?: { message?: string } } }).response?.data?.message ||
+        'Erro ao carregar categorias')
+    : null
 
   return {
-    categories,
-    loading,
-    error,
-    refetch
+    categories: data ?? [],
+    loading: !!slug && isLoading,
+    error: errorMessage,
+    refetch: () => { refetch() },
   }
 }

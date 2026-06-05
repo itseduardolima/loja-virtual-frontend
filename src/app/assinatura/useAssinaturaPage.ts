@@ -4,10 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSubscriptionPlans } from "@/hooks/useSubscriptionPlans";
-import { useCreateSubscription } from "@/hooks/useCreateSubscription";
-import { useMySubscription } from "@/hooks/useMySubscription";
-import { useValidatePlanCoupon } from "@/hooks/useValidatePlanCoupon";
+import { useSubscriptionPlans, useValidatePlanCoupon } from "@/hooks/useSubscriptionPlans";
+import { useCreateSubscription, useMySubscription } from "@/hooks/useSubscription";
 import { BillingType, BillingCycle, SubscriptionPlan, PlanCouponValidation, Payment } from "@/types/subscription";
 import { AxiosError } from "axios";
 import { formatCPF, formatCNPJ } from "@/lib/utils";
@@ -326,7 +324,7 @@ export function useAssinaturaPage() {
       // Backend já promoveu o user a vendedor — atualiza o JWT/cache pra refletir
       hasCompletedRef.current = true;
       queryClient.removeQueries({ queryKey: ["validate-token"] });
-      queryClient.invalidateQueries({ queryKey: ["my-subscription"] });
+      queryClient.invalidateQueries({ queryKey: ['subscription', 'me'] });
       await refreshToken().catch(() => {
         console.warn("Token refresh failed after trial activation");
       });
@@ -450,7 +448,7 @@ export function useAssinaturaPage() {
         // Backend promoveu o user a vendedor — atualiza JWT/cache
         hasCompletedRef.current = true;
         queryClient.removeQueries({ queryKey: ["validate-token"] });
-        queryClient.invalidateQueries({ queryKey: ["my-subscription"] });
+        queryClient.invalidateQueries({ queryKey: ['subscription', 'me'] });
         await refreshToken().catch(() => {
           console.warn("Token refresh failed after free checkout");
         });

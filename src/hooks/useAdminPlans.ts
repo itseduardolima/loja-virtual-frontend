@@ -1,12 +1,12 @@
 import { useQuery, useMutation, useQueryClient, QueryClient } from '@tanstack/react-query'
-import { api } from '@/lib/axios'
+import { api } from '@/lib/api'
 import { AdminPlan, PaginatedResponse } from '@/types/admin'
 
 function invalidateAllPlanCaches(qc: QueryClient) {
   qc.invalidateQueries({ queryKey: ['admin', 'plans'] })
-  qc.invalidateQueries({ queryKey: ['subscription-plans'] })
-  qc.invalidateQueries({ queryKey: ['subscription-plan'] })
-  qc.invalidateQueries({ queryKey: ['my-subscription'] })
+  qc.invalidateQueries({ queryKey: ['subscription', 'plans'] })
+  qc.invalidateQueries({ queryKey: ['subscription', 'plan'] })
+  qc.invalidateQueries({ queryKey: ['subscription', 'me'] })
   // Features dependentes de plano podem mudar — invalida caches que dependem de feature flags
   qc.invalidateQueries({ queryKey: ['dashboard'] })
   // Cupons de plano: usar a queryKey real de useAdminPlanCoupons

@@ -1,44 +1,28 @@
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 import { StoreInfo, StoreInfoResponse, UseStoreInfoReturn } from '@/types/store'
 
 export function useStoreInfo(slug: string): UseStoreInfoReturn {
-  const [storeInfo, setStoreInfo] = useState<StoreInfo | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { data, isLoading, error, refetch } = useQuery<StoreInfo, Error>({
+    queryKey: ['store-info', slug],
+    queryFn: async () => {
+      const response = await api.get<StoreInfoResponse>(`/catalog/store/${slug}`)
+      return response.data.data
+    },
+    enabled: !!slug,
+    staleTime: 60 * 1000,
+    retry: 3,
+  })
 
-  const fetchStoreInfo = async () => {
-    if (!slug) return
-
-    setLoading(true)
-    setError(null)
-
-    try {
-      const response = await api.get<StoreInfoResponse>(
-        `/catalog/store/${slug}`
-      )
-
-      setStoreInfo(response.data.data)
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao carregar informações da loja')
-      setStoreInfo(null)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchStoreInfo()
-  }, [slug])
-
-  const refetch = () => {
-    fetchStoreInfo()
-  }
+  const errorMessage = error
+    ? ((error as { response?: { data?: { message?: string } } }).response?.data?.message ||
+        'Erro ao carregar informações da loja')
+    : null
 
   return {
-    storeInfo,
-    loading,
-    error,
-    refetch
+    storeInfo: data ?? null,
+    loading: !!slug && isLoading,
+    error: errorMessage,
+    refetch: () => { refetch() },
   }
 }

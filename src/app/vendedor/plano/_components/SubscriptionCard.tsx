@@ -2,7 +2,7 @@
 
 import { ArrowUpRight, Check, RefreshCw, RotateCcw, Zap } from 'lucide-react'
 import { cn, formatBRL, formatDateShort, daysUntil } from '@/lib/utils'
-import { useGetPaymentLink } from '@/hooks/useGetPaymentLink'
+import { useGetPaymentLink } from '@/hooks/useSubscription'
 import { Subscription, SubscriptionPlan, Payment } from '@/types/subscription'
 import { StatusChip } from './StatusChip'
 
