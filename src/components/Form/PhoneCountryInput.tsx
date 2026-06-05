@@ -68,7 +68,7 @@ export function PhoneCountryInput({
         <button
           type="button"
           onClick={() => setShowDropdown(!showDropdown)}
-          className="flex items-center rounded-xl h-11 gap-2 px-3 border border-gray-200 bg-gray-50/50 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400/20 focus:border-gray-400 min-w-[76px] transition-colors"
+          className="flex items-center rounded-lg h-10 gap-2 px-3 border border-nxborder bg-white hover:bg-nxbg focus:outline-none focus:ring-2 focus:ring-nxp/30 focus:border-nxp min-w-[80px] transition-colors"
         >
           {getSelectedCountry()?.flagUrl ? (
             <img
