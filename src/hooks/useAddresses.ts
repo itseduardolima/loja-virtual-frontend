@@ -50,7 +50,7 @@ export function useAddresses(enabled = true) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['addresses'] })
-      toast({ title: 'Endereço salvo!', variant: 'success' })
+      
     },
     onError: (error: AxiosError<{ message?: string }>) => {
       toast({
@@ -68,7 +68,7 @@ export function useAddresses(enabled = true) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['addresses'] })
-      toast({ title: 'Endereço atualizado!', variant: 'success' })
+      
     },
     onError: (error: AxiosError<{ message?: string }>) => {
       toast({
@@ -86,7 +86,7 @@ export function useAddresses(enabled = true) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['addresses'] })
-      toast({ title: 'Endereço removido!', variant: 'success' })
+     
     },
     onError: (error: AxiosError<{ message?: string }>) => {
       toast({

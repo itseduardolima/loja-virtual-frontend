@@ -149,6 +149,26 @@
   .ck-check path { animation: none; }
 }
 
+/* Drawer da conta do cliente — entrada de cards e sub-telas */
+@keyframes acRise {
+  from { transform: translateY(12px); }
+  to   { transform: translateY(0); }
+}
+.ac-rise {
+  animation: acRise 0.45s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+@keyframes acSlide {
+  from { transform: translateX(16px); }
+  to   { transform: translateX(0); }
+}
+.ac-slide {
+  animation: acSlide 0.34s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ac-rise,
+  .ac-slide { animation: none; }
+}
+
 /* Marquee de promessas da home da loja (transform-only) */
 @keyframes nxMarquee {
   from { transform: translateX(0); }
@@ -255,8 +275,6 @@
 .ProseMirror em {
   font-style: italic;
 }
-
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400&display=swap');
 
 @keyframes heroReveal {
   from { clip-path: inset(0 100% 0 0); opacity: 0; }
