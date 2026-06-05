@@ -129,26 +129,40 @@ Por ordem de severidade. **Nota:** nas pages que serão reescritas aqui, aplicar
 
 ---
 
-## Fase 3 — Reorganização de hooks · ~2 dias
+## Fase 3 — Reorganização de hooks · ~2 dias ✅ CONCLUÍDA (2026-06-05)
 
-- [ ] **Migrar para React Query** (pré-requisito dos retries da Fase 1.1 na loja): `useStoreInfo` (useQuery), `useStoreCategories` (useQuery), `useStoreProducts` (useInfiniteQuery com cursor — G, cuidado com paginação)
-- [ ] **Consolidar subscription** (11 arquivos → por recurso): `useSubscription.ts` (query my-subscription + mutations cancel/renew/refund/changePlan/cancelScheduledChange/create/preview) + `useSubscriptionPlans.ts` (plans + plan). Padronizar queryKeys com prefixo `['subscription', ...]`
-- [ ] **Mover hooks single-use**: `useOnboardingChecklist` → `app/vendedor/`, `useAddToCartAnimation` → inline no produto detalhe, `useFeatureLockedModal` → inline (2 usos — avaliar), `useHeaderSearch` → junto do componente HeaderSearch
-- [ ] `useCreateProductPage` — compor `useCategories()` em vez de useQuery inline com api.get
-- [ ] `useLogin` — extrair check de loja (`api.get('/stores/my-store')` inline) para compor `useStore`/hook próprio
-- [ ] `useCart` split (G) — **adiar**: funciona, risco alto, baixo ganho imediato. Documentar como dívida conhecida
+> **Status:** workflow 3 regiões + verificador + 2 reviews adversariais; `tsc`/`build` verdes; prerender intacto (index 65KB). Resultados e desvios:
+> - **React Query na loja:** useStoreInfo/useStoreCategories (useQuery) e useStoreProducts (useInfiniteQuery) migrados **mantendo os contratos `UseStore*Return` idênticos** — zero consumidores alterados. useStoreProducts preserva updateParams/paginação por página/cursor; `isFetchNextPageError` separa `error` de `loadMoreError`; retry herdado do provider (pós-review: `retry: 3` explícito removido; `paramsKey` calculado dentro do useMemo).
+> - **Subscription:** 12 arquivos → `useSubscription.ts` (me/payments + 8 mutations) e `useSubscriptionPlans.ts` (plans/plan/validateCoupon); keys `['subscription', ...]`; nomes dos hooks preservados (consumidores só mudaram import); zero referências às keys antigas (inclui useAdminPlans e os 2 invalidates do useAssinaturaPage); console.logs de debug herdados removidos. `useSubscriptionPlan` ficou sem consumidor (export disponível).
+> - **Moves:** useOnboardingChecklist → app/vendedor/; useHeaderSearch → components/Vendor/Header/; useAddToCartAnimation deletado (já estava inlined no page-hook do produto). useFeatureLockedModal mantido em src/hooks (2 consumidores — behavior hook compartilhado).
+> - **Composição:** useCreateProductPage compõe `useCategories(filters, { enabled })` (opção `enabled` adicionada p/ preservar o guard `!!user` do inline); useLogin usa `queryClient.fetchQuery` com `myStoreQueryKey`/`fetchMyStore` exportados de useStore.ts (cache compartilhado); produto detalhe compõe novo data hook `useStoreProduct` (key `['store-product', slug, id]`; rename de 'product-detail' sem refs externas).
+> - **useCart split: ADIADO (dívida conhecida)** — funciona, risco alto, baixo ganho; revisitar quando o checkout for mexido de novo.
+
+- [x] **Migrar para React Query**: `useStoreInfo`, `useStoreCategories`, `useStoreProducts` (useInfiniteQuery com cursor)
+- [x] **Consolidar subscription** → `useSubscription.ts` + `useSubscriptionPlans.ts`, keys `['subscription', ...]`
+- [x] **Mover hooks single-use** (useFeatureLockedModal mantido — 2 usos)
+- [x] `useCreateProductPage` — compõe `useCategories()`
+- [x] `useLogin` — check de loja via fetchQuery com key compartilhada de `useStore`
+- [x] `useCart` split (G) — **adiado**: dívida documentada acima
 
 ---
 
-## Fase 4 — Loading & Error states · ~2 dias
+## Fase 4 — Loading & Error states · ~2 dias ✅ CONCLUÍDA (2026-06-05)
 
-- [ ] **`error.tsx`** nas 14 rotas com fetch (template único com `ErrorState` + reset): loja/[slug], loja produtos, loja produto/[id], pedido-sucesso, vendedor (pedidos, produtos, produtos/criar, produtos/editar/[id], cupons, categorias, dashboard), admin (usuarios, planos, assinaturas)
-- [ ] **`loading.tsx`** nas mesmas rotas — skeletons simples (não precisa ser pixel-perfect; reusar LoadingPage onde não houver skeleton)
-- [ ] **10 pages com `return null`** durante auth/loading → `<LoadingPage />` (pedidos:184, cupons editar/criar:27, categorias editar/criar, produtos:66 + 4 demais)
-- [ ] **`notFound()`** nas rotas de detalhe quando API retorna 404 (produto/[id], produtos/editar/[id], admin/usuarios/[id]) — distinguir de erro de rede
-- [ ] **`fullScreen={false}`** em ErrorState para erros de query parcial (hoje 0 usos — sempre full screen)
-- [ ] `admin/usuarios/[id]` — substituir texto plano "Carregando…"/"não encontrado" por LoadingPage/notFound
-- [ ] `vendedor/dashboard` — adicionar guard `LoadingPage` para authLoading/storeLoading antes do conteúdo
+> **Status:** workflow 3 regiões + verificador + review adversarial; `tsc`/`build` verdes. Resultados e desvios:
+> - **28 arquivos novos**: error.tsx + loading.tsx nas 14 rotas. Painel (vendedor/admin) usa `ErrorState fullScreen={false}` em wrapper `py-16`; loja usa full screen; loading.tsx = `LoadingPage`.
+> - **Guards `return null` → `<LoadingPage />`** nos 6 casos reais (pedidos, cupons criar/editar, categorias criar/editar, produtos — o censo original de 10 contava helpers internos que não são guards). Dashboard ganhou `isInitializing` (authLoading || storeLoading) → LoadingPage.
+> - **notFound()** em produto/[id], produtos/editar/[id] e admin/usuarios/[id] — 404 distinto de erro de rede (ErrorState + retry); flags `*NotFound` calculadas no page-hook com guard `!isLoading`. Pós-review: ① CRITICAL corrigido no editar produto — `notFound()` movido p/ ANTES do guard `!isInitialized` (em 404/erro o produto nunca inicializa → spinner eterno; agora erro não-404 também cai no ErrorState via `!loadError` na condição); ② QueryProvider não faz mais retry em **404** (era 3x antes do not-found aparecer); ③ `not-found.tsx` segmentados criados em vendedor/ e admin/ (404 renderiza dentro do layout com sidebar, não a 404 global).
+> - admin/usuarios/[id]: textos planos substituídos (LoadingPage / notFound / ErrorState com refetch).
+> - Nota do review (aceito, sem ação): guards de `!user` nas pages do painel dependem do redirect do VendedorLayout — transitório por construção; spinner eterno só se o redirect falhar silenciosamente.
+
+- [x] **`error.tsx`** nas 14 rotas com fetch
+- [x] **`loading.tsx`** nas mesmas rotas (LoadingPage)
+- [x] **Pages com `return null`** durante auth/loading → `<LoadingPage />` (6 reais)
+- [x] **`notFound()`** nas rotas de detalhe, distinto de erro de rede (+ not-found.tsx segmentados, + sem retry em 404)
+- [x] **`fullScreen={false}`** nos error.tsx do painel (e já usado no dashboard)
+- [x] `admin/usuarios/[id]` — LoadingPage/notFound/ErrorState
+- [x] `vendedor/dashboard` — guard `isInitializing` → LoadingPage
 
 ---
 
