@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { notFound } from 'next/navigation'
 import { useParams, useRouter, usePathname } from 'next/navigation'
 import { Heart, Share2, Link as LinkIcon, MessageCircle } from 'lucide-react'
 import { CartSidebar, ErrorState, StoreHeader, ProductReviews } from '@/components'
@@ -48,6 +49,7 @@ export default function ProductDetailPage() {
     isLoading,
     error,
     refetch,
+    productNotFound,
     selectedImageIndex,
     selectedSize,
     selectedColor,
@@ -89,6 +91,8 @@ export default function ProductDetailPage() {
       </div>
     )
   }
+
+  if (productNotFound) return notFound()
 
   if (error) {
     return (

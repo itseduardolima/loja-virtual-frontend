@@ -1,5 +1,6 @@
 'use client'
 
+import { notFound } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { CreateCategoryModal, ConfirmDialog, ErrorState } from '@/components'
 import { useRouter, useParams } from 'next/navigation'
@@ -66,6 +67,9 @@ export default function EditProductPage() {
     removedExistingImages,
     isInitialized,
     isLoading,
+    error: loadError,
+    productNotFound,
+    refetchProduct,
     handleImageChange,
     removeImage,
     reorderImages,
@@ -295,8 +299,10 @@ export default function EditProductPage() {
   if (authLoading || storeLoading) return <LoadingPage />
   if (!user) return <ErrorState message="Você precisa estar logado para editar produtos" />
   if (!storeData) return <ErrorState message="Erro ao carregar informações da loja" />
-  if (productLoading || !isInitialized) return <LoadingPage />
-  if (!product) return <ErrorState message="Produto não encontrado" />
+  // 404 ANTES do guard de isInitialized: em 404 o produto nunca inicializa e o spinner seria eterno
+  if (productNotFound) return notFound()
+  if (productLoading || (!isInitialized && !loadError)) return <LoadingPage />
+  if (!product) return <ErrorState message="Erro ao carregar produto" onRetry={() => refetchProduct()} retryText="Tentar novamente" />
 
   const completionMeter = <CompletionMeter items={completion} />
   const previewCard = (

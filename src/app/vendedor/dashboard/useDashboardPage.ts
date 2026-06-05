@@ -5,6 +5,7 @@ import { useDashboard } from '@/hooks/useDashboard'
 import { useRevenueChart } from '@/hooks/useRevenueChart'
 import { usePlanFeatures } from '@/hooks/usePlanFeatures'
 import { useStore } from '@/hooks/useStore'
+import { useAuth } from '@/contexts/AuthContext'
 import { getPreviousRange } from '@/lib/vendor'
 import type { PeriodKey } from '@/components/Vendor/Dashboard'
 
@@ -41,8 +42,9 @@ function rangeForPeriod(
 }
 
 export function useDashboardPage() {
+  const { isLoading: authLoading } = useAuth()
   const { features } = usePlanFeatures()
-  const { data: store } = useStore()
+  const { data: store, isLoading: storeLoading } = useStore()
   const [period, setPeriodState] = useState<PeriodKey>('7d')
   const [customRange, setCustomRangeState] = useState<DashboardCustomRange | null>(null)
 
@@ -92,6 +94,7 @@ export function useDashboardPage() {
     revenueData: revenueQuery.data ?? [],
     previousRevenueData: previousRevenueQuery.data ?? [],
     isLoading: isLoadingCurrent,
+    isInitializing: authLoading || storeLoading,
     isError,
     period,
     setPeriod,

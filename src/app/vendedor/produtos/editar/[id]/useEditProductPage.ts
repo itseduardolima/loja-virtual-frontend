@@ -43,7 +43,7 @@ export function useEditProductPage(productId: string, user: User | null) {
   const { data: nicheFieldsRaw } = useNicheFields(selectedNicheId)
   const nicheFields = nicheFieldsRaw || []
 
-  const { data: product, isLoading: productLoading, error: productError } = useQuery({
+  const { data: product, isLoading: productLoading, error: productError, refetch: refetchProduct } = useQuery({
     queryKey: ['product', productId],
     queryFn: async () => {
       const response = await api.get(`/products/${productId}`)
@@ -242,6 +242,9 @@ export function useEditProductPage(productId: string, user: User | null) {
     )
   }
 
+  const productNotFound =
+    !productLoading && !!(productError && (productError as AxiosError)?.response?.status === 404)
+
   return {
     form,
     store: storeData,
@@ -256,6 +259,8 @@ export function useEditProductPage(productId: string, user: User | null) {
     isInitialized,
     isLoading: productLoading || updateProductMutation.isPending,
     error: productError || updateProductMutation.error,
+    productNotFound,
+    refetchProduct,
     handleNicheChange,
     removeExistingImage,
     onSubmit,

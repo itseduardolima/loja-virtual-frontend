@@ -64,7 +64,7 @@ export default function ProdutosPage() {
       redirected.current = true
       router.push('/login')
     }
-    return null
+    return <LoadingPage />
   }
 
   if (isLoading) return <LoadingPage />

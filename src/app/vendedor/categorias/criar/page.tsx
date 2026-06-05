@@ -22,7 +22,7 @@ export default function NewCategoryPage() {
   }
 
   if (!user) {
-    return null
+    return <LoadingPage />
   }
 
   return (
