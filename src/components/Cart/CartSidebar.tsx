@@ -3,36 +3,9 @@
 import Image from 'next/image'
 import { useCart } from '@/hooks/useCart'
 import { useRouter } from 'next/navigation'
-import { buildImageUrl, formatPrice } from '@/lib/utils'
-
-function IconBag() {
-  return (
-    <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#D1C5BA" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
-      <line x1="3" y1="6" x2="21" y2="6" />
-      <path d="M16 10a4 4 0 01-8 0" />
-    </svg>
-  )
-}
-
-function IconClose() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-      <line x1="14" y1="4" x2="4" y2="14" /><line x1="4" y1="4" x2="14" y2="14" />
-    </svg>
-  )
-}
-
-function IconTrash() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="2 4 4 4 14 4" />
-      <path d="M13 4l-.8 9.3H3.8L3 4" />
-      <path d="M6.5 7.5v4M9.5 7.5v4" />
-      <path d="M6 4V2.5h4V4" />
-    </svg>
-  )
-}
+import { buildImageUrl, formatPrice, getCartItemImage } from '@/lib/utils'
+import { getColorHex } from '@/schemas/productSchemas'
+import { ShoppingBag, X, Trash2, Minus, Plus, ArrowRight, Sparkles, Shirt } from 'lucide-react'
 
 interface CartSidebarProps {
   isOpen: boolean
@@ -73,201 +46,225 @@ export function CartSidebar({ isOpen, onClose, storeId, storeSlug }: CartSidebar
     onClose()
   }
 
-  const getProductImage = (item: NonNullable<typeof cartItems>[0]): string | null => {
-    const images = item.product.images as unknown
-    if (Array.isArray(images) && images.length > 0) return images[0] as string
-    if (images && typeof images === 'object' && !Array.isArray(images)) {
-      const byColor = images as Record<string, string[]>
-      const forColor = item.color ? byColor[item.color] : null
-      if (Array.isArray(forColor) && forColor.length > 0) return forColor[0]
-      const first = Object.values(byColor)[0]
-      if (first?.length) return first[0]
-    }
-    return null
-  }
+  // economia total: soma max(0, preço original - subtotal real) por item
+  const savings = hasItems
+    ? cartItems.reduce((acc, item) => {
+        const original = parseFloat(item.product.price) * item.quantity
+        const diff = original - item.subtotal
+        return acc + (diff > 0.01 ? diff : 0)
+      }, 0)
+    : 0
 
   return (
     <>
       {/* Overlay */}
       <div
         onClick={onClose}
-        style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(15,10,5,.48)',
-          zIndex: 199,
-          backdropFilter: 'blur(3px)',
-          WebkitBackdropFilter: 'blur(3px)',
-          opacity: isOpen ? 1 : 0,
-          pointerEvents: isOpen ? 'all' : 'none',
-          transition: 'opacity .32s ease',
-        }}
+        className={[
+          'fixed inset-0 z-[199] bg-nxi1/45 backdrop-blur-[2px] transition-opacity',
+          isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none',
+        ].join(' ')}
       />
 
       {/* Drawer */}
       <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          right: 0,
-          height: '100vh',
-          width: 'clamp(320px,42vw,440px)',
-          background: '#fff',
-          zIndex: 200,
-          display: 'flex',
-          flexDirection: 'column',
-          transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
-          transition: 'transform .38s cubic-bezier(.22,1,.36,1)',
-        }}
+        className={[
+          'fixed right-0 top-0 z-[200] h-screen w-full max-w-[440px] flex flex-col border-l border-nxborder bg-white shadow-[0_0_60px_rgba(3,7,18,0.2)] transition-transform duration-[380ms] ease-[cubic-bezier(.22,1,.36,1)]',
+          isOpen ? 'translate-x-0' : 'translate-x-full',
+        ].join(' ')}
       >
         {/* Header */}
-        <div className="flex items-center justify-between flex-shrink-0" style={{ height: 64, padding: '0 20px 0 24px', borderBottom: '1px solid #F3F4F6' }}>
+        <div className="flex shrink-0 items-center justify-between border-b border-nxborder px-5 py-4">
           <div className="flex items-center gap-2.5">
-            <span className="text-[15px] font-bold text-[#111] tracking-[-0.01em]">Carrinho</span>
-            {totalItems > 0 && (
-              <span className="flex items-center justify-center text-[11px] font-bold text-white" style={{ background: '#111', width: 20, height: 20, borderRadius: 9999 }}>
-                {totalItems > 99 ? '99+' : totalItems}
-              </span>
-            )}
+            <ShoppingBag size={19} className="text-nxi1" />
+            <h2 className="text-[16px] font-extrabold tracking-tight text-nxi1">Sua sacola</h2>
+            <span className="rounded-full bg-nxp/10 px-2 py-0.5 text-[11px] font-bold text-nxp">
+              {totalItems > 99 ? '99+' : totalItems}
+            </span>
           </div>
           <button
             onClick={onClose}
-            className="flex items-center justify-center text-gray-500 transition-all"
-            style={{ width: 34, height: 34, borderRadius: 8, border: '1px solid #E5E7EB', background: '#fff', cursor: 'pointer' }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#F3F4F6'; e.currentTarget.style.borderColor = '#D1D5DB' }}
-            onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = '#E5E7EB' }}
+            className="flex h-8 w-8 items-center justify-center rounded-full text-nxi3 transition-colors hover:bg-nxbg"
+            aria-label="Fechar sacola"
           >
-            <IconClose />
+            <X size={18} />
           </button>
         </div>
 
         {/* Body */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: hasItems ? '0 0 12px' : 0 }}>
+        <div className="flex flex-1 flex-col overflow-hidden">
           {isLoadingCart ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="w-6 h-6 rounded-full border-2 border-gray-200 border-t-[#111] animate-spin" />
+            <div className="flex flex-1 items-center justify-center">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-nxborder border-t-nxp" />
             </div>
           ) : !hasItems ? (
-            <div className="flex flex-col items-center justify-center h-full text-center" style={{ padding: '0 32px' }}>
-              <div className="flex items-center justify-center mb-5" style={{ width: 80, height: 80, borderRadius: 20, background: '#FAF6F2' }}>
-                <IconBag />
+            /* Empty state */
+            <div className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-nxbg text-nxi3">
+                <ShoppingBag size={26} />
               </div>
-              <p className="text-[17px] font-bold text-[#111] tracking-[-0.01em]">Carrinho vazio</p>
-              <p className="text-[13px] text-gray-400 mt-2" style={{ lineHeight: 1.55 }}>Adicione peças incríveis ao seu carrinho para começar.</p>
+              <p className="text-[15px] font-bold text-nxi1">Sua sacola está vazia</p>
+              <p className="max-w-[26ch] text-[13px] text-nxi3">
+                Explore a loja e adicione peças — elas aparecem aqui.
+              </p>
               <button
                 onClick={onClose}
-                className="mt-6 text-[13px] font-semibold text-white transition-colors"
-                style={{ background: '#111', border: 'none', borderRadius: 12, padding: '13px 28px', cursor: 'pointer', letterSpacing: '.01em' }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#333' }}
-                onMouseLeave={e => { e.currentTarget.style.background = '#111' }}
+                className="mt-2 rounded-full bg-nxp px-5 py-2.5 text-[13px] font-bold text-white transition-opacity hover:opacity-90"
               >
-                Explorar produtos →
+                Explorar a loja
               </button>
             </div>
           ) : (
-            <div>
-              {cartItems.map((item) => {
-                const imageUrl = getProductImage(item)
-                const originalTotal = parseFloat(item.product.price) * item.quantity
-                const actualTotal = item.subtotal
-                const hasDiscount = actualTotal < originalTotal - 0.01
-                return (
-                  <div key={item.id} className="flex gap-3.5" style={{ padding: '16px 20px 16px 24px', borderBottom: '1px solid #F9F7F5' }}>
-                    {/* Thumbnail */}
-                    <div className="relative flex-shrink-0" style={{ width: 72, height: 88, borderRadius: 10, overflow: 'hidden', background: '#f0ebe5' }}>
-                      {imageUrl ? (
-                        <Image src={buildImageUrl(imageUrl)} alt={item.product.name} fill className="object-cover" sizes="72px" />
-                      ) : (
-                        <div className="w-full h-full" style={{ background: 'linear-gradient(140deg,#f5ede3,#d4c4b4)' }} />
-                      )}
-                    </div>
+            <>
+              {/* Lista de itens */}
+              <div className="flex-1 overflow-y-auto px-5 py-3">
+                {cartItems.map((item) => {
+                  const imageUrl = getCartItemImage(item)
+                  const originalTotal = parseFloat(item.product.price) * item.quantity
+                  const hasDiscount = item.subtotal < originalTotal - 0.01
 
-                    {/* Info */}
-                    <div className="flex-1 min-w-0" style={{ paddingTop: 2 }}>
-                      <p className="text-[13px] font-semibold text-[#111] tracking-[-0.01em] truncate">{item.product.name}</p>
-                      <div className="flex items-center gap-1.5 mt-[5px]">
-                        {item.size && (
-                          <span className="text-[10px] text-gray-400 font-medium" style={{ background: '#F3F4F6', padding: '2px 7px', borderRadius: 5 }}>Tam {item.size}</span>
-                        )}
-                        {item.color && (
-                          <span className="text-[10px] text-gray-400 font-medium" style={{ background: '#F3F4F6', padding: '2px 7px', borderRadius: 5 }}>{item.color}</span>
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex gap-3.5 border-b border-nxborder py-4 last:border-0"
+                    >
+                      {/* Thumbnail */}
+                      <div className="relative h-[88px] w-[70px] shrink-0 overflow-hidden rounded-xl border border-nxborder">
+                        {imageUrl ? (
+                          <Image
+                            src={buildImageUrl(imageUrl)}
+                            alt={item.product.name}
+                            fill
+                            sizes="70px"
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center bg-nxbg text-nxi3">
+                            <Shirt size={18} />
+                          </div>
                         )}
                       </div>
-                      <div className="flex items-center justify-between mt-3">
-                        {/* Qty stepper */}
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                            disabled={item.quantity <= 1 || isUpdatingCartItem}
-                            className="flex items-center justify-center transition-all"
-                            style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid #E5E7EB', background: '#fff', cursor: 'pointer', fontSize: 15, color: '#374151', opacity: item.quantity <= 1 ? 0.35 : 1, flexShrink: 0 }}
-                          >−</button>
-                          <span className="text-[13px] font-semibold text-[#111] text-center" style={{ minWidth: 18 }}>{item.quantity}</span>
-                          <button
-                            onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                            disabled={isUpdatingCartItem}
-                            className="flex items-center justify-center transition-all"
-                            style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid #E5E7EB', background: '#fff', cursor: 'pointer', fontSize: 15, color: '#374151', flexShrink: 0 }}
-                          >+</button>
-                        </div>
-                        {/* Price + Trash */}
-                        <div className="flex items-center gap-2">
-                          <div className="text-right">
-                            <span className="text-[14px] font-bold text-[#111]">{formatPrice(actualTotal)}</span>
-                            {hasDiscount && (
-                              <p className="text-[11px] text-gray-400 line-through">{formatPrice(originalTotal)}</p>
-                            )}
-                          </div>
+
+                      {/* Info */}
+                      <div className="flex min-w-0 flex-1 flex-col">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-[13.5px] font-bold leading-snug text-nxi1">
+                            {item.product.name}
+                          </p>
                           <button
                             onClick={() => removeFromCart(item.id)}
                             disabled={isRemovingFromCart}
-                            className="flex items-center justify-center transition-all"
-                            style={{ width: 26, height: 26, borderRadius: 6, border: 'none', background: 'transparent', color: '#C4B8B0', cursor: 'pointer' }}
-                            onMouseEnter={e => { e.currentTarget.style.background = '#FEF2F2'; e.currentTarget.style.color = '#EF4444' }}
-                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#C4B8B0' }}
+                            className="shrink-0 text-nxi3 transition-colors hover:text-nxd disabled:opacity-40"
+                            aria-label="Remover item"
                           >
-                            <IconTrash />
+                            <Trash2 size={15} />
                           </button>
+                        </div>
+
+                        {/* Chips cor / tamanho */}
+                        {(item.color || item.size) && (
+                          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                            {item.color && (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-nxborder px-1.5 py-0.5 text-[10.5px] font-semibold text-nxi2">
+                                <span
+                                  className="h-2.5 w-2.5 rounded-full ring-1 ring-inset ring-black/10"
+                                  style={{ background: getColorHex(item.color) }}
+                                />
+                                {item.color}
+                              </span>
+                            )}
+                            {item.size && (
+                              <span className="rounded-full border border-nxborder px-2 py-0.5 text-[10.5px] font-semibold text-nxi2">
+                                Tam {item.size}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Stepper + preço */}
+                        <div className="mt-auto flex items-center justify-between pt-2.5">
+                          {/* Qty stepper */}
+                          <div className="flex items-center rounded-full bg-nxbg">
+                            <button
+                              onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                              disabled={item.quantity <= 1 || isUpdatingCartItem}
+                              className="flex h-8 w-8 items-center justify-center text-nxi1 disabled:opacity-30"
+                              aria-label="Diminuir quantidade"
+                            >
+                              <Minus size={14} />
+                            </button>
+                            <span className="w-7 text-center text-[13px] font-semibold tabular-nums">
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                              disabled={item.quantity >= item.product.stock || isUpdatingCartItem}
+                              className="flex h-8 w-8 items-center justify-center text-nxi1 disabled:opacity-30"
+                              aria-label="Aumentar quantidade"
+                            >
+                              <Plus size={14} />
+                            </button>
+                          </div>
+
+                          {/* Preço */}
+                          <div className="text-right">
+                            <div className="text-[14px] font-extrabold text-nxi1">
+                              {formatPrice(item.subtotal)}
+                            </div>
+                            {hasDiscount && (
+                              <div className="text-[11px] text-nxi3 line-through">
+                                {formatPrice(originalTotal)}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
+                  )
+                })}
+              </div>
+
+              {/* Footer */}
+              <div className="shrink-0 border-t border-nxborder px-5 py-4">
+                {/* Badge economia */}
+                {savings > 0.01 && (
+                  <div className="mb-3 flex items-center justify-center gap-1.5 rounded-lg bg-nxa/10 py-2 text-[12px] font-bold text-nxa">
+                    <Sparkles size={13} />
+                    Você está economizando {formatPrice(savings)}
                   </div>
-                )
-              })}
-            </div>
+                )}
+
+                {/* Subtotal */}
+                <div className="mb-1 flex items-center justify-between text-[13px]">
+                  <span className="text-nxi2">Subtotal</span>
+                  <span className="font-semibold text-nxi1">{formatPrice(subtotal)}</span>
+                </div>
+
+                {/* Nota frete */}
+                <p className="mb-3 text-[11.5px] text-nxi3">
+                  Frete e pagamento são combinados com a loja no WhatsApp após o pedido.
+                </p>
+
+                {/* CTA finalizar */}
+                <button
+                  onClick={handleCheckout}
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-nxp text-[14px] font-bold text-white transition-transform active:scale-[0.99]"
+                >
+                  Finalizar compra
+                  <ArrowRight size={16} />
+                </button>
+
+                {/* Ghost continuar */}
+                <button
+                  onClick={onClose}
+                  className="mt-2 h-10 w-full text-[12.5px] font-semibold text-nxi3 transition-colors hover:text-nxi1"
+                >
+                  Continuar comprando
+                </button>
+              </div>
+            </>
           )}
         </div>
-
-        {/* Footer */}
-        {hasItems && (
-          <div className="flex-shrink-0" style={{ borderTop: '1px solid #F3F4F6', padding: '16px 24px 24px', background: '#fff' }}>
-            {/* Subtotal */}
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-[13px] text-gray-500">Subtotal</span>
-              <span className="text-[17px] font-bold text-[#111] tracking-[-0.015em]">{formatPrice(subtotal)}</span>
-            </div>
-
-            {/* CTA */}
-            <button
-              onClick={handleCheckout}
-              className="w-full text-[14px] font-bold text-white transition-colors"
-              style={{ background: '#111', border: 'none', borderRadius: 12, padding: '15px 0', cursor: 'pointer', letterSpacing: '.02em' }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#222' }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#111' }}
-            >
-              Finalizar compra
-            </button>
-            <button
-              onClick={onClose}
-              className="w-full text-[12.5px] font-medium text-gray-400 transition-colors"
-              style={{ background: 'transparent', border: 'none', marginTop: 10, cursor: 'pointer', padding: '6px 0' }}
-              onMouseEnter={e => { e.currentTarget.style.color = '#374151' }}
-              onMouseLeave={e => { e.currentTarget.style.color = '#9CA3AF' }}
-            >
-              Continuar comprando
-            </button>
-          </div>
-        )}
       </div>
     </>
   )

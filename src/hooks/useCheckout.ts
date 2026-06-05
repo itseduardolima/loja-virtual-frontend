@@ -14,6 +14,35 @@ interface CheckoutRequest {
   delivery_address?: string
 }
 
+export interface OrderSnapshotItem {
+  name: string
+  image: string | null
+  color?: string
+  size?: string
+  quantity: number
+  unit_price: number
+  subtotal: number
+}
+
+/**
+ * Snapshot do pedido gravado em sessionStorage no sucesso do checkout —
+ * a página de pedido-sucesso só recebe `?codigo=` e usa isso para renderizar
+ * o recap (itens/fotos/total) e o link do WhatsApp sem nova chamada à API.
+ */
+export interface OrderSnapshot {
+  order_code: string
+  customer_name: string
+  whatsapp_link: string
+  subtotal: number
+  discount: number
+  coupon_code?: string
+  total: number
+  items: OrderSnapshotItem[]
+  created_at: string
+}
+
+export const orderSnapshotKey = (orderCode: string) => `order-snapshot-${orderCode}`
+
 interface CheckoutResponse {
   data: {
     order: {
@@ -60,6 +89,7 @@ export function useCheckout() {
       storeId: number
       checkoutData: CheckoutRequest
       storeSlug?: string
+      orderSnapshot?: Omit<OrderSnapshot, 'order_code' | 'whatsapp_link'>
     }) => {
       const response = await api.post<CheckoutResponse>('/cart/checkout', checkoutData, {
         params: {
@@ -73,11 +103,20 @@ export function useCheckout() {
       const storeSlug = variables.storeSlug
       const orderCode = data.data?.order?.order_code ?? data.data?.order?.code ?? ''
 
-      toast({
-        title: 'Pedido criado com sucesso!',
-        description: data.message,
-        variant: 'success',
-      })
+      // Grava o snapshot para o recap da página de sucesso — o order_code e o
+      // whatsapp_link reais só existem na resposta do backend
+      if (orderCode && variables.orderSnapshot) {
+        try {
+          const snapshot: OrderSnapshot = {
+            ...variables.orderSnapshot,
+            order_code: orderCode,
+            whatsapp_link: data.data?.whatsapp_link ?? '',
+          }
+          sessionStorage.setItem(orderSnapshotKey(orderCode), JSON.stringify(snapshot))
+        } catch {
+          /* storage cheio/indisponível — sucesso cai no fallback sem recap */
+        }
+      }
 
       // Abre WhatsApp em nova aba
       if (data.data?.whatsapp_link) {
@@ -101,14 +140,26 @@ export function useCheckout() {
       toast({
         title: 'Erro!',
         description: errorMessage,
-        variant: 'destructive'
+        variant: 'destructive',
       })
-    }
+    },
   })
 
   // Guest checkout: não exige login — qualquer pessoa pode finalizar pedido com nome/email/telefone
-  const handleCheckout = async (sessionId: string, storeId: number, checkoutData: CheckoutRequest, storeSlug?: string) => {
-    await checkoutMutation.mutateAsync({ sessionId, storeId, checkoutData, storeSlug })
+  const handleCheckout = async (
+    sessionId: string,
+    storeId: number,
+    checkoutData: CheckoutRequest,
+    storeSlug?: string,
+    orderSnapshot?: Omit<OrderSnapshot, 'order_code' | 'whatsapp_link'>,
+  ) => {
+    await checkoutMutation.mutateAsync({
+      sessionId,
+      storeId,
+      checkoutData,
+      storeSlug,
+      orderSnapshot,
+    })
   }
 
   const getCheckoutData = () => {
@@ -132,6 +183,6 @@ export function useCheckout() {
     isCheckoutLoading: checkoutMutation.isPending,
     getCheckoutData,
     clearCheckoutData,
-    isAuthenticated
+    isAuthenticated,
   }
 }

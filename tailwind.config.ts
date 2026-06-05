@@ -67,6 +67,7 @@ const config: Config = {
         nxi2: 'hsl(var(--nxi2) / <alpha-value>)',
         nxi3: 'hsl(var(--nxi3) / <alpha-value>)',
         nxborder: 'hsl(var(--nxborder) / <alpha-value>)',
+        wa: 'hsl(var(--wa) / <alpha-value>)',
       },
       borderRadius: {
         lg: 'var(--radius)',
