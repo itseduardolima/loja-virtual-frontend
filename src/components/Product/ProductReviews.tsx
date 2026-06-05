@@ -23,7 +23,7 @@ import { useProductReviews } from '@/hooks/useProductReviews'
 import { useAuth } from '@/contexts/AuthContext'
 import { ProductReview } from '@/types/review'
 import { buildImageUrl, cn } from '@/lib/utils'
-import { Stars } from '@/components/Store/Product/Stars'
+import { Stars } from '@/components/Store/Product'
 
 function formatReviewDate(date: Date): string {
   return date.toLocaleDateString('pt-BR', {

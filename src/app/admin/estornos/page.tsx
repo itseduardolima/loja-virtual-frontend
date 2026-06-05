@@ -8,7 +8,7 @@ import { ptBR } from 'date-fns/locale'
 import { SearchInput } from '@/components/ui/search-input'
 import { useEstornosPage } from './useEstornosPage'
 import { SectionCard } from '../_shared'
-import LoadingPage from '@/components/Layout/LoadingPage'
+import { LoadingPage } from '@/components/Layout'
 
 export default function AdminEstornosPage() {
   const {

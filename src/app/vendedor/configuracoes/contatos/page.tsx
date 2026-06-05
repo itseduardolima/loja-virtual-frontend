@@ -4,7 +4,7 @@ import { useContatos } from './useContatos'
 import { Input, LoadingSpinner } from '@/components'
 import { Instagram, Facebook, Mail, CheckCircle2, Radio } from 'lucide-react'
 import { WhatsappIcon } from '@/assets/icons/WhatsappIcon'
-import { PhoneCountryInput } from '@/components/Form/PhoneCountryInput'
+import { PhoneCountryInput } from '@/components/Form'
 import { cn } from '@/lib/utils'
 import {
   SectionCard,

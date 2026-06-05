@@ -5,7 +5,7 @@ import { Input, Textarea, LoadingSpinner } from '@/components'
 import Image from 'next/image'
 import { Camera, ImagePlus, Store } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { ImageCropDialog } from '@/components/Dialog/ImageCropDialog'
+import { ImageCropDialog } from '@/components/Dialog'
 import {
   SectionCard,
   SectionHeader,

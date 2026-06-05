@@ -9,7 +9,7 @@ import { ORDER_STATUS, SORT_OPTIONS, type OrdersFilters, type Order } from '@/ty
 import { useAuth } from '@/contexts/AuthContext'
 import { EyeIcon } from 'lucide-react'
 import { formatDate, formatPrice } from '@/lib/utils'
-import { type Column } from '@/components/Table/Table'
+import { type Column } from '@/components/Table'
 
 const PANEL_ORDERS_LIMIT = 100
 const COLUMN_PAGE_SIZE = 10

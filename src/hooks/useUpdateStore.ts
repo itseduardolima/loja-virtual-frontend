@@ -4,49 +4,13 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/axios'
 import { useToastContext } from '@/contexts/ToastContext'
 import { useRouter } from 'next/navigation'
+import type { UpdateStoreData } from '@/types'
+
+export type { UpdateStoreData }
 
 export interface UpdateStoreOptions {
   redirectOnSuccess?: boolean
   silent?: boolean
-}
-
-export interface UpdateStoreData {
-  name?: string
-  description?: string
-  niche_ids?: string[]
-  primary_niche_id?: number
-  logo?: File
-  banner?: File
-  whatsapp?: string
-  instagram?: string
-  facebook?: string
-  website?: string
-  email?: string
-  phone?: string
-  cnpj?: string
-  cpf?: string
-  address?: string
-  city?: string
-  state?: string
-  zipcode?: string
-  neighborhood?: string
-  number?: string
-  complement?: string
-  delivery_fee?: number
-  free_delivery_min?: number
-  delivery_time?: string
-  pickup_enabled?: boolean
-  free_shipping_enabled?: boolean
-  payment_methods?: string[]
-  business_hours?: Record<string, string>
-  hero_eyebrow?: string
-  hero_title?: string
-  hero_subtitle?: string
-  announcement_text?: string
-  campaign_title?: string
-  campaign_text?: string
-  campaign_image?: File
-  remove_campaign_image?: boolean
 }
 
 // Campos de conteúdo da vitrine: string vazia é enviada para limpar o override

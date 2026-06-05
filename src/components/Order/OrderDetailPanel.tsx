@@ -23,10 +23,10 @@ import { useDenyCancellationRequest } from '@/hooks/useDenyCancellationRequest'
 import { type Order } from '@/types/order'
 import { formatDate, formatPrice, cn } from '@/lib/utils'
 import { buildImageUrl } from '@/lib/imageUtils'
-import { OrderTrackingTimeline } from '@/components/Order/OrderTrackingTimeline'
+import { OrderTrackingTimeline } from './OrderTrackingTimeline'
 import { WhatsappIcon } from '@/assets/icons/WhatsappIcon'
-import { OrderPrintModal } from '@/components/Order/OrderPrintModal'
-import { OrderNfeCard } from '@/components/Order/OrderNfeCard'
+import { OrderPrintModal } from './OrderPrintModal'
+import { OrderNfeCard } from './OrderNfeCard'
 import { STATUS_OPTIONS } from '@/lib/orderPanelUtils'
 
 // ─── Status chip palette (refined neutral + accent) ──────────────────────────

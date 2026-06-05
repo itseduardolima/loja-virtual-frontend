@@ -9,7 +9,7 @@ import { useCart } from '@/hooks/useCart'
 import { Button } from '@/components/ui/button'
 import { CheckCircle2, ShoppingBag, MessageCircle } from 'lucide-react'
 import { useState } from 'react'
-import { AppFooter } from '@/components/Layout/AppFooter'
+import { AppFooter } from '@/components/Layout'
 import { Product } from '@/types/product'
 
 export default function PedidoSucessoPage() {

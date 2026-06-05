@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/components'
-import { NotFoundContent } from '@/components/Layout/NotFoundContent'
+import { NotFoundContent } from '@/components/Layout'
 import { Search } from 'lucide-react'
 
 export default function NotFound() {

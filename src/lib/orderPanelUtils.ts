@@ -1,6 +1,3 @@
-import { ORDER_STATUS } from '@/types/order'
-import { Clock, CheckCircle, Truck, XCircle } from 'lucide-react'
-
 export const STATUS_ORDER: (1 | 2 | 3 | 4 | 5)[] = [1, 2, 3, 4, 5]
 
 /** Fluxo de status: só permite avançar para o próximo ou cancelar (quando aplicável). */
@@ -13,11 +10,11 @@ export const STATUS_FLOW: Record<number, number[]> = {
 }
 
 export const STATUS_OPTIONS: { value: number; label: string; description: string }[] = [
-  { value: 1, label: 'Pendente', description: 'Aguardando pagamento' },
+  { value: 1, label: 'Pendente',   description: 'Aguardando pagamento' },
   { value: 2, label: 'Confirmado', description: 'Pagamento confirmado' },
-  { value: 3, label: 'Enviado', description: 'Pedido enviado para entrega' },
-  { value: 4, label: 'Entregue', description: 'Pedido entregue ao cliente' },
-  { value: 5, label: 'Cancelado', description: 'Pedido cancelado' },
+  { value: 3, label: 'Enviado',    description: 'Pedido enviado para entrega' },
+  { value: 4, label: 'Entregue',   description: 'Pedido entregue ao cliente' },
+  { value: 5, label: 'Cancelado',  description: 'Pedido cancelado' },
 ]
 
 /** Mesmo padrão de cores do ORDER_STATUS (detalhes do pedido): yellow, blue, purple, green, red */
@@ -55,20 +52,4 @@ export const STATUS_HEADER_COLORS: Record<
     icon: 'text-red-700',
     selectedRow: 'bg-red-50 hover:bg-red-50',
   },
-}
-
-export function getStatusIcon(status: number) {
-  const info = ORDER_STATUS[status as keyof typeof ORDER_STATUS] || ORDER_STATUS[1]
-  switch (info.icon) {
-    case 'clock':
-      return <Clock className="h-4 w-4" strokeWidth={3} />
-    case 'check-circle':
-      return <CheckCircle className="h-4 w-4" strokeWidth={3} />
-    case 'truck':
-      return <Truck className="h-4 w-4" strokeWidth={3} />
-    case 'x-circle':
-      return <XCircle className="h-4 w-4" strokeWidth={3} />
-    default:
-      return <Clock className="h-4 w-4" strokeWidth={3} />
-  }
 }

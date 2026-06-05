@@ -2,8 +2,7 @@
 
 import { usePlanoPage } from './usePlanoPage'
 import { LoadingSpinner } from '@/components'
-import { ChangePlanModal } from '@/components/Subscription/ChangePlanModal'
-import { RefundModal } from '@/components/Subscription/RefundModal'
+import { ChangePlanModal, RefundModal } from '@/components/Subscription'
 import { cn } from '@/lib/utils'
 import { TopBanner } from './_components/TopBanner'
 import { SubscriptionCard } from './_components/SubscriptionCard'

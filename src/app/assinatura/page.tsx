@@ -16,7 +16,7 @@ import {
   SuccessStep,
   CompletedStep,
 } from './components'
-import { NexoLeftPanel } from '@/components/Layout/NexoLeftPanel'
+import { NexoLeftPanel } from '@/components/Layout'
 import type { Step } from './useAssinaturaPage'
 
 const BULLETS_MARKETING = [

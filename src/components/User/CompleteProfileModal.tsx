@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { PhoneCountryInput } from '@/components/Form/PhoneCountryInput'
+import { PhoneCountryInput } from '@/components/Form'
 import { useCustomerProfile } from '@/hooks/useCustomerProfile'
 import { useCountries } from '@/hooks/useCountries'
 import { UpdateCustomerProfileDto } from '@/types/customer'
-import { LoadingSpinner } from '@/components/Layout/LoadingSpinner'
+import { LoadingSpinner } from '@/components/Layout'
 
 interface CompleteProfileModalProps {
   isOpen: boolean

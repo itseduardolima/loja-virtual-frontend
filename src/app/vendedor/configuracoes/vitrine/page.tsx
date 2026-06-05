@@ -6,7 +6,7 @@ import { useVitrine, type VitrineFormData } from './useVitrine'
 import { VitrinePreviewModal } from './VitrinePreviewModal'
 import { Input, LoadingSpinner } from '@/components'
 import { Textarea } from '@/components/ui/textarea'
-import { ImageCropDialog } from '@/components/Dialog/ImageCropDialog'
+import { ImageCropDialog } from '@/components/Dialog'
 import { Eye, ImagePlus, Megaphone, Sparkles, Store, Trash2 } from 'lucide-react'
 import {
   SectionCard,

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { Input } from '@/components/ui/input'
-import { LoadingSpinner } from '@/components/Layout/LoadingSpinner'
+import { LoadingSpinner } from '@/components/Layout'
 import type { Country } from '@/hooks/useCountries'
 
 interface PhoneCountryInputProps {

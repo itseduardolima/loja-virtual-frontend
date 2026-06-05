@@ -1,7 +1,7 @@
 'use client'
 
 import { Search, Loader2 } from 'lucide-react'
-import { nxInputClass } from '@/components/ProductForm/inputs'
+import { nxInputClass } from '@/components/ProductForm'
 import { cn } from '@/lib/utils'
 
 interface SearchFieldProps {

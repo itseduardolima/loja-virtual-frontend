@@ -4,7 +4,7 @@ import { useNichos } from './useNichos'
 import { LoadingSpinner } from '@/components'
 import { cn } from '@/lib/utils'
 import { Layers, Star } from 'lucide-react'
-import { getNicheIcon } from '@/components/ProductForm/data'
+import { getNicheIcon } from '@/components/ProductForm'
 import {
   SectionCard,
   SectionHeader,

@@ -11,33 +11,31 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from '@dnd-kit/core'
-import { ErrorState } from '@/components/Layout/ErrorState'
-import LoadingPage from '@/components/Layout/LoadingPage'
+import { ErrorState, LoadingPage, FeatureLockedModal } from '@/components/Layout'
 import { useOrdersPage } from './useOrdersPage'
-import { OrderDetailPanel } from '@/components/Order/OrderDetailPanel'
-import { KanbanColumn } from '@/components/Order/KanbanColumn'
 import {
+  OrderDetailPanel,
+  KanbanColumn,
   OrderKanbanCard,
   OrderKanbanCardPreview,
   parseOrderIdFromDraggableId,
-} from '@/components/Order/OrderKanbanCard'
-import { parseStatusFromDroppableId } from '@/components/Order/KanbanColumn'
+  parseStatusFromDroppableId,
+  MobileOrdersView,
+} from '@/components/Order'
 import { STATUS_ORDER, STATUS_HEADER_COLORS } from '@/lib/orderPanelUtils'
 import { useUpdateOrderStatus } from '@/hooks/useUpdateOrderStatus'
 import { useAcceptCancellationRequest } from '@/hooks/useAcceptCancellationRequest'
 import { useDenyCancellationRequest } from '@/hooks/useDenyCancellationRequest'
 import type { OrdersResponse } from '@/types/order'
 import { FileDown, MessageCircle, User, Lock, X } from 'lucide-react'
-import { DashboardDateRangeFilter } from '@/components/Dashboard/DashboardDateRangeFilter'
+import { DashboardDateRangeFilter } from '@/components/Dashboard'
 import { Button } from '@/components/ui/button'
 import { SearchInput } from '@/components/ui/search-input'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
-import { MobileOrdersView } from '@/components/Order/MobileOrdersView'
 import { useExportOrders } from '@/hooks/useExportOrders'
 import { usePlanFeatures } from '@/hooks/usePlanFeatures'
 import { useFeatureLockedModal } from '@/hooks/useFeatureLockedModal'
-import { FeatureLockedModal } from '@/components/Layout/FeatureLockedModal'
 import {
   Dialog,
   DialogContent,

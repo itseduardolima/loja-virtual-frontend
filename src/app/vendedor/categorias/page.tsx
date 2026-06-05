@@ -15,8 +15,7 @@ import {
   type StatusTab,
   type RowAction,
 } from '@/components/VendorList'
-import { NxButton, NxBadge } from '@/components/ProductForm/primitives'
-import { NxSelectNative } from '@/components/ProductForm/inputs'
+import { NxButton, NxBadge, NxSelectNative } from '@/components/ProductForm'
 import {
   Plus,
   Tag,
@@ -29,7 +28,7 @@ import {
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCategoriesPage } from './useCategoriesPage'
-import LoadingPage from '@/components/Layout/LoadingPage'
+import { LoadingPage } from '@/components/Layout'
 import { cn } from '@/lib/utils'
 import type { Category } from '@/types/category'
 

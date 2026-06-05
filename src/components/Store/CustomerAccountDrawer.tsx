@@ -46,9 +46,9 @@ import { CUSTOMER_ORDER_STATUS, UpdateCustomerProfileDto } from '@/types/custome
 import { updateCustomerProfileSchema } from '@/schemas'
 import { cn, formatDate, formatPrice, buildImageUrl } from '@/lib/utils'
 import { api } from '@/lib/api'
-import { LoadingSpinner } from '@/components/Layout/LoadingSpinner'
+import { LoadingSpinner } from '@/components/Layout'
 import { WhatsappIcon } from '@/assets/icons/WhatsappIcon'
-import { OrderTrackingTimeline } from '@/components/Order/OrderTrackingTimeline'
+import { OrderTrackingTimeline } from '@/components/Order'
 import {
   Dialog,
   DialogContent,

@@ -3,10 +3,7 @@
 import * as React from 'react'
 import { Eye, Lock, Search, ShoppingBag, X } from 'lucide-react'
 import type { StoreInfo } from '@/types/store'
-import { AnnouncementBar } from '@/components/Store/AnnouncementBar'
-import { StoreHomeHero } from '@/components/Store/StoreHomeHero'
-import { StoreMarquee } from '@/components/Store/StoreMarquee'
-import { StoreFeatureBanner } from '@/components/Store/StoreFeatureBanner'
+import { AnnouncementBar, StoreHomeHero, StoreMarquee, StoreFeatureBanner } from '@/components/Store'
 import { marqueeItems, getStoreMonogram } from '@/lib/storefront'
 
 interface VitrinePreviewModalProps {

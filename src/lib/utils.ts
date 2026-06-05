@@ -99,3 +99,38 @@ export function formatBillingCycle(cycle: string): string {
 export function formatBRL(value: number): string {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
+
+/** Valida email com regex simples (mesma semântica usada em equipe/page.tsx). */
+export function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+}
+
+/** Dias até a data fornecida (negativo se já passou). */
+export function daysUntil(date: string | Date): number {
+  return Math.ceil((new Date(date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+}
+
+/** Retorna true se a data fornecida já passou. */
+export function isExpired(date: string | Date | null | undefined): boolean {
+  if (!date) return false
+  return daysUntil(date) <= 0
+}
+
+/** Data curta sem hora: dd/mm/aaaa. */
+export function formatDateShort(date: string | Date): string {
+  return new Date(date).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
+}
+
+/** Data longa com mês por extenso, fuso UTC (ex: "02 de junho de 2026"). */
+export function formatDateLong(date: string | Date): string {
+  return new Date(date).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
+}
