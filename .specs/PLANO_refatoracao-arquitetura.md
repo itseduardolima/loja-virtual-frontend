@@ -152,13 +152,18 @@ Por ordem de severidade. **Nota:** nas pages que serão reescritas aqui, aplicar
 
 ---
 
-## Fase 5 — Forms & dirty-check · ~1 dia
+## Fase 5 — Forms & dirty-check · ~1 dia ✅ CONCLUÍDA (2026-06-05)
 
-Consome 0.1 (lodash).
-- [ ] **isDirty + handleReset + botão Descartar** nos 4 config pages sem: `informacoes-basicas`, `contatos`, `endereco`, `documentos` (padrão já implantado em vitrine/horario/nichos/pagamento)
-- [ ] **`JSON.stringify` → `isEqual`** nos 5 hooks: useEntrega, useHorario, useVitrine (+ revisar useNichos/usePagamento — arrays de primitivos `.sort()` podem ficar, documentar)
-- [ ] **showErrors flag** nos forms RHF que mostram erro on-change desde o início (cupons criar, categorias criar)
-- [ ] Conferir `SPEC_formularios.md` sobre RHF vs useState em create/edit — alinhar cupons/categorias com o que a spec definir
+> **Status:** `tsc` e `pnpm build` verdes; diff revisado adversarialmente. Resultados e desvios:
+> - **isDirty + handleReset + Descartar** adicionados aos 4 hooks/pages (`informacoes-basicas`, `contatos`, `endereco`, `documentos`) — agora os 9 config hooks têm dirty-check. Detalhes por página: informacoes-basicas considera logoFile/bannerFile no isDirty e o reset restaura previews + fecha crop dialog; contatos inclui `selectedCountry` no dirty (trocar DDI altera o whatsapp salvo); endereco ganhou generation counter (`cepFetchGen`) p/ busca ViaCEP em voo não sobrescrever o form após Descartar; documentos normaliza CNPJ/CPF com a máscara no load (formatCNPJ/CPF são idempotentes) p/ evitar falso-dirty.
+> - **`JSON.stringify` → `isEqual`** (lodash/isEqual, subpath import): useEntrega, useHorario, useVitrine, usePagamento (sets ordenados). useNichos já comparava por sort manual sem JSON.stringify — mantido. Sobras de `JSON.stringify` em app/ NÃO são dirty-check de config: produtos/editar (snapshot string p/ unsaved-changes com Files) e checkout (payload JSON p/ API).
+> - **showErrors: já resolvido** — cupons/categorias criar+editar usam RHF com `mode` default (`onSubmit`): erros só aparecem após o 1º submit, conforme a spec ("não mostrar erros antes do usuário tocar o campo"). Nada a fazer.
+> - **RHF vs useState:** `SPEC_formularios.md` §10 veda RHF apenas em *formulários de configuração* (todos já em useState+Yup). Cupons/categorias são create/edit de recurso — RHF mantido, alinhado à spec e à stack declarada (RHF 7 + Yup).
+
+- [x] **isDirty + handleReset + botão Descartar** nos 4 config pages sem: `informacoes-basicas`, `contatos`, `endereco`, `documentos` (padrão já implantado em vitrine/horario/nichos/pagamento)
+- [x] **`JSON.stringify` → `isEqual`** nos 5 hooks: useEntrega, useHorario, useVitrine (+ revisar useNichos/usePagamento — arrays de primitivos `.sort()` podem ficar, documentar)
+- [x] **showErrors flag** nos forms RHF que mostram erro on-change desde o início (cupons criar, categorias criar) — já estava conforme (RHF mode onSubmit)
+- [x] Conferir `SPEC_formularios.md` sobre RHF vs useState em create/edit — alinhar cupons/categorias com o que a spec definir — spec só veda RHF em config; create/edit mantém RHF
 
 ---
 
