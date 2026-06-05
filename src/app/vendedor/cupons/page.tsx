@@ -16,7 +16,7 @@ import {
   type StatusTab,
   type RowAction,
 } from '@/components/VendorList'
-import { NxButton, NxBadge } from '@/components/ProductForm/primitives'
+import { NxButton, NxBadge } from '@/components/ProductForm'
 import {
   Plus,
   Tag,
@@ -33,8 +33,7 @@ import {
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCuponsPage, type Coupon, type CouponFilter, isExpired, isExhausted } from './useCuponsPage'
-import LoadingPage from '@/components/Layout/LoadingPage'
-import FeatureLocked from '@/components/Layout/FeatureLocked'
+import { LoadingPage, FeatureLocked } from '@/components/Layout'
 import { usePlanFeatures } from '@/hooks/usePlanFeatures'
 import { cn, formatPrice } from '@/lib/utils'
 

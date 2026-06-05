@@ -1,6 +1,6 @@
 'use client'
 
-import LoadingPage from '@/components/Layout/LoadingPage'
+import { LoadingPage } from '@/components/Layout'
 import { CouponForm } from '../_components/CouponForm'
 import { useCreateCouponPage } from './useCreateCouponPage'
 

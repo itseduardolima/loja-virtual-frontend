@@ -3,7 +3,7 @@
 import { useDroppable } from '@dnd-kit/core'
 import { type Order } from '@/types/order'
 import { OrderKanbanCard } from './OrderKanbanCard'
-import { getStatusIcon } from '@/lib/orderPanelUtils'
+import { getStatusIcon } from './OrderStatusIcon'
 import { cn } from '@/lib/utils'
 import { ChevronDown } from 'lucide-react'
 

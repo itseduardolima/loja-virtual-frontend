@@ -11,24 +11,24 @@ import { useStoreInfo } from '@/hooks/useStoreInfo'
 import { useWishlist } from '@/hooks/useWishlist'
 import { useToastContext } from '@/contexts/ToastContext'
 import { useAddToCartAnimation } from '@/hooks/useAddToCartAnimation'
-import { AddToCartAnimation } from '@/components/Animation/AddToCartAnimation'
-import { RelatedProducts } from '@/components/Product/RelatedProducts'
-import { WhatsAppChatWidget } from '@/components/Store/WhatsAppChatWidget'
-import { ProductQuestions } from '@/components/Product/ProductQuestions'
-import LoadingPage from '@/components/Layout/LoadingPage'
-import { AnnouncementBar } from '@/components/Store/AnnouncementBar'
-import { StoreNewFooter } from '@/components/Store/StoreNewFooter'
-import { ProductImageGallery } from '@/components/Store/Product/ProductImageGallery'
-import { ProductPricing } from '@/components/Store/Product/ProductPricing'
-import { ProductColorSelector } from '@/components/Store/Product/ProductColorSelector'
-import { ProductSizeSelector } from '@/components/Store/Product/ProductSizeSelector'
-import { ProductAddToCart } from '@/components/Store/Product/ProductAddToCart'
-import { ProductMobileBuyBar } from '@/components/Store/Product/ProductMobileBuyBar'
-import { ProductStockLine } from '@/components/Store/Product/ProductStockLine'
-import { ProductSubNav, SubNavSection } from '@/components/Store/Product/ProductSubNav'
-import { ProductDescriptionSection } from '@/components/Store/Product/ProductDescriptionSection'
-import { ProductSpecsSection } from '@/components/Store/Product/ProductSpecsSection'
-import { Stars } from '@/components/Store/Product/Stars'
+import { AddToCartAnimation } from '@/components/Animation'
+import { RelatedProducts, ProductQuestions } from '@/components/Product'
+import { AnnouncementBar, WhatsAppChatWidget, StoreNewFooter } from '@/components/Store'
+import { LoadingPage } from '@/components/Layout'
+import {
+  ProductImageGallery,
+  ProductPricing,
+  ProductColorSelector,
+  ProductSizeSelector,
+  ProductAddToCart,
+  ProductMobileBuyBar,
+  ProductStockLine,
+  ProductSubNav,
+  type SubNavSection,
+  ProductDescriptionSection,
+  ProductSpecsSection,
+  Stars,
+} from '@/components/Store/Product'
 import { cn } from '@/lib/utils'
 
 const NAV_OFFSET = 64 + 48

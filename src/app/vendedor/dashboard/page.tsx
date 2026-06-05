@@ -1,7 +1,6 @@
 'use client'
 
-import { ErrorState } from '@/components/Layout/ErrorState'
-import { LockedFeatureOverlay } from '@/components/Layout/LockedFeatureOverlay'
+import { ErrorState, LockedFeatureOverlay } from '@/components/Layout'
 import {
   DashboardHeader,
   DashboardKpiGrid,

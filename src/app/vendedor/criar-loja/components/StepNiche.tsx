@@ -1,7 +1,7 @@
 import { LoadingSpinner } from '@/components'
 import { cn } from '@/lib/utils'
 import { Star } from 'lucide-react'
-import { getNicheIcon } from '@/components/ProductForm/data'
+import { getNicheIcon } from '@/components/ProductForm'
 
 interface StepNicheProps {
   selectedIds: string[]

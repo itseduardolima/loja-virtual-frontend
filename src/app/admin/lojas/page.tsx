@@ -9,7 +9,7 @@ import { SearchInput } from '@/components/ui/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useLojasPage } from './useLojasPage'
 import { SectionCard } from '../_shared'
-import LoadingPage from '@/components/Layout/LoadingPage'
+import { LoadingPage } from '@/components/Layout'
 
 export default function AdminLojasPage() {
   const { stores, meta, isLoading, page, setPage, search, setSearch, statusFilter, setStatusFilter, handleToggle } = useLojasPage()

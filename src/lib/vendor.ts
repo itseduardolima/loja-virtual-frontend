@@ -11,9 +11,8 @@ export function getGreeting(name: string): {
   return { text: `${partLabel}, ${name?.split(' ')[0] ?? ''}`, period }
 }
 
-export function formatBRL(value: number) {
-  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-}
+import { formatBRL } from './utils'
+export { formatBRL }
 
 export function getInitials(name: string) {
   return name
@@ -222,4 +221,47 @@ export function getStoreChannels(
     store.facebook ? { label: 'Facebook', color: '#3b82f6' } : null,
     store.email ? { label: 'E-mail', color: '#8b5cf6' } : null,
   ].filter(Boolean) as StoreChannel[]
+}
+
+// ─── Status maps centralizados ────────────────────────────────────────────────
+
+export interface StatusEntry {
+  label: string
+  tone: StatusTone
+}
+
+/**
+ * Status de pagamento — unificado de PaymentHistory.tsx (STATUS_MAP).
+ * tone mapeado para StatusTone (neutral = sem destaque especial).
+ */
+export const PAYMENT_STATUS: Record<string, StatusEntry> = {
+  paid:             { label: 'Pago',                tone: 'success' },
+  pending:          { label: 'Pendente',             tone: 'warning' },
+  failed:           { label: 'Falhou',               tone: 'danger'  },
+  refunded:         { label: 'Reembolsado',          tone: 'neutral' },
+  refund_requested: { label: 'Reembolso em análise', tone: 'warning' },
+}
+
+/**
+ * Status de assinatura — unificado de useAssinaturasPage.ts (statusMap).
+ */
+export const SUBSCRIPTION_STATUS: Record<string, StatusEntry> = {
+  active:   { label: 'Ativa',     tone: 'success' },
+  pending:  { label: 'Pendente',  tone: 'warning' },
+  expired:  { label: 'Expirada',  tone: 'neutral' },
+  canceled: { label: 'Cancelada', tone: 'danger'  },
+}
+
+/**
+ * Status de cupom — unificado de admin/cupons-plano/page.tsx (STATUS_CONFIG)
+ * e vendedor/cupons/page.tsx (STATUS).
+ * Nota: o cupom de vendedor usa 'exhausted' (Esgotado) e 'paused' (Pausado),
+ * enquanto o admin usa 'inactive' (Inativo). Ambos estão incluídos aqui.
+ */
+export const COUPON_STATUS: Record<string, StatusEntry> = {
+  active:    { label: 'Ativo',    tone: 'success' },
+  paused:    { label: 'Pausado',  tone: 'warning' },
+  inactive:  { label: 'Inativo',  tone: 'neutral' },
+  expired:   { label: 'Expirado', tone: 'neutral' },
+  exhausted: { label: 'Esgotado', tone: 'danger'  },
 }

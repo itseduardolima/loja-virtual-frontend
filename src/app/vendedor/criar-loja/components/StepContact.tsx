@@ -1,5 +1,5 @@
 import { Input, Label } from '@/components'
-import { PhoneCountryInput } from '@/components/Form/PhoneCountryInput'
+import { PhoneCountryInput } from '@/components/Form'
 import { Phone, Mail, Instagram, Facebook } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { extractHandle, toInstagramUrl, toFacebookUrl } from '../utils/social'

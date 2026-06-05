@@ -9,7 +9,7 @@ import Link from 'next/link'
 import { useLogin } from '@/hooks/useLogin'
 import { GoogleIcon } from '@/public/assets/icons/GoogleIcon'
 import { useAuth } from '@/contexts/AuthContext'
-import { NexoLeftPanel } from '@/components/Layout/NexoLeftPanel'
+import { NexoLeftPanel } from '@/components/Layout'
 
 const BULLETS = [
   'Loja própria em minutos',

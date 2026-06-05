@@ -6,9 +6,9 @@ import '../styles/toast.css'
 import { QueryProvider } from '@/providers/QueryProvider'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ToastProvider } from '@/contexts/ToastContext'
-import { ToastContainer } from '@/components/Toast/ToastContainer'
-import { CompleteProfileGuard } from '@/components/User/CompleteProfileGuard'
-import { AppFooter } from '@/components/Layout/AppFooter'
+import { ToastContainer } from '@/components/Toast'
+import { CompleteProfileGuard } from '@/components/User'
+import { AppFooter } from '@/components/Layout'
 import { HotToastProvider } from '@/providers/HotToastProvider'
 
 const satoshi = localFont({

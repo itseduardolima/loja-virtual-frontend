@@ -1,3 +1,15 @@
+export interface StoreNiche {
+  id: number
+  store_id: number
+  niche_id: number
+  is_primary: number
+  niche?: {
+    id: number
+    name: string
+    slug: string
+  }
+}
+
 export interface StoreInfo {
   id: number
   name: string
@@ -12,6 +24,11 @@ export interface StoreInfo {
   email?: string
   phone?: string
   cnpj?: string
+  cpf?: string
+  pickup_enabled?: number
+  status?: number
+  updated_at?: string
+  user_id?: number
   business_hours?: Record<string, string>
   address?: string
   city?: string
@@ -32,6 +49,7 @@ export interface StoreInfo {
   campaign_text?: string
   campaign_image?: string
   created_at: string
+  store_niches?: StoreNiche[]
   _count?: {
     products: number
     orders: number
@@ -40,6 +58,46 @@ export interface StoreInfo {
     id: number
     name: string
   }>
+}
+
+export interface UpdateStoreData {
+  name?: string
+  description?: string
+  niche_ids?: string[]
+  primary_niche_id?: number
+  logo?: File
+  banner?: File
+  whatsapp?: string
+  instagram?: string
+  facebook?: string
+  website?: string
+  email?: string
+  phone?: string
+  cnpj?: string
+  cpf?: string
+  address?: string
+  city?: string
+  state?: string
+  zipcode?: string
+  neighborhood?: string
+  number?: string
+  complement?: string
+  delivery_fee?: number
+  free_delivery_min?: number
+  delivery_time?: string
+  pickup_enabled?: boolean
+  /** Campo de UI local — o backend usa free_delivery_min para derivar frete grátis */
+  free_shipping_enabled?: boolean
+  payment_methods?: string[]
+  business_hours?: Record<string, string>
+  hero_eyebrow?: string
+  hero_title?: string
+  hero_subtitle?: string
+  announcement_text?: string
+  campaign_title?: string
+  campaign_text?: string
+  campaign_image?: File
+  remove_campaign_image?: boolean
 }
 
 export interface StoreInfoResponse {

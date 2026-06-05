@@ -5,7 +5,7 @@ import { ChevronLeft } from 'lucide-react'
 import { useToastContext } from '@/contexts/ToastContext'
 import { useAdminPlanCoupon, useAdminUpdatePlanCoupon } from '@/hooks/useAdminPlanCoupons'
 import { PlanCouponForm } from '../../components/PlanCouponForm'
-import LoadingPage from '@/components/Layout/LoadingPage'
+import { LoadingPage } from '@/components/Layout'
 
 export default function AdminEditarPlanCouponPage() {
   const router = useRouter()

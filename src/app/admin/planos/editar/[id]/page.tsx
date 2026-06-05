@@ -10,7 +10,7 @@ import {
   Field, FieldLabel, FieldHelp, FieldGrid, ToggleRow,
   NxButton, nxInputClass,
 } from '../../../_shared'
-import LoadingPage from '@/components/Layout/LoadingPage'
+import { LoadingPage } from '@/components/Layout'
 
 const FEATURE_OPTIONS = [
   { key: 'feature_coupons'            as const, title: 'Cupons de desconto',    desc: 'Criar cupons percentuais ou fixos com expiração e limite de uso' },

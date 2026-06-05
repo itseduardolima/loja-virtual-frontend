@@ -7,13 +7,13 @@ import {
   STATUS_ORDER,
   STATUS_HEADER_COLORS,
   STATUS_FLOW,
-  getStatusIcon,
 } from '@/lib/orderPanelUtils'
+import { getStatusIcon } from './OrderStatusIcon'
 import { OrderDetailPanel } from './OrderDetailPanel'
 import { ArrowRight, ChevronLeft, FileDown, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SearchInput } from '@/components/ui/search-input'
-import { DashboardDateRangeFilter } from '@/components/Dashboard/DashboardDateRangeFilter'
+import { DashboardDateRangeFilter } from '@/components/Dashboard'
 
 interface MobileOrdersViewProps {
   ordersByStatus: Record<number, Order[]>

@@ -9,15 +9,17 @@ import {
   LoadingPage,
 } from '@/components'
 import { useStoreHomePage } from './useStoreHomePage'
-import { AnnouncementBar } from '@/components/Store/AnnouncementBar'
-import { StoreHomeHero } from '@/components/Store/StoreHomeHero'
-import { StoreMarquee } from '@/components/Store/StoreMarquee'
-import { StoreCategoryPills } from '@/components/Store/StoreCategoryPills'
-import { StoreCollectionSection } from '@/components/Store/StoreCollectionSection'
-import { StoreFeatureBanner } from '@/components/Store/StoreFeatureBanner'
-import { StoreProductRow } from '@/components/Store/StoreProductRow'
-import { StoreNewFooter } from '@/components/Store/StoreNewFooter'
-import { WhatsAppChatWidget } from '@/components/Store/WhatsAppChatWidget'
+import {
+  AnnouncementBar,
+  StoreHomeHero,
+  StoreMarquee,
+  StoreCategoryPills,
+  StoreCollectionSection,
+  StoreFeatureBanner,
+  StoreProductRow,
+  StoreNewFooter,
+  WhatsAppChatWidget,
+} from '@/components/Store'
 import { marqueeItems } from '@/lib/storefront'
 
 const NAV_OFFSET = 64 + 48 // header + category bar

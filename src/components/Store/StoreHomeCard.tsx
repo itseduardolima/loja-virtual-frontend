@@ -7,8 +7,8 @@ import { cn } from '@/lib/utils'
 import { getProductImageUrl } from '@/lib/imageUtils'
 import { isNewProduct, formatBRL, getProductPrice } from '@/lib/storefront'
 import { getColorHex } from '@/schemas'
-import { Stars } from '@/components/Store/Product/Stars'
-import { EmptyImageState } from '@/components/Product/EmptyImageState'
+import { Stars } from '@/components/Store/Product'
+import { EmptyImageState } from '@/components/Product'
 
 interface StoreHomeCardProps {
   product: Product

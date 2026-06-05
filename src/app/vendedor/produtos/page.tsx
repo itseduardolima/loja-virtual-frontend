@@ -14,14 +14,13 @@ import {
   type KpiItem,
   type StatusTab,
 } from '@/components/VendorList'
-import { NxButton } from '@/components/ProductForm/primitives'
-import { NxSelectNative } from '@/components/ProductForm/inputs'
+import { NxButton, NxSelectNative } from '@/components/ProductForm'
 import { useAuth } from '@/contexts/AuthContext'
 import { Plus, Package, CheckCircle2, Star, Boxes, PackageSearch } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useRef } from 'react'
 import { useProdutosPage } from './useProdutosPage'
-import LoadingPage from '@/components/Layout/LoadingPage'
+import { LoadingPage } from '@/components/Layout'
 
 const SORT_OPTIONS = [
   { value: 'newest', label: 'Mais recentes' },

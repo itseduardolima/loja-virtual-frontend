@@ -10,8 +10,7 @@ import { createProductSchema, CreateProductFormData } from '@/schemas'
 import { useToastContext } from '@/contexts/ToastContext'
 import { useStore } from '@/hooks/useStore'
 import { useNiches, useNicheFields } from '@/hooks/useNiches'
-import { useSharedProductState } from '@/components/ProductForm/useSharedProductState'
-import { buildProductFormData } from '@/components/ProductForm/buildProductFormData'
+import { useSharedProductState, buildProductFormData } from '@/components/ProductForm'
 
 export function useCreateProductPage(user: any) {
   const router = useRouter()

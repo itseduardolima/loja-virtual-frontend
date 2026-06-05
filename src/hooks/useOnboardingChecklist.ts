@@ -4,7 +4,7 @@ import { useStore } from '@/hooks/useStore'
 import { useDashboard } from '@/hooks/useDashboard'
 import { useBlingStatus } from '@/hooks/useBlingStatus'
 import { usePlanFeatures } from '@/hooks/usePlanFeatures'
-import type { CheckItem } from '@/components/Vendor/Home/Checklist'
+import type { CheckItem } from '@/components/Vendor/Home'
 
 interface OnboardingResult {
   items: CheckItem[]

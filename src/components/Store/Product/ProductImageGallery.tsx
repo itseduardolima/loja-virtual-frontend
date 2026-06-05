@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
-import { EmptyImageState } from '@/components/Product/EmptyImageState'
+import { EmptyImageState } from '@/components/Product'
 
 interface ProductImageGalleryProps {
   images: string[]

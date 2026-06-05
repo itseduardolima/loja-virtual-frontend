@@ -5,10 +5,10 @@ import { Table, Column } from '@/components'
 import { AdminUser } from '@/types/admin'
 import { SearchInput } from '@/components/ui/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { UserDetailDrawer } from '@/components/Admin/UserDetailDrawer'
+import { UserDetailDrawer } from '@/components/Admin'
 import { useUsuariosPage } from './useUsuariosPage'
 import { SectionCard } from '../_shared'
-import LoadingPage from '@/components/Layout/LoadingPage'
+import { LoadingPage } from '@/components/Layout'
 
 export default function AdminUsuariosPage() {
   const {

@@ -9,7 +9,7 @@ import { SearchInput } from '@/components/ui/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAssinaturasPage } from './useAssinaturasPage'
 import { SectionCard, NxButton } from '../_shared'
-import LoadingPage from '@/components/Layout/LoadingPage'
+import { LoadingPage } from '@/components/Layout'
 
 function getExpiryBadge(row: AdminSubscription): { label: string; color: string } | null {
   if (row.status !== 'active' || !row.current_period_end) return null

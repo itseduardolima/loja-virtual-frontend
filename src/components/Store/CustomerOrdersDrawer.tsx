@@ -16,10 +16,9 @@ import { cn, formatDate, formatPrice, buildImageUrl } from '@/lib/utils'
 import { useDebounce } from '@/hooks/useDebounce'
 import Image from 'next/image'
 
-import { ErrorState } from '@/components/Layout/ErrorState'
-import { LoadingSpinner } from '../Layout/LoadingSpinner'
+import { ErrorState, LoadingSpinner } from '@/components/Layout'
 import { WhatsappIcon } from '@/assets/icons/WhatsappIcon'
-import { OrderTrackingTimeline } from '@/components/Order/OrderTrackingTimeline'
+import { OrderTrackingTimeline } from '@/components/Order'
 import {
   Dialog,
   DialogContent,

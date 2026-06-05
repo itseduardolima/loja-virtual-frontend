@@ -1,6 +1,6 @@
 'use client'
 
-import LoadingPage from '@/components/Layout/LoadingPage'
+import { LoadingPage } from '@/components/Layout'
 
 export default function AuthCallbackPage() {
   return <LoadingPage />

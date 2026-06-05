@@ -8,7 +8,7 @@ import { useStore } from '@/hooks/useStore'
 import { useDashboard, type DashboardComparison } from '@/hooks/useDashboard'
 import { useOnboardingChecklist } from '@/hooks/useOnboardingChecklist'
 import { usePendingQuestionsCount } from '@/hooks/usePendingQuestionsCount'
-import LoadingPage from '@/components/Layout/LoadingPage'
+import { LoadingPage } from '@/components/Layout'
 import { Checklist, HomeGreeting, KpiCard, StoreCard } from '@/components'
 import {
   formatBRL,

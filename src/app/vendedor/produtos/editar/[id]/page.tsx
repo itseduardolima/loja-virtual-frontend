@@ -10,20 +10,24 @@ import { useStore } from '@/hooks/useStore'
 import { useUpdateProductStatus } from '@/hooks/useProducts'
 import { useToastContext } from '@/contexts/ToastContext'
 import { useQueryClient } from '@tanstack/react-query'
-import LoadingPage from '@/components/Layout/LoadingPage'
+import { LoadingPage } from '@/components/Layout'
 
 import { useEditProductPage } from './useEditProductPage'
-import { computeCompletion } from '@/components/ProductForm/completion'
-import type { OrderedImage } from '@/components/ProductForm/types'
-import { NxBadge, NxButton } from '@/components/ProductForm/primitives'
-import { ImagesSection } from '@/components/ProductForm/sections/ImagesSection'
-import { CompletionMeter } from '@/components/ProductForm/CompletionMeter'
-import { PreviewCard } from '@/components/ProductForm/PreviewCard'
-import { PublishCard } from '@/components/ProductForm/PublishCard'
-import { StorefrontPreviewModal } from '@/components/ProductForm/StorefrontPreviewModal'
-import { ProductFormSections } from '@/components/ProductForm/ProductFormSections'
-import { useFormWatchers } from '@/components/ProductForm/useFormWatchers'
-import { usePreviewUrlCache, buildPreviewData } from '@/components/ProductForm/previewUtils'
+import {
+  computeCompletion,
+  type OrderedImage,
+  NxBadge,
+  NxButton,
+  ImagesSection,
+  CompletionMeter,
+  PreviewCard,
+  PublishCard,
+  StorefrontPreviewModal,
+  ProductFormSections,
+  useFormWatchers,
+  usePreviewUrlCache,
+  buildPreviewData,
+} from '@/components/ProductForm'
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges'
 import { buildImageUrl } from '@/lib/imageUtils'
 

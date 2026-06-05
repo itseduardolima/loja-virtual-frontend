@@ -1,4 +1,6 @@
-import type { SubscriptionPlan } from '@/types/subscription'
+import type { SubscriptionPlan, NormalizedPlan } from '@/types'
+
+export type { NormalizedPlan }
 
 export const parsePrice = (value: string | null | undefined): number => {
   if (!value) return 0
@@ -29,15 +31,6 @@ export const buildPlanFeatures = (plan: SubscriptionPlan): string[] => {
   if (plan.feature_bling_integration) f.push('Integração Bling ERP')
   if (plan.trial_days) f.push(`${plan.trial_days} dias grátis pra testar`)
   return f
-}
-
-export interface NormalizedPlan extends SubscriptionPlan {
-  monthly: number
-  yearly: number
-  yearlyPerMonth: number
-  featured: boolean
-  features: string[]
-  cta: string
 }
 
 export const normalizePlans = (plans: SubscriptionPlan[]): NormalizedPlan[] => {

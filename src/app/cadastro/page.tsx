@@ -6,8 +6,8 @@ import { Label } from '@/components/ui/label'
 import { Eye, EyeOff, Check, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { useCadastro } from './useCadastro'
-import { PhoneCountryInput } from '@/components/Form/PhoneCountryInput'
-import { NexoLeftPanel } from '@/components/Layout/NexoLeftPanel'
+import { PhoneCountryInput } from '@/components/Form'
+import { NexoLeftPanel } from '@/components/Layout'
 import { cn } from '@/lib/utils'
 
 const BULLETS = [

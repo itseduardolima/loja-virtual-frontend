@@ -7,7 +7,7 @@ import { Product } from '@/types/product'
 import type { StoreInfo } from '@/types/store'
 import { heroContent, heroChips, freeShippingLabel, formatBRL, getStoreMonogram, getProductPrice } from '@/lib/storefront'
 import { getProductImageUrl, getProductImageUrls } from '@/lib/imageUtils'
-import { EmptyImageState } from '@/components/Product/EmptyImageState'
+import { EmptyImageState } from '@/components/Product'
 
 interface StoreHomeHeroProps {
   storeInfo: StoreInfo

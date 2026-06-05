@@ -14,8 +14,7 @@ import {
   Trash2,
   LucideIcon,
 } from 'lucide-react'
-import { NxBadge, Swatch } from '@/components/ProductForm/primitives'
-import { getColorHex, formatBRL } from '@/components/ProductForm/data'
+import { NxBadge, Swatch, getColorHex, formatBRL } from '@/components/ProductForm'
 import { RowActionsMenu, thClass, type RowAction } from '@/components/VendorList'
 import { buildImageUrl } from '@/lib/imageUtils'
 import { cn } from '@/lib/utils'

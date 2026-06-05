@@ -11,8 +11,7 @@ import {
   RefreshCw,
   LogOut,
 } from 'lucide-react'
-import LoadingPage from '@/components/Layout/LoadingPage'
-import FeatureLocked from '@/components/Layout/FeatureLocked'
+import { LoadingPage, FeatureLocked } from '@/components/Layout'
 import { useToastContext } from '@/contexts/ToastContext'
 import {
   useBlingStatus,
@@ -23,7 +22,7 @@ import {
 } from '@/hooks/useBlingStatus'
 import { usePlanFeatures } from '@/hooks/usePlanFeatures'
 import { formatDate } from '@/lib/utils'
-import { BlingImportCard } from '@/components/Bling/BlingImportCard'
+import { BlingImportCard } from '@/components/Bling'
 import {
   Switch as DesignSwitch,
   SectionCard,

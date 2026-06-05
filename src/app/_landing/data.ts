@@ -1,26 +1,6 @@
-/* ─── Types ──────────────────────────────────────────────────── */
-export interface NavLink {
-  label: string
-  href: string
-}
+import type { NavLink, FaqItem, Step, FooterColumn } from '@/types'
 
-export interface FaqItem {
-  q: string
-  a: string
-}
-
-export interface Step {
-  number: string
-  title: string
-  description: string
-  duration: string
-  emoji: string
-}
-
-export interface FooterColumn {
-  heading: string
-  links: NavLink[]
-}
+export type { NavLink, FaqItem, Step, FooterColumn }
 
 /* ─── Navbar ─────────────────────────────────────────────────── */
 export const NAV_LINKS: NavLink[] = [

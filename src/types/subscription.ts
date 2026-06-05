@@ -148,3 +148,12 @@ export type ChangePlanResponse =
       message: string
     }
 
+export interface NormalizedPlan extends SubscriptionPlan {
+  monthly: number
+  yearly: number
+  yearlyPerMonth: number
+  featured: boolean
+  features: string[]
+  cta: string
+}
+

@@ -12,9 +12,7 @@ import { useToastContext } from '@/contexts/ToastContext'
 import { useStore } from '@/hooks/useStore'
 import { useNiches, useNicheFields } from '@/hooks/useNiches'
 import { NicheFieldValue } from '@/types'
-import { useSharedProductState } from '@/components/ProductForm/useSharedProductState'
-import { buildProductFormData } from '@/components/ProductForm/buildProductFormData'
-import type { OrderedImage } from '@/components/ProductForm/types'
+import { useSharedProductState, buildProductFormData, type OrderedImage } from '@/components/ProductForm'
 
 export function useEditProductPage(productId: string, user: any) {
   const router = useRouter()

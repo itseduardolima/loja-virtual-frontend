@@ -3,8 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { SidebarAdmin, UserHeader } from '@/components'
-import LoadingPage from '@/components/Layout/LoadingPage'
-import AccessDenied from '@/components/Layout/AccessDenied'
+import { LoadingPage, AccessDenied } from '@/components/Layout'
 import { useEffect, useState } from 'react'
 import { useValidateToken } from '@/hooks/useValidateToken'
 

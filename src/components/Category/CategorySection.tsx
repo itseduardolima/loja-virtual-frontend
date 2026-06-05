@@ -1,6 +1,6 @@
 'use client'
 
-import { ProductCard } from '@/components/Product/ProductCard'
+import { ProductCard } from '@/components/Product'
 import { StoreCategory } from '@/app/loja/[slug]/produtos/types'
 import { Product } from '@/types/product'
 

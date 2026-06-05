@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils'
-import { NexoLeftPanel } from '@/components/Layout/NexoLeftPanel'
+import { NexoLeftPanel } from '@/components/Layout'
 import { STEP_LABELS, STEP_MESSAGES } from '../constants'
 
 export function LeftPanel({ step }: { step: number }) {

@@ -6,7 +6,7 @@ import { Table, Column, ConfirmDialog } from '@/components'
 import { AdminPlan } from '@/types/admin'
 import { usePlanosPage } from './usePlanosPage'
 import { SectionCard, NxButton } from '../_shared'
-import LoadingPage from '@/components/Layout/LoadingPage'
+import { LoadingPage } from '@/components/Layout'
 
 export default function AdminPlanosPage() {
   const router = useRouter()
