@@ -30,6 +30,7 @@ export interface StoreInfo {
   announcement_text?: string
   campaign_title?: string
   campaign_text?: string
+  campaign_image?: string
   created_at: string
   _count?: {
     products: number

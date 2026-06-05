@@ -45,6 +45,8 @@ export interface UpdateStoreData {
   announcement_text?: string
   campaign_title?: string
   campaign_text?: string
+  campaign_image?: File
+  remove_campaign_image?: boolean
 }
 
 // Campos de conteúdo da vitrine: string vazia é enviada para limpar o override
@@ -70,7 +72,9 @@ export function useUpdateStore(options: UpdateStoreOptions = {}) {
       // Adicionar apenas os campos que foram fornecidos
       Object.entries(data).forEach(([key, value]) => {
         if (value !== undefined && value !== null && (value !== '' || CLEARABLE_FIELDS.has(key))) {
-          if (key === 'logo' || key === 'banner') {
+          if (key === 'remove_campaign_image') {
+            if (value === true) formData.append('campaign_image', '')
+          } else if (key === 'logo' || key === 'banner' || key === 'campaign_image') {
             if (value instanceof File) {
               formData.append(key, value)
             }

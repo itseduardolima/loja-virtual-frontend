@@ -17,7 +17,12 @@ export function StoreFeatureBanner({ storeInfo, onExplore }: StoreFeatureBannerP
   if (!title) return null
 
   const text = storeInfo.campaign_text?.trim()
-  const banner = storeInfo.banner ? buildImageUrl(storeInfo.banner) : null
+  const rawImg = storeInfo.campaign_image || storeInfo.banner
+  const banner = rawImg
+    ? rawImg.startsWith('blob:') || rawImg.startsWith('http') || rawImg.startsWith('data:')
+      ? rawImg
+      : buildImageUrl(rawImg)
+    : null
   const monogram = getStoreMonogram(storeInfo.name)
 
   return (
