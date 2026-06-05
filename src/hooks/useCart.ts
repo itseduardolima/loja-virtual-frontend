@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useMemo } from 'react'
+import { AxiosError } from 'axios'
 import { api } from '@/lib/api'
 import { useToastContext } from '@/contexts/ToastContext'
 import { CartItem, CartResponse, AddToCartResponse } from '@/types/cart'
@@ -98,8 +99,10 @@ export function useCart(storeId?: number) {
       queryClient.invalidateQueries({ queryKey: ['cart-session', storeId] })
       queryClient.invalidateQueries({ queryKey: ['cart-items'] })
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.message || 'Erro ao adicionar produto ao carrinho'
+    onError: (error: Error) => {
+      const axiosError = error as AxiosError<{ message?: string }>
+      const errorMessage =
+        axiosError.response?.data?.message || error.message || 'Erro ao adicionar produto ao carrinho'
       toast({
         title: 'Erro!',
         description: errorMessage,
@@ -124,10 +127,13 @@ export function useCart(storeId?: number) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart-items'] })
     },
-    onError: () => {
+    onError: (error: Error) => {
+      const axiosError = error as AxiosError<{ message?: string }>
+      const errorMessage =
+        axiosError.response?.data?.message || error.message || 'Erro ao remover produto do carrinho'
       toast({
         title: 'Erro!',
-        description: 'Erro ao remover produto do carrinho',
+        description: errorMessage,
         variant: 'destructive'
       })
     }
@@ -163,10 +169,13 @@ export function useCart(storeId?: number) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart-items'] })
     },
-    onError: () => {
+    onError: (error: Error) => {
+      const axiosError = error as AxiosError<{ message?: string }>
+      const errorMessage =
+        axiosError.response?.data?.message || error.message || 'Erro ao atualizar item do carrinho'
       toast({
         title: 'Erro!',
-        description: 'Erro ao atualizar item do carrinho',
+        description: errorMessage,
         variant: 'destructive'
       })
     }
@@ -188,10 +197,13 @@ export function useCart(storeId?: number) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart-items'] })
     },
-    onError: () => {
+    onError: (error: Error) => {
+      const axiosError = error as AxiosError<{ message?: string }>
+      const errorMessage =
+        axiosError.response?.data?.message || error.message || 'Erro ao limpar carrinho'
       toast({
         title: 'Erro!',
-        description: 'Erro ao limpar carrinho',
+        description: errorMessage,
         variant: 'destructive'
       })
     }

@@ -4,16 +4,17 @@ import { Phone, Mail, Instagram, Facebook } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { extractHandle, toInstagramUrl, toFacebookUrl } from '../utils/social'
 import type { CreateStoreData } from '@/hooks/useCreateStore'
+import type { Country } from '@/hooks/useCountries'
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime'
 
 interface StepContactProps {
   formData: CreateStoreData
   selectedCountry: string
   setSelectedCountry: (v: string) => void
-  countriesData: any
+  countriesData: Country[] | undefined
   countriesLoading: boolean
   errors: Record<string, string>
-  onChange: (field: keyof CreateStoreData, value: any) => void
+  onChange: (field: keyof CreateStoreData, value: CreateStoreData[keyof CreateStoreData]) => void
   router: AppRouterInstance | null
 }
 

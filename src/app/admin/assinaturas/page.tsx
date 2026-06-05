@@ -3,6 +3,7 @@
 import { Receipt, RefreshCw } from 'lucide-react'
 import { Table, Column } from '@/components'
 import { AdminSubscription } from '@/types/admin'
+import { Meta } from '@/types'
 import { format, differenceInCalendarDays } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { SearchInput } from '@/components/ui/search-input'
@@ -111,7 +112,7 @@ export default function AdminAssinaturasPage() {
           <Table
             columns={columns}
             data={subs}
-            meta={meta as any}
+            meta={meta as Meta}
             onPageChange={setPage}
             emptyState={{ icon: Receipt, title: 'Nenhuma assinatura encontrada' }}
           />

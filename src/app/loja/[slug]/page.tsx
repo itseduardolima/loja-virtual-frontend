@@ -60,6 +60,7 @@ export default function StoreHomePage() {
     toggleWishlist,
     isWished,
     handleSearchSubmit,
+    refetch,
   } = useStoreHomePage(slug)
 
   const [barVisible, setBarVisible] = useState(true)
@@ -67,7 +68,7 @@ export default function StoreHomePage() {
   if (storeError && !storeInfo) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <ErrorState message={storeError} onRetry={() => window.location.reload()} />
+        <ErrorState message={storeError} onRetry={refetch} />
       </div>
     )
   }

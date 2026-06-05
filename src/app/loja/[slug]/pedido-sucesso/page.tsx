@@ -2,6 +2,7 @@
 
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { StoreHeader, CartSidebar, ProductCard, ErrorState, LoadingPage } from '@/components'
 import { useStoreInfo } from '@/hooks/useStoreInfo'
 import { useStoreProducts } from '@/hooks/useStoreProducts'
@@ -15,12 +16,13 @@ import { Product } from '@/types/product'
 export default function PedidoSucessoPage() {
   const params = useParams()
   const searchParams = useSearchParams()
+  const router = useRouter()
   const slug = params.slug as string
   const orderCode = searchParams.get('codigo') ?? ''
 
   const [isCartOpen, setIsCartOpen] = useState(false)
 
-  const { storeInfo, loading: storeLoading, error: storeError } = useStoreInfo(slug)
+  const { storeInfo, loading: storeLoading, error: storeError, refetch: refetchStore } = useStoreInfo(slug)
   const { products, loading: productsLoading } = useStoreProducts({
     slug,
     limit: 8,
@@ -32,7 +34,7 @@ export default function PedidoSucessoPage() {
   useCart(storeId)
 
   const handleViewDetails = (product: Product) => {
-    window.location.href = `/loja/${slug}/produto/${product.id}`
+    router.push(`/loja/${slug}/produto/${product.id}`)
   }
 
   if (storeLoading && !storeInfo) {
@@ -46,7 +48,7 @@ export default function PedidoSucessoPage() {
   if (storeError && !storeInfo) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <ErrorState message={storeError} onRetry={() => window.location.reload()} />
+        <ErrorState message={storeError} onRetry={refetchStore} />
       </div>
     )
   }

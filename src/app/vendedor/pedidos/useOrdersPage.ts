@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useOrders } from '@/hooks/useOrders'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useMarkOrderAsRead } from '@/hooks/useMarkOrderAsRead'
@@ -22,6 +22,7 @@ const endOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(
 export function useOrdersPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const pathname = usePathname()
   const { isAuthenticated, user, isLoading: authLoading } = useAuth()
   const { mutate: markAsRead } = useMarkOrderAsRead()
 
@@ -96,7 +97,7 @@ export function useOrdersPage() {
     if (searchParams.get('orderId')) {
       const params = new URLSearchParams(searchParams.toString())
       params.delete('orderId')
-      const newUrl = params.size > 0 ? `?${params.toString()}` : window.location.pathname
+      const newUrl = params.size > 0 ? `?${params.toString()}` : pathname
       router.replace(newUrl, { scroll: false })
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -111,7 +112,7 @@ export function useOrdersPage() {
     setColumnLimits(DEFAULT_COLUMN_LIMITS)
   }, [dateRange, debouncedSearchTerm])
 
-  const handleFilterChange = (key: keyof OrdersFilters, value: any) => {
+  const handleFilterChange = (key: keyof OrdersFilters, value: OrdersFilters[keyof OrdersFilters]) => {
     setFilters(prev => ({
       ...prev,
       [key]: value,
@@ -173,7 +174,7 @@ export function useOrdersPage() {
     return result
   }, [ordersByStatus, columnLimits])
 
-  const columns: Column<any>[] = useMemo(() => [
+  const columns: Column<Order>[] = useMemo(() => [
     {
       key: 'order_code',
       header: 'Código',
@@ -195,7 +196,7 @@ export function useOrdersPage() {
     {
       key: 'status',
       header: 'Status',
-      accessor: (row: any) => getStatusInfo(row.status),
+      accessor: (row: Order) => getStatusInfo(row.status),
       type: 'badge' as const,
       options: {
         badgeColors: {
@@ -210,7 +211,7 @@ export function useOrdersPage() {
     {
       key: 'total',
       header: 'Total',
-      accessor: (row: any) => formatPrice(parseFloat(row.total)),
+      accessor: (row: Order) => formatPrice(parseFloat(row.total)),
       type: 'price' as const,
       options: {
         align: 'right' as const,
@@ -219,7 +220,7 @@ export function useOrdersPage() {
     {
       key: 'created_at',
       header: 'Data',
-      accessor: (row: any) => formatDate(row.created_at),
+      accessor: (row: Order) => formatDate(row.created_at),
       type: 'date' as const,
     },
     {
@@ -230,7 +231,7 @@ export function useOrdersPage() {
       options: {
         buttonIcon: EyeIcon,
         buttonVariant: 'ghost' as const,
-        buttonOnClick: (row: any) => router.push(`/vendedor/pedidos/${row.id}`),
+        buttonOnClick: (row: Order) => router.push(`/vendedor/pedidos/${row.id}`),
         align: 'right' as const,
       },
     },

@@ -8,7 +8,8 @@ import { useSubscriptionPlans } from "@/hooks/useSubscriptionPlans";
 import { useCreateSubscription } from "@/hooks/useCreateSubscription";
 import { useMySubscription } from "@/hooks/useMySubscription";
 import { useValidatePlanCoupon } from "@/hooks/useValidatePlanCoupon";
-import { BillingType, BillingCycle, SubscriptionPlan, PlanCouponValidation } from "@/types/subscription";
+import { BillingType, BillingCycle, SubscriptionPlan, PlanCouponValidation, Payment } from "@/types/subscription";
+import { AxiosError } from "axios";
 import { formatCPF, formatCNPJ } from "@/lib/utils";
 import { api } from "@/lib/api";
 import toast from "react-hot-toast";
@@ -160,7 +161,7 @@ export function useAssinaturaPage() {
 
     const isActive = subscriptionStatus === "active";
     const hasPaidPayment = subscriptionPayments?.some(
-      (payment: any) => payment.status === "paid"
+      (payment: Payment) => payment.status === "paid"
     );
     const isPending = subscriptionStatus === "pending";
 
@@ -199,7 +200,7 @@ export function useAssinaturaPage() {
 
     const isActive = subscriptionStatus === "active";
     const hasPaidPayment = subscriptionPayments?.some(
-      (payment: any) => payment.status === "paid"
+      (payment: Payment) => payment.status === "paid"
     );
 
     if (isActive || hasPaidPayment) {
@@ -264,8 +265,9 @@ export function useAssinaturaPage() {
       });
       await login({ login: email, password });
       resolveStepAfterAuth();
-    } catch (error: any) {
-      const msg = error.response?.data?.message;
+    } catch (e) {
+      const axiosErr = e as AxiosError<{ message?: string | string[] }>;
+      const msg = axiosErr.response?.data?.message;
       toast.error(
         Array.isArray(msg) ? msg[0] : msg || "Erro ao criar conta. Tente novamente."
       );
@@ -320,7 +322,7 @@ export function useAssinaturaPage() {
         plan_slug: plan.slug,
         billing_cycle: cycle,
         start_trial: true,
-      } as any);
+      });
       // Backend já promoveu o user a vendedor — atualiza o JWT/cache pra refletir
       hasCompletedRef.current = true;
       queryClient.removeQueries({ queryKey: ["validate-token"] });
@@ -330,7 +332,8 @@ export function useAssinaturaPage() {
       });
       clearPersistedCycle();
       setStep("completed");
-    } catch (err: any) {
+    } catch (e) {
+      const err = e as AxiosError<{ message?: string | string[] }>;
       const msg = err?.response?.data?.message;
       toast.error(Array.isArray(msg) ? msg[0] : msg || "Erro ao iniciar trial");
       setStep("plan");
@@ -352,7 +355,8 @@ export function useAssinaturaPage() {
       }
       setAppliedCoupon(result);
       toast.success(`Cupom aplicado! Desconto de R$ ${(result.discount_amount ?? 0).toFixed(2)}`);
-    } catch (err: any) {
+    } catch (e) {
+      const err = e as AxiosError<{ message?: string }>;
       toast.error(err?.response?.data?.message || "Erro ao validar cupom");
     }
   };
@@ -493,7 +497,7 @@ export function useAssinaturaPage() {
 
   const isPaymentConfirmed =
     subscriptionStatus === "active" ||
-    subscriptionPayments?.some((payment: any) => payment.status === "paid");
+    subscriptionPayments?.some((payment: Payment) => payment.status === "paid");
 
   // Tipo do completed: 'trial', 'coupon' (free) ou 'paid'
   const completedReason: "paid" | "trial" | "coupon" =

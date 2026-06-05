@@ -34,13 +34,13 @@ export function useEndereco() {
   useEffect(() => {
     if (store) {
       setFormData({
-        address: (store as any)?.address || '',
-        city: (store as any)?.city || '',
-        state: (store as any)?.state || '',
-        zipcode: (store as any)?.zipcode || '',
-        neighborhood: (store as any)?.neighborhood || '',
-        number: (store as any)?.number || '',
-        complement: (store as any)?.complement || ''
+        address: store.address || '',
+        city: store.city || '',
+        state: store.state || '',
+        zipcode: store.zipcode || '',
+        neighborhood: store.neighborhood || '',
+        number: store.number || '',
+        complement: store.complement || ''
       })
     }
   }, [store])
@@ -75,9 +75,10 @@ export function useEndereco() {
             state: data.uf || prev.state,
           }))
         }
-      } catch (err: any) {
+      } catch (err) {
         clearTimeout(timer)
-        setCepError(err.name === 'AbortError' ? 'Tempo limite de consulta excedido' : 'Erro ao consultar o CEP')
+        const isAbort = err instanceof Error && err.name === 'AbortError'
+        setCepError(isAbort ? 'Tempo limite de consulta excedido' : 'Erro ao consultar o CEP')
       } finally {
         setIsFetchingCep(false)
       }

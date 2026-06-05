@@ -1,7 +1,12 @@
 import { useState } from 'react'
 import { useAdminUsers, useAdminToggleUserStatus } from '@/hooks/useAdminUsers'
-import { AdminUser } from '@/types/admin'
+import { AdminUser, PaginatedMeta } from '@/types/admin'
 import { useToastContext } from '@/contexts/ToastContext'
+
+interface AdminUsersResponse {
+  data: AdminUser[]
+  meta: PaginatedMeta
+}
 
 export function useUsuariosPage() {
   const { success, error } = useToastContext()
@@ -32,8 +37,9 @@ export function useUsuariosPage() {
 
   const profileNames: Record<number, string> = { 1: 'Administrador', 2: 'Vendedor', 3: 'Cliente' }
 
-  const users = (data as any)?.data ?? []
-  const rawMeta = (data as any)?.meta
+  const response = data as AdminUsersResponse | undefined
+  const users = response?.data ?? []
+  const rawMeta = response?.meta
   const meta = rawMeta ? {
     total: rawMeta.total ?? 0,
     currentPage: rawMeta.currentPage ?? page,

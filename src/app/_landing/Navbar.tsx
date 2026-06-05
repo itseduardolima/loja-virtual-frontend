@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import Link from 'next/link'
 import s from '../landing.module.css'
 import { EASE } from './motion'
 import { handleAnchor } from './scroll'
@@ -24,17 +25,18 @@ export const Navbar = () => (
           ))}
         </nav>
         <div className={s.navActions}>
-          <a href="/login" style={{ fontSize: 14, color: 'var(--ink-2)', fontWeight: 500, padding: '0 10px' }}>
+          <Link href="/login" style={{ fontSize: 14, color: 'var(--ink-2)', fontWeight: 500, padding: '0 10px' }}>
             Entrar
-          </a>
-          <motion.a
-            href="/assinatura"
-            className={`${s.btn} ${s.btnPrimary}`}
-            whileHover={{ y: -1 }}
-            whileTap={{ y: 1 }}
-          >
-            Começar grátis<IcArrow size={16} />
-          </motion.a>
+          </Link>
+          <Link href="/assinatura" style={{ display: 'contents' }}>
+            <motion.span
+              className={`${s.btn} ${s.btnPrimary}`}
+              whileHover={{ y: -1 }}
+              whileTap={{ y: 1 }}
+            >
+              Começar grátis<IcArrow size={16} />
+            </motion.span>
+          </Link>
         </div>
       </div>
     </div>

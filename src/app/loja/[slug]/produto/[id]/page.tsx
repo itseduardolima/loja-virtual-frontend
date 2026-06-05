@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, usePathname } from 'next/navigation'
 import { Heart, Share2, Link as LinkIcon, MessageCircle } from 'lucide-react'
 import { CartSidebar, ErrorState, StoreHeader, ProductReviews } from '@/components'
 import { useProductQuestionsCount } from '@/hooks/useProductQuestions'
@@ -36,6 +36,7 @@ const NAV_OFFSET = 64 + 48
 export default function ProductDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const pathname = usePathname()
   const slug = params.slug as string
   const productId = params.id as string
 
@@ -54,6 +55,7 @@ export default function ProductDetailPage() {
     product,
     isLoading,
     error,
+    refetch,
     selectedImageIndex,
     selectedSize,
     selectedColor,
@@ -95,7 +97,7 @@ export default function ProductDetailPage() {
       <div className="flex min-h-screen items-center justify-center bg-nxbg">
         <ErrorState
           message="Erro ao carregar produto"
-          onRetry={() => router.refresh()}
+          onRetry={() => refetch()}
           retryText="Tentar novamente"
         />
       </div>
@@ -177,10 +179,16 @@ export default function ProductDetailPage() {
     addToCart()
   }
 
+  // window.location.origin é leitura aceitável (domínio não varia por rota);
+  // pathname vem de usePathname() para evitar window.location.pathname/href
+  const productUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}${pathname}`
+    : `https://nexo.app${pathname}`
+
   const handleCopyLink = async () => {
     setShareOpen(false)
     try {
-      await navigator.clipboard.writeText(window.location.href)
+      await navigator.clipboard.writeText(productUrl)
       showSuccess('Link copiado!', 'Compartilhar')
     } catch {
       // clipboard indisponível — ignora
@@ -189,7 +197,7 @@ export default function ProductDetailPage() {
 
   const handleWhatsAppShare = () => {
     setShareOpen(false)
-    const url = encodeURIComponent(`Veja este produto: ${window.location.href}`)
+    const url = encodeURIComponent(`Veja este produto: ${productUrl}`)
     window.open(`https://wa.me/?text=${url}`, '_blank', 'noopener,noreferrer')
   }
 

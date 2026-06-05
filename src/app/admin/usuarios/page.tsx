@@ -3,6 +3,7 @@
 import { Users, Eye } from 'lucide-react'
 import { Table, Column } from '@/components'
 import { AdminUser } from '@/types/admin'
+import { Meta } from '@/types'
 import { SearchInput } from '@/components/ui/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { UserDetailDrawer } from '@/components/Admin'
@@ -106,7 +107,7 @@ export default function AdminUsuariosPage() {
           <Table
             columns={columns}
             data={Array.isArray(users) ? users : []}
-            meta={meta as any}
+            meta={meta as Meta}
             onPageChange={setPage}
             emptyState={{ icon: Users, title: 'Nenhum usuário encontrado', description: 'Nenhum usuário corresponde aos filtros.' }}
           />

@@ -3,7 +3,7 @@
 import { useEntrega } from './useEntrega'
 import { Input, LoadingSpinner } from '@/components'
 import { Home as HomeIcon, Truck, PackageOpen, Sparkles } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, formatPrice } from '@/lib/utils'
 import {
   SectionCard,
   ToggleRow,
@@ -43,10 +43,7 @@ export default function EntregaPage() {
   const enabledCount =
     (formData.pickup_enabled ? 1 : 0) + (formData.free_shipping_enabled ? 1 : 0)
   const minValueDisplay = formData.free_shipping_min
-    ? Number(formData.free_shipping_min.replace(',', '.')).toLocaleString('pt-BR', {
-        style: 'currency',
-        currency: 'BRL',
-      })
+    ? formatPrice(Number(formData.free_shipping_min.replace(',', '.')))
     : null
 
   return (

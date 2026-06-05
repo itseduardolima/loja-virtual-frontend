@@ -3,6 +3,7 @@
 import { Store } from 'lucide-react'
 import { Table, Column } from '@/components'
 import { AdminStore } from '@/types/admin'
+import { Meta } from '@/types'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { SearchInput } from '@/components/ui/search-input'
@@ -74,7 +75,7 @@ export default function AdminLojasPage() {
           <Table
             columns={columns}
             data={stores}
-            meta={meta as any}
+            meta={meta as Meta}
             onPageChange={setPage}
             emptyState={{ icon: Store, title: 'Nenhuma loja encontrada' }}
           />

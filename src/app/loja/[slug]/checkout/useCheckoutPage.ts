@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
+import { AxiosError } from 'axios'
 import { useStoreInfo } from '@/hooks/useStoreInfo'
 import { useCart } from '@/hooks/useCart'
 import { useCheckout } from '@/hooks/useCheckout'
@@ -10,6 +11,7 @@ import { useCustomerProfile } from '@/hooks/useCustomerProfile'
 import { useAddresses } from '@/hooks/useAddresses'
 import { checkoutFormSchema } from '@/schemas/checkoutSchemas'
 import { api } from '@/lib/api'
+import type { User } from '@/types/auth'
 
 export interface CouponResult {
   coupon_code: string
@@ -87,10 +89,10 @@ export function useCheckoutPage() {
   // Load user data on mount
   useEffect(() => {
     const userDataStr = typeof window !== 'undefined' ? localStorage.getItem('user-data') : null
-    let fallback: any = null
+    let fallback: User | null = null
     if (user) fallback = user
     else if (userDataStr) {
-      try { fallback = JSON.parse(userDataStr) } catch { /* */ }
+      try { fallback = JSON.parse(userDataStr) as User } catch { /* */ }
     }
 
     if (fallback) {
@@ -154,9 +156,10 @@ export function useCheckoutPage() {
             state: data.uf || p.state,
           }))
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         clearTimeout(timer)
-        setCepError(err.name === 'AbortError' ? 'Tempo limite de consulta excedido' : 'Erro ao consultar o CEP')
+        const isAbort = err instanceof Error && err.name === 'AbortError'
+        setCepError(isAbort ? 'Tempo limite de consulta excedido' : 'Erro ao consultar o CEP')
       } finally {
         setIsFetchingCep(false)
       }
@@ -184,8 +187,9 @@ export function useCheckoutPage() {
         order_total: totalPrice,
       }, { params: { store_id: storeId } })
       setCouponResult(res.data.data)
-    } catch (err: any) {
-      setCouponError(err.response?.data?.message || 'Cupom inválido')
+    } catch (err: unknown) {
+      const axiosErr = err instanceof AxiosError ? err : null
+      setCouponError(axiosErr?.response?.data?.message || 'Cupom inválido')
     } finally {
       setIsValidatingCoupon(false)
     }

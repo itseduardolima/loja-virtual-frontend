@@ -9,7 +9,8 @@ function invalidateAllPlanCaches(qc: QueryClient) {
   qc.invalidateQueries({ queryKey: ['my-subscription'] })
   // Features dependentes de plano podem mudar — invalida caches que dependem de feature flags
   qc.invalidateQueries({ queryKey: ['dashboard'] })
-  qc.invalidateQueries({ queryKey: ['coupons'] })
+  // Cupons de plano: usar a queryKey real de useAdminPlanCoupons
+  qc.invalidateQueries({ queryKey: ['admin', 'plan-coupons'] })
   qc.invalidateQueries({ queryKey: ['bling-status'] })
 }
 

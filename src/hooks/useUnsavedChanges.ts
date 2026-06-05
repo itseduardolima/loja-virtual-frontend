@@ -64,8 +64,7 @@ export function useUnsavedChanges(params: {
     const handleRouterPush: typeof router.push = (url, options) => {
       if (hasUnsaved && !showCancelDialog && !isLoading && !isSubmitting && !allowNavigation) {
         const targetUrl = targetOf(url)
-        const currentPath = window.location.pathname
-        if (targetUrl && targetUrl !== pathname && targetUrl !== currentPath) {
+        if (targetUrl && targetUrl !== pathname) {
           setPendingNavigation(targetUrl)
           setShowCancelDialog(true)
           return Promise.resolve()
@@ -86,8 +85,7 @@ export function useUnsavedChanges(params: {
     const handleRouterReplace: typeof router.replace = (url, options) => {
       if (hasUnsaved && !showCancelDialog && !isSubmitting && !allowNavigation) {
         const targetUrl = targetOf(url)
-        const currentPath = window.location.pathname
-        if (targetUrl && targetUrl !== pathname && targetUrl !== currentPath) {
+        if (targetUrl && targetUrl !== pathname) {
           setPendingNavigation(targetUrl)
           setShowCancelDialog(true)
           return Promise.resolve()

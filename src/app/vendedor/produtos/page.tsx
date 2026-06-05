@@ -18,6 +18,7 @@ import { NxButton, NxSelectNative } from '@/components/ProductForm'
 import { useAuth } from '@/contexts/AuthContext'
 import { Plus, Package, CheckCircle2, Star, Boxes, PackageSearch } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import { useRef } from 'react'
 import { useProdutosPage } from './useProdutosPage'
 import { LoadingPage } from '@/components/Layout'
@@ -32,6 +33,7 @@ const SORT_OPTIONS = [
 export default function ProdutosPage() {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const redirected = useRef(false)
 
   const {
@@ -71,7 +73,7 @@ export default function ProdutosPage() {
     return (
       <ErrorState
         message="Erro ao carregar produtos"
-        onRetry={() => router.refresh()}
+        onRetry={() => queryClient.invalidateQueries({ queryKey: ['products'] })}
         retryText="Tentar novamente"
       />
     )

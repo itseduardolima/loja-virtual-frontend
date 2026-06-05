@@ -17,7 +17,7 @@ import {
   NxButton, nxInputClass,
 } from '../../_shared'
 
-interface PlanCouponFormValues {
+export interface PlanCouponFormValues {
   code: string
   description?: string
   discount_type: 'percent' | 'fixed'

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Package, Eye } from 'lucide-react'
 import { TablePagination } from './TablePagination'
-import { Meta } from '@/types/api'
+import type { Meta } from '@/types'
 
 export type CellType = 'text' | 'badge' | 'button' | 'price' | 'date' | 'phone' | 'actions'
 

@@ -47,6 +47,7 @@ export interface UseStoreHomePageReturn {
   toggleWishlist: (product: Product) => void
   isWished: (productId: number) => boolean
   handleSearchSubmit: (value: string) => void
+  refetch: () => void
 }
 
 export function useStoreHomePage(slug: string): UseStoreHomePageReturn {
@@ -58,7 +59,7 @@ export function useStoreHomePage(slug: string): UseStoreHomePageReturn {
   const [activeCategory, setActiveCategory] = useState('Todos')
   const debouncedSearch = useDebounce(search, 500)
 
-  const { storeInfo, loading: storeLoading, error: storeError } = useStoreInfo(slug)
+  const { storeInfo, loading: storeLoading, error: storeError, refetch: refetchStore } = useStoreInfo(slug)
   const { categories: allCategories, loading: categoriesLoading } = useStoreCategories(slug)
   const { isInWishlist, toggleWishlist: toggleWishlistId } = useWishlist()
   const { addToCart } = useCart(storeInfo?.id)
@@ -173,5 +174,6 @@ export function useStoreHomePage(slug: string): UseStoreHomePageReturn {
     toggleWishlist,
     isWished: isInWishlist,
     handleSearchSubmit,
+    refetch: refetchStore,
   }
 }

@@ -1,5 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
+import { AxiosError } from 'axios'
 import { api } from '@/lib/axios'
+import toast from 'react-hot-toast'
 import type { ChangePlanRequest, BillingCycle } from '@/types/subscription'
 
 export type PreviewChangePlanResponse =
@@ -30,6 +32,12 @@ export function usePreviewChangePlan() {
         data,
       )
       return response.data
+    },
+    onError: (error) => {
+      const axiosError = error as AxiosError<{ message?: string }>
+      const errorMessage =
+        axiosError.response?.data?.message || error.message || 'Erro ao pré-visualizar troca de plano'
+      toast.error(errorMessage)
     },
   })
 }

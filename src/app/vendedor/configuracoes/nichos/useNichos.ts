@@ -16,8 +16,8 @@ export function useNichos() {
 
   useEffect(() => {
     if (store) {
-      const storeNiches = (store as any)?.store_niches || []
-      const ids = storeNiches.map((sn: any) => sn.niche_id.toString())
+      const storeNiches = store.store_niches ?? []
+      const ids = storeNiches.map((sn) => sn.niche_id.toString())
       setNicheIds(ids)
       setServerNicheIds(ids)
     }

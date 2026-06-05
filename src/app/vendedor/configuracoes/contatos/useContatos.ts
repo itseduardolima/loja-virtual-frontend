@@ -44,17 +44,17 @@ export function useContatos() {
 
   useEffect(() => {
     if (store && countriesData) {
-      const whatsapp = (store as any)?.whatsapp || ''
-      
+      const whatsapp = store.whatsapp || ''
+
       let whatsappNumber = whatsapp
       let countryCode = 'BR'
-      
+
       if (whatsapp.startsWith('+')) {
         const foundCountry = countriesData?.find(country => {
           const callingCode = country.callingCodes[0]
           return whatsapp.startsWith(`+${callingCode}`)
         })
-        
+
         if (foundCountry) {
           countryCode = foundCountry.cca2
           whatsappNumber = whatsapp.replace(`+${foundCountry.callingCodes[0]}`, '')
@@ -67,9 +67,9 @@ export function useContatos() {
       setSelectedCountry(countryCode)
       setFormData({
         whatsapp: whatsappNumber,
-        instagram: (store as any)?.instagram || '',
-        facebook: (store as any)?.facebook || '',
-        email: (store as any)?.email || ''
+        instagram: store.instagram || '',
+        facebook: store.facebook || '',
+        email: store.email || ''
       })
     }
   }, [store, countriesData])

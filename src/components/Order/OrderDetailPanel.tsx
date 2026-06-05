@@ -23,11 +23,18 @@ import { useDenyCancellationRequest } from '@/hooks/useDenyCancellationRequest'
 import { type Order } from '@/types/order'
 import { formatDate, formatPrice, cn } from '@/lib/utils'
 import { buildImageUrl } from '@/lib/imageUtils'
+import { getInitials } from '@/lib/vendor'
 import { OrderTrackingTimeline } from './OrderTrackingTimeline'
 import { WhatsappIcon } from '@/assets/icons/WhatsappIcon'
 import { OrderPrintModal } from './OrderPrintModal'
 import { OrderNfeCard } from './OrderNfeCard'
-import { STATUS_OPTIONS } from '@/lib/orderPanelUtils'
+import {
+  STATUS_OPTIONS,
+  formatWhatsAppNumber,
+  generateWhatsAppMessage,
+  parseDeliveryAddress,
+  relativeTimeOrder,
+} from '@/lib/orderPanelUtils'
 
 // ─── Status chip palette (refined neutral + accent) ──────────────────────────
 const STATUS_CHIP: Record<
@@ -55,59 +62,6 @@ function getProductImage(item: Order['items'][0]): string | null {
   }
   if (Array.isArray(images) && images.length > 0) return images[0]
   return null
-}
-
-function formatWhatsAppNumber(phone: string) {
-  const cleaned = phone.replace(/\D/g, '')
-  return cleaned.startsWith('55') ? cleaned : `55${cleaned}`
-}
-
-function generateWhatsAppMessage(order: Order) {
-  const message = `*Olá ${order.customer_name}!* 👋
-
-Seu pedido foi recebido com sucesso!
-
-*Valor Total:* ${formatPrice(parseFloat(order.total))}
-
-*Itens do Pedido:*
-${order.items.map(item =>
-    `• ${item.product.name} - Tamanho: ${item.size} - Cor: ${item.color} - Qtd: ${item.quantity} - ${formatPrice(parseFloat(item.price))}`
-  ).join('\n')}
-
-Em breve entraremos em contato para confirmar o pedido!`
-  return encodeURIComponent(message)
-}
-
-function parseDeliveryAddress(order: Order): Record<string, string> | null {
-  if (!order.delivery_address) return null
-  try {
-    return JSON.parse(order.delivery_address)
-  } catch {
-    return null
-  }
-}
-
-function relativeTime(date: string): string {
-  const d = new Date(date)
-  const diffMs = Date.now() - d.getTime()
-  const min = Math.floor(diffMs / 60_000)
-  if (min < 1) return 'agora'
-  if (min < 60) return `há ${min} min`
-  const h = Math.floor(min / 60)
-  if (h < 24) return `há ${h} h`
-  const days = Math.floor(h / 24)
-  if (days < 7) return `há ${days} ${days === 1 ? 'dia' : 'dias'}`
-  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
-}
-
-function initials(name: string): string {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0])
-    .join('')
-    .toUpperCase()
 }
 
 // ─── StatusChip ──────────────────────────────────────────────────────────────
@@ -386,25 +340,13 @@ function ClienteTab({
   const whatsappMessage = generateWhatsAppMessage(order)
   const deliveryAddr = parseDeliveryAddress(order)
 
-  const handleWhatsappContact = () => {
-    if (!whatsappNumber) return
-    window.open(`https://wa.me/${whatsappNumber}?text=${whatsappMessage}`, '_blank')
-  }
-  const handleEmailContact = () => {
-    window.location.href = `mailto:${order.customer_email}?subject=Pedido ${order.order_code}`
-  }
-  const handleCallContact = () => {
-    if (!order.customer_phone) return
-    window.location.href = `tel:${order.customer_phone}`
-  }
-
   return (
     <div className="flex flex-col gap-5">
       {/* Cliente card */}
       <section className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         <div className="flex items-start gap-3 border-b border-gray-100 px-4 py-4">
           <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-nxp to-nxp/70 text-[14px] font-bold text-white shadow-[0_1px_2px_hsl(237_49%_33%/0.25)]">
-            {initials(order.customer_name)}
+            {getInitials(order.customer_name)}
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-[14px] font-bold tracking-[-0.005em] text-gray-900">
@@ -415,7 +357,7 @@ function ClienteTab({
                 #{order.order_code}
               </span>
               <span>·</span>
-              <span>{relativeTime(order.created_at)}</span>
+              <span>{relativeTimeOrder(order.created_at)}</span>
             </div>
           </div>
         </div>
@@ -423,9 +365,8 @@ function ClienteTab({
         {/* Contatos como linhas action-able */}
         <div className="divide-y divide-gray-100">
           {order.customer_phone && (
-            <button
-              type="button"
-              onClick={handleCallContact}
+            <a
+              href={`tel:${order.customer_phone}`}
               className="group flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-gray-50"
             >
               <Phone className="h-4 w-4 shrink-0 text-gray-400" />
@@ -438,7 +379,7 @@ function ClienteTab({
                 </p>
               </div>
               <CopyButton value={order.customer_phone} label="telefone" />
-            </button>
+            </a>
           )}
           <div className="flex items-center gap-3 px-4 py-3">
             <Mail className="h-4 w-4 shrink-0 text-gray-400" />
@@ -461,41 +402,56 @@ function ClienteTab({
           Ações rápidas
         </h4>
         <div className="flex flex-col gap-2">
-          {/* Primary action — WhatsApp */}
-          <button
-            type="button"
-            onClick={handleWhatsappContact}
-            disabled={!whatsappNumber}
-            className="group inline-flex items-center justify-between gap-3 rounded-xl bg-emerald-600 px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_1px_2px_hsl(151_55%_30%/0.25)] transition-all hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none"
-          >
-            <span className="inline-flex items-center gap-2">
-              <span className="flex h-4 w-4 items-center justify-center">
-                <WhatsappIcon />
+          {/* Primary action — WhatsApp (window.open mantido: link externo) */}
+          {whatsappNumber ? (
+            <a
+              href={`https://wa.me/${whatsappNumber}?text=${whatsappMessage}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center justify-between gap-3 rounded-xl bg-emerald-600 px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_1px_2px_hsl(151_55%_30%/0.25)] transition-all hover:bg-emerald-700"
+            >
+              <span className="inline-flex items-center gap-2">
+                <span className="flex h-4 w-4 items-center justify-center">
+                  <WhatsappIcon />
+                </span>
+                Enviar mensagem por WhatsApp
               </span>
-              Enviar mensagem por WhatsApp
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" strokeWidth={2.5} />
+            </a>
+          ) : (
+            <span className="inline-flex items-center justify-between gap-3 rounded-xl bg-gray-200 px-4 py-2.5 text-[13px] font-semibold text-gray-400 cursor-not-allowed">
+              <span className="inline-flex items-center gap-2">
+                <span className="flex h-4 w-4 items-center justify-center">
+                  <WhatsappIcon />
+                </span>
+                Enviar mensagem por WhatsApp
+              </span>
             </span>
-            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" strokeWidth={2.5} />
-          </button>
+          )}
 
           {/* Secondary actions */}
           <div className="grid grid-cols-3 gap-2">
-            <button
-              type="button"
-              onClick={handleCallContact}
-              disabled={!order.customer_phone}
-              className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-[12px] font-semibold text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              <PhoneCall className="h-3.5 w-3.5" />
-              Ligar
-            </button>
-            <button
-              type="button"
-              onClick={handleEmailContact}
+            {order.customer_phone ? (
+              <a
+                href={`tel:${order.customer_phone}`}
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-[12px] font-semibold text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900"
+              >
+                <PhoneCall className="h-3.5 w-3.5" />
+                Ligar
+              </a>
+            ) : (
+              <span className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-[12px] font-semibold text-gray-400 cursor-not-allowed opacity-40">
+                <PhoneCall className="h-3.5 w-3.5" />
+                Ligar
+              </span>
+            )}
+            <a
+              href={`mailto:${order.customer_email}?subject=Pedido ${order.order_code}`}
               className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-[12px] font-semibold text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900"
             >
               <Mail className="h-3.5 w-3.5" />
               Email
-            </button>
+            </a>
             <button
               type="button"
               onClick={onPrint}
@@ -666,7 +622,7 @@ export function OrderDetailPanel({ orderId }: OrderDetailPanelProps) {
           <CopyButton value={order.order_code} label="código do pedido" />
           <span className="text-gray-300">·</span>
           <span className="text-[12px] text-gray-500">
-            {formatDate(order.created_at)} <span className="text-gray-400">({relativeTime(order.created_at)})</span>
+            {formatDate(order.created_at)} <span className="text-gray-400">({relativeTimeOrder(order.created_at)})</span>
           </span>
         </div>
 

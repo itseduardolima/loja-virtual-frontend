@@ -1,9 +1,10 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useForm, Controller } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { AxiosError } from 'axios'
 import { api } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToastContext } from '@/contexts/ToastContext'
@@ -46,8 +47,8 @@ export function useCreateCouponPage() {
       success('Cupom criado com sucesso!', 'Sucesso')
       router.push('/vendedor/cupons')
     },
-    onError: (err: any) => {
-      showError(err?.response?.data?.message || 'Erro ao criar cupom', 'Erro')
+    onError: (err: AxiosError<{ message?: string }>) => {
+      showError(err.response?.data?.message || err.message || 'Erro ao criar cupom', 'Erro')
     },
   })
 

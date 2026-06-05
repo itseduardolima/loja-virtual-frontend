@@ -86,8 +86,6 @@ export interface UpdateStoreData {
   free_delivery_min?: number
   delivery_time?: string
   pickup_enabled?: boolean
-  /** Campo de UI local — o backend usa free_delivery_min para derivar frete grátis */
-  free_shipping_enabled?: boolean
   payment_methods?: string[]
   business_hours?: Record<string, string>
   hero_eyebrow?: string

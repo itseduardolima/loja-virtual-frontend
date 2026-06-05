@@ -55,7 +55,7 @@ export default function VendedorLayout({
 
     // Se não está autenticado, redireciona para login
     if (!isAuthenticated) {
-      if (window.location.pathname !== '/login') {
+      if (pathname !== '/login') {
         router.push('/login')
       }
       return

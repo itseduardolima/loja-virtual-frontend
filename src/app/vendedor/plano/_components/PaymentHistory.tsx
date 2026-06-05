@@ -1,11 +1,12 @@
 'use client'
 
 import { ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, formatPrice, formatDateShort } from '@/lib/utils'
+import { PAYMENT_STATUS } from '@/lib/vendor'
+import type { StatusTone } from '@/lib/vendor'
 import { useGetPaymentLink } from '@/hooks/useGetPaymentLink'
 import { LoadingSpinner } from '@/components'
 import { Payment } from '@/types/subscription'
-import { fmtDate } from '../_utils'
 
 interface PaymentHistoryProps {
   planName: string | undefined
@@ -18,12 +19,24 @@ interface PaymentHistoryProps {
   onPageChange: (page: number) => void
 }
 
-const STATUS_MAP: Record<string, { label: string; cls: string }> = {
-  paid:             { label: 'Pago',               cls: 'bg-green-50 text-green-700' },
-  pending:          { label: 'Pendente',            cls: 'bg-amber-50 text-amber-700' },
-  failed:           { label: 'Falhou',              cls: 'bg-red-50 text-red-600' },
-  refunded:         { label: 'Reembolsado',         cls: 'bg-purple-50 text-purple-700' },
-  refund_requested: { label: 'Reembolso em análise', cls: 'bg-orange-50 text-orange-700' },
+const TONE_CLS: Record<StatusTone, string> = {
+  success: 'bg-green-50 text-green-700',
+  warning: 'bg-amber-50 text-amber-700',
+  danger:  'bg-red-50 text-red-600',
+  neutral: 'bg-purple-50 text-purple-700',
+  primary: 'bg-nxp/10 text-nxp',
+}
+
+// Override de cor para status cujo tone não é 1:1 com a cor desejada
+const STATUS_CLS_OVERRIDE: Partial<Record<string, string>> = {
+  refund_requested: 'bg-orange-50 text-orange-700',
+}
+
+function getStatusCfg(status: string): { label: string; cls: string } {
+  const entry = PAYMENT_STATUS[status]
+  if (!entry) return { label: status, cls: 'bg-nxbg text-nxi2' }
+  const cls = STATUS_CLS_OVERRIDE[status] ?? TONE_CLS[entry.tone]
+  return { label: entry.label, cls }
 }
 
 export function PaymentHistory({ planName, billingCycle, payments, total, totalPages, page, isLoading, onPageChange }: PaymentHistoryProps) {
@@ -100,8 +113,8 @@ export function PaymentHistory({ planName, billingCycle, payments, total, totalP
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 
 function PaymentRow({ payment, planName, billingCycle }: { payment: Payment; planName: string | undefined; billingCycle: 'monthly' | 'yearly' }) {
-  const cfg = STATUS_MAP[payment.status] ?? { label: payment.status, cls: 'bg-nxbg text-nxi2' }
-  const dateStr = payment.paid_at ? fmtDate(payment.paid_at) : fmtDate(payment.created_at)
+  const cfg = getStatusCfg(payment.status)
+  const dateStr = payment.paid_at ? formatDateShort(payment.paid_at, { utc: true }) : formatDateShort(payment.created_at, { utc: true })
   const showCreatedAt = !!payment.paid_at && payment.created_at !== payment.paid_at
 
   return (
@@ -112,11 +125,11 @@ function PaymentRow({ payment, planName, billingCycle }: { payment: Payment; pla
           {planName ?? 'Assinatura'} · {billingCycle === 'yearly' ? 'Anual' : 'Mensal'}
         </div>
         {showCreatedAt && (
-          <div className="text-[11px] text-nxi3">Criado em {fmtDate(payment.created_at)}</div>
+          <div className="text-[11px] text-nxi3">Criado em {formatDateShort(payment.created_at, { utc: true })}</div>
         )}
       </td>
       <td className="px-6 py-3.5 text-right font-mono font-bold text-nxi1">
-        {Number(payment.amount).toLocaleString('pt-BR', { style: 'currency', currency: payment.currency || 'BRL' })}
+        {formatPrice(Number(payment.amount))}
       </td>
       <td className="px-6 py-3.5">
         <span className={cn('rounded-full px-2.5 py-0.5 text-[11px] font-bold', cfg.cls)}>{cfg.label}</span>

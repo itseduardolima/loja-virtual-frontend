@@ -40,6 +40,7 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
     nextCursor,
     updateParams,
     loadMore,
+    refetch,
   } = useStoreProducts({
     slug,
     cursor: undefined,
@@ -249,6 +250,7 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
     meta,
     nextCursor,
     loadMore,
+    refetch,
     categories,
     availableColors,
     availableSizes,

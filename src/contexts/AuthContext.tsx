@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, LoginRequest, AuthContextType } from '@/types/auth'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
+import { AxiosError } from 'axios'
 import { api } from '@/lib/api'
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -18,6 +19,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const processGoogleAuthCallback = async () => {
       if (typeof window === 'undefined') return false
 
+      // NAV exception: leitura de window.location dentro de useEffect (client-only).
+      // useSearchParams() no provider raiz forçaria CSR-bailout de toda a árvore
+      // (HTML estático vazio em todas as páginas) — ver Next.js missing-suspense-with-csr-bailout.
       const urlParams = new URLSearchParams(window.location.search)
       const userParam = urlParams.get('user')
 
@@ -46,8 +50,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             try {
               await api.get('/stores/my-store')
               targetPath = '/vendedor'
-            } catch (err: any) {
-              const status = err?.response?.status
+            } catch (err) {
+              const axiosErr = err as AxiosError
+              const status = axiosErr?.response?.status
               targetPath = status === 404 ? '/vendedor/criar-loja' : '/vendedor'
             }
           } else if (userData.profile === 'Administrador') {
@@ -154,6 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginWithGoogle = () => {
     if (typeof window !== 'undefined') {
+      // NAV exception: leitura dentro de event handler (client-only) — não afeta prerender.
       const urlParams = new URLSearchParams(window.location.search)
       const redirectParam = urlParams.get('redirect')
       const currentPath = window.location.pathname
@@ -169,6 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('NEXT_PUBLIC_API_URL não está configurado')
         return
       }
+      // NAV exception: redirect para URL externa do OAuth do Google — window.location.href é obrigatório.
       window.location.href = `${apiUrl}/auth/google`
     }
   }

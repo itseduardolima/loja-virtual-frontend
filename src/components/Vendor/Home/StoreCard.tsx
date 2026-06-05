@@ -30,7 +30,7 @@ export function StoreCard() {
 
   const storeName = store?.name ?? 'Minha Loja'
   const initials = getInitials(storeName)
-  const channels = getStoreChannels(store as any)
+  const channels = getStoreChannels(store)
 
   return (
     <div className="flex flex-col items-stretch rounded-2xl bg-white p-3 pb-0 shadow-[0_0_0_1px_hsl(0_0%_0%/0.06),0_2px_8px_hsl(0_0%_0%/0.06)]">

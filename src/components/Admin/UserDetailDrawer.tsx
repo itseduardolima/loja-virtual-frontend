@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAdminUser, useAdminUpdateUser } from '@/hooks/useAdminUsers'
+import type { AdminUser } from '@/types/admin'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import toast from 'react-hot-toast'
@@ -83,7 +84,7 @@ export function UserDetailDrawer({ userId, open, onClose }: UserDetailDrawerProp
     try {
       await updateUser.mutateAsync({
         id: userId,
-        data: { user_name: values.name, user_email: values.email, profile_id: Number(values.profile_id) } as any,
+        data: { user_name: values.name, user_email: values.email, profile_id: Number(values.profile_id) } as Partial<AdminUser>,
       })
       toast.success('Usuário atualizado com sucesso.')
       setEditing(false)
@@ -184,7 +185,7 @@ export function UserDetailDrawer({ userId, open, onClose }: UserDetailDrawerProp
               <div className="grid grid-cols-2 gap-4">
                 <InfoItem label="ID" value={`#${user.id}`} />
                 <InfoItem label="Perfil" value={profileNames[user.profile_id] ?? '-'} />
-                <InfoItem label="Telefone" value={(user as any).phone ?? '-'} />
+                <InfoItem label="Telefone" value={user.phone ?? '-'} />
                 <InfoItem
                   label="Status"
                   value={

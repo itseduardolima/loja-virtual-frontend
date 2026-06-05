@@ -1,9 +1,12 @@
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
+import * as Yup from 'yup'
 import { useAdminCreatePlan } from '@/hooks/useAdminPlans'
 import { createPlanSchema } from '@/schemas/planSchemas'
 import { useToastContext } from '@/contexts/ToastContext'
+
+type CreatePlanFormData = Yup.InferType<typeof createPlanSchema>
 
 export function useCriarPlanoPage() {
   const router = useRouter()
@@ -23,9 +26,9 @@ export function useCriarPlanoPage() {
     },
   })
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: CreatePlanFormData) => {
     try {
-      await createPlan.mutateAsync(data)
+      await createPlan.mutateAsync(data as unknown as Partial<import('@/types/admin').AdminPlan>)
       success('Plano criado com sucesso')
       router.push('/admin/planos')
     } catch {

@@ -28,6 +28,7 @@ export { UserHeaderCliente } from './Layout/UserHeaderCliente'
 // Product Components
 export { ProductCard } from './Product/ProductCard'
 export { ProductFilters } from './Product/ProductFilters'
+export type { FiltersState } from './Product/ProductFilters'
 export { EmptyImageState } from './Product/EmptyImageState'
 export { ProductVariations } from './Product/ProductVariations'
 export { ProductReviews } from './Product/ProductReviews'
@@ -35,6 +36,7 @@ export { ProductReviews } from './Product/ProductReviews'
 // Table Components
 export { Table } from './Table/Table'
 export { TableFilters } from './Table/TableFilters'
+export type { TableFiltersState } from './Table/TableFilters'
 export { TablePagination } from './Table/TablePagination'
 export type { Column, TableProps } from './Table/Table'
 

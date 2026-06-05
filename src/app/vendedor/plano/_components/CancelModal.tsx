@@ -1,11 +1,18 @@
 'use client'
 
 import { X } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, formatDateShort } from '@/lib/utils'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { derivePlanFeaturesComparison } from '@/lib/planUtils'
 import { SubscriptionPlan } from '@/types/subscription'
-import { fmtDate, CANCEL_REASONS } from '../_utils'
+
+const CANCEL_REASONS = [
+  'Muito caro',
+  'Pouco uso',
+  'Mudei pra concorrente',
+  'Loja fechou',
+  'Outro motivo',
+]
 
 interface CancelModalProps {
   open: boolean
@@ -78,7 +85,7 @@ export function CancelModal({
             <div className="flex items-baseline gap-3 rounded-xl bg-nxbg px-4 py-3.5">
               <div className="min-w-0 flex-1">
                 <p className="text-[11.5px] font-semibold text-nxi3">Você ainda tem acesso até</p>
-                <p className="mt-0.5 text-[15px] font-bold text-nxi1">{fmtDate(periodEnd)}</p>
+                <p className="mt-0.5 text-[15px] font-bold text-nxi1">{formatDateShort(periodEnd, { utc: true })}</p>
               </div>
               <div className="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold text-amber-700">
                 após essa data, loja desativada

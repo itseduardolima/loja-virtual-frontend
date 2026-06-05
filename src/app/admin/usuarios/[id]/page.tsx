@@ -9,7 +9,7 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
 export default function AdminUsuarioDetailPage() {
-  const { id } = useParams()
+  const { id } = useParams() as { id: string }
   const router = useRouter()
   const { data: user, isLoading } = useAdminUser(Number(id))
 
@@ -49,7 +49,7 @@ export default function AdminUsuarioDetailPage() {
             </div>
             <div>
               <p className="text-xs text-gray-500 mb-1">Telefone</p>
-              <p className="font-medium">{(user as any).phone ?? '-'}</p>
+              <p className="font-medium">{user.phone ?? '-'}</p>
             </div>
             <div>
               <p className="text-xs text-gray-500 mb-1">Perfil</p>

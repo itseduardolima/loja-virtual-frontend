@@ -10,7 +10,7 @@ import { MessageCircle, Check, Package } from 'lucide-react'
 import { TablePagination } from '@/components/Table'
 import { LoadingPage, FeatureLocked } from '@/components/Layout'
 import { useStoreQuestions, QuestionStatus } from './usePendingQuestionsPage'
-import { buildImageUrl } from '@/lib/utils'
+import { buildImageUrl, formatDateShort } from '@/lib/utils'
 import { usePlanFeatures } from '@/hooks/usePlanFeatures'
 
 const TABS: { label: string; value: QuestionStatus; empty: string }[] = [
@@ -122,7 +122,7 @@ export default function PerguntasPage() {
                   </p>
                   <p className='text-xs text-gray-400 mt-1'>
                     por <span className='font-medium'>{q.asker_name}</span> em{' '}
-                    {new Date(q.created_at).toLocaleDateString('pt-BR')}
+                    {formatDateShort(q.created_at)}
                   </p>
                 </div>
               </CardHeader>

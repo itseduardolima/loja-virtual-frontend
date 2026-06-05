@@ -11,17 +11,21 @@ export const api = axios.create({
 
 // Flag para evitar múltiplas tentativas de refresh simultâneas
 let isRefreshing = false
-let failedQueue: Array<{
-  resolve: (value?: any) => void
-  reject: (error?: any) => void
-}> = []
 
-const processQueue = (error: any) => {
+/** Fila de requests que chegaram com 401 enquanto o refresh estava em andamento. */
+interface QueueEntry {
+  resolve: (value: unknown) => void
+  reject: (reason: unknown) => void
+}
+
+let failedQueue: QueueEntry[] = []
+
+const processQueue = (error: unknown) => {
   failedQueue.forEach(({ resolve, reject }) => {
     if (error) {
       reject(error)
     } else {
-      resolve()
+      resolve(undefined)
     }
   })
   failedQueue = []
@@ -59,6 +63,8 @@ api.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError)
         localStorage.removeItem('user-data')
+        // NAV exception: interceptor vive fora da árvore React (sem acesso ao router do Next.js),
+        // portanto window.location.href é a única forma segura de redirecionar para /login após falha de refresh.
         window.location.href = '/login'
         return Promise.reject(refreshError)
       } finally {

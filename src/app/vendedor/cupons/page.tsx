@@ -35,7 +35,7 @@ import { useRouter } from 'next/navigation'
 import { useCuponsPage, type Coupon, type CouponFilter, isExpired, isExhausted } from './useCuponsPage'
 import { LoadingPage, FeatureLocked } from '@/components/Layout'
 import { usePlanFeatures } from '@/hooks/usePlanFeatures'
-import { cn, formatPrice } from '@/lib/utils'
+import { cn, formatPrice, formatDateShort, daysUntil as daysUntilUtil } from '@/lib/utils'
 
 type DisplayStatus = 'active' | 'paused' | 'expired' | 'exhausted'
 
@@ -53,30 +53,16 @@ function getCouponDisplayStatus(c: Coupon): DisplayStatus {
   return 'active'
 }
 
-function fmtDate(iso: string) {
-  return new Date(iso).toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    timeZone: 'UTC',
-  })
-}
-
-function daysUntil(iso: string) {
-  const diff = new Date(iso).getTime() - Date.now()
-  return Math.ceil(diff / (1000 * 60 * 60 * 24))
-}
-
 function ValidityCell({ expires_at }: { expires_at: string | null }) {
   if (!expires_at) {
     return <span className="text-[12.5px] text-nxi3">Sem expiração</span>
   }
-  const days = daysUntil(expires_at)
+  const days = daysUntilUtil(expires_at)
   const expired = days <= 0
   const warn = !expired && days <= 30
   return (
     <div>
-      <div className="text-[12.5px] font-medium text-nxi1">{fmtDate(expires_at)}</div>
+      <div className="text-[12.5px] font-medium text-nxi1">{formatDateShort(expires_at)}</div>
       <div
         className={cn(
           'mt-0.5 text-[11px] font-medium',

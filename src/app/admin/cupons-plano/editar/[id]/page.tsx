@@ -2,26 +2,28 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { ChevronLeft } from 'lucide-react'
+import { AxiosError } from 'axios'
 import { useToastContext } from '@/contexts/ToastContext'
 import { useAdminPlanCoupon, useAdminUpdatePlanCoupon } from '@/hooks/useAdminPlanCoupons'
-import { PlanCouponForm } from '../../components/PlanCouponForm'
+import { PlanCouponForm, PlanCouponFormValues } from '../../components/PlanCouponForm'
 import { LoadingPage } from '@/components/Layout'
 
 export default function AdminEditarPlanCouponPage() {
   const router = useRouter()
-  const { id } = useParams()
+  const { id } = useParams() as { id: string }
   const { success, error } = useToastContext()
   const couponId = Number(id)
 
   const { data: coupon, isLoading } = useAdminPlanCoupon(couponId)
   const { mutateAsync, isPending } = useAdminUpdatePlanCoupon()
 
-  const onSubmit = async (values: any) => {
+  const onSubmit = async (values: PlanCouponFormValues) => {
     try {
       await mutateAsync({ id: couponId, data: values })
       success('Cupom atualizado')
       router.push('/admin/cupons-plano')
-    } catch (err: any) {
+    } catch (e) {
+      const err = e as AxiosError<{ message?: string | string[] }>
       const msg = err?.response?.data?.message
       error(Array.isArray(msg) ? msg[0] : msg || 'Erro ao atualizar cupom')
     }

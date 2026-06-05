@@ -2,12 +2,15 @@ import { useParams, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
+import * as Yup from 'yup'
 import { useAdminPlans, useAdminUpdatePlan } from '@/hooks/useAdminPlans'
 import { createPlanSchema } from '@/schemas/planSchemas'
 import { useToastContext } from '@/contexts/ToastContext'
 
+type CreatePlanFormData = Yup.InferType<typeof createPlanSchema>
+
 export function useEditarPlanoPage() {
-  const { id } = useParams()
+  const { id } = useParams() as { id: string }
   const router = useRouter()
   const { success, error } = useToastContext()
   const updatePlan = useAdminUpdatePlan()
@@ -39,9 +42,9 @@ export function useEditarPlanoPage() {
     }
   }, [plan, reset])
 
-  const onSubmit = async (formData: any) => {
+  const onSubmit = async (formData: CreatePlanFormData) => {
     try {
-      await updatePlan.mutateAsync({ id: Number(id), data: formData })
+      await updatePlan.mutateAsync({ id: Number(id), data: formData as unknown as Partial<import('@/types/admin').AdminPlan> })
       success('Plano atualizado com sucesso')
       router.push('/admin/planos')
     } catch {

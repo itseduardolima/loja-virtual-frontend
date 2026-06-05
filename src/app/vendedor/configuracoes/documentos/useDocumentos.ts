@@ -22,8 +22,8 @@ export function useDocumentos() {
   useEffect(() => {
     if (store) {
       setFormData({
-        cnpj: (store as any)?.cnpj || '',
-        cpf: (store as any)?.cpf || ''
+        cnpj: store.cnpj || '',
+        cpf: store.cpf || ''
       })
     }
   }, [store])
