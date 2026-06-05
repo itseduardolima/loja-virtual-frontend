@@ -62,7 +62,16 @@ O padrão `(store as any)?.campo` aparece 40+ vezes porque `StoreInfo` está inc
 
 ---
 
-## Fase 1 — Higiene mecânica (paralelizável, baixo risco) · ~2 dias
+## Fase 1 — Higiene mecânica (paralelizável, baixo risco) · ~2 dias ✅ CONCLUÍDA (2026-06-05)
+
+> **Status:** executada via workflow (6 agentes regionais + verificador); `tsc` e `pnpm build` verdes; ~92 arquivos. Resultados e desvios:
+> - **`any`: 180 → 59.** Os 59 restantes: casts `yupResolver(...)` (incompatibilidade estrutural Yup InferType × RHF generics — documentados), narrowing de catches e workarounds de libs.
+> - **`window.location`: só exceções documentadas** (OAuth Google/Bling, interceptor axios, `history.replaceState` pós-callback, leitura de `origin` p/ share). Zero `reload()`/`router.refresh()` em retries — loja usa `refetch()` dos hooks (queryClient só após Fase 3).
+> - `useCreateSubscription`/`useValidatePlanCoupon`: onError NÃO adicionado de propósito — call sites usam `mutateAsync`+try/catch com toast próprio (evita toast duplicado). `usePreviewChangePlan` ganhou onError (call site usa `mutate()`).
+> - `useAdminPlans`: invalidate órfão `['coupons']` corrigido para `['admin', 'plan-coupons']`.
+> - `free_shipping_enabled` removido de `UpdateStoreData` e do payload do useEntrega (derivado de `free_delivery_min`).
+> - ⚠️ **Regressão evitada:** o verificador havia embrulhado o `AuthProvider` em `<Suspense>` (por `useSearchParams` no provider raiz) — isso esvaziava o HTML prerenderizado de TODAS as páginas (CSR-bailout global). Revertido manualmente para leituras de `window.location` em useEffect/handler (client-only, não afeta prerender) com comentários de exceção.
+> - Sobras anotadas p/ Fase 2: `STATUS_CONFIG` do rastrear (ícones JSX inline, página será reescrita); `fmtDate` UTC do admin/cupons-plano; `Intl.NumberFormat` em 6 components (OrderPrintModal, RenewSubscriptionModal, ProductForm/data, BlingImportCard, ProductReviews).
 
 ### 1.1 Navegação (20 violações)
 - [ ] `lib/axios.ts:62` — remover `window.location.href` no 401; propagar erro e deixar AuthContext/page decidir (avaliar: manter como fallback documentado se o refactor for arriscado)
