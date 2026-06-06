@@ -48,10 +48,10 @@ export function useRastrearPage() {
     setCancelReason('')
   }
 
-  function handleConfirmCancel() {
-    if (!order?.id || !cancelReason.trim()) return
+  function handleConfirmCancel(reason: string) {
+    if (!order?.id || !reason.trim()) return
     cancelOrderMutate(
-      { orderId: order.id, data: { reason: cancelReason.trim() } },
+      { orderId: order.id, data: { reason: reason.trim() } },
       {
         onSuccess: (res) => {
           setShowCancelDialog(false)
@@ -75,6 +75,7 @@ export function useRastrearPage() {
     order,
     isLoading,
     error,
+    hasSearched: searchCode !== null,
     // cancel dialog
     showCancelDialog,
     cancelReason,

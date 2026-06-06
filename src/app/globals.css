@@ -136,6 +136,25 @@
   .ck-pop { animation: none; }
 }
 
+/* Rastrear Pedido — hero dark + animações de entrada */
+@keyframes rtRise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.rt-rise {
+  animation: rtRise 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+.hero-glow {
+  background: radial-gradient(circle, hsl(var(--nxp)) 0%, transparent 70%);
+}
+.hero-dots {
+  background-image: radial-gradient(circle, #fff 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rt-rise { animation: none; }
+}
+
 /* Pedido confirmado — desenho do traço do check (SVG) */
 @keyframes ckDash {
   from { stroke-dashoffset: 64; }
