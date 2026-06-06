@@ -1,3 +1,13 @@
+export interface StorePage {
+  page_type: string
+  title: string
+  content: string
+  enabled: boolean
+  updated_at?: string | null
+  /** Label padrão do tipo (preenchido pelo frontend) */
+  label?: string
+}
+
 export interface StoreNiche {
   id: number
   store_id: number
@@ -50,6 +60,7 @@ export interface StoreInfo {
   campaign_image?: string
   created_at: string
   store_niches?: StoreNiche[]
+  store_pages?: Array<{ page_type: string; title: string }>
   _count?: {
     products: number
     orders: number

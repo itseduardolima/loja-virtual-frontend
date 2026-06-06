@@ -14,6 +14,7 @@ import {
   Users,
   Plug,
   Store,
+  HelpCircle,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -35,6 +36,7 @@ const SECTIONS: SectionDef[] = [
   { id: 'entrega', href: '/vendedor/configuracoes/entrega', icon: ShoppingBag, title: 'Entrega', desc: 'Retirada e frete grátis' },
   { id: 'horario', href: '/vendedor/configuracoes/horario', icon: Clock, title: 'Horário', desc: 'Funcionamento e atendimento' },
   { id: 'pagamento', href: '/vendedor/configuracoes/pagamento', icon: Coins, title: 'Formas de pagamento', desc: 'Cartão, PIX e boleto' },
+  { id: 'ajuda', href: '/vendedor/configuracoes/ajuda', icon: HelpCircle, title: 'Ajuda', desc: 'Páginas informativas da loja' },
   { id: 'equipe', href: '/vendedor/configuracoes/equipe', icon: Users, title: 'Equipe', desc: 'Usuários e permissões' },
   { id: 'integracao-bling', href: '/vendedor/configuracoes/integracao-bling', icon: Plug, title: 'Integração Bling', desc: 'ERP' },
 ]
