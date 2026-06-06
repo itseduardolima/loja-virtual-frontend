@@ -1,7 +1,8 @@
 'use client'
 
 import Image from 'next/image'
-import { ChevronDown, ChevronRight, LayoutGrid, List, SearchX } from 'lucide-react'
+import Link from 'next/link'
+import { ChevronDown, ChevronRight, LayoutGrid, List, SearchX, ArrowRight } from 'lucide-react'
 import { Product } from '@/types/product'
 import { cn } from '@/lib/utils'
 import { getProductImageUrl } from '@/lib/imageUtils'
@@ -35,6 +36,7 @@ interface StoreCollectionSectionProps {
   onToggleWishlist: (product: Product) => void
   isWished: (productId: number) => boolean
   onClearFilters: () => void
+  slug: string
 }
 
 function ListRow({
@@ -108,6 +110,7 @@ export function StoreCollectionSection({
   onToggleWishlist,
   isWished,
   onClearFilters,
+  slug,
 }: StoreCollectionSectionProps) {
   const isBento = activeCategory === 'Todos' && view === 'grid' && !search
   const title = search ? `Resultados para “${search}”` : activeCategory === 'Todos' ? 'Coleção' : activeCategory
@@ -224,6 +227,17 @@ export function StoreCollectionSection({
           {products.map((product) => (
             <div key={product.id}>{cardFor(product)}</div>
           ))}
+        </div>
+      )}
+
+      {!loading && products.length > 0 && (
+        <div className="mt-8 flex justify-center">
+          <Link
+            href={`/loja/${slug}/produtos`}
+            className="inline-flex items-center gap-2 rounded-full border border-nxborder bg-white px-6 py-3 text-[13px] font-bold text-nxi1 transition-colors hover:border-nxp hover:text-nxp"
+          >
+            Ver todos os produtos <ArrowRight size={15} />
+          </Link>
         </div>
       )}
     </section>

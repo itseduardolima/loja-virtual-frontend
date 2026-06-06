@@ -164,7 +164,7 @@ export function StorefrontPreviewModal({
           <div className="ml-2 flex flex-1 items-center gap-2 rounded-lg bg-nxbg px-3 py-1.5 text-[12px] text-nxi3">
             <Lock size={12} className="text-nxs" />
             <span className="truncate">
-              {domainBase}.nexo.com.br/{productSlug}
+              {process.env.NEXT_PUBLIC_APP_URL}/loja/{domainBase}/produto/{productSlug}
             </span>
             <NxBadge tone="nxa" className="ml-auto">
               Preview

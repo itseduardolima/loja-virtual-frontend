@@ -46,7 +46,7 @@ export const HOW_IT_WORKS_STEPS: Step[] = [
 export const FAQ_ITEMS: FaqItem[] = [
   { q: 'Posso cancelar quando quiser?', a: 'Sim. Cancela em um clique no painel, sem multa nem burocracia. Você usa até o fim do período pago e pronto.' },
   { q: 'Tem taxa de transação por venda?', a: 'Não cobramos taxa de transação. Você paga só a mensalidade do plano. As taxas de Pix, cartão ou boleto são as do gateway de pagamento (Asaas), as menores do mercado.' },
-  { q: 'Posso usar meu próprio domínio?', a: 'No plano Max, sim — sualoja.com.br aponta direto pra Nexo. Nos outros planos sua loja fica em nexo.app/sualoja.' },
+  { q: 'Posso usar meu próprio domínio?', a: `No plano Max, sim — sualoja.com.br aponta direto pra Nexo. Nos outros planos sua loja fica em ${process.env.NEXT_PUBLIC_APP_URL}/loja/sualoja.` },
   { q: 'Como faço pra emitir nota fiscal?', a: 'No plano Pro e Max você conecta o Bling ERP e a NF é emitida automaticamente a cada pedido pago, com seu CNPJ. Leva 30 segundos pra configurar.' },
   { q: 'O atendimento é em português?', a: 'Tudo em português, com gente de verdade. Chat de seg-sex 9h–19h em todos os planos. No Max, suporte 24/7.' },
   { q: 'Tem trial gratuito?', a: 'Tem. 14 dias grátis em qualquer plano, sem cartão de crédito. Você cria a loja, testa, e só paga se gostar.' },

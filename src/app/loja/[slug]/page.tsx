@@ -145,6 +145,7 @@ export default function StoreHomePage() {
           setSearch('')
           setActiveCategory('Todos')
         }}
+        slug={slug}
         {...cardHandlers}
       />
 
@@ -168,7 +169,7 @@ export default function StoreHomePage() {
 
       <div className="h-16" />
 
-      {storeInfo && <StoreNewFooter storeInfo={storeInfo} />}
+      {storeInfo && <StoreNewFooter storeInfo={storeInfo} slug={slug} />}
 
       <CartSidebar
         isOpen={isCartOpen}

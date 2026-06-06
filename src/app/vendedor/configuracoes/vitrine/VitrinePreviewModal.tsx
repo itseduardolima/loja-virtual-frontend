@@ -53,7 +53,7 @@ export function VitrinePreviewModal({ open, onClose, storeInfo }: VitrinePreview
           </div>
           <div className="ml-2 flex flex-1 items-center gap-2 rounded-lg bg-nxbg px-3 py-1.5 text-[12px] text-nxi3">
             <Lock size={12} className="text-nxs" />
-            <span className="truncate">{slug}.nexo.com.br</span>
+            <span className="truncate">{process.env.NEXT_PUBLIC_APP_URL}/loja/{slug}</span>
             <span className="ml-auto rounded-full bg-nxa px-2 py-0.5 text-[10px] font-bold text-white">
               Preview
             </span>

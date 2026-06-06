@@ -185,7 +185,7 @@ export default function ProductDetailPage() {
   // pathname vem de usePathname() para evitar window.location.pathname/href
   const productUrl = typeof window !== 'undefined'
     ? `${window.location.origin}${pathname}`
-    : `https://nexo.app${pathname}`
+    : `${process.env.NEXT_PUBLIC_APP_URL}${pathname}`
 
   const handleCopyLink = async () => {
     setShareOpen(false)
@@ -393,7 +393,7 @@ export default function ProductDetailPage() {
         />
       </main>
 
-      {storeInfo && <StoreNewFooter storeInfo={storeInfo} />}
+      {storeInfo && <StoreNewFooter storeInfo={storeInfo} slug={slug} />}
 
       <ProductMobileBuyBar
         finalPrice={product.final_price}
