@@ -12,7 +12,12 @@ export interface RegisterRequest {
   whatsapp?: string
 }
 
-export function useRegister() {
+interface UseRegisterOptions {
+  /** Query string (sem "?") repassada ao /login no sucesso — preserva ?redirect do fluxo da loja */
+  loginQuery?: string
+}
+
+export function useRegister(options?: UseRegisterOptions) {
   const router = useRouter()
   const { success: showSuccess, error: showError } = useToastContext()
 
@@ -23,10 +28,12 @@ export function useRegister() {
     },
     onSuccess: () => {
       showSuccess('Cadastro realizado com sucesso! Faça login para continuar.')
-      router.push('/login')
+      const query = options?.loginQuery
+      router.push(query ? `/login?${query}` : '/login')
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Não foi possível realizar o cadastro. Tente novamente.'
+      const message =
+        error.response?.data?.message || 'Não foi possível realizar o cadastro. Tente novamente.'
       showError(message, 'Erro no cadastro')
     },
   })

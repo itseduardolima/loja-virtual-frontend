@@ -3,18 +3,17 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { LoginRequest } from '@/types/auth'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useToastContext } from '@/contexts/ToastContext'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCheckout } from './useCheckout'
 import { fetchMyStore, myStoreQueryKey } from './useStore'
 
+// Erros de login propagam para a página exibir no banner inline (design Login.html).
 export function useLogin() {
   const { login, isLoading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const queryClient = useQueryClient()
   const { getCheckoutData, clearCheckoutData } = useCheckout()
-  const { error: showError } = useToastContext()
 
   const isRedirectAllowed = (path: string) => {
     const normalized = path.replace(/^https?:\/\/[^/]+/, '').split('?')[0] || '/'
@@ -25,63 +24,56 @@ export function useLogin() {
   }
 
   const handleLogin = async (credentials: LoginRequest) => {
-    try {
-      const data = await login(credentials)
-      
+    const data = await login(credentials)
 
-      const profile = data.user.profile
+    const profile = data.user.profile
 
-      if (profile === 'Vendedor') {
-        try {
-          await queryClient.fetchQuery({
-            queryKey: myStoreQueryKey,
-            queryFn: fetchMyStore,
-          })
-          router.push('/vendedor')
-        } catch (err: any) {
-          const status = err?.response?.status
-          router.push(status === 404 ? '/vendedor/criar-loja' : '/vendedor')
-        }
-        return
+    if (profile === 'Vendedor') {
+      try {
+        await queryClient.fetchQuery({
+          queryKey: myStoreQueryKey,
+          queryFn: fetchMyStore,
+        })
+        router.push('/vendedor')
+      } catch (err: any) {
+        const status = err?.response?.status
+        router.push(status === 404 ? '/vendedor/criar-loja' : '/vendedor')
       }
-
-      if (profile === 'Administrador') {
-        router.push('/admin')
-        return
-      }
-
-      // Cliente: checkout > ?redirect > última loja visitada > /
-      const checkoutData = getCheckoutData()
-      if (checkoutData) {
-        clearCheckoutData()
-        if (checkoutData.redirectUrl && isRedirectAllowed(checkoutData.redirectUrl)) {
-          router.push(checkoutData.redirectUrl)
-          return
-        }
-        if (checkoutData.storeSlug) {
-          router.push(`/loja/${checkoutData.storeSlug}/produtos`)
-          return
-        }
-      }
-
-      const redirect = searchParams.get('redirect')
-      if (redirect && isRedirectAllowed(redirect)) {
-        router.push(redirect)
-        return
-      }
-
-      const lastStore = localStorage.getItem('last-store')
-      if (lastStore) {
-        router.push(`/loja/${lastStore}`)
-        return
-      }
-
-      router.push('/')
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message
-      showError(errorMessage, 'Erro')
-      throw error
+      return
     }
+
+    if (profile === 'Administrador') {
+      router.push('/admin')
+      return
+    }
+
+    // Cliente: checkout > ?redirect > última loja visitada > /
+    const checkoutData = getCheckoutData()
+    if (checkoutData) {
+      clearCheckoutData()
+      if (checkoutData.redirectUrl && isRedirectAllowed(checkoutData.redirectUrl)) {
+        router.push(checkoutData.redirectUrl)
+        return
+      }
+      if (checkoutData.storeSlug) {
+        router.push(`/loja/${checkoutData.storeSlug}/produtos`)
+        return
+      }
+    }
+
+    const redirect = searchParams.get('redirect')
+    if (redirect && isRedirectAllowed(redirect)) {
+      router.push(redirect)
+      return
+    }
+
+    const lastStore = localStorage.getItem('last-store')
+    if (lastStore) {
+      router.push(`/loja/${lastStore}`)
+      return
+    }
+
+    router.push('/')
   }
 
   return {
