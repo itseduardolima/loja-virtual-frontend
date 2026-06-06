@@ -25,6 +25,9 @@ export { NexoLeftPanel } from './Layout/NexoLeftPanel'
 export { UserHeader } from './Layout/UserHeader'
 export { UserHeaderCliente } from './Layout/UserHeaderCliente'
 
+// Auth Components (login, cadastro, esqueci-senha, reset-password)
+export * from './Auth'
+
 // Product Components
 export { ProductCard } from './Product/ProductCard'
 export { ProductFilters } from './Product/ProductFilters'
