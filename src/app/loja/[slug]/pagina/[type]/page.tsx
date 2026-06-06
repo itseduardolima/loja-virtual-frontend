@@ -11,11 +11,20 @@ import { useStorePage } from '@/hooks/useStorePages'
 import { sanitizeHtml } from '@/lib/sanitize'
 import { useState } from 'react'
 
+const SLUG_TO_TYPE: Record<string, string> = {
+  trocas: 'returns',
+  envio: 'shipping',
+  faq: 'faq',
+  sobre: 'about',
+  politica: 'privacy',
+}
+
 export default function StorePagePublic() {
   const params = useParams()
   const router = useRouter()
   const slug = params.slug as string
-  const type = params.type as string
+  const typeSlug = params.type as string
+  const type = SLUG_TO_TYPE[typeSlug] ?? typeSlug
 
   const { storeInfo, loading: storeLoading } = useStoreInfo(slug)
   const { data: page, isLoading: pageLoading, isError } = useStorePage(slug, type)
@@ -26,7 +35,7 @@ export default function StorePagePublic() {
     if (isError) {
       router.replace(`/loja/${slug}`)
     }
-  }, [isError, router, slug])
+  }, [isError, router, slug, type])
 
   if (storeLoading && !storeInfo) {
     return (
@@ -81,7 +90,7 @@ export default function StorePagePublic() {
         onClose={() => setIsCartOpen(false)}
         storeId={storeInfo?.id}
         storeSlug={slug}
-        currentPath={`/loja/${slug}/pagina/${type}`}
+        currentPath={`/loja/${slug}/pagina/${typeSlug}`}
       />
 
       <WhatsAppChatWidget whatsapp={storeInfo?.whatsapp} storeName={storeInfo?.name} />
