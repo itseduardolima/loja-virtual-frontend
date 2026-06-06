@@ -123,7 +123,7 @@ export default function PedidoSucessoPage() {
         </div>
       )}
 
-      {storeInfo && <StoreNewFooter storeInfo={storeInfo} />}
+      {storeInfo && <StoreNewFooter storeInfo={storeInfo} slug={slug} />}
 
       <CartSidebar
         isOpen={isCartOpen}

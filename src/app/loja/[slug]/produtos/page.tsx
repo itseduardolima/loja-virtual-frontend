@@ -114,7 +114,7 @@ export default function StoreProductsPage() {
         </div>
       </div>
 
-      {vm.storeInfo && <StoreNewFooter storeInfo={vm.storeInfo} />}
+      {vm.storeInfo && <StoreNewFooter storeInfo={vm.storeInfo} slug={slug} />}
 
       <PlpFilterDrawer
         open={vm.isDrawerOpen}

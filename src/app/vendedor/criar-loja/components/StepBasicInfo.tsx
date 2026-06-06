@@ -50,7 +50,7 @@ export function StepBasicInfo({
         />
         {formData.name.length >= 3 && (
           <p className="text-xs text-gray-400 mt-1.5">
-            Sua URL será: nexo.com.br/loja/<strong className="text-gray-600">{slug}</strong>
+            Sua URL será: {process.env.NEXT_PUBLIC_APP_URL}/loja/<strong className="text-gray-600">{slug}</strong>
           </p>
         )}
         {errors.name && <p className="text-xs text-red-400 mt-1.5">{errors.name}</p>}
