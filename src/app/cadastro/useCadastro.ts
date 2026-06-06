@@ -1,120 +1,107 @@
 'use client'
 
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useRegister } from '@/hooks/useRegister'
 import { useCountries } from '@/hooks/useCountries'
+import { isValidEmail, isValidPassword, passwordRules, passwordsMatch } from '@/schemas/authSchemas'
 
-export interface PasswordRequirement {
-  label: string
-  valid: boolean
-}
+type CadastroField = 'name' | 'email' | 'whatsapp' | 'password' | 'confirmPassword'
 
 export function useCadastro() {
+  const searchParams = useSearchParams()
+  // preserva ?redirect do fluxo da loja ao voltar para o login
+  const loginQuery = searchParams.toString()
+
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [whatsapp, setWhatsapp] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [whatsapp, setWhatsapp] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [passwordMismatchError, setPasswordMismatchError] = useState('')
   const [selectedCountry, setSelectedCountry] = useState('BR')
-  const [showCountryDropdown, setShowCountryDropdown] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  const [touched, setTouched] = useState<Partial<Record<CadastroField, boolean>>>({})
 
-  const { register, isRegistering } = useRegister()
+  const { register, isRegistering } = useRegister({ loginQuery })
   const { data: countriesData, isLoading: countriesLoading } = useCountries()
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowCountryDropdown(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  const loginHref = loginQuery ? `/login?${loginQuery}` : '/login'
 
-  const getSelectedCountry = () =>
-    countriesData?.find((c) => c.cca2 === selectedCountry)
-  const getCountryCallingCode = () =>
-    getSelectedCountry()?.callingCodes?.[0] || '55'
+  const requirements = useMemo(() => passwordRules(password), [password])
 
-  const passwordRequirements = useMemo((): PasswordRequirement[] => {
-    const pwd = password
-    return [
-      { label: 'Mínimo 8 caracteres', valid: pwd.length >= 8 },
-      { label: 'Pelo menos uma letra maiúscula', valid: /[A-Z]/.test(pwd) },
-      { label: 'Pelo menos um número', valid: /\d/.test(pwd) },
-    ]
-  }, [password])
+  // erros derivados — só aparecem após blur (ou submit, que marca tudo)
+  const nameError = touched.name && name.trim().length < 5 ? 'Informe seu nome completo.' : null
+  const emailError = touched.email && !isValidEmail(email) ? 'Informe um e-mail válido.' : null
+  const whatsappError =
+    touched.whatsapp && whatsapp.replace(/\D/g, '').length < 8
+      ? 'Informe um WhatsApp válido.'
+      : null
+  const passwordError =
+    touched.password && !isValidPassword(password)
+      ? 'A senha não atende aos requisitos abaixo.'
+      : null
+  const confirmPasswordError =
+    touched.confirmPassword && !passwordsMatch(password, confirmPassword)
+      ? 'As senhas não coincidem.'
+      : null
 
-  const handleSubmit = (e: React.FormEvent) => {
+  function markTouched(field: CadastroField) {
+    setTouched((t) => ({ ...t, [field]: true }))
+  }
+
+  function getCountryCallingCode() {
+    return countriesData?.find((c) => c.cca2 === selectedCountry)?.callingCodes?.[0] || '55'
+  }
+
+  function handleWhatsappChange(value: string) {
+    setWhatsapp(value.replace(/\D/g, ''))
+  }
+
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setPasswordMismatchError('')
-
-    if (!name || !email || !password || !confirmPassword) {
-      return
-    }
+    setTouched({ name: true, email: true, whatsapp: true, password: true, confirmPassword: true })
 
     const whatsappDigits = whatsapp.replace(/\D/g, '')
-    if (!whatsappDigits || whatsappDigits.length < 8) {
-      return
-    }
+    const valid =
+      name.trim().length >= 5 &&
+      isValidEmail(email) &&
+      whatsappDigits.length >= 8 &&
+      isValidPassword(password) &&
+      passwordsMatch(password, confirmPassword)
 
-    if (password !== confirmPassword) {
-      setPasswordMismatchError('As senhas não coincidem')
-      return
-    }
-
-    const whatsappFull = `${getCountryCallingCode()}${whatsappDigits}`
+    if (!valid) return
 
     register({
       name: name.trim(),
       email: email.trim(),
       password,
-      whatsapp: whatsappFull,
+      whatsapp: `${getCountryCallingCode()}${whatsappDigits}`,
     })
   }
 
-  const handleWhatsappChange = (value: string) => {
-    setWhatsapp(value.replace(/\D/g, ''))
-  }
-
-  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setConfirmPassword(e.target.value)
-    setPasswordMismatchError('')
-  }
-
   return {
+    loginHref,
     name,
     setName,
     email,
     setEmail,
+    whatsapp,
+    handleWhatsappChange,
     password,
     setPassword,
     confirmPassword,
     setConfirmPassword,
-    whatsapp,
-    showPassword,
-    setShowPassword,
-    showConfirmPassword,
-    setShowConfirmPassword,
-    passwordMismatchError,
     selectedCountry,
     setSelectedCountry,
-    showCountryDropdown,
-    setShowCountryDropdown,
-    dropdownRef,
     countriesData,
     countriesLoading,
-    getSelectedCountry,
-    getCountryCallingCode,
-    passwordRequirements,
+    requirements,
+    nameError,
+    emailError,
+    whatsappError,
+    passwordError,
+    confirmPasswordError,
+    markTouched,
     handleSubmit,
-    handleWhatsappChange,
-    handleConfirmPasswordChange,
-    register,
     isRegistering,
   }
 }
