@@ -68,6 +68,7 @@ const config: Config = {
         nxi3: 'hsl(var(--nxi3) / <alpha-value>)',
         nxborder: 'hsl(var(--nxborder) / <alpha-value>)',
         wa: 'hsl(var(--wa) / <alpha-value>)',
+        coal: '#070815',
       },
       borderRadius: {
         lg: 'var(--radius)',
