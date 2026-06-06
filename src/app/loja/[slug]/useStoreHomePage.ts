@@ -19,6 +19,7 @@ const SORT_TO_PARAMS: Record<CollectionSort, { sort: 'ASC' | 'DESC'; sort_field:
   menor: { sort: 'ASC', sort_field: 'price' },
   maior: { sort: 'DESC', sort_field: 'price' },
   avaliados: { sort: 'DESC', sort_field: 'average_rating' },
+  nome: { sort: 'ASC', sort_field: 'name' },
 }
 
 export interface UseStoreHomePageReturn {

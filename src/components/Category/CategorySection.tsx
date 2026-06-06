@@ -1,7 +1,7 @@
 'use client'
 
 import { ProductCard } from '@/components/Product'
-import { StoreCategory } from '@/app/loja/[slug]/produtos/types'
+import type { StoreCategory } from '@/types/store'
 import { Product } from '@/types/product'
 
 interface CategorySectionProps {

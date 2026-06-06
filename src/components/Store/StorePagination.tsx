@@ -2,7 +2,15 @@
 
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
-import { StorePaginationProps } from '@/app/loja/[slug]/produtos/types'
+
+interface StorePaginationProps {
+  currentPage: number
+  totalPages: number
+  totalItems: number
+  onPageChange: (page: number) => void
+  hasNextPage: boolean
+  hasPrevPage: boolean
+}
 
 export function StorePagination({
   currentPage,

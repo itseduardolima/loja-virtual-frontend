@@ -42,7 +42,6 @@ export type { Column, TableProps } from './Table/Table'
 
 // Store Components
 export { StorePagination } from './Store/StorePagination'
-export { StoreSidebar } from './Store/StoreSidebar'
 export { StorePendingFields } from './Store/StorePendingFields'
 export { StoreHeader } from './Store/StoreHeader'
 export { CustomerOrdersDrawer } from './Store/CustomerOrdersDrawer'

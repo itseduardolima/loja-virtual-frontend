@@ -6,10 +6,16 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {  Star } from 'lucide-react'
 import { EmptyImageState } from './EmptyImageState'
-import { ProductCardProps } from '@/app/loja/[slug]/produtos/types'
+import type { Product } from '@/types/product'
 import { formatPrice, buildImageUrl } from '@/lib/utils'
 import { Switch } from '@/components/ui/switch'
 import { WishlistButton } from './WishlistButton'
+
+interface ProductCardProps {
+  product: Product
+  onAddToFavorites?: (product: Product) => void
+  onViewDetails?: (product: Product) => void
+}
 
 export function ProductCard({
   product,

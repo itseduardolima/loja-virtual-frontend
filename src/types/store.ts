@@ -116,7 +116,7 @@ export interface StoreCategoriesResponse {
   data: StoreCategory[]
 }
 
-export type CollectionSort = 'relevancia' | 'menor' | 'maior' | 'avaliados'
+export type CollectionSort = 'relevancia' | 'menor' | 'maior' | 'avaliados' | 'nome'
 export type CollectionView = 'grid' | 'list'
 
 export interface StoreProductsParams {
@@ -128,14 +128,12 @@ export interface StoreProductsParams {
   sort_field?: string
   featured?: boolean
   promo?: boolean
-  color?: string
-  size?: string
   max_price?: number
   min_price?: number
   category_id?: number
-  niche_id?: number
+  category_ids?: number[]
   search?: string
-  dynamic_filters?: Record<string, string> | string
+  dynamic_filters?: Record<string, string | string[]> | string
   min_rating?: number
 }
 
@@ -145,13 +143,14 @@ export interface UseStoreProductsReturn {
   isFetchingMore: boolean
   error: string | null
   loadMoreError: string | null
+  /** Page-path retorna meta completo; cursor-path retorna só { total } */
   meta: {
     total: number
-    lastPage: number
-    currentPage: number
-    perPage: number
-    prev: number | null
-    next: number | null
+    lastPage?: number
+    currentPage?: number
+    perPage?: number
+    prev?: number | null
+    next?: number | null
   } | null
   nextCursor: number | null
   refetch: () => void
