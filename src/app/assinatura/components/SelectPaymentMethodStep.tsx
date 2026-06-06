@@ -1,13 +1,14 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { BillingType, PlanCouponValidation } from "@/types/subscription";
+import { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { BillingType, PlanCouponValidation } from '@/types/subscription'
 import {
   Check,
   ChevronLeft,
   ChevronRight,
   CreditCard,
+  Loader2,
   QrCode,
   FileText,
   Package,
@@ -15,66 +16,66 @@ import {
   ShieldCheck,
   Ticket,
   X,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { cn } from '@/lib/utils'
 
 const paymentMethods = [
   {
-    id: "CREDIT_CARD" as BillingType,
-    name: "Cartão de Crédito",
-    description: "Aprovação imediata",
-    icon: <CreditCard className="w-5 h-5" />,
+    id: 'CREDIT_CARD' as BillingType,
+    name: 'Cartão de Crédito',
+    description: 'Aprovação imediata',
+    icon: <CreditCard className="h-5 w-5" />,
   },
   {
-    id: "PIX" as BillingType,
-    name: "PIX",
-    description: "Pagamento instantâneo",
-    icon: <QrCode className="w-5 h-5" />,
+    id: 'PIX' as BillingType,
+    name: 'PIX',
+    description: 'Pagamento instantâneo',
+    icon: <QrCode className="h-5 w-5" />,
   },
   {
-    id: "BOLETO" as BillingType,
-    name: "Boleto Bancário",
-    description: "Vencimento em 3 dias úteis",
-    icon: <FileText className="w-5 h-5" />,
+    id: 'BOLETO' as BillingType,
+    name: 'Boleto Bancário',
+    description: 'Vencimento em 3 dias úteis',
+    icon: <FileText className="h-5 w-5" />,
   },
-];
+]
 
 interface SelectPaymentMethodStepProps {
-  planPrice?: number;
-  planFeatures?: string[];
-  planName?: string;
-  planMaxProducts?: number | null;
-  planBillingCycle?: string;
-  selectedMethod: BillingType | null;
-  documentType: "cpf" | "cnpj" | null;
-  cpf: string;
-  cnpj: string;
-  needsDocument: boolean;
-  canContinue: boolean;
-  isCreatingSubscription: boolean;
-  isFreeCheckout?: boolean;
+  planPrice?: number
+  planFeatures?: string[]
+  planName?: string
+  planMaxProducts?: number | null
+  planBillingCycle?: string
+  selectedMethod: BillingType | null
+  documentType: 'cpf' | 'cnpj' | null
+  cpf: string
+  cnpj: string
+  needsDocument: boolean
+  canContinue: boolean
+  isCreatingSubscription: boolean
+  isFreeCheckout?: boolean
   // Cupom
-  couponInput?: string;
-  appliedCoupon?: PlanCouponValidation | null;
-  isValidatingCoupon?: boolean;
-  onCouponInputChange?: (v: string) => void;
-  onApplyCoupon?: () => void;
-  onRemoveCoupon?: () => void;
-  onSelectMethod: (method: BillingType) => void;
-  onSelectDocumentType: (type: "cpf" | "cnpj") => void;
-  onCpfChange: (value: string) => void;
-  onCnpjChange: (value: string) => void;
-  onDocumentTypeReset: () => void;
-  onCreateSubscription: () => void;
-  onBack: () => void;
+  couponInput?: string
+  appliedCoupon?: PlanCouponValidation | null
+  isValidatingCoupon?: boolean
+  onCouponInputChange?: (v: string) => void
+  onApplyCoupon?: () => void
+  onRemoveCoupon?: () => void
+  onSelectMethod: (method: BillingType) => void
+  onSelectDocumentType: (type: 'cpf' | 'cnpj') => void
+  onCpfChange: (value: string) => void
+  onCnpjChange: (value: string) => void
+  onDocumentTypeReset: () => void
+  onCreateSubscription: () => void
+  onBack: () => void
 }
 
 function durationLabel(c: NonNullable<PlanCouponValidation['coupon']>): string {
-  if (c.duration_type === 'forever') return 'em todas as renovações';
-  if (c.duration_type === 'once') return 'apenas no primeiro pagamento';
-  return `pelos próximos ${c.duration_months} meses`;
+  if (c.duration_type === 'forever') return 'em todas as renovações'
+  if (c.duration_type === 'once') return 'apenas no primeiro pagamento'
+  return `pelos próximos ${c.duration_months} meses`
 }
 
 export function SelectPaymentMethodStep({
@@ -105,28 +106,29 @@ export function SelectPaymentMethodStep({
   onCreateSubscription,
   onBack,
 }: SelectPaymentMethodStepProps) {
-  const [showCoupon, setShowCoupon] = useState<boolean>(!!appliedCoupon?.valid);
+  const [showCoupon, setShowCoupon] = useState<boolean>(!!appliedCoupon?.valid)
 
   // Quando cupom é removido, fecha o painel automaticamente
   useEffect(() => {
-    if (!appliedCoupon?.valid) setShowCoupon(false);
-  }, [appliedCoupon?.valid]);
-  const finalPrice = appliedCoupon?.valid && appliedCoupon.final_price != null
-    ? appliedCoupon.final_price
-    : planPrice;
-  const discountAmount = appliedCoupon?.valid ? (appliedCoupon.discount_amount ?? 0) : 0;
-  const priceStr = finalPrice.toFixed(2).replace(".", ",");
-  const [priceInt, priceDec] = priceStr.split(",");
+    if (!appliedCoupon?.valid) setShowCoupon(false)
+  }, [appliedCoupon?.valid])
+  const finalPrice =
+    appliedCoupon?.valid && appliedCoupon.final_price != null
+      ? appliedCoupon.final_price
+      : planPrice
+  const discountAmount = appliedCoupon?.valid ? (appliedCoupon.discount_amount ?? 0) : 0
+  const priceStr = finalPrice.toFixed(2).replace('.', ',')
+  const [priceInt, priceDec] = priceStr.split(',')
 
   const features =
     planFeatures.length > 0
       ? planFeatures
       : [
-          "Vendas ilimitadas",
-          "Dashboard analítico",
-          "Suporte prioritário 24/7",
-          "Automação inteligente",
-        ];
+          'Vendas ilimitadas',
+          'Dashboard analítico',
+          'Suporte prioritário 24/7',
+          'Automação inteligente',
+        ]
 
   return (
     <motion.div
@@ -136,20 +138,20 @@ export function SelectPaymentMethodStep({
       exit={{ opacity: 0, x: 20 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.15fr] gap-8 lg:gap-12 items-start">
+      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_1.15fr] lg:gap-12">
         {/* ── Left: plan info ── */}
         <div>
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
-            >
+          >
             <button
               type="button"
               onClick={onBack}
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors mb-5"
+              className="mb-5 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-nxi3 transition-colors hover:text-nxi1"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="h-4 w-4" />
               Trocar plano
             </button>
           </motion.div>
@@ -160,12 +162,11 @@ export function SelectPaymentMethodStep({
             transition={{ delay: 0.1 }}
             className="mb-6"
           >
-            <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-3">
-              Assinar Plano
+            <h1 className="mb-3 text-[32px] font-extrabold leading-tight tracking-[-0.02em] text-nxi1 lg:text-[38px]">
+              Assinar plano
             </h1>
-            <p className="text-gray-500 text-base max-w-xs leading-relaxed">
-              Escolha o método de pagamento para começar sua jornada como
-              vendedor
+            <p className="max-w-xs text-[15px] leading-relaxed text-nxi2">
+              Escolha o método de pagamento para começar sua jornada como vendedor
             </p>
           </motion.div>
 
@@ -174,76 +175,75 @@ export function SelectPaymentMethodStep({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="bg-gray-900 rounded-2xl border border-gray-900 p-6 text-white"
+            className="relative overflow-hidden rounded-2xl bg-coal p-6 text-white"
           >
+            <div
+              aria-hidden
+              className="hero-glow pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full opacity-30 blur-3xl"
+            />
             {/* Plan name */}
             {planName && (
-              <div className="inline-flex items-center gap-2 text-xs font-semibold mb-4 px-2.5 py-1 rounded-full bg-white/15 text-white">
+              <div className="relative mb-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-2.5 py-1 text-[11.5px] font-semibold text-white">
                 {planName}
               </div>
             )}
 
             {/* Price */}
-            <div className="mb-6">
+            <div className="relative mb-6">
               {appliedCoupon?.valid && appliedCoupon.original_price != null && (
-                <div className="text-sm text-gray-400 line-through mb-1">
+                <div className="mb-1 text-[13.5px] text-white/45 line-through">
                   De R$ {appliedCoupon.original_price.toFixed(2).replace('.', ',')}
                 </div>
               )}
               <div className="flex items-start gap-1">
-                <span className="text-gray-300 text-sm font-medium mt-2.5">
-                  R$
-                </span>
-                <span className="text-6xl font-bold text-white leading-none tracking-tight">
+                <span className="mt-2.5 text-[13.5px] font-medium text-white/70">R$</span>
+                <span className="text-6xl font-extrabold leading-none tracking-tight text-white">
                   {priceInt}
                 </span>
-                <div className="flex flex-col mt-1.5 ml-0.5">
-                  <span className="text-xl font-bold text-white leading-none">
+                <div className="ml-0.5 mt-1.5 flex flex-col">
+                  <span className="text-xl font-extrabold leading-none text-white">
                     ,{priceDec}
                   </span>
-                  <span className="text-xs text-gray-400 mt-1">
+                  <span className="mt-1 text-[11.5px] text-white/55">
                     por {planBillingCycle === 'yearly' ? 'ano' : 'mês'}
                   </span>
                 </div>
               </div>
               {appliedCoupon?.valid && appliedCoupon.coupon && (
-                <div className="mt-3 inline-flex items-center gap-2 bg-green-500/15 text-green-300 text-xs font-medium px-2.5 py-1 rounded-full">
+                <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-nxs/25 px-2.5 py-1 text-[11.5px] font-medium text-[#9fdebb]">
                   <Ticket className="h-3 w-3" />
-                  Cupom {appliedCoupon.coupon.code}: -R$ {discountAmount.toFixed(2).replace('.', ',')}{' '}
+                  Cupom {appliedCoupon.coupon.code}: -R${' '}
+                  {discountAmount.toFixed(2).replace('.', ',')}{' '}
                   {durationLabel(appliedCoupon.coupon)}
                 </div>
               )}
             </div>
 
             {/* Features */}
-            <div className="space-y-3 mb-6">
+            <div className="relative mb-6 space-y-3">
               {features.map((feature, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/[0.12] ring-1 ring-inset ring-white/15">
+                    <Check className="h-3 w-3 text-white" strokeWidth={3} />
                   </div>
-                  <span className="text-sm font-medium text-gray-100">
-                    {feature}
-                  </span>
+                  <span className="text-[13.5px] font-medium text-white/85">{feature}</span>
                 </div>
               ))}
             </div>
 
             {/* Stats row */}
-            <div className="border-t border-white/10 pt-5">
+            <div className="relative border-t border-white/10 pt-5">
               <div className="flex items-center justify-around">
-                <div className="flex flex-col items-center gap-1.5 text-gray-400">
-                  <Package className="w-5 h-5" />
-                  <span className="text-xs">
-                    {planMaxProducts
-                      ? `${planMaxProducts} produtos`
-                      : "Produtos ilimitados"}
+                <div className="flex flex-col items-center gap-1.5 text-white/55">
+                  <Package className="h-5 w-5" />
+                  <span className="text-[11.5px]">
+                    {planMaxProducts ? `${planMaxProducts} produtos` : 'Produtos ilimitados'}
                   </span>
                 </div>
-                <div className="flex flex-col items-center gap-1.5 text-gray-400">
-                  <RefreshCw className="w-5 h-5" />
-                  <span className="text-xs">
-                    {planBillingCycle === "yearly" ? "Renovação anual" : "Renovação mensal"}
+                <div className="flex flex-col items-center gap-1.5 text-white/55">
+                  <RefreshCw className="h-5 w-5" />
+                  <span className="text-[11.5px]">
+                    {planBillingCycle === 'yearly' ? 'Renovação anual' : 'Renovação mensal'}
                   </span>
                 </div>
               </div>
@@ -257,34 +257,36 @@ export function SelectPaymentMethodStep({
                 <button
                   type="button"
                   onClick={() => setShowCoupon(true)}
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                  className="inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-nxi2 transition-colors hover:text-nxp"
                 >
                   <Ticket className="h-3.5 w-3.5" />
                   Tenho um cupom de desconto
                 </button>
               ) : appliedCoupon?.valid ? (
-                <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-xl">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Ticket className="h-4 w-4 text-green-600 shrink-0" />
-                    <span className="text-sm font-medium text-green-900 truncate">
-                      Cupom <span className="font-mono">{appliedCoupon.coupon?.code}</span> aplicado
+                <div className="flex items-center justify-between rounded-xl border border-nxs/25 bg-nxs/[0.06] p-3">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <Ticket className="h-4 w-4 shrink-0 text-nxs" />
+                    <span className="truncate text-[13.5px] font-medium text-nxi1">
+                      Cupom{' '}
+                      <span className="font-mono font-bold">{appliedCoupon.coupon?.code}</span>{' '}
+                      aplicado
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => {
-                      onRemoveCoupon?.();
-                      setShowCoupon(false);
+                      onRemoveCoupon?.()
+                      setShowCoupon(false)
                     }}
-                    className="text-xs text-green-700 hover:text-green-900 font-medium inline-flex items-center gap-1"
+                    className="inline-flex items-center gap-1 text-[12px] font-semibold text-nxs transition-colors hover:text-nxi1"
                   >
                     <X className="h-3 w-3" />
                     Remover
                   </button>
                 </div>
               ) : (
-                <div className="p-3 border border-gray-200 rounded-xl bg-white">
-                  <Label className="text-xs font-medium text-gray-700 mb-2 block">
+                <div className="rounded-xl border border-nxborder bg-white p-3">
+                  <Label className="mb-2 block text-[12px] font-bold text-nxi2">
                     Código do cupom
                   </Label>
                   <div className="flex gap-2">
@@ -292,30 +294,29 @@ export function SelectPaymentMethodStep({
                       value={couponInput}
                       onChange={(e) => onCouponInputChange?.(e.target.value.toUpperCase())}
                       placeholder="EX: BLACK50"
-                      className="font-mono uppercase h-9"
+                      className="h-9 rounded-lg border-nxborder font-mono uppercase focus-visible:border-nxp focus-visible:ring-nxp/15"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
-                          e.preventDefault();
-                          onApplyCoupon();
+                          e.preventDefault()
+                          onApplyCoupon()
                         }
                       }}
                     />
-                    <Button
+                    <button
                       type="button"
                       onClick={onApplyCoupon}
                       disabled={!couponInput.trim() || isValidatingCoupon}
-                      className="h-9"
+                      className="h-9 shrink-0 rounded-lg bg-nxp px-4 text-[13px] font-bold text-white transition-colors hover:bg-nxp/90 disabled:opacity-50"
                     >
-                      {isValidatingCoupon ? '...' : 'Aplicar'}
-                    </Button>
-                    <Button
+                      {isValidatingCoupon ? '…' : 'Aplicar'}
+                    </button>
+                    <button
                       type="button"
-                      variant="ghost"
                       onClick={() => setShowCoupon(false)}
-                      className="h-9"
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-nxi3 transition-colors hover:bg-nxbg hover:text-nxi1"
                     >
                       <X className="h-4 w-4" />
-                    </Button>
+                    </button>
                   </div>
                 </div>
               )}
@@ -327,10 +328,10 @@ export function SelectPaymentMethodStep({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.35 }}
-            className="flex items-center gap-2 mt-4 text-gray-400"
+            className="mt-4 flex items-center gap-2 text-nxi3"
           >
-            <ShieldCheck className="w-4 h-4" />
-            <span className="text-xs">Pagamento seguro via Asaas</span>
+            <ShieldCheck className="h-4 w-4" />
+            <span className="text-[12px]">Pagamento seguro via Asaas</span>
           </motion.div>
         </div>
 
@@ -339,30 +340,28 @@ export function SelectPaymentMethodStep({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white rounded-2xl border border-gray-200 p-6"
+          className="rounded-2xl border border-nxborder bg-white p-6"
         >
           <div className="mb-5">
-            <h2 className="text-xl font-bold text-gray-900 mb-1">
-              {isFreeCheckout ? "Sua assinatura será gratuita" : "Escolha o método de pagamento"}
+            <h2 className="mb-1 text-[19px] font-extrabold tracking-tight text-nxi1">
+              {isFreeCheckout ? 'Sua assinatura será gratuita' : 'Escolha o método de pagamento'}
             </h2>
-            <p className="text-sm text-gray-400">
+            <p className="text-[13.5px] text-nxi3">
               {isFreeCheckout
-                ? "Cupom aplicado zerou o valor desta assinatura. Confirme para ativar."
-                : "Selecione a forma de pagamento mais conveniente para você"}
+                ? 'Cupom aplicado zerou o valor desta assinatura. Confirme para ativar.'
+                : 'Selecione a forma de pagamento mais conveniente para você'}
             </p>
           </div>
 
           {isFreeCheckout && (
-            <div className="mb-5 p-4 bg-green-50 border border-green-200 rounded-xl">
+            <div className="mb-5 rounded-xl border border-nxs/25 bg-nxs/[0.06] p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                  <Check className="h-5 w-5 text-green-600" strokeWidth={3} />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-nxs/15 text-nxs">
+                  <Check className="h-5 w-5" strokeWidth={3} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-green-900">
-                    R$ 0,00 — sem cobrança
-                  </p>
-                  <p className="text-xs text-green-700">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[13.5px] font-bold text-nxi1">R$ 0,00 — sem cobrança</p>
+                  <p className="text-[12px] text-nxi2">
                     Você não será cobrado enquanto o cupom estiver ativo. Sem cartão necessário.
                   </p>
                 </div>
@@ -372,43 +371,40 @@ export function SelectPaymentMethodStep({
 
           {/* Payment method rows */}
           {!isFreeCheckout && (
-          <div className="space-y-2 mb-5">
-            {paymentMethods.map((method) => (
-              <button
-                key={method.id}
-                type="button"
-                onClick={() => onSelectMethod(method.id)}
-                className={`flex items-center gap-4 w-full p-4 rounded-xl border transition-all text-left ${
-                  selectedMethod === method.id
-                    ? "border-gray-900 bg-gray-50"
-                    : "border-gray-200 hover:border-gray-300 bg-white"
-                }`}
-              >
-                <div
-                  className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+            <div className="mb-5 space-y-2">
+              {paymentMethods.map((method) => (
+                <button
+                  key={method.id}
+                  type="button"
+                  onClick={() => onSelectMethod(method.id)}
+                  className={cn(
+                    'flex w-full items-center gap-4 rounded-xl border p-4 text-left transition-all',
                     selectedMethod === method.id
-                      ? "bg-gray-900 text-white"
-                      : "bg-gray-100 text-gray-500"
-                  }`}
+                      ? 'border-nxp bg-nxp/[0.04]'
+                      : 'border-nxborder bg-white hover:border-nxi3',
+                  )}
                 >
-                  {method.icon}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900 text-sm">
-                    {method.name}
-                  </p>
-                  <p className="text-xs text-gray-400">{method.description}</p>
-                </div>
-                <ChevronRight
-                  className={`w-4 h-4 flex-shrink-0 transition-colors ${
-                    selectedMethod === method.id
-                      ? "text-gray-900"
-                      : "text-gray-300"
-                  }`}
-                />
-              </button>
-            ))}
-          </div>
+                  <div
+                    className={cn(
+                      'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors',
+                      selectedMethod === method.id ? 'bg-nxp text-white' : 'bg-nxbg text-nxi3',
+                    )}
+                  >
+                    {method.icon}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13.5px] font-bold text-nxi1">{method.name}</p>
+                    <p className="text-[12px] text-nxi3">{method.description}</p>
+                  </div>
+                  <ChevronRight
+                    className={cn(
+                      'h-4 w-4 shrink-0 transition-colors',
+                      selectedMethod === method.id ? 'text-nxp' : 'text-nxi3/50',
+                    )}
+                  />
+                </button>
+              ))}
+            </div>
           )}
 
           {/* Document input for PIX / BOLETO */}
@@ -416,29 +412,27 @@ export function SelectPaymentMethodStep({
             {needsDocument && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
+                animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.25 }}
                 className="mb-5 overflow-hidden"
               >
-                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                  <p className="text-sm font-medium text-gray-700 mb-3">
-                    Documento para pagamento
-                  </p>
+                <div className="rounded-xl border border-nxborder bg-nxbg p-4">
+                  <p className="mb-3 text-[13px] font-bold text-nxi2">Documento para pagamento</p>
 
                   {!documentType ? (
                     <div className="flex gap-2">
                       <button
                         type="button"
-                        onClick={() => onSelectDocumentType("cpf")}
-                        className="flex-1 h-9 rounded-lg border-2 border-gray-200 hover:border-gray-900 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors bg-white"
+                        onClick={() => onSelectDocumentType('cpf')}
+                        className="h-9 flex-1 rounded-lg border border-nxborder bg-white text-[13px] font-semibold text-nxi2 transition-colors hover:border-nxp hover:text-nxp"
                       >
                         Usar CPF
                       </button>
                       <button
                         type="button"
-                        onClick={() => onSelectDocumentType("cnpj")}
-                        className="flex-1 h-9 rounded-lg border-2 border-gray-200 hover:border-gray-900 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors bg-white"
+                        onClick={() => onSelectDocumentType('cnpj')}
+                        className="h-9 flex-1 rounded-lg border border-nxborder bg-white text-[13px] font-semibold text-nxi2 transition-colors hover:border-nxp hover:text-nxp"
                       >
                         Usar CNPJ
                       </button>
@@ -446,32 +440,30 @@ export function SelectPaymentMethodStep({
                   ) : (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label className="text-xs font-medium text-gray-600">
-                          {documentType === "cpf" ? "CPF" : "CNPJ"}
+                        <Label className="text-[12px] font-bold text-nxi2">
+                          {documentType === 'cpf' ? 'CPF' : 'CNPJ'}
                         </Label>
                         <button
                           type="button"
                           onClick={onDocumentTypeReset}
-                          className="text-xs text-gray-400 hover:text-gray-700 transition-colors"
+                          className="text-[12px] text-nxi3 transition-colors hover:text-nxi1"
                         >
                           Trocar documento
                         </button>
                       </div>
                       <Input
                         type="text"
-                        value={documentType === "cpf" ? cpf : cnpj}
+                        value={documentType === 'cpf' ? cpf : cnpj}
                         onChange={(e) =>
-                          documentType === "cpf"
+                          documentType === 'cpf'
                             ? onCpfChange(e.target.value)
                             : onCnpjChange(e.target.value)
                         }
                         placeholder={
-                          documentType === "cpf"
-                            ? "000.000.000-00"
-                            : "00.000.000/0000-00"
+                          documentType === 'cpf' ? '000.000.000-00' : '00.000.000/0000-00'
                         }
-                        maxLength={documentType === "cpf" ? 14 : 18}
-                        className="h-9 text-sm border-gray-200"
+                        maxLength={documentType === 'cpf' ? 14 : 18}
+                        className="h-9 rounded-lg border-nxborder bg-white text-sm focus-visible:border-nxp focus-visible:ring-nxp/15"
                       />
                     </div>
                   )}
@@ -481,45 +473,37 @@ export function SelectPaymentMethodStep({
           </AnimatePresence>
 
           {/* Continue button */}
-          <Button
+          <button
+            type="button"
             onClick={onCreateSubscription}
             disabled={!canContinue}
-            className="w-full h-12 text-base font-medium"
+            className="flex h-12 w-full items-center justify-center gap-1.5 rounded-xl bg-nxp text-[14.5px] font-bold text-white shadow-[0_1px_2px_hsl(237_49%_33%/0.3)] transition-[transform,background-color] hover:bg-nxp/90 active:scale-[0.99] disabled:opacity-50"
           >
             {isCreatingSubscription ? (
-              "Processando..."
+              <>
+                <Loader2 size={17} className="animate-spin" /> Processando…
+              </>
             ) : isFreeCheckout ? (
               <>
                 Confirmar assinatura gratuita
-                <Check className="ml-1 w-4 h-4" strokeWidth={3} />
+                <Check className="h-4 w-4" strokeWidth={3} />
               </>
             ) : (
               <>
                 Continuar para pagamento
-                <ChevronRight className="ml-1 w-4 h-4" />
+                <ChevronRight className="h-4 w-4" />
               </>
             )}
-          </Button>
+          </button>
 
           {/* Terms */}
-          <p className="text-center text-xs text-gray-400 mt-4 leading-relaxed">
-            Ao continuar, você concorda com nossos{" "}
-            <a
-              href="#"
-              className="underline hover:text-gray-600 transition-colors"
-            >
-              termos de serviço
-            </a>{" "}
-            e{" "}
-            <a
-              href="#"
-              className="underline hover:text-gray-600 transition-colors"
-            >
-              política de privacidade
-            </a>
+          <p className="mt-4 text-center text-[12px] leading-relaxed text-nxi3">
+            Ao continuar, você concorda com nossos{' '}
+            <span className="font-semibold text-nxi2">termos de serviço</span> e{' '}
+            <span className="font-semibold text-nxi2">política de privacidade</span>
           </p>
         </motion.div>
       </div>
     </motion.div>
-  );
+  )
 }

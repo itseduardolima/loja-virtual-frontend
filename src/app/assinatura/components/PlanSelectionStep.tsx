@@ -1,43 +1,45 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
-import { Check, X, Zap, Flame, Star } from "lucide-react";
-import { SubscriptionPlan, BillingCycle } from "@/types/subscription";
-import { derivePlanFeaturesComparison, computeYearlySavings } from "@/lib/planUtils";
-import { cn } from "@/lib/utils";
+import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { motion } from 'framer-motion'
+import { Check, X, Zap, Flame, Star } from 'lucide-react'
+import { SubscriptionPlan, BillingCycle } from '@/types/subscription'
+import { derivePlanFeaturesComparison, computeYearlySavings } from '@/lib/planUtils'
+import { cn } from '@/lib/utils'
 
 interface PlanSelectionStepProps {
-  plans: SubscriptionPlan[];
-  onSelectPlan: (plan: SubscriptionPlan, cycle: BillingCycle) => void;
-  onStartTrial?: (plan: SubscriptionPlan, cycle: BillingCycle) => void;
+  plans: SubscriptionPlan[]
+  onSelectPlan: (plan: SubscriptionPlan, cycle: BillingCycle) => void
+  onStartTrial?: (plan: SubscriptionPlan, cycle: BillingCycle) => void
 }
 
 const PLAN_ICONS: Record<string, React.ReactNode> = {
-  "plano-basico": <Zap className="w-4 h-4" />,
-  "plano-pro": <Flame className="w-4 h-4" />,
-  "plano-max": <Star className="w-4 h-4" />,
-};
-
-function parsePrice(value: string | number | null): number {
-  if (value == null) return 0;
-  return typeof value === "string" ? parseFloat(value) : value;
+  'plano-basico': <Zap className="h-4 w-4" />,
+  'plano-pro': <Flame className="h-4 w-4" />,
+  'plano-max': <Star className="h-4 w-4" />,
 }
 
-const FEATURED_SLUG = "plano-pro";
+function parsePrice(value: string | number | null): number {
+  if (value == null) return 0
+  return typeof value === 'string' ? parseFloat(value) : value
+}
+
+const FEATURED_SLUG = 'plano-pro'
 
 export function PlanSelectionStep({ plans, onSelectPlan, onStartTrial }: PlanSelectionStepProps) {
-  const searchParams = useSearchParams();
-  const initialSlug = searchParams.get("plano") ?? FEATURED_SLUG;
-  const initialCycle = (searchParams.get("cycle") === "yearly" ? "yearly" : "monthly") as BillingCycle;
-  const [selectedSlug, setSelectedSlug] = useState<string>(initialSlug);
-  const [cycle, setCycle] = useState<BillingCycle>(initialCycle);
+  const searchParams = useSearchParams()
+  const initialSlug = searchParams.get('plano') ?? FEATURED_SLUG
+  const initialCycle = (
+    searchParams.get('cycle') === 'yearly' ? 'yearly' : 'monthly'
+  ) as BillingCycle
+  const [selectedSlug, setSelectedSlug] = useState<string>(initialSlug)
+  const [cycle, setCycle] = useState<BillingCycle>(initialCycle)
 
   const maxYearlySavings = Math.max(
     0,
     ...plans.map((p) => computeYearlySavings(p.price_monthly, p.price_yearly)),
-  );
+  )
 
   return (
     <motion.div
@@ -47,39 +49,39 @@ export function PlanSelectionStep({ plans, onSelectPlan, onStartTrial }: PlanSel
       exit={{ opacity: 0, x: 20 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="text-center mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
+      <div className="mb-8 text-center">
+        <h1 className="mb-3 text-[28px] font-extrabold tracking-[-0.02em] text-nxi1 sm:text-[34px]">
           Escolha seu plano
         </h1>
-        <p className="text-gray-500 text-base max-w-xl mx-auto">
+        <p className="mx-auto max-w-xl text-[15px] text-nxi2">
           Compare os planos e escolha o que melhor se encaixa no seu negócio
         </p>
       </div>
 
       {/* Toggle Mensal/Anual */}
-      <div className="flex justify-center mb-8">
-        <div className="inline-flex items-center bg-gray-100 rounded-full p-1 border border-gray-200">
+      <div className="mb-8 flex justify-center">
+        <div className="inline-flex items-center rounded-full border border-nxborder bg-nxbg p-1">
           <button
             type="button"
-            onClick={() => setCycle("monthly")}
+            onClick={() => setCycle('monthly')}
             className={cn(
-              "px-5 py-2 rounded-full text-sm font-semibold transition-all",
-              cycle === "monthly" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700",
+              'rounded-full px-5 py-2 text-[13.5px] font-semibold transition-all',
+              cycle === 'monthly' ? 'bg-white text-nxi1 shadow-sm' : 'text-nxi3 hover:text-nxi1',
             )}
           >
             Mensal
           </button>
           <button
             type="button"
-            onClick={() => setCycle("yearly")}
+            onClick={() => setCycle('yearly')}
             className={cn(
-              "px-5 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-1.5",
-              cycle === "yearly" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700",
+              'flex items-center gap-1.5 rounded-full px-5 py-2 text-[13.5px] font-semibold transition-all',
+              cycle === 'yearly' ? 'bg-white text-nxi1 shadow-sm' : 'text-nxi3 hover:text-nxi1',
             )}
           >
             Anual
             {maxYearlySavings > 0 && (
-              <span className="inline-flex items-center bg-green-100 text-green-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+              <span className="inline-flex items-center rounded-full bg-nxs/10 px-1.5 py-0.5 text-[10px] font-bold text-nxs">
                 -{maxYearlySavings}%
               </span>
             )}
@@ -87,17 +89,17 @@ export function PlanSelectionStep({ plans, onSelectPlan, onStartTrial }: PlanSel
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto">
+      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-5 md:grid-cols-3">
         {plans.map((plan, i) => {
-          const rawPrice = cycle === "yearly" ? plan.price_yearly : plan.price_monthly;
-          const price = parsePrice(rawPrice);
-          const priceStr = price.toFixed(2).replace(".", ",");
-          const [priceInt, priceDec] = priceStr.split(",");
-          const features = derivePlanFeaturesComparison(plan);
-          const isFeatured = plan.slug === FEATURED_SLUG;
-          const isSelected = plan.slug === selectedSlug;
-          const yearlyUnavailable = cycle === "yearly" && plan.price_yearly == null;
-          const icon = PLAN_ICONS[plan.slug] ?? <Zap className="w-4 h-4" />;
+          const rawPrice = cycle === 'yearly' ? plan.price_yearly : plan.price_monthly
+          const price = parsePrice(rawPrice)
+          const priceStr = price.toFixed(2).replace('.', ',')
+          const [priceInt, priceDec] = priceStr.split(',')
+          const features = derivePlanFeaturesComparison(plan)
+          const isFeatured = plan.slug === FEATURED_SLUG
+          const isSelected = plan.slug === selectedSlug
+          const yearlyUnavailable = cycle === 'yearly' && plan.price_yearly == null
+          const icon = PLAN_ICONS[plan.slug] ?? <Zap className="h-4 w-4" />
 
           return (
             <motion.div
@@ -107,18 +109,18 @@ export function PlanSelectionStep({ plans, onSelectPlan, onStartTrial }: PlanSel
               transition={{ delay: 0.05 + i * 0.07 }}
               onClick={() => !yearlyUnavailable && setSelectedSlug(plan.slug)}
               className={cn(
-                "relative flex flex-col rounded-2xl border p-6 transition-all",
-                yearlyUnavailable && "opacity-50 cursor-not-allowed",
-                !yearlyUnavailable && "cursor-pointer",
+                'relative flex flex-col rounded-2xl border p-6 transition-all',
+                yearlyUnavailable && 'cursor-not-allowed opacity-50',
+                !yearlyUnavailable && 'cursor-pointer',
                 isSelected && !yearlyUnavailable
-                  ? "border-gray-900 bg-gray-900 text-white shadow-xl"
-                  : "border-gray-200 bg-white text-gray-900 hover:border-gray-300",
+                  ? 'border-nxp bg-nxp text-white shadow-xl shadow-nxp/20'
+                  : 'border-nxborder bg-white text-nxi1 hover:border-nxi3',
               )}
             >
               {isFeatured && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center gap-1 bg-white text-gray-900 border border-gray-200 text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
-                    <Flame className="w-3 h-3 text-orange-500" />
+                  <span className="inline-flex items-center gap-1 rounded-full border border-nxborder bg-white px-3 py-1 text-[11.5px] font-semibold text-nxi1 shadow-sm">
+                    <Flame className="h-3 w-3 text-nxa" />
                     Mais popular
                   </span>
                 </div>
@@ -126,57 +128,83 @@ export function PlanSelectionStep({ plans, onSelectPlan, onStartTrial }: PlanSel
 
               {/* Header */}
               <div className="mb-5">
-                <div className={`inline-flex items-center gap-2 text-xs font-semibold mb-3 px-2.5 py-1 rounded-full ${
-                  isSelected ? "bg-white/15 text-white" : "bg-gray-100 text-gray-600"
-                }`}>
+                <div
+                  className={cn(
+                    'mb-3 inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-[11.5px] font-semibold',
+                    isSelected ? 'bg-white/15 text-white' : 'bg-nxbg text-nxi2',
+                  )}
+                >
                   {icon}
                   {plan.name}
                 </div>
 
                 {yearlyUnavailable ? (
-                  <p className="text-sm text-gray-500 italic mt-2">Sem cobrança anual</p>
+                  <p className="mt-2 text-[13.5px] italic text-nxi3">Sem cobrança anual</p>
                 ) : (
                   <div className="flex items-start gap-0.5">
-                    <span className={`text-sm font-medium mt-1.5 ${isSelected ? "text-gray-300" : "text-gray-500"}`}>
+                    <span
+                      className={cn(
+                        'mt-1.5 text-[13.5px] font-medium',
+                        isSelected ? 'text-white/70' : 'text-nxi3',
+                      )}
+                    >
                       R$
                     </span>
-                    <span className="text-4xl font-bold leading-none tracking-tight">
+                    <span className="text-4xl font-extrabold leading-none tracking-tight">
                       {priceInt}
                     </span>
-                    <div className="flex flex-col mt-1 ml-0.5">
-                      <span className="text-lg font-bold leading-none">,{priceDec}</span>
-                      <span className={`text-xs mt-1 ${isSelected ? "text-gray-400" : "text-gray-400"}`}>
-                        /{cycle === "yearly" ? "ano" : "mês"}
+                    <div className="ml-0.5 mt-1 flex flex-col">
+                      <span className="text-lg font-extrabold leading-none">,{priceDec}</span>
+                      <span
+                        className={cn(
+                          'mt-1 text-[11.5px]',
+                          isSelected ? 'text-white/60' : 'text-nxi3',
+                        )}
+                      >
+                        /{cycle === 'yearly' ? 'ano' : 'mês'}
                       </span>
                     </div>
                   </div>
                 )}
 
-                <p className={`text-xs mt-2 leading-relaxed ${isSelected ? "text-gray-400" : "text-gray-500"}`}>
+                <p
+                  className={cn(
+                    'mt-2 text-[12px] leading-relaxed',
+                    isSelected ? 'text-white/60' : 'text-nxi3',
+                  )}
+                >
                   {plan.description}
                 </p>
               </div>
 
               {/* Features */}
-              <div className="space-y-2.5 mb-6 flex-1">
+              <div className="mb-6 flex-1 space-y-2.5">
                 {features.map((feat, j) => (
                   <div key={j} className="flex items-center gap-2.5">
                     {feat.included ? (
-                      <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        isSelected ? "bg-white/20" : "bg-gray-900"
-                      }`}>
-                        <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
+                      <div
+                        className={cn(
+                          'flex h-4 w-4 shrink-0 items-center justify-center rounded-full',
+                          isSelected ? 'bg-white/20' : 'bg-nxp',
+                        )}
+                      >
+                        <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
                       </div>
                     ) : (
-                      <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 bg-gray-200">
-                        <X className="w-2.5 h-2.5 text-gray-400" strokeWidth={3} />
+                      <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-nxbg">
+                        <X className="h-2.5 w-2.5 text-nxi3" strokeWidth={3} />
                       </div>
                     )}
-                    <span className={`text-sm ${
-                      feat.included
-                        ? isSelected ? "text-gray-100" : "text-gray-700"
-                        : "text-gray-400 line-through"
-                    }`}>
+                    <span
+                      className={cn(
+                        'text-[13.5px]',
+                        feat.included
+                          ? isSelected
+                            ? 'text-white/90'
+                            : 'text-nxi2'
+                          : 'text-nxi3 line-through',
+                      )}
+                    >
                       {feat.label}
                     </span>
                   </div>
@@ -184,18 +212,21 @@ export function PlanSelectionStep({ plans, onSelectPlan, onStartTrial }: PlanSel
               </div>
 
               {/* CTA — único: trial OU paid */}
-              {plan.trial_days != null && plan.trial_days > 0 && onStartTrial && !yearlyUnavailable ? (
+              {plan.trial_days != null &&
+              plan.trial_days > 0 &&
+              onStartTrial &&
+              !yearlyUnavailable ? (
                 <button
                   type="button"
                   onClick={(e) => {
-                    e.stopPropagation();
-                    onStartTrial(plan, cycle);
+                    e.stopPropagation()
+                    onStartTrial(plan, cycle)
                   }}
                   className={cn(
-                    "w-full h-11 rounded-xl font-semibold text-sm transition-all",
+                    'h-11 w-full rounded-xl text-[13.5px] font-bold transition-all active:scale-[0.99]',
                     isSelected
-                      ? "bg-white text-gray-900 hover:bg-gray-100"
-                      : "bg-gray-900 text-white hover:bg-gray-800",
+                      ? 'bg-white text-nxp hover:bg-white/90'
+                      : 'bg-nxp text-white hover:bg-nxp/90',
                   )}
                 >
                   Começar grátis por {plan.trial_days} dias
@@ -205,26 +236,26 @@ export function PlanSelectionStep({ plans, onSelectPlan, onStartTrial }: PlanSel
                   type="button"
                   disabled={yearlyUnavailable}
                   onClick={(e) => {
-                    e.stopPropagation();
-                    if (yearlyUnavailable) return;
-                    onSelectPlan(plan, cycle);
+                    e.stopPropagation()
+                    if (yearlyUnavailable) return
+                    onSelectPlan(plan, cycle)
                   }}
                   className={cn(
-                    "w-full h-11 rounded-xl font-semibold text-sm transition-all",
-                    yearlyUnavailable && "bg-gray-200 text-gray-400 cursor-not-allowed",
-                    !yearlyUnavailable && (isSelected
-                      ? "bg-white text-gray-900 hover:bg-gray-100"
-                      : "bg-gray-900 text-white hover:bg-gray-800"),
+                    'h-11 w-full rounded-xl text-[13.5px] font-bold transition-all active:scale-[0.99]',
+                    yearlyUnavailable && 'cursor-not-allowed bg-nxbg text-nxi3',
+                    !yearlyUnavailable &&
+                      (isSelected
+                        ? 'bg-white text-nxp hover:bg-white/90'
+                        : 'bg-nxp text-white hover:bg-nxp/90'),
                   )}
                 >
-                  {yearlyUnavailable ? "Indisponível" : `Escolher ${plan.name}`}
+                  {yearlyUnavailable ? 'Indisponível' : `Escolher ${plan.name}`}
                 </button>
               )}
             </motion.div>
-          );
+          )
         })}
       </div>
-
     </motion.div>
-  );
+  )
 }
