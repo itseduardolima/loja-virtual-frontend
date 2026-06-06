@@ -132,6 +132,7 @@ export interface StoreProductsParams {
   min_price?: number
   category_id?: number
   category_ids?: number[]
+  niche_id?: number
   search?: string
   dynamic_filters?: Record<string, string | string[]> | string
   min_rating?: number

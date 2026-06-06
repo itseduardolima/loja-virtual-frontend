@@ -29,6 +29,7 @@ const buildQuery = (p: StoreProductsParams, cursorOverride?: number): URLSearchP
   if (p.category_id) q.append('category_id', p.category_id.toString())
   if (p.category_ids && p.category_ids.length > 0)
     q.append('category_ids', p.category_ids.join(','))
+  if (p.niche_id) q.append('niche_id', p.niche_id.toString())
   if (p.search) q.append('search', p.search)
   if (p.min_rating) q.append('min_rating', p.min_rating.toString())
   if (p.dynamic_filters) {

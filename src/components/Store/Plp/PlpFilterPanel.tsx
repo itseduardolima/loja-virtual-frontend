@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils'
 import { getColorHex } from '@/schemas'
-import { colorLuma } from '@/components/ProductForm'
+import { colorLuma, getNicheIcon } from '@/components/ProductForm'
 import { formatBRL } from '@/lib/storefront'
 import { Stars } from '../Product'
 import { FilterGroup } from './FilterGroup'
@@ -12,11 +12,15 @@ import type { PlpFilterPanelProps } from './types'
 /** Corpo completo dos filtros — compartilhado entre rail (desktop) e drawer (mobile) */
 export function PlpFilterPanel({
   filters,
+  niches,
   categories,
   colorFacet,
   sizeFacet,
+  colorLabel,
+  sizeLabel,
   dynFacets,
   priceMax,
+  onToggleNiche,
   onToggleCategory,
   onToggleColor,
   onToggleSize,
@@ -30,6 +34,34 @@ export function PlpFilterPanel({
 
   return (
     <div>
+      {/* Tipo (nicho) — só com 2+ nichos; com 1, filtrar é inócuo */}
+      {niches.length > 1 && (
+        <FilterGroup title="Tipo" count={filters.nicheId ? 1 : 0}>
+          <div className="flex flex-wrap gap-1.5">
+            {niches.map((n) => {
+              const on = filters.nicheId === n.id
+              const Icon = getNicheIcon(n.slug)
+              return (
+                <button
+                  key={n.id}
+                  type="button"
+                  onClick={() => onToggleNiche(n.id)}
+                  className={cn(
+                    'flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12.5px] font-semibold transition-colors',
+                    on
+                      ? 'border-nxp bg-nxp/[0.08] text-nxp'
+                      : 'border-nxborder text-nxi2 hover:border-nxi3',
+                  )}
+                >
+                  <Icon size={13} />
+                  {n.name}
+                </button>
+              )
+            })}
+          </div>
+        </FilterGroup>
+      )}
+
       {/* Categoria */}
       <FilterGroup title="Categoria" count={filters.categoryIds.length}>
         <div className="flex flex-col">
@@ -66,7 +98,7 @@ export function PlpFilterPanel({
 
       {/* Cor (dimensão de variante) */}
       {colorFacet.length > 0 && (
-        <FilterGroup title="Cor" count={filters.colors.length}>
+        <FilterGroup title={colorLabel ?? 'Cor'} count={filters.colors.length}>
           <div className="grid grid-cols-2 gap-1.5">
             {colorFacet.map((c) => {
               const on = filters.colors.includes(c)
@@ -102,7 +134,7 @@ export function PlpFilterPanel({
 
       {/* Tamanho (dimensão de variante) */}
       {sizeFacet.length > 0 && (
-        <FilterGroup title="Tamanho" count={filters.sizes.length}>
+        <FilterGroup title={sizeLabel ?? 'Tamanho'} count={filters.sizes.length}>
           <div className="flex flex-wrap gap-1.5">
             {sizeFacet.map((s) => {
               const on = filters.sizes.includes(s)
