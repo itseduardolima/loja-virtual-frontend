@@ -1,167 +1,129 @@
 'use client'
 
-import { Suspense, useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Eye, EyeOff, Check, Loader2 } from 'lucide-react'
+import { Suspense } from 'react'
 import Link from 'next/link'
-import { GoogleIcon } from '@/public/assets/icons/GoogleIcon'
-import { NexoLeftPanel } from '@/components/Layout'
+import { ArrowRight, Loader2 } from 'lucide-react'
+import {
+  AUTH_CONTENT,
+  AuthCheckbox,
+  AuthErrorBanner,
+  AuthField,
+  AuthGoogleButton,
+  AuthPasswordInput,
+  AuthShell,
+  AuthTopLink,
+} from '@/components/Auth'
 import { useLoginPage } from './useLoginPage'
 
-const BULLETS = [
-  'Loja própria em minutos',
-  'Gestão de pedidos e catálogo',
-  'Suporte e relatórios em tempo real',
-]
-
 function LoginContent() {
-  const [showPassword, setShowPassword] = useState(false)
   const {
+    ctx,
+    signupHref,
+    forgotHref,
     login,
     setLogin,
     password,
     setPassword,
+    remember,
+    setRemember,
+    emailError,
+    passwordError,
+    authError,
+    markTouched,
     isLoading,
     handleSubmit,
     loginWithGoogle,
   } = useLoginPage()
 
+  const c = AUTH_CONTENT[ctx]
+
   return (
-    <div className="flex h-screen overflow-hidden">
-      <NexoLeftPanel
-        footer={
-          <p className="text-xs text-white/35">
-            +2.400 vendedores ativos na plataforma
-          </p>
-        }
-      >
-        <div>
-          <h2 className="text-2xl font-bold text-white leading-snug mb-2">
-            Venda online.<br />Cresça de verdade.
-          </h2>
-          <p className="text-sm mb-8 text-white/50">
-            Tudo que você precisa para vender mais.
-          </p>
-          <div className="flex flex-col gap-3.5">
-            {BULLETS.map((b) => (
-              <div key={b} className="flex items-center gap-3">
-                <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-white/[12%]">
-                  <Check className="w-3 h-3 text-white" strokeWidth={2.5} />
-                </div>
-                <span className="text-sm text-white/75">{b}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </NexoLeftPanel>
+    <AuthShell
+      ctx={ctx}
+      topRight={<AuthTopLink prefix={c.signup[0]} label={c.signup[1]} href={signupHref} />}
+    >
+      <div className="lg-rise">
+        <h1 className="text-[24px] font-extrabold tracking-[-0.02em] text-nxi1">{c.h1}</h1>
+        <p className="mt-1.5 text-[14px] text-nxi2">{c.sub}</p>
 
-      {/* Right — form */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-white">
-        {/* Top-right link */}
-        <div className="flex justify-end px-10 pt-8 pb-0 flex-shrink-0">
-          <span className="text-sm text-gray-400">
-            Novo por aqui?{' '}
-            <Link href="/cadastro" className="font-semibold text-gray-700 hover:text-black transition-colors">
-              Criar conta →
-            </Link>
-          </span>
-        </div>
+        {authError && <AuthErrorBanner message={authError} className="mt-5" />}
 
-        {/* Center content */}
-        <div className="flex-1 flex flex-col justify-center px-8 sm:px-14 lg:px-20 overflow-y-auto">
-          <div className="w-full max-w-sm mx-auto">
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">Bem-vindo de volta</h1>
-            <p className="text-sm text-gray-400 mb-8">Entre na sua conta para continuar.</p>
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
+          <AuthField
+            id="email"
+            label="E-mail"
+            type="email"
+            value={login}
+            placeholder="seu@email.com"
+            autoComplete="email"
+            error={emailError}
+            onChange={(e) => setLogin(e.target.value)}
+            onBlur={() => markTouched('login')}
+          />
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Email */}
-              <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-[13px] font-semibold text-gray-700">
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={login}
-                  onChange={(e) => setLogin(e.target.value)}
-                  className="h-11 px-3.5 rounded-lg border-gray-200 text-sm focus-visible:ring-black/10 focus-visible:border-black"
-                  required
-                />
-              </div>
-
-              {/* Password */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-[13px] font-semibold text-gray-700">
-                    Senha
-                  </Label>
-                  <a
-                    href="#"
-                    className="text-xs text-gray-400 hover:text-gray-700 transition-colors"
-                  >
-                    Esqueceu a senha?
-                  </a>
-                </div>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Digite sua senha"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="h-11 px-3.5 pr-10 rounded-lg border-gray-200 text-sm focus-visible:ring-black/10 focus-visible:border-black"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full h-11 text-sm font-semibold bg-black hover:bg-gray-900 text-white rounded-lg"
-                disabled={isLoading}
+          <AuthField
+            id="password"
+            label="Senha"
+            error={passwordError}
+            right={
+              <Link
+                href={forgotHref}
+                className="text-[12px] font-semibold text-nxp transition-colors hover:text-nxp/80"
               >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Entrando...
-                  </>
-                ) : 'Entrar'}
-              </Button>
-            </form>
+                Esqueceu a senha?
+              </Link>
+            }
+          >
+            <AuthPasswordInput
+              id="password"
+              value={password}
+              autoComplete="current-password"
+              error={!!passwordError}
+              onChange={(e) => setPassword(e.target.value)}
+              onBlur={() => markTouched('password')}
+            />
+          </AuthField>
 
-            {/* Divider */}
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-100" />
-              </div>
-              <div className="relative flex justify-center">
-                <span className="px-3 bg-white text-xs text-gray-400">ou</span>
-              </div>
-            </div>
+          <AuthCheckbox
+            checked={remember}
+            onChange={setRemember}
+            label="Manter conectado neste dispositivo"
+          />
 
-            <Button
-              variant="outline"
-              className="w-full h-11 text-sm font-medium border-gray-200 rounded-lg gap-2.5 hover:bg-gray-50 hover:border-gray-300"
-              onClick={() => loginWithGoogle()}
-              disabled={isLoading}
-            >
-              <GoogleIcon />
-              Entrar com Google
-            </Button>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-nxp text-[14px] font-bold text-white shadow-[0_1px_2px_hsl(237_49%_33%/0.3)] transition-[transform,background-color] hover:bg-nxp/90 active:scale-[0.99] disabled:opacity-70"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 size={17} className="animate-spin" /> Entrando…
+              </>
+            ) : (
+              <>
+                Entrar <ArrowRight size={16} />
+              </>
+            )}
+          </button>
+        </form>
+
+        <div className="relative my-5">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-nxborder" />
+          </div>
+          <div className="relative flex justify-center">
+            <span className="bg-white px-3 text-[12px] font-medium text-nxi3">ou</span>
           </div>
         </div>
+
+        <AuthGoogleButton onClick={loginWithGoogle} disabled={isLoading} />
+
+        <p className="mt-6 text-center text-[12px] leading-relaxed text-nxi3">
+          Ao entrar, você concorda com os <span className="font-semibold text-nxi2">Termos</span> e
+          a <span className="font-semibold text-nxi2">Política de Privacidade</span>.
+        </p>
       </div>
-    </div>
+    </AuthShell>
   )
 }
 
