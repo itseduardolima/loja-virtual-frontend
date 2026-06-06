@@ -286,8 +286,8 @@ export default function ProductDetailPage() {
             )}
 
             <ProductColorSelector
-              singleColor={product.color}
-              dynamicColors={!product.color ? dynamicColorField?.value : undefined}
+              singleColor={!dynamicColorField ? product.color : undefined}
+              dynamicColors={dynamicColorField?.value}
               selectedColor={selectedColor}
               onSelectColor={selectColor}
             />
