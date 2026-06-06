@@ -38,6 +38,7 @@ const SORT_TO_PARAMS: Record<CollectionSort, { sort: 'ASC' | 'DESC'; sort_field:
 }
 
 const EMPTY_FILTERS: PlpFilters = {
+  nicheId: null,
   categoryIds: [],
   colors: [],
   sizes: [],
@@ -116,19 +117,35 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
   const { addToCart } = useCart(storeInfo?.id)
 
   const allStoreFields: NicheField[] = useMemo(() => storeFieldsData ?? [], [storeFieldsData])
+  const storeNiches = useMemo(() => nichesData?.data ?? [], [nichesData])
   const sortParams = SORT_TO_PARAMS[sort]
+
+  // Nicho efetivo das facetas: o selecionado no filtro, ou o único da loja.
+  // Loja multi-nicho sem seleção → null → facetas de nicho não renderizam
+  // (senão Tamanho misturaria PP–GG de Roupas com 34–46 de Numeração, etc.)
+  const effectiveNicheId = filters.nicheId ?? (storeNiches.length === 1 ? storeNiches[0].id : null)
 
   // Preço de busca só commita após debounce — evita refetch a cada arraste do slider
   const committedMaxPrice = useDebounce(filters.maxPrice, 400)
 
   // dynamic_filters: campos de especificação + dimensões color/size mapeadas pelo nome do campo
   const colorField = useMemo(
-    () => allStoreFields.find((f) => f.variant_dimension === 'color'),
-    [allStoreFields],
+    () =>
+      effectiveNicheId != null
+        ? allStoreFields.find(
+            (f) => f.variant_dimension === 'color' && f.niche_id === effectiveNicheId,
+          )
+        : undefined,
+    [allStoreFields, effectiveNicheId],
   )
   const sizeField = useMemo(
-    () => allStoreFields.find((f) => f.variant_dimension === 'size'),
-    [allStoreFields],
+    () =>
+      effectiveNicheId != null
+        ? allStoreFields.find(
+            (f) => f.variant_dimension === 'size' && f.niche_id === effectiveNicheId,
+          )
+        : undefined,
+    [allStoreFields, effectiveNicheId],
   )
 
   // Params enviados direto ao hook — ele re-sincroniza sozinho via incomingKey
@@ -160,6 +177,7 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
     sort: sortParams.sort,
     sort_field: sortParams.sort_field,
     category_ids: filters.categoryIds.length ? filters.categoryIds : undefined,
+    niche_id: filters.nicheId ?? undefined,
     max_price:
       Number.isFinite(committedMaxPrice) && committedMaxPrice < priceMaxRef.current
         ? committedMaxPrice
@@ -180,27 +198,27 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
     return priceMaxRef.current
   }, [products])
 
-  // ── Facetas (nicho da loja, com fallback nos produtos carregados) ────────────
-  // Sem campo variant_dimension não há como filtrar no backend — faceta nem renderiza
+  // ── Facetas (escopadas pelo nicho efetivo, fallback nos produtos carregados) ──
+  // Sem campo variant_dimension do nicho não há como filtrar no backend — faceta nem renderiza
   const colorFacet = useMemo(() => {
     if (!colorField) return []
     const fromNiche = new Set<string>()
     allStoreFields
-      .filter((f) => f.variant_dimension === 'color')
+      .filter((f) => f.variant_dimension === 'color' && f.niche_id === effectiveNicheId)
       .forEach((f) => (f.options ?? []).forEach((o) => fromNiche.add(o)))
     if (fromNiche.size) return Array.from(fromNiche)
     return colorsFromProducts(products)
-  }, [colorField, allStoreFields, products])
+  }, [colorField, allStoreFields, effectiveNicheId, products])
 
   const sizeFacet = useMemo(() => {
     if (!sizeField) return []
     const fromNiche = new Set<string>()
     allStoreFields
-      .filter((f) => f.variant_dimension === 'size')
+      .filter((f) => f.variant_dimension === 'size' && f.niche_id === effectiveNicheId)
       .forEach((f) => (f.options ?? []).forEach((o) => fromNiche.add(o)))
     const base = fromNiche.size ? Array.from(fromNiche) : sizesFromProducts(products)
     return sortSizes(base)
-  }, [sizeField, allStoreFields, products])
+  }, [sizeField, allStoreFields, effectiveNicheId, products])
 
   const dynFacets = useMemo<PlpFacet[]>(() => {
     const seen = new Map<string, PlpFacet>()
@@ -208,6 +226,8 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
       .filter(
         (f) => !f.variant_dimension && (f.field_type === 'radio' || f.field_type === 'select'),
       )
+      // só as facetas do nicho efetivo (multi-nicho sem seleção → nenhuma)
+      .filter((f) => effectiveNicheId != null && f.niche_id === effectiveNicheId)
       .forEach((f) => {
         const existing = seen.get(f.name)
         if (existing) {
@@ -224,9 +244,49 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
         }
       })
     return Array.from(seen.values()).filter((f) => f.options.length > 0)
-  }, [allStoreFields])
+  }, [allStoreFields, effectiveNicheId])
 
   // ── Handlers de filtro (setState puro) ───────────────────────────────────────
+  const toggleNiche = (id: number) =>
+    setFilters((p) => {
+      const nicheId = p.nicheId === id ? null : id
+      // desmarcou num multi-nicho: facetas somem do painel → limpa seleções órfãs
+      if (!nicheId) return { ...p, nicheId: null, colors: [], sizes: [], dyn: {} }
+
+      // poda seleções que não existem no novo nicho — evita filtro ativo sem pill visível
+      const validCatIds = new Set(
+        (storeCategories ?? [])
+          .filter((c: StoreCategory) => c.niche_id === nicheId)
+          .map((c: StoreCategory) => c.id),
+      )
+      const optionsOf = (predicate: (f: NicheField) => boolean) =>
+        new Set(
+          allStoreFields
+            .filter((f) => f.niche_id === nicheId && predicate(f))
+            .flatMap((f) => f.options ?? []),
+        )
+      const colorOpts = optionsOf((f) => f.variant_dimension === 'color')
+      const sizeOpts = optionsOf((f) => f.variant_dimension === 'size')
+      const dyn: Record<string, string[]> = {}
+      Object.entries(p.dyn).forEach(([name, vals]) => {
+        const opts = new Set(
+          allStoreFields
+            .filter((f) => f.niche_id === nicheId && !f.variant_dimension && f.name === name)
+            .flatMap((f) => f.options ?? []),
+        )
+        const kept = vals.filter((v) => opts.has(v))
+        if (kept.length) dyn[name] = kept
+      })
+      return {
+        ...p,
+        nicheId,
+        categoryIds: p.categoryIds.filter((cid) => validCatIds.has(cid)),
+        colors: p.colors.filter((c) => colorOpts.has(c)),
+        sizes: p.sizes.filter((s) => sizeOpts.has(s)),
+        dyn,
+      }
+    })
+
   const toggleCategory = (id: number) =>
     setFilters((p) => ({
       ...p,
@@ -294,6 +354,14 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
 
   const chips = useMemo<PlpChip[]>(() => {
     const list: PlpChip[] = []
+    if (filters.nicheId) {
+      const niche = nichesData?.data?.find((n) => n.id === filters.nicheId)
+      list.push({
+        key: 'niche',
+        label: niche?.name ?? 'Tipo',
+        remove: () => setFilters((p) => ({ ...p, nicheId: null })),
+      })
+    }
     filters.categoryIds.forEach((id) =>
       list.push({ key: `cat-${id}`, label: categoryName(id), remove: () => toggleCategory(id) }),
     )
@@ -337,35 +405,48 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
       list.push({ key: 'featured', label: 'Em destaque', remove: () => toggleFeatured() })
     return list
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, priceMax, storeCategories])
+  }, [filters, priceMax, storeCategories, nichesData])
 
   const activeCount = chips.length
 
   // ── Derivados de exibição ────────────────────────────────────────────────────
   const pageTitle = useMemo(() => {
     if (filters.categoryIds.length === 1) return categoryName(filters.categoryIds[0])
+    if (filters.nicheId) {
+      const niche = nichesData?.data?.find((n) => n.id === filters.nicheId)
+      if (niche) return niche.name
+    }
     return 'Todos os produtos'
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.categoryIds, storeCategories])
+  }, [filters.categoryIds, filters.nicheId, storeCategories, nichesData])
 
+  // Badge do hero segue o nicho efetivo (multi-nicho sem seleção → sem badge)
   const heroNiche: PlpHeroNiche | null = useMemo(() => {
-    const first = nichesData?.data?.[0]
-    return first ? { name: first.name, slug: first.slug } : null
-  }, [nichesData])
+    const niche =
+      effectiveNicheId != null ? storeNiches.find((n) => n.id === effectiveNicheId) : undefined
+    return niche ? { name: niche.name, slug: niche.slug } : null
+  }, [storeNiches, effectiveNicheId])
 
   const resultCount = meta?.total ?? products.length
 
   const panelProps: PlpFilterPanelProps = {
     filters,
-    categories: (storeCategories ?? []).map<PlpCategory>((c: StoreCategory) => ({
-      id: c.id,
-      name: c.name,
-      count: c._count?.products ?? 0,
-    })),
+    niches: (nichesData?.data ?? []).map((n) => ({ id: n.id, name: n.name, slug: n.slug })),
+    // com nicho selecionado, lista só as categorias padrão daquele nicho
+    categories: (storeCategories ?? [])
+      .filter((c: StoreCategory) => !filters.nicheId || c.niche_id === filters.nicheId)
+      .map<PlpCategory>((c: StoreCategory) => ({
+        id: c.id,
+        name: c.name,
+        count: c._count?.products ?? 0,
+      })),
     colorFacet,
     sizeFacet,
+    colorLabel: colorField?.name,
+    sizeLabel: sizeField?.name,
     dynFacets,
     priceMax,
+    onToggleNiche: toggleNiche,
     onToggleCategory: toggleCategory,
     onToggleColor: toggleColor,
     onToggleSize: toggleSize,
