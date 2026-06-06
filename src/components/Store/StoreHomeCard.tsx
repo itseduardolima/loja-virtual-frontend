@@ -14,6 +14,10 @@ interface StoreHomeCardProps {
   product: Product
   /** card grande do bento (aspect 1/1, tipografia maior) */
   feat?: boolean
+  /** eyebrow de categoria (mono uppercase) — usado na PLP; sem ele o card da home fica idêntico */
+  eyebrow?: string
+  /** variante compacta da PLP (grid denso) */
+  dense?: boolean
   onOpen: () => void
   onQuickAdd: () => void
   onToggleWishlist: () => void
@@ -36,6 +40,8 @@ export function productColors(product: Product): string[] {
 export function StoreHomeCard({
   product,
   feat,
+  eyebrow,
+  dense,
   onOpen,
   onQuickAdd,
   onToggleWishlist,
@@ -43,7 +49,11 @@ export function StoreHomeCard({
 }: StoreHomeCardProps) {
   const imageUrl = getProductImageUrl(product)
   const price = getProductPrice(product)
-  const hasPromo = !!(product.promo_active && product.discount_percentage && product.discount_percentage > 0)
+  const hasPromo = !!(
+    product.promo_active &&
+    product.discount_percentage &&
+    product.discount_percentage > 0
+  )
   const isNew = isNewProduct(product.created_at)
   const colors = productColors(product)
   const hasVariations = productHasVariations(product)
@@ -127,10 +137,22 @@ export function StoreHomeCard({
       </div>
 
       <div className="flex flex-1 flex-col px-3.5 pb-3.5 pt-3">
+        {eyebrow && (
+          <span className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.12em] text-nxi3">
+            {eyebrow}
+          </span>
+        )}
         <p
           className={cn(
             'line-clamp-1 font-semibold tracking-[-0.01em] text-nxi1',
-            feat ? 'text-[15px]' : 'text-[13px]',
+            eyebrow && 'mt-0.5',
+            feat
+              ? 'text-[15px]'
+              : eyebrow
+                ? dense
+                  ? 'text-[12.5px]'
+                  : 'text-[13.5px]'
+                : 'text-[13px]',
           )}
         >
           {product.name}
@@ -143,7 +165,18 @@ export function StoreHomeCard({
         )}
         <div className="mt-auto flex items-center justify-between pt-2.5">
           <div className="flex items-baseline gap-1.5">
-            <span className={cn('font-extrabold text-nxi1', feat ? 'text-[16px]' : 'text-[13.5px]')}>
+            <span
+              className={cn(
+                'font-extrabold text-nxi1',
+                feat
+                  ? 'text-[16px]'
+                  : eyebrow
+                    ? dense
+                      ? 'text-[13.5px]'
+                      : 'text-[15px]'
+                    : 'text-[13.5px]',
+              )}
+            >
               {formatBRL(price)}
             </span>
             {hasPromo && (

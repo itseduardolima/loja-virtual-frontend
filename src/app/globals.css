@@ -169,6 +169,26 @@
   .ac-slide { animation: none; }
 }
 
+/* PLP da loja — entrada de cards e drawer de filtros (transform-only) */
+@keyframes plpRise {
+  from { transform: translateY(12px); }
+  to   { transform: translateY(0); }
+}
+.plp-rise {
+  animation: plpRise 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+@keyframes plpDrawer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+.plp-drawer {
+  animation: plpDrawer 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .plp-rise,
+  .plp-drawer { animation: none; }
+}
+
 /* Marquee de promessas da home da loja (transform-only) */
 @keyframes nxMarquee {
   from { transform: translateX(0); }
@@ -206,9 +226,9 @@
   }
 }
 
-/* Custom scrollbar styles */
+/* Custom scrollbar styles — espessura/cor do design índigo (nxborder) */
 .scrollbar-thin::-webkit-scrollbar {
-  width: 6px;
+  width: 7px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-track {
@@ -216,12 +236,8 @@
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: #D1D5DB;
-  border-radius: 3px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background-color: #9CA3AF;
+  background-color: hsl(var(--nxborder));
+  border-radius: 4px;
 }
 
 /* Nexo left panel — complex background not expressible in Tailwind alone */

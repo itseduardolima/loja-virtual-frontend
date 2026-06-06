@@ -24,12 +24,11 @@ const buildQuery = (p: StoreProductsParams, cursorOverride?: number): URLSearchP
   if (p.sort_field) q.append('sort_field', p.sort_field)
   if (p.featured) q.append('featured', 'true')
   if (p.promo) q.append('promo', 'true')
-  if (p.color) q.append('color', p.color)
-  if (p.size) q.append('size', p.size)
   if (p.max_price) q.append('max_price', p.max_price.toString())
   if (p.min_price) q.append('min_price', p.min_price.toString())
   if (p.category_id) q.append('category_id', p.category_id.toString())
-  if (p.niche_id) q.append('niche_id', p.niche_id.toString())
+  if (p.category_ids && p.category_ids.length > 0)
+    q.append('category_ids', p.category_ids.join(','))
   if (p.search) q.append('search', p.search)
   if (p.min_rating) q.append('min_rating', p.min_rating.toString())
   if (p.dynamic_filters) {
@@ -72,7 +71,7 @@ export function useStoreProducts(params: StoreProductsParams): UseStoreProductsR
     queryFn: async ({ pageParam }) => {
       const cursorOverride = pageParam as number | undefined
       const response = await api.get<PageResult>(
-        `/catalog/store/${slug}/products?${buildQuery(currentParams, cursorOverride).toString()}`
+        `/catalog/store/${slug}/products?${buildQuery(currentParams, cursorOverride).toString()}`,
       )
       const d = response.data
       return {
@@ -88,21 +87,23 @@ export function useStoreProducts(params: StoreProductsParams): UseStoreProductsR
     // retry herdado do QueryProvider (3x, sem retry em 401)
   })
 
-  const pages = data?.pages ?? []
+  const pages = useMemo(() => data?.pages ?? [], [data?.pages])
   const products = useMemo(() => pages.flatMap((p) => p.data), [pages])
   const meta = pages[0]?.meta ?? null
   const lastPage = pages[pages.length - 1]
   const nextCursor = lastPage?.nextCursor ?? null
 
-  const errorMessage = !isFetchNextPageError && error
-    ? ((error as { response?: { data?: { message?: string } } }).response?.data?.message ||
-        'Erro ao carregar produtos')
-    : null
+  const errorMessage =
+    !isFetchNextPageError && error
+      ? (error as { response?: { data?: { message?: string } } }).response?.data?.message ||
+        'Erro ao carregar produtos'
+      : null
 
-  const loadMoreErrorMessage = isFetchNextPageError && error
-    ? ((error as { response?: { data?: { message?: string } } }).response?.data?.message ||
-        'Erro ao carregar mais produtos')
-    : null
+  const loadMoreErrorMessage =
+    isFetchNextPageError && error
+      ? (error as { response?: { data?: { message?: string } } }).response?.data?.message ||
+        'Erro ao carregar mais produtos'
+      : null
 
   const loadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -122,7 +123,9 @@ export function useStoreProducts(params: StoreProductsParams): UseStoreProductsR
     loadMoreError: loadMoreErrorMessage,
     meta,
     nextCursor,
-    refetch: () => { refetch() },
+    refetch: () => {
+      refetch()
+    },
     updateParams,
     loadMore,
   }
