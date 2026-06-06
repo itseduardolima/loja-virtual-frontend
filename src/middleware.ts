@@ -3,8 +3,15 @@ import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const publicRoutes = ['/login', '/register', '/cadastro', '/']
-  
+  const publicRoutes = [
+    '/login',
+    '/register',
+    '/cadastro',
+    '/esqueci-senha',
+    '/reset-password',
+    '/',
+  ]
+
   if (publicRoutes.includes(pathname)) {
     return NextResponse.next()
   }
