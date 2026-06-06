@@ -2,7 +2,7 @@
 
 import { Suspense } from 'react'
 import {
-  Mail, MessageCircle, User, Store,
+  Mail, User, Store,
   Clock, CheckCircle, Truck, PackageCheck, XCircle,
   SearchX, ShoppingBag,
 } from 'lucide-react'
@@ -22,6 +22,7 @@ import {
   type StatusKey,
 } from './_components/statusConfig'
 import Link from 'next/link'
+import { IconWhatsApp } from '@/assets/icons'
 
 const STATUS_ICONS: Record<StatusKey, React.ElementType> = {
   1: Clock,
@@ -31,10 +32,10 @@ const STATUS_ICONS: Record<StatusKey, React.ElementType> = {
   5: XCircle,
 }
 
-const IDLE_CARDS = [
-  { icon: Mail, title: 'No seu e-mail', desc: 'Enviamos o código no e-mail de confirmação do pedido.' },
-  { icon: MessageCircle, title: 'No WhatsApp', desc: 'A loja também manda o código pela conversa do pedido.' },
-  { icon: User, title: 'Na sua conta', desc: 'Veja todos os seus pedidos e códigos em "Minha conta".' },
+const IDLE_CARDS: { icon: React.ElementType; iconColor: string; bgColor: string; title: string; desc: string }[] = [
+  { icon: Mail,           iconColor: 'text-nxp',       bgColor: 'bg-nxp/[0.08]',      title: 'No seu e-mail',  desc: 'Enviamos o código no e-mail de confirmação do pedido.' },
+  { icon: IconWhatsApp,   iconColor: 'text-[#25D366]', bgColor: 'bg-[#25D366]/[0.08]', title: 'No WhatsApp',   desc: 'A loja também manda o código pela conversa do pedido.' },
+  { icon: User,           iconColor: 'text-nxp',       bgColor: 'bg-nxp/[0.08]',      title: 'Na sua conta',   desc: 'Veja todos os seus pedidos e códigos em "Minha conta".' },
 ]
 
 function RastrearPedidoContent() {
@@ -77,13 +78,13 @@ function RastrearPedidoContent() {
       {view === 'idle' && (
         <div className="mx-auto max-w-[1040px] px-5 py-12 md:px-10">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {IDLE_CARDS.map(({ icon: Icon, title, desc }, i) => (
+            {IDLE_CARDS.map(({ icon: Icon, iconColor, bgColor, title, desc }, i) => (
               <div
                 key={title}
                 className="rt-rise rounded-2xl border border-nxborder bg-white p-5"
                 style={{ animationDelay: `${0.2 + i * 0.05}s` }}
               >
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-nxp/[0.08] text-nxp">
+                <span className={cn('flex h-10 w-10 items-center justify-center rounded-xl', bgColor, iconColor)}>
                   <Icon size={18} />
                 </span>
                 <p className="mt-3 text-[13.5px] font-extrabold text-nxi1">{title}</p>
