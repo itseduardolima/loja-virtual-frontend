@@ -1,10 +1,11 @@
 'use client'
 
 import { Suspense } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { LoadingPage } from '@/components'
-import { AlertCircle, Check } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 import { useAssinaturaPage } from './useAssinaturaPage'
 import { derivePlanFeaturesList } from '@/lib/planUtils'
 import {
@@ -16,80 +17,51 @@ import {
   SuccessStep,
   CompletedStep,
 } from './components'
-import { NexoLeftPanel } from '@/components/Layout'
+import { AuthLeftPanel, type AuthPanelContent } from '@/components/Auth'
 import type { Step } from './useAssinaturaPage'
 
-const BULLETS_MARKETING = [
-  'Loja própria em minutos',
-  'Gestão de pedidos e catálogo',
-  'Suporte e relatórios em tempo real',
-]
+const PANEL_FOOTER = '+2.400 vendedores ativos na plataforma'
 
-const BULLETS_PLAN = [
-  'Teste grátis disponível',
-  'Cancele quando quiser',
-  'Suporte em todos os planos',
-]
-
-const BULLETS_COMPLETED = [
-  'Crie seu catálogo de produtos',
-  'Receba pedidos online',
-  'Acompanhe suas vendas',
-]
-
-function Bullets({ items }: { items: string[] }) {
-  return (
-    <div className="flex flex-col gap-3.5">
-      {items.map((b) => (
-        <div key={b} className="flex items-center gap-3">
-          <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-white/[12%]">
-            <Check className="w-3 h-3 text-white" strokeWidth={2.5} />
-          </div>
-          <span className="text-sm text-white/75">{b}</span>
-        </div>
-      ))}
-    </div>
-  )
+const PANEL_REGISTER: AuthPanelContent = {
+  panelTitle: 'Venda online.\nCresça de verdade.',
+  panelSub: 'Tudo que você precisa para vender mais, num só lugar.',
+  bullets: [
+    'Loja própria no ar em minutos',
+    'Gestão de pedidos e catálogo',
+    'Relatórios e suporte em tempo real',
+  ],
+  footer: PANEL_FOOTER,
 }
 
-function PanelContent({ step }: { step: Step }) {
-  if (step === 'completed') {
-    return (
-      <div>
-        <h2 className="text-2xl font-bold text-white leading-snug mb-2">
-          Bem-vindo à nexo!
-        </h2>
-        <p className="text-sm mb-8 text-white/50">
-          Sua loja está pronta para começar.
-        </p>
-        <Bullets items={BULLETS_COMPLETED} />
-      </div>
-    )
-  }
+const PANEL_PLAN: AuthPanelContent = {
+  panelTitle: 'Escolha e comece\na vender.',
+  panelSub: 'Planos flexíveis para qualquer negócio.',
+  bullets: ['Teste grátis disponível', 'Cancele quando quiser', 'Suporte em todos os planos'],
+  footer: PANEL_FOOTER,
+}
 
-  if (step === 'plan' || step === 'select' || step === 'processing' || step === 'payment' || step === 'success') {
-    return (
-      <div>
-        <h2 className="text-2xl font-bold text-white leading-snug mb-2">
-          Escolha e comece<br />a vender.
-        </h2>
-        <p className="text-sm mb-8 text-white/50">
-          Planos flexíveis para qualquer negócio.
-        </p>
-        <Bullets items={BULLETS_PLAN} />
-      </div>
-    )
-  }
+const PANEL_COMPLETED: AuthPanelContent = {
+  panelTitle: 'Bem-vindo\nà Nexo!',
+  panelSub: 'Sua loja está pronta para começar.',
+  bullets: ['Crie seu catálogo de produtos', 'Receba pedidos online', 'Acompanhe suas vendas'],
+  footer: PANEL_FOOTER,
+}
 
+function panelContentForStep(step: Step): AuthPanelContent {
+  if (step === 'completed') return PANEL_COMPLETED
+  if (step === 'register') return PANEL_REGISTER
+  return PANEL_PLAN
+}
+
+function MobileBrandBar() {
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-white leading-snug mb-2">
-        Venda online.<br />Cresça de verdade.
-      </h2>
-      <p className="text-sm mb-8 text-white/50">
-        Tudo que você precisa para vender mais.
-      </p>
-      <Bullets items={BULLETS_MARKETING} />
+    <div className="flex shrink-0 items-center px-6 pt-6 sm:px-10 lg:hidden">
+      <Link href="/" className="flex items-center gap-2">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-nxp text-[13px] font-extrabold text-white">
+          N
+        </span>
+        <span className="font-integral text-[15px] tracking-[0.04em] text-nxi1">NEXO</span>
+      </Link>
     </div>
   )
 }
@@ -157,12 +129,6 @@ function AssinaturaContent() {
 
   const planFeatures: string[] = plan ? derivePlanFeaturesList(plan) : []
 
-  const panelFooter = (
-    <p className="text-xs text-white/35">
-      +2.400 vendedores ativos na plataforma
-    </p>
-  )
-
   if (isLoadingAuth) return <LoadingPage />
 
   if (step !== 'register' && isLoadingPlan) return <LoadingPage />
@@ -170,23 +136,21 @@ function AssinaturaContent() {
   if (step !== 'register' && (planError || !plans?.length)) {
     return (
       <div className="flex h-screen overflow-hidden">
-        <NexoLeftPanel footer={panelFooter}>
-          <PanelContent step={step} />
-        </NexoLeftPanel>
-        <div className="flex-1 flex items-center justify-center bg-white px-8">
+        <AuthLeftPanel content={panelContentForStep(step)} />
+        <div className="flex flex-1 items-center justify-center bg-white px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="max-w-sm w-full text-center"
+            className="w-full max-w-sm text-center"
           >
-            <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="w-7 h-7 text-red-600" />
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-nxd/10 text-nxd">
+              <AlertCircle size={30} />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">
+            <h2 className="mb-2 text-[20px] font-extrabold tracking-tight text-nxi1">
               Planos não disponíveis
             </h2>
-            <p className="text-sm text-gray-500 mb-6">
+            <p className="mb-6 text-[14px] text-nxi2">
               {planError
                 ? 'Erro ao carregar os planos. Tente novamente.'
                 : 'Não há planos disponíveis no momento.'}
@@ -194,13 +158,13 @@ function AssinaturaContent() {
             <div className="flex flex-col gap-3">
               <button
                 onClick={() => refetchPlan()}
-                className="h-11 rounded-xl bg-black text-white text-sm font-semibold hover:bg-gray-900 transition-colors"
+                className="h-11 rounded-xl bg-nxp text-[14px] font-bold text-white transition-[transform,background-color] hover:bg-nxp/90 active:scale-[0.99]"
               >
                 Tentar novamente
               </button>
               <button
                 onClick={() => router.push('/')}
-                className="h-11 rounded-xl bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 transition-colors"
+                className="h-11 rounded-xl border border-nxborder bg-white text-[14px] font-semibold text-nxi2 transition-colors hover:border-nxi3 hover:bg-nxbg"
               >
                 Voltar para Home
               </button>
@@ -213,23 +177,15 @@ function AssinaturaContent() {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <NexoLeftPanel footer={panelFooter}>
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={step}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25 }}
-          >
-            <PanelContent step={step} />
-          </motion.div>
-        </AnimatePresence>
-      </NexoLeftPanel>
+      <AuthLeftPanel
+        key={panelContentForStep(step).panelTitle}
+        content={panelContentForStep(step)}
+      />
 
-      <div className="flex-1 flex flex-col overflow-hidden bg-white">
+      <div className="flex flex-1 flex-col overflow-hidden bg-white">
+        <MobileBrandBar />
         <div className="flex-1 overflow-y-auto">
-          <div className="min-h-full flex flex-col justify-center px-6 sm:px-10 lg:px-14 py-10">
+          <div className="flex min-h-full flex-col justify-center px-6 py-10 sm:px-10 lg:px-14">
             <AnimatePresence mode="wait">
               {step === 'register' && (
                 <RegisterStep
@@ -296,10 +252,7 @@ function AssinaturaContent() {
               )}
 
               {step === 'success' && (
-                <SuccessStep
-                  key="success"
-                  isPaymentConfirmed={Boolean(isPaymentConfirmed)}
-                />
+                <SuccessStep key="success" isPaymentConfirmed={Boolean(isPaymentConfirmed)} />
               )}
 
               {step === 'completed' && (

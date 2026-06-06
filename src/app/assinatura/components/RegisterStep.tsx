@@ -1,15 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Eye, EyeOff, Check, Loader2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { ArrowRight, Check, Loader2 } from 'lucide-react'
 import { PhoneCountryInput } from '@/components/Form'
+import { AuthField, AuthGoogleButton, AuthPasswordInput } from '@/components/Auth'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCountries } from '@/hooks/useCountries'
-import { GoogleIcon } from '@/public/assets/icons/GoogleIcon'
+import { isValidEmail, isValidPassword, passwordRules, passwordsMatch } from '@/schemas/authSchemas'
 import { cn } from '@/lib/utils'
 
 interface RegisterStepProps {
@@ -22,12 +21,19 @@ interface RegisterStepProps {
   onToggleMode: () => void
 }
 
-function passwordRequirements(password: string) {
-  return [
-    { label: 'Mínimo 8 caracteres', valid: password.length >= 8 },
-    { label: 'Pelo menos uma letra maiúscula', valid: /[A-Z]/.test(password) },
-    { label: 'Pelo menos um número', valid: /[0-9]/.test(password) },
-  ]
+type RegisterField = 'name' | 'email' | 'whatsapp' | 'password' | 'confirmPassword'
+
+function Divider() {
+  return (
+    <div className="relative">
+      <div className="absolute inset-0 flex items-center">
+        <span className="w-full border-t border-nxborder" />
+      </div>
+      <div className="relative flex justify-center">
+        <span className="bg-white px-3 text-[12px] font-medium text-nxi3">ou</span>
+      </div>
+    </div>
+  )
 }
 
 export function RegisterStep({
@@ -48,16 +54,37 @@ export function RegisterStep({
   const [whatsapp, setWhatsapp] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [touched, setTouched] = useState<Partial<Record<RegisterField, boolean>>>({})
 
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
-  const [showLoginPassword, setShowLoginPassword] = useState(false)
+  const [loginTouched, setLoginTouched] = useState<{ email?: boolean; password?: boolean }>({})
 
-  const passwordMismatch = !!confirmPassword && password !== confirmPassword
-  const reqs = passwordRequirements(password)
-  const allReqsMet = reqs.every((r) => r.valid)
+  const requirements = passwordRules(password)
+  const whatsappDigits = whatsapp.replace(/\D/g, '')
+
+  // erros derivados — aparecem após blur (ou submit, que marca tudo)
+  const nameError = touched.name && name.trim().length < 5 ? 'Informe seu nome completo.' : null
+  const emailError = touched.email && !isValidEmail(email) ? 'Informe um e-mail válido.' : null
+  const whatsappError =
+    touched.whatsapp && whatsappDigits.length < 8 ? 'Informe um WhatsApp válido.' : null
+  const passwordError =
+    touched.password && !isValidPassword(password)
+      ? 'A senha não atende aos requisitos abaixo.'
+      : null
+  const confirmPasswordError =
+    touched.confirmPassword && !passwordsMatch(password, confirmPassword)
+      ? 'As senhas não coincidem.'
+      : null
+
+  const loginEmailError =
+    loginTouched.email && !isValidEmail(loginEmail) ? 'Informe um e-mail válido.' : null
+  const loginPasswordError =
+    loginTouched.password && loginPassword.length < 1 ? 'Informe sua senha.' : null
+
+  function markTouched(field: RegisterField) {
+    setTouched((t) => ({ ...t, [field]: true }))
+  }
 
   const getCallingCode = () => {
     const country = countriesData?.find((c) => c.cca2 === selectedCountry)
@@ -66,15 +93,24 @@ export function RegisterStep({
 
   const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (passwordMismatch || !allReqsMet) return
-    const digits = whatsapp.replace(/\D/g, '')
-    if (!digits || digits.length < 8) return
-    onSubmitRegister(name, email, password, `${getCallingCode()}${digits}`)
+    setTouched({ name: true, email: true, whatsapp: true, password: true, confirmPassword: true })
+
+    const valid =
+      name.trim().length >= 5 &&
+      isValidEmail(email) &&
+      whatsappDigits.length >= 8 &&
+      isValidPassword(password) &&
+      passwordsMatch(password, confirmPassword)
+    if (!valid) return
+
+    onSubmitRegister(name.trim(), email.trim(), password, `${getCallingCode()}${whatsappDigits}`)
   }
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmitLogin(loginEmail, loginPassword)
+    setLoginTouched({ email: true, password: true })
+    if (!isValidEmail(loginEmail) || loginPassword.length < 1) return
+    onSubmitLogin(loginEmail.trim(), loginPassword)
   }
 
   return (
@@ -85,12 +121,14 @@ export function RegisterStep({
       exit={{ opacity: 0, x: 20 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="max-w-lg mx-auto">
+      <div
+        className={cn('mx-auto w-full', mode === 'register' ? 'max-w-[460px]' : 'max-w-[380px]')}
+      >
         {planPrice !== undefined && (
-          <div className="bg-black/5 border border-black/[8%] rounded-xl p-3 mb-6 text-center">
-            <p className="text-sm text-gray-600">
+          <div className="mb-6 rounded-xl border border-nxp/15 bg-nxp/[0.04] px-3.5 py-3 text-center">
+            <p className="text-[13px] text-nxi2">
               {planName || 'Plano'} —{' '}
-              <span className="font-semibold text-black">
+              <span className="font-bold text-nxp">
                 R$ {planPrice.toFixed(2).replace('.', ',')}/mês
               </span>
             </p>
@@ -98,141 +136,110 @@ export function RegisterStep({
         )}
 
         {mode === 'register' ? (
-          <form onSubmit={handleRegisterSubmit} className="space-y-7">
+          <form onSubmit={handleRegisterSubmit} className="space-y-7" noValidate>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-1">Crie sua conta grátis.</h1>
-              <p className="text-sm text-gray-400 mb-8">Comece a vender em poucos minutos.</p>
+              <h1 className="text-[24px] font-extrabold tracking-[-0.02em] text-nxi1">
+                Crie sua conta grátis
+              </h1>
+              <p className="mb-7 mt-1.5 text-[14px] text-nxi2">
+                Comece a vender em poucos minutos.
+              </p>
 
-              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">
+              <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.12em] text-nxi3">
                 Seus dados
               </p>
               <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="reg-name" className="text-[13px] font-semibold text-gray-700">
-                      Nome completo <span className="text-red-400">*</span>
-                    </Label>
-                    <Input
-                      id="reg-name"
-                      type="text"
-                      placeholder="Seu nome completo"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="h-11 px-3.5 rounded-lg border-gray-200 text-sm focus-visible:ring-black/10 focus-visible:border-black"
-                      required
-                      minLength={3}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="reg-email" className="text-[13px] font-semibold text-gray-700">
-                      E-mail <span className="text-red-400">*</span>
-                    </Label>
-                    <Input
-                      id="reg-email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="h-11 px-3.5 rounded-lg border-gray-200 text-sm focus-visible:ring-black/10 focus-visible:border-black"
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="reg-whatsapp" className="text-[13px] font-semibold text-gray-700">
-                    WhatsApp <span className="text-red-400">*</span>
-                  </Label>
-                  <PhoneCountryInput
-                    id="reg-whatsapp"
-                    value={whatsapp}
-                    onValueChange={setWhatsapp}
-                    placeholder="(11) 99999-9999"
-                    minLength={8}
-                    maxLength={15}
-                    required
-                    selectedCountry={selectedCountry}
-                    onSelectedCountryChange={setSelectedCountry}
-                    countriesData={countriesData}
-                    countriesLoading={countriesLoading}
-                    inputClassName="flex-1 h-11 border-gray-200 text-sm focus-visible:ring-black/10 focus-visible:border-black"
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <AuthField
+                    id="reg-name"
+                    label="Nome completo"
+                    value={name}
+                    placeholder="Seu nome completo"
+                    autoComplete="name"
+                    maxLength={40}
+                    error={nameError}
+                    onChange={(e) => setName(e.target.value)}
+                    onBlur={() => markTouched('name')}
+                  />
+                  <AuthField
+                    id="reg-email"
+                    label="E-mail"
+                    type="email"
+                    value={email}
+                    placeholder="seu@email.com"
+                    autoComplete="email"
+                    error={emailError}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onBlur={() => markTouched('email')}
                   />
                 </div>
+
+                <AuthField id="reg-whatsapp" label="WhatsApp" error={whatsappError}>
+                  <div onBlur={() => markTouched('whatsapp')}>
+                    <PhoneCountryInput
+                      id="reg-whatsapp"
+                      value={whatsapp}
+                      onValueChange={setWhatsapp}
+                      placeholder="(11) 99999-9999"
+                      minLength={8}
+                      maxLength={15}
+                      required
+                      selectedCountry={selectedCountry}
+                      onSelectedCountryChange={setSelectedCountry}
+                      countriesData={countriesData}
+                      countriesLoading={countriesLoading}
+                      inputClassName={cn(
+                        'flex-1 h-11 rounded-xl text-[14px] placeholder:text-nxi3',
+                        whatsappError
+                          ? 'border-nxd focus-visible:border-nxd focus-visible:ring-nxd/15'
+                          : 'border-nxborder focus-visible:border-nxp focus-visible:ring-nxp/15',
+                      )}
+                    />
+                  </div>
+                </AuthField>
               </div>
             </div>
 
             <div>
-              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">
+              <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.12em] text-nxi3">
                 Sua senha
               </p>
               <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="reg-password" className="text-[13px] font-semibold text-gray-700">
-                      Senha <span className="text-red-400">*</span>
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="reg-password"
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Mínimo 8 caracteres"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="h-11 px-3.5 pr-10 rounded-lg border-gray-200 text-sm focus-visible:ring-black/10 focus-visible:border-black"
-                        required
-                        minLength={8}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((v) => !v)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="reg-confirm" className="text-[13px] font-semibold text-gray-700">
-                      Confirmar senha <span className="text-red-400">*</span>
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="reg-confirm"
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        placeholder="Repita a senha"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        className={cn(
-                          'h-11 px-3.5 pr-10 rounded-lg text-sm focus-visible:ring-black/10',
-                          passwordMismatch
-                            ? 'border-red-400 focus-visible:border-red-400'
-                            : 'border-gray-200 focus-visible:border-black',
-                        )}
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword((v) => !v)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                      >
-                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                    {passwordMismatch && (
-                      <p className="text-xs text-red-500 mt-1">As senhas não conferem</p>
-                    )}
-                  </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <AuthField id="reg-password" label="Senha" error={passwordError}>
+                    <AuthPasswordInput
+                      id="reg-password"
+                      value={password}
+                      autoComplete="new-password"
+                      error={!!passwordError}
+                      onChange={(e) => setPassword(e.target.value)}
+                      onBlur={() => markTouched('password')}
+                    />
+                  </AuthField>
+                  <AuthField id="reg-confirm" label="Confirmar senha" error={confirmPasswordError}>
+                    <AuthPasswordInput
+                      id="reg-confirm"
+                      value={confirmPassword}
+                      placeholder="Repita a senha"
+                      autoComplete="new-password"
+                      error={!!confirmPasswordError}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      onBlur={() => markTouched('confirmPassword')}
+                    />
+                  </AuthField>
                 </div>
 
+                {/* requisitos da senha */}
                 <div className="flex flex-wrap gap-2 pt-1">
-                  {reqs.map((req) => (
+                  {requirements.map((req) => (
                     <span
                       key={req.label}
                       className={cn(
-                        'inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full transition-all duration-200',
-                        req.valid ? 'bg-black/10 text-black font-semibold' : 'bg-gray-100 text-gray-400',
+                        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] transition-colors',
+                        req.valid ? 'bg-nxs/10 font-semibold text-nxs' : 'bg-nxbg text-nxi3',
                       )}
                     >
-                      {req.valid && <Check className="w-3 h-3" strokeWidth={3} />}
+                      {req.valid && <Check size={12} strokeWidth={3} />}
                       {req.label}
                     </span>
                   ))}
@@ -240,144 +247,117 @@ export function RegisterStep({
               </div>
             </div>
 
-            <Button
+            <button
               type="submit"
-              className="w-full h-11 text-sm font-semibold bg-black hover:bg-gray-900 text-white rounded-lg"
-              disabled={isSubmitting || !name || !email || !password || whatsapp.replace(/\D/g, '').length < 8 || passwordMismatch || !allReqsMet}
+              disabled={isSubmitting}
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-nxp text-[14px] font-bold text-white shadow-[0_1px_2px_hsl(237_49%_33%/0.3)] transition-[transform,background-color] hover:bg-nxp/90 active:scale-[0.99] disabled:opacity-70"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Criando conta...
+                  <Loader2 size={17} className="animate-spin" /> Criando conta…
                 </>
-              ) : 'Criar conta e continuar'}
-            </Button>
+              ) : (
+                <>
+                  Criar conta e continuar <ArrowRight size={16} />
+                </>
+              )}
+            </button>
 
-            <p className="text-center text-sm text-gray-400">
+            <p className="text-center text-[13px] text-nxi3">
               Já tenho uma conta.{' '}
               <button
                 type="button"
                 onClick={onToggleMode}
-                className="font-semibold text-gray-700 hover:text-black transition-colors"
+                className="font-bold text-nxp transition-colors hover:text-nxp/80"
               >
                 Entrar →
               </button>
             </p>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-100" />
-              </div>
-              <div className="relative flex justify-center">
-                <span className="px-3 bg-white text-xs text-gray-400">ou</span>
-              </div>
-            </div>
+            <Divider />
 
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-11 text-sm font-medium border-gray-200 rounded-lg gap-2.5 hover:bg-gray-50 hover:border-gray-300"
+            <AuthGoogleButton
               onClick={loginWithGoogle}
               disabled={isSubmitting}
-            >
-              <GoogleIcon />
-              Continuar com Google
-            </Button>
+              label="Continuar com Google"
+            />
           </form>
         ) : (
-          <form onSubmit={handleLoginSubmit} className="space-y-5">
+          <form onSubmit={handleLoginSubmit} className="space-y-4" noValidate>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-1">Bem-vindo de volta</h1>
-              <p className="text-sm text-gray-400 mb-8">Entre na sua conta para continuar.</p>
+              <h1 className="text-[24px] font-extrabold tracking-[-0.02em] text-nxi1">
+                Bem-vindo de volta
+              </h1>
+              <p className="mb-6 mt-1.5 text-[14px] text-nxi2">
+                Entre na sua conta para continuar.
+              </p>
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="login-email" className="text-[13px] font-semibold text-gray-700">
-                Email
-              </Label>
-              <Input
-                id="login-email"
-                type="email"
-                placeholder="seu@email.com"
-                value={loginEmail}
-                onChange={(e) => setLoginEmail(e.target.value)}
-                className="h-11 px-3.5 rounded-lg border-gray-200 text-sm focus-visible:ring-black/10 focus-visible:border-black"
-                required
-              />
-            </div>
+            <AuthField
+              id="login-email"
+              label="E-mail"
+              type="email"
+              value={loginEmail}
+              placeholder="seu@email.com"
+              autoComplete="email"
+              error={loginEmailError}
+              onChange={(e) => setLoginEmail(e.target.value)}
+              onBlur={() => setLoginTouched((t) => ({ ...t, email: true }))}
+            />
 
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="login-password" className="text-[13px] font-semibold text-gray-700">
-                  Senha
-                </Label>
-                <a href="#" className="text-xs text-gray-400 hover:text-gray-700 transition-colors">
-                  Esqueceu a senha?
-                </a>
-              </div>
-              <div className="relative">
-                <Input
-                  id="login-password"
-                  type={showLoginPassword ? 'text' : 'password'}
-                  placeholder="Digite sua senha"
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  className="h-11 px-3.5 pr-10 rounded-lg border-gray-200 text-sm focus-visible:ring-black/10 focus-visible:border-black"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowLoginPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            <AuthField
+              id="login-password"
+              label="Senha"
+              error={loginPasswordError}
+              right={
+                <Link
+                  href="/esqueci-senha"
+                  className="text-[12px] font-semibold text-nxp transition-colors hover:text-nxp/80"
                 >
-                  {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
+                  Esqueceu a senha?
+                </Link>
+              }
+            >
+              <AuthPasswordInput
+                id="login-password"
+                value={loginPassword}
+                autoComplete="current-password"
+                error={!!loginPasswordError}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                onBlur={() => setLoginTouched((t) => ({ ...t, password: true }))}
+              />
+            </AuthField>
 
-            <Button
+            <button
               type="submit"
-              className="w-full h-11 text-sm font-semibold bg-black hover:bg-gray-900 text-white rounded-lg"
               disabled={isSubmitting}
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-nxp text-[14px] font-bold text-white shadow-[0_1px_2px_hsl(237_49%_33%/0.3)] transition-[transform,background-color] hover:bg-nxp/90 active:scale-[0.99] disabled:opacity-70"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Entrando...
+                  <Loader2 size={17} className="animate-spin" /> Entrando…
                 </>
-              ) : 'Entrar'}
-            </Button>
+              ) : (
+                <>
+                  Entrar <ArrowRight size={16} />
+                </>
+              )}
+            </button>
 
-            <p className="text-center text-sm text-gray-400">
+            <p className="text-center text-[13px] text-nxi3">
               Novo por aqui?{' '}
               <button
                 type="button"
                 onClick={onToggleMode}
-                className="font-semibold text-gray-700 hover:text-black transition-colors"
+                className="font-bold text-nxp transition-colors hover:text-nxp/80"
               >
                 Criar conta →
               </button>
             </p>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-100" />
-              </div>
-              <div className="relative flex justify-center">
-                <span className="px-3 bg-white text-xs text-gray-400">ou</span>
-              </div>
-            </div>
+            <Divider />
 
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-11 text-sm font-medium border-gray-200 rounded-lg gap-2.5 hover:bg-gray-50 hover:border-gray-300"
-              onClick={loginWithGoogle}
-              disabled={isSubmitting}
-            >
-              <GoogleIcon />
-              Entrar com Google
-            </Button>
+            <AuthGoogleButton onClick={loginWithGoogle} disabled={isSubmitting} />
           </form>
         )}
       </div>

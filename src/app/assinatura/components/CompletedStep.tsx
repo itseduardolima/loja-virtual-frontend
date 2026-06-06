@@ -1,79 +1,75 @@
-import { motion } from "framer-motion";
-import { Check, Sparkles, Ticket } from "lucide-react";
-import { formatDateLong } from "@/lib/utils";
+import { motion } from 'framer-motion'
+import { Check, Sparkles, Ticket, type LucideIcon } from 'lucide-react'
+import { formatDateLong } from '@/lib/utils'
 
-export type CompletedReason = "paid" | "trial" | "coupon";
+export type CompletedReason = 'paid' | 'trial' | 'coupon'
 
 interface CompletedStepProps {
-  onGoToDashboard: () => void;
-  reason?: CompletedReason;
-  trialDays?: number | null;
-  couponCode?: string | null;
-  freeAccessUntil?: string | null;
+  onGoToDashboard: () => void
+  reason?: CompletedReason
+  trialDays?: number | null
+  couponCode?: string | null
+  freeAccessUntil?: string | null
 }
 
 interface StepCopy {
-  icon: React.ComponentType<{ className?: string }>;
-  iconBg: string;
-  iconColor: string;
-  title: string;
-  subtitle: string;
-  nextSteps: string;
-  buttonLabel: string;
+  icon: LucideIcon
+  iconClass: string
+  title: string
+  subtitle: string
+  nextSteps: string
+  buttonLabel: string
 }
 
 function getCopy(props: CompletedStepProps): StepCopy {
-  const { reason, trialDays, couponCode, freeAccessUntil } = props;
+  const { reason, trialDays, couponCode, freeAccessUntil } = props
 
-  if (reason === "trial") {
-    const days = trialDays ?? null;
+  if (reason === 'trial') {
+    const days = trialDays ?? null
     return {
       icon: Sparkles,
-      iconBg: "bg-blue-100",
-      iconColor: "text-blue-600",
-      title: "Trial ativado!",
+      iconClass: 'bg-nxp/[0.08] text-nxp',
+      title: 'Trial ativado!',
       subtitle: days
         ? `Você tem ${days} dias de acesso completo, sem cartão de crédito.`
-        : "Seu acesso gratuito está liberado.",
+        : 'Seu acesso gratuito está liberado.',
       nextSteps: freeAccessUntil
         ? `Aproveite até ${formatDateLong(freeAccessUntil)}. Para continuar depois desse prazo, você poderá assinar um plano em "Meu Plano".`
         : 'Crie sua loja agora e comece a vender. Quando o trial acabar, você escolhe um plano em "Meu Plano".',
-      buttonLabel: "Criar minha loja",
-    };
+      buttonLabel: 'Criar minha loja',
+    }
   }
 
-  if (reason === "coupon") {
+  if (reason === 'coupon') {
     return {
       icon: Ticket,
-      iconBg: "bg-green-100",
-      iconColor: "text-green-600",
-      title: "Acesso liberado!",
+      iconClass: 'bg-nxs/10 text-nxs',
+      title: 'Acesso liberado!',
       subtitle: couponCode
         ? `Cupom ${couponCode} aplicado — você tem acesso gratuito durante o período do desconto.`
-        : "Seu cupom foi aplicado e você tem acesso gratuito durante o período do desconto.",
+        : 'Seu cupom foi aplicado e você tem acesso gratuito durante o período do desconto.',
       nextSteps: freeAccessUntil
         ? `Sua conta é vendedor até ${formatDateLong(freeAccessUntil)}. Depois, será necessário assinar para continuar.`
-        : "Sua conta foi atualizada para o perfil de vendedor. Crie sua loja e comece a vender agora.",
-      buttonLabel: "Criar minha loja",
-    };
+        : 'Sua conta foi atualizada para o perfil de vendedor. Crie sua loja e comece a vender agora.',
+      buttonLabel: 'Criar minha loja',
+    }
   }
 
   // default: paid
   return {
     icon: Check,
-    iconBg: "bg-green-100",
-    iconColor: "text-green-600",
-    title: "Assinatura Confirmada!",
-    subtitle: "Seu pagamento foi confirmado com sucesso e sua assinatura está ativa!",
+    iconClass: 'bg-nxs/10 text-nxs',
+    title: 'Assinatura confirmada!',
+    subtitle: 'Seu pagamento foi confirmado com sucesso e sua assinatura está ativa!',
     nextSteps:
-      "Sua conta foi atualizada para o perfil de vendedor. Crie sua loja e comece a vender agora mesmo!",
-    buttonLabel: "Criar minha loja",
-  };
+      'Sua conta foi atualizada para o perfil de vendedor. Crie sua loja e comece a vender agora mesmo!',
+    buttonLabel: 'Criar minha loja',
+  }
 }
 
 export function CompletedStep(props: CompletedStepProps) {
-  const copy = getCopy(props);
-  const Icon = copy.icon;
+  const copy = getCopy(props)
+  const Icon = copy.icon
 
   return (
     <motion.div
@@ -84,26 +80,26 @@ export function CompletedStep(props: CompletedStepProps) {
       transition={{ duration: 0.5 }}
       className="text-center"
     >
-      <div className="bg-white rounded-xl sm:rounded-2xl border-2 border-gray-200 p-8 sm:p-12 max-w-2xl mx-auto shadow-lg">
+      <div className="mx-auto max-w-2xl rounded-2xl border border-nxborder bg-white p-8 shadow-sm sm:p-12">
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{
-            type: "spring",
+            type: 'spring',
             stiffness: 200,
             damping: 15,
             delay: 0.2,
           }}
-          className={`w-20 h-20 ${copy.iconBg} rounded-full flex items-center justify-center mx-auto mb-6`}
+          className={`mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl ${copy.iconClass}`}
         >
-          <Icon className={`w-12 h-12 ${copy.iconColor}`} />
+          <Icon size={32} />
         </motion.div>
 
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4"
+          className="mb-3 text-[24px] font-extrabold tracking-tight text-nxi1 sm:text-[28px]"
         >
           {copy.title}
         </motion.h2>
@@ -112,7 +108,7 @@ export function CompletedStep(props: CompletedStepProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="text-lg sm:text-xl text-gray-600 mb-6"
+          className="mb-6 text-[15px] leading-relaxed text-nxi2"
         >
           {copy.subtitle}
         </motion.p>
@@ -121,12 +117,10 @@ export function CompletedStep(props: CompletedStepProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="bg-green-50 border border-green-200 rounded-lg p-4 sm:p-6 mb-6"
+          className="mb-6 rounded-xl border border-nxp/15 bg-nxp/[0.04] p-4 text-left sm:p-5"
         >
-          <p className="text-sm sm:text-base text-gray-700 mb-2">
-            <strong>Próximos passos:</strong>
-          </p>
-          <p className="text-sm sm:text-base text-gray-600">{copy.nextSteps}</p>
+          <p className="mb-1 text-[13.5px] font-bold text-nxi1">Próximos passos:</p>
+          <p className="text-[13.5px] leading-relaxed text-nxi2">{copy.nextSteps}</p>
         </motion.div>
 
         <motion.div
@@ -135,16 +129,14 @@ export function CompletedStep(props: CompletedStepProps) {
           transition={{ delay: 0.6 }}
           className="flex justify-center"
         >
-          <motion.button
+          <button
             onClick={props.onGoToDashboard}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-primary text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-black/80 shadow-lg hover:shadow-xl transition-all"
+            className="h-12 rounded-xl bg-nxp px-8 text-[14.5px] font-bold text-white shadow-[0_1px_2px_hsl(237_49%_33%/0.3)] transition-[transform,background-color] hover:bg-nxp/90 active:scale-[0.99]"
           >
             {copy.buttonLabel}
-          </motion.button>
+          </button>
         </motion.div>
       </div>
     </motion.div>
-  );
+  )
 }
