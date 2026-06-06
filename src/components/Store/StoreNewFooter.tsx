@@ -93,13 +93,13 @@ const BASE_TRUST: TrustItem[] = [
   },
 ]
 
-const HELP = [
-  'Trocas e devoluções',
-  'Envio e prazos',
-  'Perguntas frequentes',
-  'Sobre a loja',
-  'Política de privacidade',
-]
+const PAGE_TYPE_SLUGS: Record<string, string> = {
+  returns: 'trocas',
+  shipping: 'envio',
+  faq: 'faq',
+  about: 'sobre',
+  privacy: 'politica',
+}
 
 interface StoreNewFooterProps {
   storeInfo: StoreInfo
@@ -125,6 +125,11 @@ export function StoreNewFooter({ storeInfo, slug }: StoreNewFooterProps) {
     .toUpperCase()
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
+
+  const helpLinks = (storeInfo.store_pages ?? []).map((p) => ({
+    label: p.title,
+    href: `/loja/${slug}/pagina/${PAGE_TYPE_SLUGS[p.page_type] ?? p.page_type}`,
+  }))
 
   const freeMin = storeInfo.free_delivery_min
   const hasFreeDelivery = freeMin !== null && freeMin !== undefined && Number(freeMin) > 0
@@ -274,21 +279,26 @@ export function StoreNewFooter({ storeInfo, slug }: StoreNewFooterProps) {
             </ul>
           </div>
 
-          {/* Col 3 — Ajuda (md:3) */}
-          <div className="md:col-span-3">
-            <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.14em] text-white/40">
-              Ajuda
-            </p>
-            <ul className="space-y-2.5">
-              {HELP.map((h) => (
-                <li key={h}>
-                  <a href="#" className="text-[13px] text-white/65 transition-colors hover:text-white">
-                    {h}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Col 3 — Ajuda (md:3) — só renderiza se houver páginas ativas */}
+          {helpLinks.length > 0 && (
+            <div className="md:col-span-3">
+              <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.14em] text-white/40">
+                Ajuda
+              </p>
+              <ul className="space-y-2.5">
+                {helpLinks.map((h) => (
+                  <li key={h.href}>
+                    <Link
+                      href={h.href}
+                      className="text-[13px] text-white/65 transition-colors hover:text-white"
+                    >
+                      {h.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Col 4 — Atendimento (md:3) */}
           <div className="col-span-2 md:col-span-3">
