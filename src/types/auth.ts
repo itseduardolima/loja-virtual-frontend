@@ -30,6 +30,8 @@ export const PROFILE_IDS = {
 export interface LoginRequest {
   login: string
   password: string
+  /** false → cookies de sessão (expiram ao fechar o browser); true/omitido → 7 dias */
+  remember?: boolean
 }
 
 export interface LoginResponse {
