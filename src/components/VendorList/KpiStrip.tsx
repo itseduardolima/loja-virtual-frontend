@@ -36,15 +36,15 @@ export function KpiStrip({ items }: KpiStripProps) {
       {items.map(({ label, value, icon: Icon, tone }) => (
         <div
           key={label}
-          className="rounded-2xl border border-nxborder bg-white p-4 shadow-[0_1px_2px_hsl(0_0%_0%/0.04)]"
+          className="rounded-xl border border-nxborder bg-white p-3 shadow-[0_1px_2px_hsl(0_0%_0%/0.04)] sm:rounded-2xl sm:p-4"
         >
-          <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${TONES[tone]}`}>
-            <Icon size={16} />
+          <span className={`flex h-6 w-6 items-center justify-center rounded-lg sm:h-8 sm:w-8 ${TONES[tone]}`}>
+            <Icon size={14} />
           </span>
-          <div className="mt-2.5 text-[20px] font-extrabold tracking-[-0.02em] text-nxi1">
+          <div className="mt-2 text-[16px] font-extrabold tracking-[-0.02em] text-nxi1 sm:mt-2.5 sm:text-[20px]">
             {value}
           </div>
-          <div className="text-[11.5px] font-medium text-nxi3">{label}</div>
+          <div className="text-[11px] font-medium text-nxi3 sm:text-[11.5px]">{label}</div>
         </div>
       ))}
     </div>

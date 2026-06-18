@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { List, Download, Search } from 'lucide-react'
+import { List, Download, Search, SlidersHorizontal, X } from 'lucide-react'
 import type { Order } from '@/types/order'
 import { cn } from '@/lib/utils'
 import {
@@ -14,6 +14,7 @@ import {
   type OrderKpis,
   type StatusFilter,
 } from '@/lib/orderVendorMeta'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { useOrderDetail } from '@/hooks/useOrderDetail'
 import { OrderDetailPanel } from './OrderDetailPanel'
 
@@ -58,6 +59,9 @@ export function MobileOrdersView({
   onDenyCancelReq,
   acceptDenyLoading = false,
 }: MobileOrdersViewProps) {
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false)
+  const hasActiveFilter = statusFilter !== 'all'
+
   const q = search.trim().toLowerCase()
   const visibleOrders = orders.filter((o) => {
     if (statusFilter !== 'all' && o.status !== statusFilter) return false
@@ -68,7 +72,7 @@ export function MobileOrdersView({
   return (
     <div className="flex flex-col bg-nxbg">
       {/* ─── Cabeçalho fixo (branco) ─────────────────────────────────────── */}
-      <div className="sticky top-0 z-10 bg-white border-b border-nxborder px-[16px] pt-[16px] pb-[11px]">
+      <div className="sticky top-0 z-10 border-b border-nxborder bg-white px-[16px] pb-[11px] pt-[16px]">
         <div className="flex items-center justify-between">
           <h1 className="text-[22px] font-extrabold tracking-[-.03em] text-nxi1">Pedidos</h1>
           <div className="flex gap-[6px]">
@@ -103,55 +107,113 @@ export function MobileOrdersView({
           </div>
         </div>
 
-        {/* Busca */}
-        <div className="relative mt-[10px]">
-          <span className="pointer-events-none absolute left-[11px] top-1/2 -translate-y-1/2">
-            <Search className="h-[15px] w-[15px] text-nxi3" />
-          </span>
-          <input
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Buscar por código ou cliente…"
-            className="h-[38px] w-full rounded-[11px] border border-nxborder bg-nxbg pl-[34px] pr-[12px] text-[12.5px] font-semibold text-nxi1 placeholder:text-nxi3 outline-none focus:border-nxp"
-          />
-        </div>
-
-        {/* Segmentos de status (scroll horizontal, sem scrollbar) */}
-        <div className="mt-[11px] flex gap-[6px] overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-          {STATUS_SEGMENTS.map((seg) => {
-            const active = statusFilter === seg.key
-            const count = counts[seg.key]
-            return (
-              <button
-                key={String(seg.key)}
-                type="button"
-                onClick={() => onStatusFilterChange(seg.key)}
-                className={cn(
-                  'flex h-[28px] shrink-0 items-center gap-[5px] rounded-[8px] px-[11px] text-[12px] font-bold',
-                  active ? 'bg-nxp text-white' : 'border border-nxborder bg-white text-nxi2',
-                )}
-              >
-                {seg.dot && (
-                  <span
-                    className={cn('h-[6px] w-[6px] rounded-full', active ? 'bg-white/80' : seg.dot)}
-                  />
-                )}
-                {seg.label}
-                {count > 0 && (
-                  <span
-                    className={cn(
-                      'text-[11px] font-bold tabular-nums',
-                      active ? 'text-white/80' : 'text-nxi3',
-                    )}
-                  >
-                    {count}
-                  </span>
-                )}
-              </button>
-            )
-          })}
+        {/* Busca + Filtros */}
+        <div className="mt-[10px] flex items-center gap-[8px]">
+          <div className="relative flex-1">
+            <span className="pointer-events-none absolute left-[11px] top-1/2 -translate-y-1/2">
+              <Search className="h-[15px] w-[15px] text-nxi3" />
+            </span>
+            <input
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Buscar por código ou cliente…"
+              className="h-[38px] w-full rounded-[11px] border border-nxborder bg-nxbg pl-[34px] pr-[12px] text-[12.5px] font-semibold text-nxi1 placeholder:text-nxi3 outline-none focus:border-nxp"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => setFilterSheetOpen(true)}
+            className={cn(
+              'relative flex h-[38px] shrink-0 items-center gap-[6px] rounded-[11px] border px-[12px] text-[12.5px] font-bold transition-colors',
+              hasActiveFilter
+                ? 'border-nxp bg-[#EEF0FB] text-nxp'
+                : 'border-nxborder bg-white text-nxi2',
+            )}
+          >
+            <SlidersHorizontal size={14} />
+            Filtrar
+            {hasActiveFilter && (
+              <span className="flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-nxp px-[4px] text-[10px] font-extrabold text-white">
+                1
+              </span>
+            )}
+          </button>
         </div>
       </div>
+
+      {/* ─── Filter Sheet ─────────────────────────────────────────────────── */}
+      <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
+        <SheetContent side="bottom" className="rounded-t-[20px] px-0 pb-0">
+          <SheetHeader className="border-b border-nxborder px-[16px] pb-[14px] pt-[18px]">
+            <SheetTitle className="text-[16px] font-extrabold text-nxi1">Filtrar pedidos</SheetTitle>
+          </SheetHeader>
+          <div className="overflow-y-auto px-[16px] pb-[env(safe-area-inset-bottom,24px)] pt-[16px]">
+            <div className="mb-[18px]">
+              <div className="mb-[10px] text-[11px] font-bold uppercase tracking-[0.06em] text-nxi3">
+                Status
+              </div>
+              <div className="flex flex-col gap-[6px]">
+                {STATUS_SEGMENTS.map((seg) => {
+                  const active = statusFilter === seg.key
+                  const count = counts[seg.key]
+                  return (
+                    <button
+                      key={String(seg.key)}
+                      type="button"
+                      onClick={() => {
+                        onStatusFilterChange(seg.key)
+                        setFilterSheetOpen(false)
+                      }}
+                      className={cn(
+                        'flex h-[44px] items-center justify-between rounded-[12px] border px-[14px] text-[13.5px] font-bold',
+                        active
+                          ? 'border-nxp bg-[#EEF0FB] text-nxp'
+                          : 'border-nxborder bg-white text-nxi2',
+                      )}
+                    >
+                      <div className="flex items-center gap-[8px]">
+                        {seg.dot && (
+                          <span
+                            className={cn(
+                              'h-[7px] w-[7px] rounded-full',
+                              active ? 'bg-nxp' : seg.dot,
+                            )}
+                          />
+                        )}
+                        {seg.label}
+                      </div>
+                      {count > 0 && (
+                        <span
+                          className={cn(
+                            'text-[12px] font-bold tabular-nums',
+                            active ? 'text-nxp' : 'text-nxi3',
+                          )}
+                        >
+                          {count}
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {hasActiveFilter && (
+              <button
+                type="button"
+                onClick={() => {
+                  onStatusFilterChange('all')
+                  setFilterSheetOpen(false)
+                }}
+                className="flex h-[44px] w-full items-center justify-center gap-[6px] rounded-[12px] border border-nxborder pb-[8px] text-[13.5px] font-bold text-nxi2"
+              >
+                <X size={15} />
+                Limpar filtro
+              </button>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* ─── Lista de cards ──────────────────────────────────────────────── */}
       <div className="flex-1 p-[12px]">
