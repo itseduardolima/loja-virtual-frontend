@@ -16,7 +16,7 @@ interface StatusTabsProps<T> {
 
 export function StatusTabs<T>({ tabs, active, onChange }: StatusTabsProps<T>) {
   return (
-    <div className="flex items-center gap-0.5 rounded-lg bg-nxbg p-0.5">
+    <div className="flex items-center gap-0.5 overflow-x-auto rounded-lg bg-nxbg p-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {tabs.map(({ value, label, count }) => {
         const isActive = active === value
         return (
@@ -25,6 +25,7 @@ export function StatusTabs<T>({ tabs, active, onChange }: StatusTabsProps<T>) {
             type="button"
             onClick={() => onChange(value)}
             className={cn(
+              'shrink-0',
               'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[12.5px] font-semibold transition-colors',
               isActive
                 ? 'bg-white text-nxi1 shadow-[0_1px_2px_hsl(0_0%_0%/0.08)]'

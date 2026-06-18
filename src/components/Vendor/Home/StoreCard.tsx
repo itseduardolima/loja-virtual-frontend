@@ -41,7 +41,7 @@ export function StoreCard() {
         onMouseEnter={() => setHeroHover(true)}
         onMouseLeave={() => setHeroHover(false)}
         className={cn(
-          'relative flex h-[300px] cursor-pointer items-center justify-center overflow-hidden rounded-[10px]',
+          'relative flex h-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-[10px] sm:h-[300px]',
           !store?.logo && 'bg-[linear-gradient(135deg,#F5DDD0_0%,#EDD5C5_100%)]',
         )}
       >

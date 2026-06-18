@@ -67,8 +67,8 @@ export function TablePagination({
   })()
 
   return (
-    <div className="flex items-center justify-between border-t border-nxborder px-4 py-3 text-[12.5px] text-nxi3">
-      <span>
+    <div className="flex flex-col items-center gap-2 border-t border-nxborder px-4 py-3 text-[12.5px] text-nxi3 sm:flex-row sm:justify-between">
+      <span className="hidden sm:inline">
         Mostrando <b className="text-nxi1">{shown}</b> de {total}
       </span>
       {lastPage > 1 && (

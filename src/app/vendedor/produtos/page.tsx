@@ -127,7 +127,7 @@ export default function ProdutosPage() {
             className="ml-auto w-full sm:w-64"
           />
 
-          <div className="w-40">
+          <div className="w-full sm:w-40">
             <NxSelectNative
               value={filters.featured ? 'featured' : 'all'}
               onChange={(v) =>
@@ -144,7 +144,7 @@ export default function ProdutosPage() {
             />
           </div>
 
-          <div className="w-40">
+          <div className="w-full sm:w-40">
             <NxSelectNative
               value={filters.sort}
               onChange={(v) => setFilters((prev) => ({ ...prev, sort: v, page: 1 }))}

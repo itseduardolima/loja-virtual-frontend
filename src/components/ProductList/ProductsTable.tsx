@@ -126,7 +126,7 @@ export function ProductsTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-left">
+      <table className="w-full min-w-[480px] border-collapse text-left">
         <thead>
           <tr>
             <th className={cn(thClass, 'px-4')}>Produto</th>
@@ -156,7 +156,7 @@ export function ProductsTable({
                       <button
                         type="button"
                         onClick={() => onView(product.id)}
-                        className="block max-w-[260px] truncate text-left font-semibold text-nxi1 transition-colors hover:text-nxp"
+                        className="block max-w-[160px] truncate text-left font-semibold text-nxi1 transition-colors hover:text-nxp sm:max-w-[260px]"
                       >
                         {product.name}
                       </button>

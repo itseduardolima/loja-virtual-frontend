@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { SidebarVendedor, UserHeader } from '@/components'
-import { LoadingPage, AccessDenied, SubscriptionBlocked } from '@/components/Layout'
+import { LoadingPage, AccessDenied, SubscriptionBlocked, BottomNav } from '@/components/Layout'
 import { useEffect, useState } from 'react'
 import { useValidateToken } from '@/hooks/useValidateToken'
 import { useMySubscription } from '@/hooks/useSubscription'
@@ -194,7 +194,9 @@ export default function VendedorLayout({
 
   return (
     <div className="flex h-screen overflow-hidden bg-nxbg">
-      <SidebarVendedor currentPath={pathname} pendingOrdersCount={pendingOrdersCount} />
+      <div className="hidden lg:flex h-full">
+        <SidebarVendedor currentPath={pathname} pendingOrdersCount={pendingOrdersCount} />
+      </div>
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <UserHeader
           currentPath={pathname}
@@ -205,9 +207,10 @@ export default function VendedorLayout({
           onClearAll={clearAllOrderNotifications}
         />
         <main aria-label="Conteúdo principal" className="flex-1 overflow-y-auto bg-nxbg">
-          <div className="mx-auto max-w-[1640px] px-6 py-6">{children}</div>
+          <div className="mx-auto max-w-[1640px] px-4 py-4 pb-[80px] lg:px-6 lg:py-6 lg:pb-6">{children}</div>
         </main>
       </div>
+      <BottomNav currentPath={pathname} pendingOrdersCount={pendingOrdersCount} />
     </div>
   )
 }
