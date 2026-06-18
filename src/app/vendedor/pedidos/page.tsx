@@ -1,472 +1,223 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
 import {
   DndContext,
   DragOverlay,
   PointerSensor,
   useSensor,
   useSensors,
-  type DragEndEvent,
   type DragStartEvent,
+  type DragEndEvent,
 } from '@dnd-kit/core'
-import { ErrorState, LoadingPage, FeatureLockedModal } from '@/components/Layout'
 import { useOrdersPage } from './useOrdersPage'
 import {
-  OrderDetailPanel,
-  KanbanColumn,
-  OrderKanbanCard,
+  OrderKpis,
+  OrdersFilterBar,
+  OrderViewToggle,
+  OrderExportButton,
+  OrderListView,
+  OrderBoardView,
+  OrderDetailDrawer,
+  OrdersLoadingState,
+  OrdersEmptyState,
+  OrdersFilteredEmptyState,
+  OrdersErrorState,
+  CancelReasonModal,
+  CancellationRequestModal,
+  NewOrderToast,
+  MobileOrdersView,
   OrderKanbanCardPreview,
   parseOrderIdFromDraggableId,
   parseStatusFromDroppableId,
-  MobileOrdersView,
 } from '@/components/Order'
-import { STATUS_ORDER, STATUS_HEADER_COLORS } from '@/lib/orderPanelUtils'
-import { useUpdateOrderStatus } from '@/hooks/useUpdateOrderStatus'
-import { useAcceptCancellationRequest } from '@/hooks/useAcceptCancellationRequest'
-import { useDenyCancellationRequest } from '@/hooks/useDenyCancellationRequest'
-import type { OrdersResponse } from '@/types/order'
-import { FileDown, MessageCircle, User, Lock, X } from 'lucide-react'
-import { DashboardDateRangeFilter } from '@/components/Dashboard'
-import { Button } from '@/components/ui/button'
-import { SearchInput } from '@/components/ui/search-input'
-import { Textarea } from '@/components/ui/textarea'
-import { cn } from '@/lib/utils'
-import { useExportOrders } from '@/hooks/useExportOrders'
-import { usePlanFeatures } from '@/hooks/usePlanFeatures'
-import { useFeatureLockedModal } from '@/hooks/useFeatureLockedModal'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog'
+import { FeatureLockedModal, LoadingPage } from '@/components/Layout'
 
 export default function OrdersPage() {
-  const {
-    authLoading,
-    isAuthenticated,
-    user,
-    searchTerm,
-    setSearchTerm,
-    visibleOrdersByStatus,
-    panelOrders,
-    panelTotal,
-    isLoading,
-    error,
-    selectedOrderId,
-    setSelectedOrderId,
-    columnHasMore,
-    handleShowMore,
-    hasDateFilter,
-    dateFromInput,
-    dateToInput,
-    handleRangeSelect,
-    exportFilters,
-    ORDER_STATUS: STATUS_MAP,
-  } = useOrdersPage()
+  const p = useOrdersPage()
+  const [activeDragId, setActiveDragId] = useState<number | null>(null)
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
+  const activeOrder = activeDragId != null ? (p.orderById.get(activeDragId) ?? null) : null
 
-  const { exportOrders, isExporting } = useExportOrders()
-  const { features } = usePlanFeatures()
-  const { lockedFeature, showFeatureModal, closeFeatureModal } = useFeatureLockedModal()
-
-  const handleExportClick = () => {
-    if (!features.feature_order_export) {
-      showFeatureModal('feature_order_export')
-      return
-    }
-    exportOrders(exportFilters)
+  const handleDragStart = (e: DragStartEvent) => {
+    const id = parseOrderIdFromDraggableId(String(e.active.id))
+    if (id != null) setActiveDragId(id)
+  }
+  const handleDragEnd = (e: DragEndEvent) => {
+    setActiveDragId(null)
+    const id = parseOrderIdFromDraggableId(String(e.active.id))
+    const over = e.over?.id
+    if (id == null || over == null) return
+    const status = parseStatusFromDroppableId(String(over))
+    if (status != null) p.moveOrder(id, status)
   }
 
-  const queryClient = useQueryClient()
-  const { mutate: updateOrderStatus } = useUpdateOrderStatus()
-  const { mutate: acceptRequest, isPending: isAccepting } = useAcceptCancellationRequest()
-  const { mutate: denyRequest, isPending: isDenying } = useDenyCancellationRequest()
-  const [activeOrderId, setActiveOrderId] = useState<number | null>(null)
-  const [pendingCancel, setPendingCancel] = useState<{ orderId: number } | null>(null)
-  const [cancellationReason, setCancellationReason] = useState('')
-  const [cancelRequestOrder, setCancelRequestOrder] = useState<(typeof panelOrders)[0] | null>(null)
+  if (p.authLoading || !p.isVendor) return <LoadingPage />
 
-  const orderById = useMemo(() => {
-    const map = new Map<number, (typeof panelOrders)[0]>()
-    panelOrders.forEach((o) => map.set(o.id, o))
-    return map
-  }, [panelOrders])
+  const subtitle = `${p.filteredOrders.length} de ${p.total} pedido${p.total !== 1 ? 's' : ''} · atualizado agora`
+  const hasActiveFilters = !!p.search || p.statusFilter !== 'all' || !!p.dateRange
+  const emptyAbsolute = !p.isLoading && !p.error && p.allOrders.length === 0 && !hasActiveFilters
+  const filteredEmpty =
+    !p.isLoading &&
+    !p.error &&
+    (p.allOrders.length === 0
+      ? hasActiveFilters
+      : p.filteredOrders.length === 0)
 
-  const activeOrder = activeOrderId != null ? orderById.get(activeOrderId) ?? null : null
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 8 },
-    })
-  )
-
-  const handleDragStart = (event: DragStartEvent) => {
-    const id = parseOrderIdFromDraggableId(String(event.active.id))
-    if (id != null) setActiveOrderId(id)
-  }
-
-  const doMoveOrder = (orderId: number, newStatus: number, cancellation_reason?: string) => {
-    queryClient.setQueriesData(
-      { queryKey: ['orders'] },
-      (old: OrdersResponse | undefined) => {
-        if (!old?.data) return old
-        return {
-          ...old,
-          data: old.data.map((o) =>
-            o.id === orderId ? { ...o, status: newStatus } : o
-          ),
-        }
-      }
-    )
-    updateOrderStatus({ orderId, status: newStatus, cancellation_reason })
-  }
-
-  const handleMoveOrder = (orderId: number, newStatus: number) => {
-    const order = orderById.get(orderId)
-    if (order?.cancellation_requested === 1) {
-      setCancelRequestOrder(order)
-      return
-    }
-    if (newStatus === 5) {
-      setPendingCancel({ orderId })
-      setCancellationReason('')
-      return
-    }
-    doMoveOrder(orderId, newStatus)
-  }
-
-  const handleConfirmCancel = () => {
-    if (!pendingCancel || !cancellationReason.trim()) return
-    doMoveOrder(pendingCancel.orderId, 5, cancellationReason.trim())
-    setPendingCancel(null)
-    setCancellationReason('')
-  }
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const orderId = parseOrderIdFromDraggableId(String(event.active.id))
-    const overId = event.over?.id
-    setActiveOrderId(null)
-    if (orderId == null || overId == null) return
-    const newStatus = parseStatusFromDroppableId(String(overId))
-    if (newStatus == null) return
-    const order = orderById.get(orderId)
-    if (!order || order.status === newStatus) return
-
-    if (order.cancellation_requested === 1) {
-      setCancelRequestOrder(order)
-      return
-    }
-
-    if (newStatus === 5) {
-      setPendingCancel({ orderId })
-      setCancellationReason('')
-      return
-    }
-
-    doMoveOrder(orderId, newStatus)
-  }
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingPage />
-      </div>
-    )
-  }
-
-  if (!isAuthenticated || user?.profile !== 'Vendedor') {
-    return <LoadingPage />
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingPage />
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <ErrorState
-          message="Erro ao carregar pedidos"
-          onRetry={() => queryClient.invalidateQueries({ queryKey: ['orders'] })}
-        />
-      </div>
-    )
+  const clearAllFilters = () => {
+    p.clearSearch()
+    p.setStatusFilter('all')
+    p.onRangeChange(null)
   }
 
   return (
-    <div className="h-full flex flex-col lg:flex-row gap-4 lg:gap-6 -mx-4 lg:mx-0">
-      {/* View mobile — visível apenas em telas pequenas */}
-      <div className="lg:hidden w-full">
-        <MobileOrdersView
-          ordersByStatus={visibleOrdersByStatus}
-          totalCount={panelTotal}
-          selectedOrderId={selectedOrderId}
-          onSelectOrder={setSelectedOrderId}
-          onMoveOrder={handleMoveOrder}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          dateFromInput={dateFromInput}
-          dateToInput={dateToInput}
-          hasDateFilter={hasDateFilter}
-          onRangeSelect={handleRangeSelect}
-          onExport={handleExportClick}
-          isExportLocked={!features.feature_order_export}
-          isExporting={isExporting}
+    <>
+      {/* ===== Desktop (lg+) ===== */}
+      <div className="hidden lg:flex lg:flex-col lg:gap-[16px]">
+        <header className="flex items-start gap-[16px]">
+          <div className="min-w-0">
+            <h1 className="font-integral text-[26px] font-extrabold tracking-[-0.03em] text-nxi1">
+              Pedidos
+            </h1>
+            <p className="mt-[4px] text-[13px] font-semibold text-nxi3">{subtitle}</p>
+          </div>
+          <div className="ml-auto flex items-center gap-[10px]">
+            <OrderViewToggle view={p.view} onChange={p.setView} />
+            <OrderExportButton
+              onExport={p.handleExport}
+              exporting={p.isExporting}
+              locked={p.exportLocked}
+            />
+          </div>
+        </header>
+
+        {p.isLoading ? (
+          <OrdersLoadingState />
+        ) : p.error ? (
+          <OrdersErrorState onRetry={p.refetchOrders} />
+        ) : emptyAbsolute ? (
+          <OrdersEmptyState />
+        ) : (
+          <>
+            <OrderKpis kpis={p.kpis} />
+            <OrdersFilterBar
+              search={p.search}
+              onSearchChange={p.setSearch}
+              onClearSearch={p.clearSearch}
+              sortKey={p.sort}
+              onSortChange={p.setSort}
+              dateRange={p.dateRange}
+              onRangeChange={p.onRangeChange}
+              statusFilter={p.statusFilter}
+              onStatusFilterChange={p.setStatusFilter}
+              counts={p.counts}
+            />
+            {filteredEmpty ? (
+              <OrdersFilteredEmptyState onClear={clearAllFilters} />
+            ) : p.view === 'list' ? (
+              <OrderListView
+                orders={p.filteredOrders}
+                selectedId={p.selectedOrderId}
+                sortKey={p.sort}
+                onOpen={p.openOrder}
+                onSortBy={p.setSort}
+                onAdvance={p.advanceOrder}
+                onWhatsApp={p.handleWhatsApp}
+              />
+            ) : (
+              <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+                <OrderBoardView
+                  orders={p.filteredOrders}
+                  selectedId={p.selectedOrderId}
+                  columnLimits={p.columnLimits}
+                  cancelCount={p.counts[5]}
+                  onOpen={p.openOrder}
+                  onShowMore={p.showMoreColumn}
+                  onViewCancelled={p.viewCancelled}
+                />
+                <DragOverlay>
+                  {activeOrder ? <OrderKanbanCardPreview order={activeOrder} /> : null}
+                </DragOverlay>
+              </DndContext>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* ===== Mobile (<lg) ===== */}
+      <div className="lg:hidden">
+        {p.isLoading ? (
+          <OrdersLoadingState />
+        ) : p.error ? (
+          <OrdersErrorState onRetry={p.refetchOrders} />
+        ) : emptyAbsolute ? (
+          <OrdersEmptyState />
+        ) : (
+          <MobileOrdersView
+            orders={p.sortedOrders}
+            kpis={p.kpis}
+            selectedId={p.selectedOrderId}
+            onSelect={(id) => (id == null ? p.closeDrawer() : p.openOrder(id))}
+            search={p.search}
+            onSearchChange={p.setSearch}
+            statusFilter={p.statusFilter}
+            onStatusFilterChange={p.setStatusFilter}
+            counts={p.counts}
+            onExport={p.handleExport}
+            exporting={p.isExporting}
+            exportLocked={p.exportLocked}
+            onEmitNfe={() => p.emitNfe()}
+            emitting={p.emitting}
+            onAcceptCancelReq={p.acceptCancelRequest}
+            onDenyCancelReq={p.denyCancelRequest}
+            acceptDenyLoading={p.acceptDenyLoading}
+          />
+        )}
+      </div>
+
+      {/* Drawer de detalhe — desktop */}
+      <div className="hidden lg:block">
+        <OrderDetailDrawer
+          orderId={p.selectedOrderId}
+          onClose={p.closeDrawer}
+          onAdvance={p.advanceOrder}
+          onCancel={p.requestCancel}
+          onAcceptCancelReq={p.acceptCancelRequest}
+          onDenyCancelReq={p.denyCancelRequest}
+          acceptDenyLoading={p.acceptDenyLoading}
+          onEmitNfe={() => p.emitNfe()}
+          emitting={p.emitting}
         />
       </div>
 
-      {/* Quadro Kanban — visível apenas em lg+ */}
-      <div className="hidden lg:flex w-full flex-1 min-w-0 flex-col bg-white lg:rounded-2xl lg:border lg:border-gray-200 lg:shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-gray-100">
-          <h1 className="text-xl font-bold text-gray-900 font-integral">Quadro de pedidos</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {panelTotal} pedido{panelTotal !== 1 ? 's' : ''} — Arraste os cards para alterar o status
-          </p>
-
-          <div className="flex items-center gap-3 mt-4">
-            {/* Campo de busca */}
-            <SearchInput
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onClear={() => setSearchTerm('')}
-              placeholder="Buscar pedidos..."
-              className="flex-1 max-w-md"
-            />
-
-            {/* Filtro de data */}
-            <div className="ml-auto shrink-0 flex items-center gap-2">
-              <DashboardDateRangeFilter
-                dateFromInput={dateFromInput}
-                dateToInput={dateToInput}
-                hasDateFilter={hasDateFilter}
-                onRangeSelect={handleRangeSelect}
-              />
-
-              <Button
-                variant="outline"
-                disabled={isExporting}
-                onClick={handleExportClick}
-                className={cn(
-                  'shrink-0 gap-2 h-12 rounded-xl',
-                  !features.feature_order_export && 'text-gray-500 hover:text-gray-700'
-                )}
-              >
-                {isExporting ? (
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                ) : (
-                  <FileDown className="h-4 w-4" />
-                )}
-                {isExporting ? 'Exportando...' : 'Exportar Excel'}
-                {!features.feature_order_export && <Lock className="h-3.5 w-3.5 ml-1 text-gray-400" />}
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-auto p-4">
-          <DndContext
-            sensors={sensors}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-          >
-            <div className="flex gap-4 w-full pb-2">
-              {STATUS_ORDER.map((statusKey) => {
-                const orders = visibleOrdersByStatus[statusKey] ?? []
-                const label = STATUS_MAP[statusKey as keyof typeof STATUS_MAP]?.label ?? 'Pedidos'
-                const colors = STATUS_HEADER_COLORS[statusKey] ?? STATUS_HEADER_COLORS[1]
-                return (
-                  <KanbanColumn
-                    key={statusKey}
-                    statusKey={statusKey}
-                    label={label}
-                    orders={orders}
-                    colors={colors}
-                    selectedOrderId={selectedOrderId}
-                    onSelectOrder={setSelectedOrderId}
-                    hasMore={columnHasMore[statusKey]}
-                    onShowMore={() => handleShowMore(statusKey)}
-                    hasDateFilter={hasDateFilter}
-                  />
-                )
-              })}
-            </div>
-
-            <DragOverlay>
-              {activeOrder ? (
-                <OrderKanbanCardPreview order={activeOrder} />
-              ) : null}
-            </DragOverlay>
-          </DndContext>
-        </div>
-      </div>
-
-      {/* Detalhes do pedido — só em desktop (lg+), mobile usa MobileOrdersView */}
-      {selectedOrderId !== null && (
-        <div className="hidden lg:flex w-full lg:w-[360px] xl:w-[400px] lg:shrink-0 flex-col min-w-0 lg:rounded-2xl lg:border lg:border-gray-200 lg:shadow-sm overflow-hidden bg-white">
-          <div className="sticky top-0 px-3 py-2.5 z-10 bg-white border-b border-gray-100 flex items-center justify-between gap-2">
-            <h2 className="text-base font-bold text-gray-900 font-integral">Detalhes do pedido</h2>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-              onClick={() => setSelectedOrderId(null)}
-              aria-label="Fechar detalhes do pedido"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="p-3 max-h-[calc(100vh-220px)] lg:max-h-[calc(100vh-180px)] overflow-y-auto overflow-x-hidden bg-gray-50/50 lg:rounded-b-2xl">
-            <OrderDetailPanel orderId={selectedOrderId} />
-          </div>
+      {/* Modais + toast */}
+      <CancelReasonModal
+        open={p.pendingCancel}
+        onClose={p.closeCancelReason}
+        onConfirm={p.confirmCancel}
+      />
+      <CancellationRequestModal
+        open={!!p.cancelRequestOrder}
+        order={p.cancelRequestOrder}
+        onClose={p.closeCancelRequest}
+        onAccept={() => p.cancelRequestOrder && p.acceptCancelRequest(p.cancelRequestOrder.id)}
+        onDeny={() => p.cancelRequestOrder && p.denyCancelRequest(p.cancelRequestOrder.id)}
+        loading={p.acceptDenyLoading}
+      />
+      <FeatureLockedModal
+        feature={p.lockedFeature}
+        open={!!p.lockedFeature}
+        onOpenChange={(open) => !open && p.closeFeatureModal()}
+      />
+      {p.toast && (
+        <div className="fixed right-[18px] top-[18px] z-[70]">
+          <NewOrderToast
+            customerName={p.toast.customerName}
+            totalFmt={p.toast.totalFmt}
+            onDismiss={p.dismissToast}
+          />
         </div>
       )}
-
-      {/* Dialog de solicitação de cancelamento pelo cliente */}
-      <Dialog
-        open={!!cancelRequestOrder}
-        onOpenChange={(open) => {
-          if (!open) setCancelRequestOrder(null)
-        }}
-      >
-        <DialogContent className="sm:max-w-md p-0 overflow-hidden">
-          {/* Header */}
-          <div className="px-6 pt-6 pb-4 border-b border-gray-100">
-            <DialogTitle className="text-base font-bold text-gray-900">
-              Solicitação de cancelamento
-            </DialogTitle>
-            <div className="flex items-center gap-2 mt-2">
-              <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-                <User className="h-3.5 w-3.5 text-gray-500" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">
-                  {cancelRequestOrder?.customer_name}
-                </p>
-                <p className="text-xs text-gray-400">Pedido #{cancelRequestOrder?.order_code}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Mensagem do cliente */}
-          <div className="px-6 py-5">
-            {cancelRequestOrder?.cancellation_request_reason ? (
-              <div className="flex items-end gap-2.5">
-                <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center shrink-0 mb-0.5">
-                  <User className="h-3.5 w-3.5 text-gray-500" />
-                </div>
-                <div className="flex-1 min-w-0 overflow-hidden">
-                  <div className="bg-gray-100 rounded-2xl rounded-bl-sm px-4 py-3 max-w-[90%]">
-                    <p className="text-sm text-gray-800 break-words whitespace-pre-wrap leading-relaxed" style={{ overflowWrap: 'anywhere' }}>
-                      {cancelRequestOrder.cancellation_request_reason}
-                    </p>
-                  </div>
-                  <p className="text-[11px] text-gray-400 mt-1 ml-1">Motivo informado pelo cliente</p>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3 py-2 text-sm text-gray-400">
-                <MessageCircle className="h-4 w-4 shrink-0" />
-                Nenhum motivo informado pelo cliente.
-              </div>
-            )}
-          </div>
-
-          {/* Footer */}
-          <div className="px-6 pb-6 flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
-            <Button
-              variant="outline"
-              disabled={isAccepting || isDenying}
-              onClick={() => {
-                if (!cancelRequestOrder) return
-                denyRequest(cancelRequestOrder.id, {
-                  onSuccess: () => setCancelRequestOrder(null),
-                })
-              }}
-            >
-              {isDenying ? 'Recusando...' : 'Recusar solicitação'}
-            </Button>
-            <Button
-              variant="destructive"
-              disabled={isAccepting || isDenying}
-              onClick={() => {
-                if (!cancelRequestOrder) return
-                acceptRequest(cancelRequestOrder.id, {
-                  onSuccess: () => setCancelRequestOrder(null),
-                })
-              }}
-            >
-              {isAccepting ? 'Cancelando pedido...' : 'Aceitar e cancelar pedido'}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Dialog de motivo de cancelamento */}
-      <Dialog
-        open={!!pendingCancel}
-        onOpenChange={(open) => {
-          if (!open) {
-            setPendingCancel(null)
-            setCancellationReason('')
-          }
-        }}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Motivo do cancelamento</DialogTitle>
-            <DialogDescription>
-              Informe o motivo para cancelar este pedido. Este registro ficará visível nos detalhes do pedido.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-1">
-            <Textarea
-              placeholder="Descreva o motivo do cancelamento..."
-              value={cancellationReason}
-              onChange={(e) => setCancellationReason(e.target.value)}
-              maxLength={500}
-              rows={4}
-              className="resize-none"
-              autoFocus
-            />
-            <p className="text-xs text-gray-400 mt-1.5 text-right">
-              {cancellationReason.length}/500
-            </p>
-          </div>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setPendingCancel(null)
-                setCancellationReason('')
-              }}
-            >
-              Voltar
-            </Button>
-            <Button
-              variant="destructive"
-              disabled={!cancellationReason.trim()}
-              onClick={handleConfirmCancel}
-            >
-              Confirmar cancelamento
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <FeatureLockedModal
-        feature={lockedFeature}
-        open={!!lockedFeature}
-        onOpenChange={(open) => !open && closeFeatureModal()}
-      />
-    </div>
+    </>
   )
 }
