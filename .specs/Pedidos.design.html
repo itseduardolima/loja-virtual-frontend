@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Nunito',system-ui,sans-serif;-webkit-font-smoothing:antialiased;color:#1C1E2B}
+  lc-icon{display:inline-flex;align-items:center;justify-content:center;flex:none;line-height:0}
+  lc-icon svg{display:block}
+  @keyframes nxshimmer{0%{background-position:-360px 0}100%{background-position:360px 0}}
+  @keyframes nxspin{to{transform:rotate(360deg)}}
+  @keyframes nxtoast{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes nxdrawer{from{transform:translateX(100%)}to{transform:translateX(0)}}
+  .nxsk{background:linear-gradient(90deg,#ECEDF2 25%,#F6F7FA 50%,#ECEDF2 75%);background-size:720px 100%;animation:nxshimmer 1.3s linear infinite;border-radius:8px}
+  .nxscroll::-webkit-scrollbar{width:9px;height:9px}
+  .nxscroll::-webkit-scrollbar-thumb{background:#D7D9E3;border-radius:8px;border:2px solid transparent;background-clip:content-box}
+  .nxscroll::-webkit-scrollbar-thumb:hover{background:#C2C5D2;background-clip:content-box}
+</style>
+<script>
+(function(){
+  function pascal(n){return (n||'').replace(/(^\w|-\w)/g,function(m){return m.replace('-','').toUpperCase()});}
+  function draw(el){
+    var root=el.__root||(el.__root=el.attachShadow({mode:'open'}));
+    var L=window.lucide; if(!L||!L.icons){(window.__lcq=window.__lcq||[]).push(el);return;}
+    var node=L.icons[pascal(el.getAttribute('name'))]||L.icons[el.getAttribute('name')];
+    if(!node){root.innerHTML='';return;}
+    var size=el.getAttribute('size')||'16', sw=el.getAttribute('stroke-width')||'2', color=el.getAttribute('color')||'currentColor';
+    var inner=node.map(function(c){return '<'+c[0]+' '+Object.keys(c[1]).map(function(k){return k+'="'+c[1][k]+'"'}).join(' ')+'/>'}).join('');
+    root.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="'+color+'" stroke-width="'+sw+'" stroke-linecap="round" stroke-linejoin="round" style="display:block">'+inner+'</svg>';
+  }
+  if(!customElements.get('lc-icon')){
+    customElements.define('lc-icon', class extends HTMLElement{
+      static get observedAttributes(){return ['name','size','color','stroke-width'];}
+      connectedCallback(){draw(this);}
+      attributeChangedCallback(){draw(this);}
+    });
+  }
+  function flush(){ if(window.lucide&&window.lucide.icons){ var q=window.__lcq||[]; window.__lcq=[]; q.forEach(draw);} else setTimeout(flush,60); }
+  flush();
+})();
+</script>
+</helmet>
+
+<div style="--nxp:#2A2D7C;--nxa:#E8632A;--nxs:#3F8A66;--nxw:#E8A33D;--nxd:#C13A2E;--nxsurf:#FBFAF7;--nxbg:#F3F4F8;--nxi1:#1C1E2B;--nxi2:#4A4D5E;--nxi3:#8A8D9E;--nxborder:#E6E7EE;background:#E9E7E2;min-height:100vh;width:max-content;min-width:100%;box-sizing:border-box;padding:36px 36px 80px;font-family:'Nunito',sans-serif;flex:none;flex-shrink:0">
+
+  <!-- ============ TELA VIVA ============ -->
+  <div style="width:1320px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <span style="width:9px;height:9px;border-radius:9px;background:var(--nxa)"></span>
+      <span style="font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#9A988F">Tela viva · interativa · desktop</span>
+    </div>
+
+    <div style="position:relative;border-radius:18px;overflow:hidden;border:1px solid var(--nxborder);box-shadow:0 24px 60px -28px rgba(28,30,43,.34);background:var(--nxbg)">
+      <div style="display:flex;height:824px">
+
+        <!-- SIDEBAR -->
+        <aside style="width:236px;flex:none;background:#fff;border-right:1px solid var(--nxborder);display:flex;flex-direction:column;padding:18px 14px">
+          <div style="display:flex;align-items:center;gap:10px;padding:6px 8px 18px">
+            <span style="width:30px;height:30px;border-radius:9px;background:var(--nxp);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:16px;letter-spacing:-.04em">N</span>
+            <span style="font-weight:900;font-size:19px;letter-spacing:-.04em;color:var(--nxi1)">nexo</span>
+          </div>
+          <nav style="display:flex;flex-direction:column;gap:2px">
+            <div style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:10px;color:var(--nxi3);font-size:14px;font-weight:600"><lc-icon name="layout-dashboard" size="17" color="#8A8D9E"></lc-icon>Painel</div>
+            <div style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:10px;background:#EEF0FB;color:var(--nxp);font-size:14px;font-weight:800;position:relative">
+              <lc-icon name="shopping-bag" size="17" color="#2A2D7C"></lc-icon>Pedidos
+              <span style="margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:20px;background:var(--nxa);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">{{ sidebarBadge }}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:10px;color:var(--nxi3);font-size:14px;font-weight:600"><lc-icon name="package" size="17" color="#8A8D9E"></lc-icon>Produtos</div>
+            <div style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:10px;color:var(--nxi3);font-size:14px;font-weight:600"><lc-icon name="users" size="17" color="#8A8D9E"></lc-icon>Clientes</div>
+            <div style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:10px;color:var(--nxi3);font-size:14px;font-weight:600"><lc-icon name="bar-chart-3" size="17" color="#8A8D9E"></lc-icon>Relatórios</div>
+            <div style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:10px;color:var(--nxi3);font-size:14px;font-weight:600"><lc-icon name="settings" size="17" color="#8A8D9E"></lc-icon>Configurações</div>
+          </nav>
+          <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;background:var(--nxbg)">
+            <span style="width:32px;height:32px;border-radius:9px;background:#DADCEC;color:var(--nxp);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center">LM</span>
+            <div style="line-height:1.2;min-width:0"><div style="font-size:13px;font-weight:800;color:var(--nxi1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Loja da Marina</div><div style="font-size:11px;color:var(--nxi3)">Plano Essencial</div></div>
+          </div>
+        </aside>
+
+        <!-- MAIN -->
+        <main style="flex:1;min-width:0;display:flex;flex-direction:column">
+          <!-- header -->
+          <header style="padding:22px 26px 0;background:var(--nxbg)">
+            <div style="display:flex;align-items:flex-start;gap:16px">
+              <div style="min-width:0">
+                <h1 style="margin:0;font-size:26px;font-weight:800;letter-spacing:-.03em;color:var(--nxi1)">Pedidos</h1>
+                <p style="margin:4px 0 0;font-size:13px;font-weight:600;color:var(--nxi3)">{{ subtitle }}</p>
+              </div>
+              <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+                <!-- view toggle -->
+                <div style="display:flex;background:#fff;border:1px solid var(--nxborder);border-radius:11px;padding:3px">
+                  <button onClick="{{ setList }}" style="{{ listTabStyle }}"><lc-icon name="list" size="15" color="{{ listIconColor }}"></lc-icon>Lista</button>
+                  <button onClick="{{ setBoard }}" style="{{ boardTabStyle }}"><lc-icon name="layout-grid" size="15" color="{{ boardIconColor }}"></lc-icon>Quadro</button>
+                </div>
+                <button onClick="{{ doExport }}" style="display:flex;align-items:center;gap:7px;height:38px;padding:0 14px;border-radius:11px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi2);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer">
+                  <sc-if value="{{ exporting }}" hint-placeholder-val="{{ false }}"><lc-icon name="loader-2" size="15" color="#8A8D9E" style="animation:nxspin .8s linear infinite"></lc-icon></sc-if>
+                  <sc-if value="{{ notExporting }}" hint-placeholder-val="{{ true }}"><lc-icon name="download" size="15" color="#8A8D9E"></lc-icon></sc-if>
+                  {{ exportLabel }}
+                </button>
+              </div>
+            </div>
+          </header>
+
+          <!-- KPIs -->
+          <section style="padding:18px 26px 0;background:var(--nxbg)">
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px">
+              <div style="border-radius:16px;border:1px solid var(--nxborder);background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:14px 15px">
+                <div style="display:flex;align-items:center;gap:8px;color:var(--nxi3);font-size:12px;font-weight:700"><lc-icon name="shopping-bag" size="14" color="#2A2D7C"></lc-icon>Total de pedidos</div>
+                <div style="margin-top:8px;font-size:25px;font-weight:800;letter-spacing:-.03em;color:var(--nxi1)">{{ kpiTotal }}</div>
+              </div>
+              <div style="border-radius:16px;border:1px solid var(--nxborder);background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:14px 15px">
+                <div style="display:flex;align-items:center;gap:8px;color:var(--nxi3);font-size:12px;font-weight:700"><lc-icon name="clock" size="14" color="#E8A33D"></lc-icon>Novos</div>
+                <div style="margin-top:8px;font-size:25px;font-weight:800;letter-spacing:-.03em;color:var(--nxi1)">{{ kpiPend }}</div>
+              </div>
+              <div style="border-radius:16px;border:1px solid var(--nxborder);background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:14px 15px">
+                <div style="display:flex;align-items:center;gap:8px;color:var(--nxi3);font-size:12px;font-weight:700"><lc-icon name="truck" size="14" color="#3F8A66"></lc-icon>Em andamento</div>
+                <div style="margin-top:8px;font-size:25px;font-weight:800;letter-spacing:-.03em;color:var(--nxi1)">{{ kpiAnd }}</div>
+              </div>
+              <div style="border-radius:16px;border:1px solid var(--nxborder);background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:14px 15px">
+                <div style="display:flex;align-items:center;gap:8px;color:var(--nxi3);font-size:12px;font-weight:700"><lc-icon name="circle-x" size="14" color="#C13A2E"></lc-icon>Cancelados</div>
+                <div style="margin-top:8px;font-size:25px;font-weight:800;letter-spacing:-.03em;color:var(--nxi1)">{{ kpiCanc }}</div>
+              </div>
+              <div style="border-radius:16px;border:1px solid var(--nxborder);background:linear-gradient(180deg,#2F327F,#2A2D7C);box-shadow:0 1px 2px rgba(0,0,0,.04);padding:14px 15px">
+                <div style="display:flex;align-items:center;gap:8px;color:#C9CBEC;font-size:12px;font-weight:700"><lc-icon name="trending-up" size="14" color="#C9CBEC"></lc-icon>Receita do período</div>
+                <div style="margin-top:8px;font-size:25px;font-weight:800;letter-spacing:-.03em;color:#fff">{{ kpiRev }}</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- FILTER BAR -->
+          <section style="padding:16px 26px 14px;background:var(--nxbg)">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <div style="position:relative;flex:1;min-width:220px;max-width:340px">
+                <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%)"><lc-icon name="search" size="16" color="#8A8D9E"></lc-icon></span>
+                <input value="{{ search }}" onInput="{{ onSearch }}" placeholder="Buscar por código ou cliente…" style="width:100%;height:40px;border-radius:11px;border:1px solid var(--nxborder);background:#fff;padding:0 34px 0 36px;font-family:inherit;font-size:13px;font-weight:600;color:var(--nxi1);outline:none">
+                <sc-if value="{{ hasSearch }}" hint-placeholder-val="{{ false }}"><button onClick="{{ clearSearch }}" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:22px;height:22px;border:none;background:#EEF0F4;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center"><lc-icon name="x" size="13" color="#8A8D9E"></lc-icon></button></sc-if>
+              </div>
+
+              <div style="position:relative">
+                <button onClick="{{ toggleSort }}" style="display:flex;align-items:center;gap:7px;height:40px;padding:0 13px;border-radius:11px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi2);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer"><lc-icon name="arrow-up-down" size="15" color="#8A8D9E"></lc-icon>{{ sortLabel }}<lc-icon name="chevron-down" size="14" color="#8A8D9E"></lc-icon></button>
+                <sc-if value="{{ sortMenuOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;right:0;top:46px;z-index:30;width:208px;background:#fff;border:1px solid var(--nxborder);border-radius:13px;box-shadow:0 16px 40px -16px rgba(28,30,43,.4);padding:6px">
+                    <sc-for list="{{ sortOptions }}" as="s" hint-placeholder-count="6"><button onClick="{{ s.pick }}" style="{{ s.style }}">{{ s.label }}<sc-if value="{{ s.active }}" hint-placeholder-val="{{ false }}"><lc-icon name="check" size="15" color="#2A2D7C"></lc-icon></sc-if></button></sc-for>
+                  </div>
+                </sc-if>
+              </div>
+
+              <button onClick="{{ togglePeriod }}" style="{{ periodBtnStyle }}"><lc-icon name="calendar" size="15" color="{{ periodIconColor }}"></lc-icon>{{ periodLabel }}<sc-if value="{{ periodActive }}" hint-placeholder-val="{{ false }}"><lc-icon name="x" size="14" color="#2A2D7C"></lc-icon></sc-if></button>
+            </div>
+
+            <!-- status segments -->
+            <div style="display:flex;gap:7px;margin-top:13px;flex-wrap:wrap">
+              <sc-for list="{{ statusTabs }}" as="t" hint-placeholder-count="6">
+                <button onClick="{{ t.pick }}" style="{{ t.style }}"><sc-if value="{{ t.hasDot }}" hint-placeholder-val="{{ false }}"><span style="width:7px;height:7px;border-radius:7px;background:{{ t.dot }}"></span></sc-if>{{ t.label }}<span style="{{ t.countStyle }}">{{ t.count }}</span></button>
+              </sc-for>
+            </div>
+          </section>
+
+          <!-- CONTENT -->
+          <div class="nxscroll" style="flex:1;min-height:0;overflow:auto;background:var(--nxbg);padding:0 26px 26px">
+
+            <!-- LIST -->
+            <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+              <sc-if value="{{ hasRows }}" hint-placeholder-val="{{ true }}">
+                <div style="border-radius:16px;border:1px solid var(--nxborder);background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);overflow:hidden">
+                  <!-- head -->
+                  <div style="display:grid;grid-template-columns:118px 1fr 64px 124px 168px 132px 96px;align-items:center;gap:10px;padding:11px 18px;border-bottom:1px solid var(--nxborder);background:#FBFBFD">
+                    <button onClick="{{ sortByCode }}" style="display:flex;align-items:center;gap:5px;border:none;background:none;padding:0;cursor:pointer;font-family:inherit;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--nxi3)">Código</button>
+                    <button onClick="{{ sortByName }}" style="display:flex;align-items:center;gap:5px;border:none;background:none;padding:0;cursor:pointer;font-family:inherit;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--nxi3)">Cliente</button>
+                    <div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--nxi3);text-align:center">Itens</div>
+                    <button onClick="{{ sortByTotal }}" style="display:flex;align-items:center;gap:5px;border:none;background:none;padding:0;cursor:pointer;font-family:inherit;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--nxi3);justify-content:flex-end">Total<lc-icon name="arrow-up-down" size="12" color="#B7B9C6"></lc-icon></button>
+                    <button onClick="{{ sortByDate }}" style="display:flex;align-items:center;gap:5px;border:none;background:none;padding:0;cursor:pointer;font-family:inherit;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--nxi3)">Data<lc-icon name="arrow-down" size="12" color="#B7B9C6"></lc-icon></button>
+                    <div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--nxi3)">Status</div>
+                    <div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--nxi3);text-align:center">Ações</div>
+                  </div>
+                  <!-- rows -->
+                  <sc-for list="{{ rows }}" as="o" hint-placeholder-count="9">
+                    <div onClick="{{ o.open }}" style="{{ o.rowStyle }}">
+                      <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:{{ o.accent }}"></div>
+                      <div style="display:flex;align-items:center;gap:7px;font-family:'Nunito';font-variant-numeric:tabular-nums;font-weight:800;font-size:13px;color:var(--nxi1);letter-spacing:.02em">
+                        <span style="width:7px;height:7px;border-radius:7px;background:{{ o.unreadDot }};flex:none"></span>{{ o.code }}
+                      </div>
+                      <div style="min-width:0">
+                        <div style="font-size:13.5px;font-weight:{{ o.nameWeight }};color:var(--nxi1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ o.name }}</div>
+                        <sc-if value="{{ o.hasCancelReq }}" hint-placeholder-val="{{ false }}"><div style="display:inline-flex;align-items:center;gap:4px;margin-top:3px;padding:1px 7px;border-radius:6px;background:#FBEEE6;color:#B5491D;font-size:10.5px;font-weight:800"><lc-icon name="alert-triangle" size="11" color="#B5491D"></lc-icon>Cancelamento</div></sc-if>
+                        <sc-if value="{{ o.hasCoupon }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:4px;margin-top:3px;margin-left:4px;padding:1px 7px;border-radius:6px;background:#EAF2EC;color:#2E6B4E;font-size:10.5px;font-weight:800"><lc-icon name="ticket-percent" size="11" color="#2E6B4E"></lc-icon>{{ o.coupon }}</span></sc-if>
+                      </div>
+                      <div style="text-align:center;font-size:13px;font-weight:700;color:var(--nxi2);font-variant-numeric:tabular-nums">{{ o.itemsCount }}</div>
+                      <div style="text-align:right;font-size:13.5px;font-weight:800;color:var(--nxi1);font-variant-numeric:tabular-nums">{{ o.totalFmt }}</div>
+                      <div style="line-height:1.25"><div style="font-size:12.5px;font-weight:700;color:var(--nxi2)">{{ o.dateShort }}</div><div style="font-size:11px;font-weight:600;color:var(--nxi3)">{{ o.rel }}</div></div>
+                      <div><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 8px;border-radius:8px;font-size:11.5px;font-weight:800;white-space:nowrap;color:{{ o.badgeFg }};background:{{ o.badgeBg }};box-shadow:inset 0 0 0 1px {{ o.badgeRing }}"><span style="width:6px;height:6px;border-radius:6px;background:{{ o.badgeDot }}"></span>{{ o.statusLabel }}</span></div>
+                      <div style="display:flex;align-items:center;justify-content:center;gap:5px">
+                        <sc-if value="{{ o.canAdvance }}" hint-placeholder-val="{{ true }}"><button onClick="{{ o.advance }}" title="Avançar status" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--nxborder);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center"><lc-icon name="arrow-right" size="15" color="#2A2D7C"></lc-icon></button></sc-if>
+                        <button onClick="{{ o.whats }}" title="WhatsApp" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--nxborder);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center"><lc-icon name="message-circle" size="15" color="#3F8A66"></lc-icon></button>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ emptyFiltered }}" hint-placeholder-val="{{ false }}">
+                <div style="border-radius:16px;border:1px solid var(--nxborder);background:#fff;padding:60px 20px;text-align:center">
+                  <div style="width:56px;height:56px;border-radius:14px;background:var(--nxbg);display:flex;align-items:center;justify-content:center;margin:0 auto 14px"><lc-icon name="search-x" size="26" color="#8A8D9E"></lc-icon></div>
+                  <div style="font-size:17px;font-weight:800;color:var(--nxi1)">Nenhum pedido encontrado</div>
+                  <div style="font-size:13px;font-weight:600;color:var(--nxi3);margin-top:5px">Tente ajustar a busca, o status ou o período.</div>
+                  <button onClick="{{ clearAll }}" style="margin-top:16px;height:38px;padding:0 16px;border-radius:11px;border:1px solid var(--nxborder);background:#fff;color:var(--nxp);font-family:inherit;font-size:13px;font-weight:800;cursor:pointer">Limpar filtros</button>
+                </div>
+              </sc-if>
+            </sc-if>
+
+            <!-- BOARD -->
+            <sc-if value="{{ isBoard }}" hint-placeholder-val="{{ false }}">
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:13px;align-items:start">
+                <sc-for list="{{ columns }}" as="c" hint-placeholder-count="4">
+                  <div onDragOver="{{ c.onOver }}" onDrop="{{ c.onDrop }}" style="{{ c.colStyle }}">
+                    <div style="display:flex;align-items:center;gap:8px;padding:2px 4px 12px">
+                      <span style="width:8px;height:8px;border-radius:8px;background:{{ c.dot }}"></span>
+                      <span style="font-size:13px;font-weight:800;color:var(--nxi1);white-space:nowrap">{{ c.label }}</span>
+                      <span style="min-width:20px;height:20px;padding:0 6px;border-radius:20px;background:#EEF0F4;color:var(--nxi2);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">{{ c.count }}</span>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:9px">
+                      <sc-for list="{{ c.cards }}" as="o" hint-placeholder-count="2">
+                        <div draggable="true" onDragStart="{{ o.onDragStart }}" onDragEnd="{{ o.onDragEnd }}" onClick="{{ o.open }}" style="{{ o.cardStyle }}">
+                          <div style="display:flex;align-items:center;gap:7px">
+                            <span style="width:7px;height:7px;border-radius:7px;background:{{ o.unreadDot }};flex:none"></span>
+                            <span style="font-weight:800;font-size:12.5px;color:var(--nxi1);letter-spacing:.02em;font-variant-numeric:tabular-nums">{{ o.code }}</span>
+                            <span style="margin-left:auto;font-size:13px;font-weight:800;color:var(--nxi1);font-variant-numeric:tabular-nums">{{ o.totalFmt }}</span>
+                          </div>
+                          <div style="margin-top:6px;font-size:13px;font-weight:{{ o.nameWeight }};color:var(--nxi1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ o.name }}</div>
+                          <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11.5px;font-weight:700;color:var(--nxi3)">
+                            <span style="display:flex;align-items:center;gap:4px"><lc-icon name="package" size="13" color="#8A8D9E"></lc-icon>{{ o.itemsCount }} {{ o.itensWord }}</span>
+                            <span style="display:flex;align-items:center;gap:4px"><lc-icon name="clock" size="13" color="#8A8D9E"></lc-icon>{{ o.rel }}</span>
+                          </div>
+                          <sc-if value="{{ o.hasBadgeRow }}" hint-placeholder-val="{{ false }}">
+                            <div style="display:flex;gap:5px;margin-top:9px;flex-wrap:wrap">
+                              <sc-if value="{{ o.hasCancelReq }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:6px;background:#FBEEE6;color:#B5491D;font-size:10.5px;font-weight:800"><lc-icon name="alert-triangle" size="11" color="#B5491D"></lc-icon>Cancelamento</span></sc-if>
+                              <sc-if value="{{ o.nfeChip }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:6px;color:{{ o.nfeFg }};background:{{ o.nfeBg }};font-size:10.5px;font-weight:800"><lc-icon name="file-text" size="11" color="{{ o.nfeFg }}"></lc-icon>{{ o.nfeChip }}</span></sc-if>
+                            </div>
+                          </sc-if>
+                        </div>
+                      </sc-for>
+                      <sc-if value="{{ c.empty }}" hint-placeholder-val="{{ false }}"><div style="border:1.5px dashed var(--nxborder);border-radius:12px;padding:20px;text-align:center;color:var(--nxi3);font-size:12px;font-weight:700">Nenhum pedido</div></sc-if>
+                      <sc-if value="{{ c.hasMore }}" hint-placeholder-val="{{ false }}"><button onClick="{{ c.showMore }}" style="border:1px dashed var(--nxborder);background:#fff;border-radius:10px;padding:8px;color:var(--nxp);font-family:inherit;font-size:12px;font-weight:800;cursor:pointer">Ver mais {{ c.moreCount }}</button></sc-if>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:14px;padding:11px 14px;border-radius:13px;border:1px dashed var(--nxborder);background:#fff">
+                <lc-icon name="circle-x" size="15" color="#A82F4F"></lc-icon>
+                <span style="font-size:12.5px;font-weight:700;color:var(--nxi2)">Cancelados ficam fora do fluxo</span>
+                <span style="min-width:20px;height:20px;padding:0 6px;border-radius:20px;background:#FBE9EE;color:#A82F4F;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">{{ cancelCount }}</span>
+                <button onClick="{{ filterCancel }}" style="margin-left:auto;height:30px;padding:0 12px;border-radius:9px;border:1px solid var(--nxborder);background:#fff;color:var(--nxp);font-family:inherit;font-size:12px;font-weight:800;cursor:pointer">Ver cancelados</button>
+              </div>
+            </sc-if>
+
+          </div>
+        </main>
+      </div>
+
+      <!-- DRAWER -->
+      <sc-if value="{{ hasSelected }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ closeDrawer }}" style="position:absolute;inset:0;background:rgba(20,21,34,.34);z-index:40"></div>
+        <aside style="position:absolute;top:0;right:0;bottom:0;width:480px;background:#fff;z-index:50;display:flex;flex-direction:column;box-shadow:-24px 0 60px -30px rgba(20,21,34,.5);animation:nxdrawer .26s cubic-bezier(.22,1,.36,1)">
+          <div style="padding:18px 20px 14px;border-bottom:1px solid var(--nxborder)">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 8px;border-radius:8px;font-size:11.5px;font-weight:800;color:{{ sel.badgeFg }};background:{{ sel.badgeBg }};box-shadow:inset 0 0 0 1px {{ sel.badgeRing }}"><span style="width:6px;height:6px;border-radius:6px;background:{{ sel.badgeDot }}"></span>{{ sel.statusLabel }}</span>
+              <sc-if value="{{ sel.blingSynced }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:8px;background:#EEF0FB;color:var(--nxp);font-size:11px;font-weight:800"><span style="width:6px;height:6px;border-radius:6px;background:#2A2D7C"></span>Bling</span></sc-if>
+              <button onClick="{{ closeDrawer }}" style="margin-left:auto;width:32px;height:32px;border-radius:9px;border:1px solid var(--nxborder);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center"><lc-icon name="x" size="17" color="#4A4D5E"></lc-icon></button>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:13px">
+              <span style="font-family:'Nunito';font-weight:800;font-size:16px;letter-spacing:.02em;color:var(--nxi1);font-variant-numeric:tabular-nums">#{{ sel.code }}</span>
+              <button onClick="{{ copyCode }}" style="width:26px;height:26px;border-radius:7px;border:1px solid var(--nxborder);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center"><lc-icon name="{{ copyIcon }}" size="13" color="#8A8D9E"></lc-icon></button>
+              <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--nxi3)">{{ sel.dateFull }} · {{ sel.rel }}</span>
+            </div>
+            <div style="margin-top:7px;font-size:20px;font-weight:800;letter-spacing:-.02em;color:var(--nxi1)">{{ sel.name }}</div>
+          </div>
+
+          <!-- cancellation alert -->
+          <sc-if value="{{ sel.hasCancelReq }}" hint-placeholder-val="{{ false }}">
+            <div style="margin:14px 16px 0;padding:13px 14px;border-radius:13px;background:#FBEEE6;border:1px solid #F2D2BE">
+              <div style="display:flex;align-items:center;gap:8px;color:#B5491D;font-size:13px;font-weight:800"><lc-icon name="alert-triangle" size="15" color="#B5491D"></lc-icon>Cliente pediu cancelamento</div>
+              <div style="margin-top:6px;font-size:12.5px;font-weight:600;color:#7A4527;line-height:1.45">“{{ sel.cancelReqReason }}”</div>
+              <div style="display:flex;gap:8px;margin-top:11px">
+                <button onClick="{{ acceptCancel }}" style="flex:1;height:36px;border-radius:10px;border:none;background:var(--nxd);color:#fff;font-family:inherit;font-size:12.5px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><sc-if value="{{ cancelBtnLoading }}" hint-placeholder-val="{{ false }}"><lc-icon name="loader-2" size="14" color="#fff" style="animation:nxspin .8s linear infinite"></lc-icon></sc-if>Aceitar e cancelar</button>
+                <button onClick="{{ refuseCancel }}" style="flex:1;height:36px;border-radius:10px;border:1px solid #E2C3AE;background:#fff;color:#8A5733;font-family:inherit;font-size:12.5px;font-weight:800;cursor:pointer">Recusar</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- tabs -->
+          <div style="display:flex;gap:4px;padding:14px 16px 0">
+            <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4"><button onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</button></sc-for>
+          </div>
+
+          <div class="nxscroll" style="flex:1;min-height:0;overflow:auto;padding:16px">
+
+            <!-- RESUMO -->
+            <sc-if value="{{ tabResumo }}" hint-placeholder-val="{{ true }}">
+              <div style="border-radius:14px;border:1px solid var(--nxborder);background:var(--nxsurf);padding:16px">
+                <div style="font-size:12px;font-weight:700;color:var(--nxi3)">Total do pedido</div>
+                <div style="display:flex;align-items:baseline;gap:10px;margin-top:4px">
+                  <sc-if value="{{ sel.hasCoupon }}" hint-placeholder-val="{{ false }}"><span style="font-size:15px;font-weight:700;color:var(--nxi3);text-decoration:line-through">{{ sel.subtotalFmt }}</span></sc-if>
+                  <span style="font-size:30px;font-weight:800;letter-spacing:-.03em;color:var(--nxi1)">{{ sel.totalFmt }}</span>
+                  <span style="font-size:12.5px;font-weight:700;color:var(--nxi3)">· {{ sel.itemsCount }} {{ sel.itensWord }}</span>
+                </div>
+                <sc-if value="{{ sel.hasCoupon }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--nxborder);display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:700">
+                    <div style="display:flex;justify-content:space-between;color:var(--nxi2)"><span>Subtotal</span><span style="font-variant-numeric:tabular-nums">{{ sel.subtotalFmt }}</span></div>
+                    <div style="display:flex;justify-content:space-between;color:#2E6B4E"><span style="display:inline-flex;align-items:center;gap:5px"><lc-icon name="ticket-percent" size="13" color="#2E6B4E"></lc-icon>Cupom {{ sel.coupon }}</span><span style="font-variant-numeric:tabular-nums">− {{ sel.discountFmt }}</span></div>
+                    <div style="display:flex;justify-content:space-between;color:var(--nxi1);font-weight:800"><span>Total</span><span style="font-variant-numeric:tabular-nums">{{ sel.totalFmt }}</span></div>
+                  </div>
+                </sc-if>
+              </div>
+
+              <!-- NF-e card -->
+              <div style="{{ sel.nfeCardStyle }}">
+                <div style="display:flex;align-items:center;gap:8px"><lc-icon name="file-text" size="15" color="{{ sel.nfeAccent }}"></lc-icon><span style="font-size:13px;font-weight:800;color:var(--nxi1)">Nota Fiscal (NF-e)</span><span style="margin-left:auto;font-size:11.5px;font-weight:800;color:{{ sel.nfeAccent }}">{{ sel.nfeStateLabel }}</span></div>
+                <div style="margin-top:8px;font-size:12.5px;font-weight:600;color:var(--nxi2);line-height:1.45">{{ sel.nfeDesc }}</div>
+                <sc-if value="{{ sel.nfeShowEmit }}" hint-placeholder-val="{{ false }}"><button onClick="{{ emitNfe }}" style="margin-top:12px;width:100%;height:38px;border-radius:10px;border:none;background:var(--nxp);color:#fff;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px"><sc-if value="{{ nfeEmitting }}" hint-placeholder-val="{{ false }}"><lc-icon name="loader-2" size="14" color="#fff" style="animation:nxspin .8s linear infinite"></lc-icon></sc-if>{{ nfeEmitLabel }}</button></sc-if>
+                <sc-if value="{{ sel.nfeAuthorized }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:11px;display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:700;color:var(--nxi2)">
+                    <div style="display:flex;justify-content:space-between"><span style="color:var(--nxi3)">Número / Série</span><span style="font-variant-numeric:tabular-nums">{{ sel.nfeNumero }} / {{ sel.nfeSerie }}</span></div>
+                    <div style="display:flex;align-items:center;gap:6px"><span style="color:var(--nxi3);flex:none">Chave</span><span style="font-family:'Nunito';font-size:11px;font-variant-numeric:tabular-nums;color:var(--nxi2);word-break:break-all;line-height:1.3">{{ sel.nfeChave }}</span></div>
+                  </div>
+                  <div style="display:flex;gap:8px;margin-top:11px">
+                    <button style="flex:1;height:34px;border-radius:9px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi2);font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><lc-icon name="download" size="13" color="#8A8D9E"></lc-icon>DANFE.pdf</button>
+                    <button style="flex:1;height:34px;border-radius:9px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi2);font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><lc-icon name="download" size="13" color="#8A8D9E"></lc-icon>XML</button>
+                  </div>
+                </sc-if>
+              </div>
+
+              <!-- obs -->
+              <sc-if value="{{ sel.hasNotes }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:12px;padding:13px 14px;border-radius:13px;background:#FBF3E0;border:1px solid #F0DCA8">
+                  <div style="display:flex;align-items:center;gap:7px;color:#8A6516;font-size:12px;font-weight:800"><lc-icon name="message-square" size="14" color="#8A6516"></lc-icon>Observação do cliente</div>
+                  <div style="margin-top:6px;font-size:12.5px;font-weight:600;color:#6E531A;line-height:1.45">{{ sel.notes }}</div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ sel.noNotes }}" hint-placeholder-val="{{ false }}"><div style="margin-top:12px;font-size:12px;font-weight:600;color:var(--nxi3);text-align:center;padding:8px">Sem observações do cliente.</div></sc-if>
+            </sc-if>
+
+            <!-- ITENS -->
+            <sc-if value="{{ tabItens }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <sc-for list="{{ sel.items }}" as="it" hint-placeholder-count="3">
+                  <div style="display:flex;gap:12px;padding:12px;border-radius:13px;border:1px solid var(--nxborder);background:#fff">
+                    <div style="position:relative;width:58px;height:58px;flex:none">
+                      <sc-if value="{{ it.hasImage }}" hint-placeholder-val="{{ true }}"><div style="width:58px;height:58px;border-radius:10px;background-image:repeating-linear-gradient(135deg,#E7E9F2,#E7E9F2 6px,#EFF1F8 6px,#EFF1F8 12px);border:1px solid var(--nxborder)"></div></sc-if>
+                      <sc-if value="{{ it.noImage }}" hint-placeholder-val="{{ false }}"><div style="width:58px;height:58px;border-radius:10px;border:1.5px dashed var(--nxborder);display:flex;align-items:center;justify-content:center;background:#FAFAFC"><lc-icon name="image-off" size="18" color="#B7B9C6"></lc-icon></div></sc-if>
+                      <span style="position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:20px;background:var(--nxp);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff">{{ it.qty }}</span>
+                    </div>
+                    <div style="flex:1;min-width:0">
+                      <div style="font-size:13px;font-weight:800;color:var(--nxi1)">{{ it.name }}</div>
+                      <div style="display:flex;gap:5px;margin-top:5px;flex-wrap:wrap">
+                        <sc-if value="{{ it.size }}" hint-placeholder-val="{{ false }}"><span style="padding:1px 7px;border-radius:6px;background:var(--nxbg);font-size:10.5px;font-weight:700;color:var(--nxi2)">Tam {{ it.size }}</span></sc-if>
+                        <sc-if value="{{ it.color }}" hint-placeholder-val="{{ false }}"><span style="padding:1px 7px;border-radius:6px;background:var(--nxbg);font-size:10.5px;font-weight:700;color:var(--nxi2)">{{ it.color }}</span></sc-if>
+                      </div>
+                      <sc-if value="{{ it.notes }}" hint-placeholder-val="{{ false }}"><div style="margin-top:6px;padding:6px 8px;border-radius:8px;background:#FBF3E0;color:#6E531A;font-size:11px;font-weight:600;line-height:1.4">{{ it.notes }}</div></sc-if>
+                    </div>
+                    <div style="text-align:right;flex:none"><div style="font-size:13px;font-weight:800;color:var(--nxi1);font-variant-numeric:tabular-nums">{{ it.lineFmt }}</div><div style="font-size:11px;font-weight:600;color:var(--nxi3);font-variant-numeric:tabular-nums">{{ it.unitFmt }} un.</div></div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="margin-top:12px;border-radius:13px;border:1px solid var(--nxborder);background:var(--nxsurf);padding:14px;display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:700">
+                <div style="display:flex;justify-content:space-between;color:var(--nxi2)"><span>Subtotal</span><span style="font-variant-numeric:tabular-nums">{{ sel.subtotalFmt }}</span></div>
+                <sc-if value="{{ sel.hasCoupon }}" hint-placeholder-val="{{ false }}"><div style="display:flex;justify-content:space-between;color:#2E6B4E"><span>Desconto ({{ sel.coupon }})</span><span style="font-variant-numeric:tabular-nums">− {{ sel.discountFmt }}</span></div></sc-if>
+                <div style="display:flex;justify-content:space-between;color:var(--nxi1);font-weight:800;font-size:14px;padding-top:6px;border-top:1px dashed var(--nxborder)"><span>Total</span><span style="font-variant-numeric:tabular-nums">{{ sel.totalFmt }}</span></div>
+              </div>
+            </sc-if>
+
+            <!-- CLIENTE -->
+            <sc-if value="{{ tabCliente }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:13px;border:1px solid var(--nxborder);background:var(--nxsurf)">
+                <span style="width:46px;height:46px;border-radius:12px;background:#DADCEC;color:var(--nxp);font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center">{{ sel.initials }}</span>
+                <div><div style="font-size:15px;font-weight:800;color:var(--nxi1)">{{ sel.name }}</div><div style="font-size:12px;font-weight:600;color:var(--nxi3)">Pedido #{{ sel.code }} · {{ sel.rel }}</div></div>
+              </div>
+              <div style="margin-top:11px;display:flex;flex-direction:column;gap:8px">
+                <sc-if value="{{ sel.hasPhone }}" hint-placeholder-val="{{ true }}"><div style="display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:12px;border:1px solid var(--nxborder);background:#fff"><lc-icon name="phone" size="15" color="#8A8D9E"></lc-icon><span style="font-size:13px;font-weight:700;color:var(--nxi1)">{{ sel.phone }}</span><button style="margin-left:auto;width:26px;height:26px;border-radius:7px;border:1px solid var(--nxborder);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center"><lc-icon name="copy" size="13" color="#8A8D9E"></lc-icon></button></div></sc-if>
+                <sc-if value="{{ sel.noPhone }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:12px;border:1.5px dashed var(--nxborder);background:#FAFAFC"><lc-icon name="phone-off" size="15" color="#B7B9C6"></lc-icon><span style="font-size:13px;font-weight:700;color:var(--nxi3)">Sem telefone cadastrado</span></div></sc-if>
+                <div style="display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:12px;border:1px solid var(--nxborder);background:#fff"><lc-icon name="mail" size="15" color="#8A8D9E"></lc-icon><span style="font-size:13px;font-weight:700;color:var(--nxi1);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ sel.email }}</span><button style="margin-left:auto;width:26px;height:26px;border-radius:7px;border:1px solid var(--nxborder);background:#fff;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center"><lc-icon name="copy" size="13" color="#8A8D9E"></lc-icon></button></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px">
+                <button style="{{ sel.whatsStyle }}"><lc-icon name="message-circle" size="16" color="{{ sel.whatsIcon }}"></lc-icon>WhatsApp</button>
+                <button style="height:42px;border-radius:11px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi2);font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px"><lc-icon name="phone" size="15" color="#8A8D9E"></lc-icon>Ligar</button>
+                <button style="height:42px;border-radius:11px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi2);font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px"><lc-icon name="mail" size="15" color="#8A8D9E"></lc-icon>E-mail</button>
+                <button style="height:42px;border-radius:11px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi2);font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px"><lc-icon name="printer" size="15" color="#8A8D9E"></lc-icon>Imprimir</button>
+              </div>
+              <div style="margin-top:13px;font-size:12px;font-weight:800;color:var(--nxi3);letter-spacing:.04em;text-transform:uppercase">Endereço de entrega</div>
+              <sc-if value="{{ sel.hasAddress }}" hint-placeholder-val="{{ true }}"><div style="margin-top:7px;display:flex;gap:10px;padding:12px 13px;border-radius:12px;border:1px solid var(--nxborder);background:#fff"><lc-icon name="map-pin" size="15" color="#8A8D9E"></lc-icon><span style="font-size:12.5px;font-weight:600;color:var(--nxi2);line-height:1.5">{{ sel.address }}</span></div></sc-if>
+              <sc-if value="{{ sel.noAddress }}" hint-placeholder-val="{{ false }}"><div style="margin-top:7px;padding:18px;border-radius:12px;border:1.5px dashed var(--nxborder);background:#FAFAFC;text-align:center;color:var(--nxi3);font-size:12.5px;font-weight:700">Endereço não informado (retirada na loja)</div></sc-if>
+            </sc-if>
+
+            <!-- HISTORICO -->
+            <sc-if value="{{ tabHist }}" hint-placeholder-val="{{ false }}">
+              <sc-if value="{{ sel.isCancelled }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-bottom:14px;padding:13px 14px;border-radius:13px;background:#FBE9EE;border:1px solid #F3C8D4">
+                  <div style="display:flex;align-items:center;gap:8px;color:#A82F4F;font-size:13px;font-weight:800"><lc-icon name="circle-x" size="15" color="#A82F4F"></lc-icon>Pedido cancelado</div>
+                  <div style="margin-top:6px;font-size:12.5px;font-weight:600;color:#8A3350;line-height:1.45">{{ sel.cancelReasonText }}</div>
+                </div>
+              </sc-if>
+              <div style="display:flex;flex-direction:column">
+                <sc-for list="{{ sel.timeline }}" as="ev" hint-placeholder-count="4">
+                  <div style="display:flex;gap:13px">
+                    <div style="display:flex;flex-direction:column;align-items:center;flex:none"><span style="{{ ev.dotStyle }}"><sc-if value="{{ ev.done }}" hint-placeholder-val="{{ true }}"><lc-icon name="check" size="11" color="#fff"></lc-icon></sc-if></span><span style="{{ ev.lineStyle }}"></span></div>
+                    <div style="padding-bottom:18px"><div style="font-size:13px;font-weight:800;color:{{ ev.labelColor }}">{{ ev.label }}</div><div style="font-size:11.5px;font-weight:600;color:var(--nxi3);margin-top:2px">{{ ev.time }}</div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+          </div>
+
+          <!-- drawer footer -->
+          <div style="padding:13px 16px;border-top:1px solid var(--nxborder);display:flex;gap:9px;background:#fff">
+            <sc-if value="{{ sel.canAdvance }}" hint-placeholder-val="{{ true }}"><button onClick="{{ advanceSel }}" style="flex:1;height:42px;border-radius:11px;border:none;background:var(--nxp);color:#fff;font-family:inherit;font-size:13.5px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px"><lc-icon name="arrow-right" size="16" color="#fff"></lc-icon>{{ sel.advanceLabel }}</button></sc-if>
+            <sc-if value="{{ sel.canCancel }}" hint-placeholder-val="{{ true }}"><button onClick="{{ openCancelReason }}" style="height:42px;padding:0 16px;border-radius:11px;border:1px solid #EBD2CE;background:#fff;color:var(--nxd);font-family:inherit;font-size:13.5px;font-weight:800;cursor:pointer">Cancelar</button></sc-if>
+          </div>
+        </aside>
+      </sc-if>
+
+      <!-- MODAL: motivo do cancelamento -->
+      <sc-if value="{{ modalCancelReason }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ closeModal }}" style="position:absolute;inset:0;background:rgba(20,21,34,.42);z-index:60;display:flex;align-items:center;justify-content:center;padding:24px">
+          <div onClick="{{ stop }}" style="width:420px;background:#fff;border-radius:18px;box-shadow:0 30px 70px -28px rgba(20,21,34,.6);padding:22px">
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:38px;height:38px;border-radius:11px;background:#FBE9EE;display:flex;align-items:center;justify-content:center"><lc-icon name="circle-x" size="19" color="#C13A2E"></lc-icon></span><div><div style="font-size:16px;font-weight:800;color:var(--nxi1)">Cancelar pedido</div><div style="font-size:12px;font-weight:600;color:var(--nxi3)">Informe o motivo do cancelamento.</div></div></div>
+            <textarea value="{{ cancelText }}" onInput="{{ onCancelText }}" placeholder="Ex.: produto sem estoque, pagamento não confirmado…" style="margin-top:14px;width:100%;height:104px;resize:none;border-radius:12px;border:1px solid var(--nxborder);padding:11px 12px;font-family:inherit;font-size:13px;font-weight:600;color:var(--nxi1);outline:none;line-height:1.45"></textarea>
+            <div style="text-align:right;font-size:11px;font-weight:700;color:var(--nxi3);margin-top:4px">{{ cancelCount2 }}/500</div>
+            <div style="display:flex;gap:9px;margin-top:8px">
+              <button onClick="{{ closeModal }}" style="flex:1;height:42px;border-radius:11px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi2);font-family:inherit;font-size:13.5px;font-weight:800;cursor:pointer">Voltar</button>
+              <button onClick="{{ confirmCancel }}" style="{{ confirmCancelStyle }}">Confirmar cancelamento</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- MODAL: plano travado -->
+      <sc-if value="{{ modalPlan }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ closeModal }}" style="position:absolute;inset:0;background:rgba(20,21,34,.42);z-index:60;display:flex;align-items:center;justify-content:center;padding:24px">
+          <div onClick="{{ stop }}" style="width:404px;background:#fff;border-radius:18px;box-shadow:0 30px 70px -28px rgba(20,21,34,.6);padding:24px;text-align:center">
+            <span style="width:52px;height:52px;border-radius:14px;background:#EEF0FB;display:flex;align-items:center;justify-content:center;margin:0 auto"><lc-icon name="lock" size="24" color="#2A2D7C"></lc-icon></span>
+            <div style="margin-top:14px;font-size:18px;font-weight:800;color:var(--nxi1)">Exportar para Excel</div>
+            <div style="margin-top:6px;font-size:13px;font-weight:600;color:var(--nxi2);line-height:1.5">A exportação de pedidos está disponível a partir do <b style="color:var(--nxp)">Plano Pro</b>. Faça upgrade para baixar relatórios completos em .xlsx.</div>
+            <button style="margin-top:18px;width:100%;height:44px;border-radius:12px;border:none;background:var(--nxp);color:#fff;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer">Conhecer o Plano Pro</button>
+            <button onClick="{{ closeModal }}" style="margin-top:9px;width:100%;height:40px;border-radius:12px;border:none;background:none;color:var(--nxi3);font-family:inherit;font-size:13px;font-weight:800;cursor:pointer">Agora não</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- TOAST -->
+      <sc-if value="{{ toastVisible }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:18px;right:18px;z-index:70;width:300px;background:#fff;border-radius:14px;border:1px solid #F2D2BE;box-shadow:0 20px 50px -20px rgba(20,21,34,.45);padding:13px 14px;display:flex;gap:11px;animation:nxtoast .3s ease">
+          <span style="width:36px;height:36px;border-radius:10px;background:var(--nxa);display:flex;align-items:center;justify-content:center;flex:none"><lc-icon name="bell" size="18" color="#fff"></lc-icon></span>
+          <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:800;color:var(--nxi1)">Novo pedido recebido!</div><div style="font-size:12px;font-weight:600;color:var(--nxi3);margin-top:1px">{{ toastName }} · {{ toastTotal }}</div></div>
+          <button onClick="{{ dismissToast }}" style="width:24px;height:24px;border:none;background:none;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center"><lc-icon name="x" size="14" color="#8A8D9E"></lc-icon></button>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <!-- ============ CATÁLOGO DE ESTADOS ============ -->
+  <div style="width:1320px;margin-top:64px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <span style="width:9px;height:9px;border-radius:9px;background:var(--nxp)"></span>
+      <span style="font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#9A988F">Catálogo de estados · A–K</span>
+    </div>
+    <div style="font-size:30px;font-weight:800;letter-spacing:-.03em;color:#3A382F">Cada estado, isolado e rotulado</div>
+    <div style="font-size:14px;font-weight:600;color:#8A887E;margin-top:4px;max-width:680px">Todos os estados das telas de Pedidos renderizados separadamente — nada escondido atrás de interação.</div>
+
+    <!-- ===== A. ESTADOS DA PÁGINA ===== -->
+    <div style="font-size:20px;font-weight:800;letter-spacing:-.02em;color:#3A382F;margin:44px 0 2px">A · Estados da página</div>
+    <div style="font-size:13px;font-weight:600;color:#8A887E;margin-bottom:18px">Lista e Quadro populados estão na tela viva acima.</div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+
+      <!-- A1 Carregando -->
+      <div style="flex:none">
+        <div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">A1 · Carregando (skeleton)</div>
+        <div style="width:560px;border-radius:16px;border:1px solid var(--nxborder);background:var(--nxbg);box-shadow:0 1px 2px rgba(0,0,0,.04);padding:18px">
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px">
+            <div class="nxsk" style="height:74px"></div><div class="nxsk" style="height:74px"></div><div class="nxsk" style="height:74px"></div><div class="nxsk" style="height:74px"></div><div class="nxsk" style="height:74px"></div>
+          </div>
+          <div style="border-radius:14px;border:1px solid var(--nxborder);background:#fff;padding:14px;display:flex;flex-direction:column;gap:14px">
+            <div class="nxsk" style="height:14px;width:30%"></div>
+            <div class="nxsk" style="height:12px"></div><div class="nxsk" style="height:12px"></div><div class="nxsk" style="height:12px;width:80%"></div><div class="nxsk" style="height:12px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- A2 Vazio absoluto -->
+      <div style="flex:none">
+        <div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">A2 · Vazio absoluto</div>
+        <div style="width:340px;border-radius:16px;border:1px solid var(--nxborder);background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:48px 24px;text-align:center">
+          <div style="width:72px;height:72px;border-radius:18px;background:var(--nxbg);display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><lc-icon name="shopping-bag" size="34" color="#8A8D9E"></lc-icon></div>
+          <div style="font-size:18px;font-weight:800;color:var(--nxi1)">Nenhum pedido ainda</div>
+          <div style="font-size:13px;font-weight:600;color:var(--nxi3);margin-top:6px;line-height:1.5">Quando sua loja receber o primeiro pedido, ele aparece aqui em tempo real.</div>
+          <button style="margin-top:18px;height:40px;padding:0 18px;border-radius:11px;border:none;background:var(--nxp);color:#fff;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer">Divulgar minha loja</button>
+        </div>
+      </div>
+
+      <!-- A3 Vazio filtrado -->
+      <div style="flex:none">
+        <div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">A3 · Vazio filtrado</div>
+        <div style="width:340px;border-radius:16px;border:1px solid var(--nxborder);background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:48px 24px;text-align:center">
+          <div style="width:56px;height:56px;border-radius:14px;background:var(--nxbg);display:flex;align-items:center;justify-content:center;margin:0 auto 14px"><lc-icon name="search-x" size="26" color="#8A8D9E"></lc-icon></div>
+          <div style="font-size:17px;font-weight:800;color:var(--nxi1)">Nenhum pedido encontrado</div>
+          <div style="font-size:13px;font-weight:600;color:var(--nxi3);margin-top:5px">Tente ajustar a busca, o status ou o período.</div>
+          <button style="margin-top:16px;height:38px;padding:0 16px;border-radius:11px;border:1px solid var(--nxborder);background:#fff;color:var(--nxp);font-family:inherit;font-size:13px;font-weight:800;cursor:pointer">Limpar filtros</button>
+        </div>
+      </div>
+
+      <!-- A4 Erro -->
+      <div style="flex:none">
+        <div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">A4 · Erro ao carregar</div>
+        <div style="width:340px;border-radius:16px;border:1px solid var(--nxborder);background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:48px 24px;text-align:center">
+          <div style="width:56px;height:56px;border-radius:14px;background:#FBE9EE;display:flex;align-items:center;justify-content:center;margin:0 auto 14px"><lc-icon name="cloud-off" size="26" color="#C13A2E"></lc-icon></div>
+          <div style="font-size:17px;font-weight:800;color:var(--nxi1)">Não foi possível carregar</div>
+          <div style="font-size:13px;font-weight:600;color:var(--nxi3);margin-top:5px">Verifique sua conexão e tente novamente.</div>
+          <button style="margin-top:16px;height:38px;padding:0 16px;border-radius:11px;border:none;background:var(--nxp);color:#fff;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:7px"><lc-icon name="refresh-cw" size="14" color="#fff"></lc-icon>Tentar novamente</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== B. KPIs ===== -->
+    <div style="font-size:20px;font-weight:800;letter-spacing:-.02em;color:#3A382F;margin:44px 0 18px">B · KPIs do topo</div>
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <!-- B normal -->
+      <div>
+        <div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">B1 · Estado normal</div>
+        <div style="display:grid;grid-template-columns:repeat(5,200px);gap:12px">
+          <div style="border-radius:16px;border:1px solid var(--nxborder);background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:14px 15px"><div style="display:flex;align-items:center;gap:8px;color:var(--nxi3);font-size:12px;font-weight:700"><lc-icon name="shopping-bag" size="14" color="#2A2D7C"></lc-icon>Total de pedidos</div><div style="margin-top:8px;font-size:25px;font-weight:800;letter-spacing:-.03em;color:var(--nxi1)">128</div></div>
+          <div style="border-radius:16px;border:1px solid var(--nxborder);background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:14px 15px"><div style="display:flex;align-items:center;gap:8px;color:var(--nxi3);font-size:12px;font-weight:700"><lc-icon name="clock" size="14" color="#E8A33D"></lc-icon>Novos</div><div style="margin-top:8px;font-size:25px;font-weight:800;letter-spacing:-.03em;color:var(--nxi1)">14</div></div>
+          <div style="border-radius:16px;border:1px solid var(--nxborder);background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:14px 15px"><div style="display:flex;align-items:center;gap:8px;color:var(--nxi3);font-size:12px;font-weight:700"><lc-icon name="truck" size="14" color="#3F8A66"></lc-icon>Em andamento</div><div style="margin-top:8px;font-size:25px;font-weight:800;letter-spacing:-.03em;color:var(--nxi1)">63</div></div>
+          <div style="border-radius:16px;border:1px solid var(--nxborder);background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:14px 15px"><div style="display:flex;align-items:center;gap:8px;color:var(--nxi3);font-size:12px;font-weight:700"><lc-icon name="circle-x" size="14" color="#C13A2E"></lc-icon>Cancelados</div><div style="margin-top:8px;font-size:25px;font-weight:800;letter-spacing:-.03em;color:var(--nxi1)">9</div></div>
+          <div style="border-radius:16px;border:1px solid var(--nxborder);background:linear-gradient(180deg,#2F327F,#2A2D7C);padding:14px 15px"><div style="display:flex;align-items:center;gap:8px;color:#C9CBEC;font-size:12px;font-weight:700"><lc-icon name="trending-up" size="14" color="#C9CBEC"></lc-icon>Receita</div><div style="margin-top:8px;font-size:23px;font-weight:800;letter-spacing:-.03em;color:#fff">R$ 42.380</div></div>
+        </div>
+      </div>
+      <!-- B loading -->
+      <div>
+        <div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">B2 · Carregando (shimmer)</div>
+        <div style="display:grid;grid-template-columns:repeat(5,200px);gap:12px">
+          <div style="border-radius:16px;border:1px solid var(--nxborder);background:#fff;padding:14px 15px"><div class="nxsk" style="height:12px;width:70%"></div><div class="nxsk" style="height:24px;width:45%;margin-top:12px"></div></div>
+          <div style="border-radius:16px;border:1px solid var(--nxborder);background:#fff;padding:14px 15px"><div class="nxsk" style="height:12px;width:55%"></div><div class="nxsk" style="height:24px;width:40%;margin-top:12px"></div></div>
+          <div style="border-radius:16px;border:1px solid var(--nxborder);background:#fff;padding:14px 15px"><div class="nxsk" style="height:12px;width:65%"></div><div class="nxsk" style="height:24px;width:40%;margin-top:12px"></div></div>
+          <div style="border-radius:16px;border:1px solid var(--nxborder);background:#fff;padding:14px 15px"><div class="nxsk" style="height:12px;width:60%"></div><div class="nxsk" style="height:24px;width:35%;margin-top:12px"></div></div>
+          <div style="border-radius:16px;border:1px solid var(--nxborder);background:#fff;padding:14px 15px"><div class="nxsk" style="height:12px;width:50%"></div><div class="nxsk" style="height:24px;width:70%;margin-top:12px"></div></div>
+        </div>
+      </div>
+      <!-- B zeros -->
+      <div>
+        <div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">B3 · Valores zerados</div>
+        <div style="display:grid;grid-template-columns:repeat(5,200px);gap:12px">
+          <div style="border-radius:16px;border:1px solid var(--nxborder);background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:14px 15px"><div style="display:flex;align-items:center;gap:8px;color:var(--nxi3);font-size:12px;font-weight:700"><lc-icon name="shopping-bag" size="14" color="#2A2D7C"></lc-icon>Total de pedidos</div><div style="margin-top:8px;font-size:25px;font-weight:800;color:#C2C4CF">0</div></div>
+          <div style="border-radius:16px;border:1px solid var(--nxborder);background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:14px 15px"><div style="display:flex;align-items:center;gap:8px;color:var(--nxi3);font-size:12px;font-weight:700"><lc-icon name="clock" size="14" color="#E8A33D"></lc-icon>Novos</div><div style="margin-top:8px;font-size:25px;font-weight:800;color:#C2C4CF">0</div></div>
+          <div style="border-radius:16px;border:1px solid var(--nxborder);background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:14px 15px"><div style="display:flex;align-items:center;gap:8px;color:var(--nxi3);font-size:12px;font-weight:700"><lc-icon name="truck" size="14" color="#3F8A66"></lc-icon>Em andamento</div><div style="margin-top:8px;font-size:25px;font-weight:800;color:#C2C4CF">0</div></div>
+          <div style="border-radius:16px;border:1px solid var(--nxborder);background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:14px 15px"><div style="display:flex;align-items:center;gap:8px;color:var(--nxi3);font-size:12px;font-weight:700"><lc-icon name="circle-x" size="14" color="#C13A2E"></lc-icon>Cancelados</div><div style="margin-top:8px;font-size:25px;font-weight:800;color:#C2C4CF">0</div></div>
+          <div style="border-radius:16px;border:1px solid var(--nxborder);background:linear-gradient(180deg,#2F327F,#2A2D7C);padding:14px 15px"><div style="display:flex;align-items:center;gap:8px;color:#C9CBEC;font-size:12px;font-weight:700"><lc-icon name="trending-up" size="14" color="#C9CBEC"></lc-icon>Receita</div><div style="margin-top:8px;font-size:23px;font-weight:800;color:#9FA1D4">R$ 0,00</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== C. HEADER / FILTROS ===== -->
+    <div style="font-size:20px;font-weight:800;letter-spacing:-.02em;color:#3A382F;margin:44px 0 18px">C · Header e filtros</div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+
+      <!-- toggle -->
+      <div style="flex:none">
+        <div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">C1 · Toggle Lista ↔ Quadro</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;background:#fff;border:1px solid var(--nxborder);border-radius:11px;padding:3px;width:max-content"><span style="display:flex;align-items:center;gap:6px;height:32px;padding:0 14px;border-radius:8px;background:#EEF0FB;color:var(--nxp);font-size:13px;font-weight:800"><lc-icon name="list" size="15" color="#2A2D7C"></lc-icon>Lista</span><span style="display:flex;align-items:center;gap:6px;height:32px;padding:0 14px;color:#8A8D9E;font-size:13px;font-weight:800"><lc-icon name="layout-grid" size="15" color="#8A8D9E"></lc-icon>Quadro</span></div>
+          <div style="display:flex;background:#fff;border:1px solid var(--nxborder);border-radius:11px;padding:3px;width:max-content"><span style="display:flex;align-items:center;gap:6px;height:32px;padding:0 14px;color:#8A8D9E;font-size:13px;font-weight:800"><lc-icon name="list" size="15" color="#8A8D9E"></lc-icon>Lista</span><span style="display:flex;align-items:center;gap:6px;height:32px;padding:0 14px;border-radius:8px;background:#EEF0FB;color:var(--nxp);font-size:13px;font-weight:800"><lc-icon name="layout-grid" size="15" color="#2A2D7C"></lc-icon>Quadro</span></div>
+        </div>
+      </div>
+
+      <!-- busca -->
+      <div style="flex:none">
+        <div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">C2 · Busca (vazia / preenchida)</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="position:relative;width:320px"><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%)"><lc-icon name="search" size="16" color="#8A8D9E"></lc-icon></span><div style="height:40px;border-radius:11px;border:1px solid var(--nxborder);background:#fff;padding:0 36px;display:flex;align-items:center;font-size:13px;font-weight:600;color:var(--nxi3)">Buscar por código ou cliente…</div></div>
+          <div style="position:relative;width:320px"><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%)"><lc-icon name="search" size="16" color="#2A2D7C"></lc-icon></span><div style="height:40px;border-radius:11px;border:1px solid var(--nxp);background:#fff;padding:0 36px;display:flex;align-items:center;font-size:13px;font-weight:700;color:var(--nxi1);box-shadow:0 0 0 3px rgba(42,45,124,.1)">Mariana</div><span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:22px;height:22px;background:#EEF0F4;border-radius:6px;display:flex;align-items:center;justify-content:center"><lc-icon name="x" size="13" color="#8A8D9E"></lc-icon></span></div>
+        </div>
+      </div>
+
+      <!-- ordenação -->
+      <div style="flex:none">
+        <div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">C3 · Ordenação (aberta)</div>
+        <div style="width:210px;background:#fff;border:1px solid var(--nxborder);border-radius:13px;box-shadow:0 16px 40px -16px rgba(28,30,43,.3);padding:6px">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#EEF0FB;border-radius:8px;font-size:12.5px;font-weight:800;color:var(--nxp)">Mais recentes<lc-icon name="check" size="15" color="#2A2D7C"></lc-icon></div>
+          <div style="padding:8px 10px;font-size:12.5px;font-weight:600;color:var(--nxi2)">Mais antigos</div>
+          <div style="padding:8px 10px;font-size:12.5px;font-weight:600;color:var(--nxi2)">Maior valor</div>
+          <div style="padding:8px 10px;font-size:12.5px;font-weight:600;color:var(--nxi2)">Menor valor</div>
+          <div style="padding:8px 10px;font-size:12.5px;font-weight:600;color:var(--nxi2)">Cliente A–Z</div>
+          <div style="padding:8px 10px;font-size:12.5px;font-weight:600;color:var(--nxi2)">Cliente Z–A</div>
+        </div>
+      </div>
+
+      <!-- período -->
+      <div style="flex:none">
+        <div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">C4 · Período</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:7px;height:40px;padding:0 13px;border-radius:11px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi2);font-size:13px;font-weight:700;width:max-content"><lc-icon name="calendar" size="15" color="#8A8D9E"></lc-icon>Período</div>
+          <div style="display:flex;align-items:center;gap:7px;height:40px;padding:0 13px;border-radius:11px;border:1px solid var(--nxp);background:#EEF0FB;color:var(--nxp);font-size:13px;font-weight:700;width:max-content"><lc-icon name="calendar" size="15" color="#2A2D7C"></lc-icon>01–18 jun<lc-icon name="x" size="14" color="#2A2D7C"></lc-icon></div>
+        </div>
+      </div>
+
+      <!-- export -->
+      <div style="flex:none">
+        <div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">C5 · Exportar Excel (3 estados)</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:7px;height:38px;padding:0 14px;border-radius:11px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi2);font-size:13px;font-weight:700;width:max-content"><lc-icon name="download" size="15" color="#8A8D9E"></lc-icon>Exportar Excel</div>
+          <div style="display:flex;align-items:center;gap:7px;height:38px;padding:0 14px;border-radius:11px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi3);font-size:13px;font-weight:700;width:max-content"><lc-icon name="loader-2" size="15" color="#8A8D9E"></lc-icon>Exportando…</div>
+          <div style="display:flex;align-items:center;gap:7px;height:38px;padding:0 14px;border-radius:11px;border:1px solid var(--nxborder);background:#F6F6F9;color:#9A9CAB;font-size:13px;font-weight:700;width:max-content"><lc-icon name="lock" size="15" color="#9A9CAB"></lc-icon>Exportar Excel<span style="margin-left:4px;padding:1px 7px;border-radius:6px;background:#EEF0FB;color:var(--nxp);font-size:10.5px;font-weight:800">Plano Pro</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- status segments -->
+    <div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin:22px 0 8px">C6 · Filtro de status (segments com contagem)</div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+      <span style="display:flex;align-items:center;gap:7px;height:32px;padding:0 11px;border-radius:9px;border:1px solid var(--nxp);background:var(--nxp);color:#fff;font-size:12.5px;font-weight:700">Todos<span style="min-width:18px;height:18px;padding:0 5px;border-radius:18px;background:rgba(255,255,255,.22);color:#fff;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center">128</span></span>
+      <span style="display:flex;align-items:center;gap:7px;height:32px;padding:0 11px;border-radius:9px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi2);font-size:12.5px;font-weight:700"><span style="width:7px;height:7px;border-radius:7px;background:#E8A33D"></span>Novo<span style="min-width:18px;height:18px;padding:0 5px;border-radius:18px;background:#EEF0F4;color:#8A8D9E;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center">14</span></span>
+      <span style="display:flex;align-items:center;gap:7px;height:32px;padding:0 11px;border-radius:9px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi2);font-size:12.5px;font-weight:700"><span style="width:7px;height:7px;border-radius:7px;background:#2F6FE0"></span>Em preparação<span style="min-width:18px;height:18px;padding:0 5px;border-radius:18px;background:#EEF0F4;color:#8A8D9E;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center">28</span></span>
+      <span style="display:flex;align-items:center;gap:7px;height:32px;padding:0 11px;border-radius:9px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi2);font-size:12.5px;font-weight:700"><span style="width:7px;height:7px;border-radius:7px;background:#7C5CD6"></span>Enviado<span style="min-width:18px;height:18px;padding:0 5px;border-radius:18px;background:#EEF0F4;color:#8A8D9E;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center">35</span></span>
+      <span style="display:flex;align-items:center;gap:7px;height:32px;padding:0 11px;border-radius:9px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi2);font-size:12.5px;font-weight:700"><span style="width:7px;height:7px;border-radius:7px;background:#3F8A66"></span>Entregue<span style="min-width:18px;height:18px;padding:0 5px;border-radius:18px;background:#EEF0F4;color:#8A8D9E;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center">42</span></span>
+      <span style="display:flex;align-items:center;gap:7px;height:32px;padding:0 11px;border-radius:9px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi2);font-size:12.5px;font-weight:700"><span style="width:7px;height:7px;border-radius:7px;background:#D6456A"></span>Cancelado<span style="min-width:18px;height:18px;padding:0 5px;border-radius:18px;background:#EEF0F4;color:#8A8D9E;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center">9</span></span>
+    </div>
+
+    <!-- ===== D. LINHA DA LISTA ===== -->
+    <div style="font-size:20px;font-weight:800;letter-spacing:-.02em;color:#3A382F;margin:44px 0 18px">D · Linha da Lista — variações</div>
+    <div style="width:880px;border-radius:16px;border:1px solid var(--nxborder);background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);overflow:hidden">
+      <!-- normal -->
+      <div style="position:relative;display:grid;grid-template-columns:120px 1fr 64px 120px 150px 130px 96px;align-items:center;gap:10px;padding:11px 18px;border-bottom:1px solid #F0F1F5">
+        <div style="display:flex;align-items:center;gap:7px;font-weight:800;font-size:13px;color:var(--nxi1)"><span style="width:7px;height:7px;border-radius:7px;background:transparent"></span>R4S5T6</div>
+        <div style="font-size:13.5px;font-weight:600;color:var(--nxi1)">Fernanda Souza</div>
+        <div style="text-align:center;font-size:13px;font-weight:700;color:var(--nxi2)">4</div>
+        <div style="text-align:right;font-size:13.5px;font-weight:800;color:var(--nxi1)">R$ 1.240,00</div>
+        <div style="line-height:1.25"><div style="font-size:12.5px;font-weight:700;color:var(--nxi2)">18/06 11:32</div><div style="font-size:11px;font-weight:600;color:var(--nxi3)">há 3 h</div></div>
+        <div><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 8px;border-radius:8px;font-size:11.5px;font-weight:800;color:#5B41A8;background:#EFEAFB;box-shadow:inset 0 0 0 1px #D8CCF3"><span style="width:6px;height:6px;border-radius:6px;background:#7C5CD6"></span>Enviado</span></div>
+        <div style="display:flex;justify-content:center;gap:5px"><span style="width:30px;height:30px;border-radius:8px;border:1px solid var(--nxborder);background:#fff;display:flex;align-items:center;justify-content:center"><lc-icon name="message-circle" size="15" color="#3F8A66"></lc-icon></span></div>
+        <span style="position:absolute;left:6px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:800;color:#C7C5BC;letter-spacing:.04em;writing-mode:vertical-rl;rotate:180deg">NORMAL</span>
+      </div>
+      <!-- não-lido -->
+      <div style="position:relative;display:grid;grid-template-columns:120px 1fr 64px 120px 150px 130px 96px;align-items:center;gap:10px;padding:11px 18px;border-bottom:1px solid #F0F1F5;background:#FFFDF9">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--nxa)"></div>
+        <div style="display:flex;align-items:center;gap:7px;font-weight:800;font-size:13px;color:var(--nxi1)"><span style="width:7px;height:7px;border-radius:7px;background:#E8632A"></span>A1B2C3</div>
+        <div style="font-size:13.5px;font-weight:800;color:var(--nxi1)">Mariana Oliveira</div>
+        <div style="text-align:center;font-size:13px;font-weight:700;color:var(--nxi2)">3</div>
+        <div style="text-align:right;font-size:13.5px;font-weight:800;color:var(--nxi1)">R$ 189,90</div>
+        <div style="line-height:1.25"><div style="font-size:12.5px;font-weight:700;color:var(--nxi2)">18/06 13:20</div><div style="font-size:11px;font-weight:600;color:var(--nxi3)">há 12 min</div></div>
+        <div><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 8px;border-radius:8px;font-size:11.5px;font-weight:800;color:#8A6516;background:#FBF3E0;box-shadow:inset 0 0 0 1px #F0DCA8"><span style="width:6px;height:6px;border-radius:6px;background:#E8A33D"></span>Novo</span></div>
+        <div style="display:flex;justify-content:center;gap:5px"><span style="width:30px;height:30px;border-radius:8px;border:1px solid var(--nxborder);background:#fff;display:flex;align-items:center;justify-content:center"><lc-icon name="arrow-right" size="15" color="#2A2D7C"></lc-icon></span><span style="width:30px;height:30px;border-radius:8px;border:1px solid var(--nxborder);background:#fff;display:flex;align-items:center;justify-content:center"><lc-icon name="message-circle" size="15" color="#3F8A66"></lc-icon></span></div>
+        <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:800;color:#E8632A;letter-spacing:.04em;writing-mode:vertical-rl;rotate:180deg">NÃO-LIDO</span>
+      </div>
+      <!-- cancelamento -->
+      <div style="position:relative;display:grid;grid-template-columns:120px 1fr 64px 120px 150px 130px 96px;align-items:center;gap:10px;padding:11px 18px;border-bottom:1px solid #F0F1F5;background:#FFFDF9">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--nxa)"></div>
+        <div style="display:flex;align-items:center;gap:7px;font-weight:800;font-size:13px;color:var(--nxi1)"><span style="width:7px;height:7px;border-radius:7px;background:#E8632A"></span>F4G5H6</div>
+        <div><div style="font-size:13.5px;font-weight:800;color:var(--nxi1)">João Pedro Santos</div><span style="display:inline-flex;align-items:center;gap:4px;margin-top:3px;padding:1px 7px;border-radius:6px;background:#FBEEE6;color:#B5491D;font-size:10.5px;font-weight:800"><lc-icon name="alert-triangle" size="11" color="#B5491D"></lc-icon>Cancelamento</span></div>
+        <div style="text-align:center;font-size:13px;font-weight:700;color:var(--nxi2)">1</div>
+        <div style="text-align:right;font-size:13.5px;font-weight:800;color:var(--nxi1)">R$ 349,00</div>
+        <div style="line-height:1.25"><div style="font-size:12.5px;font-weight:700;color:var(--nxi2)">18/06 13:07</div><div style="font-size:11px;font-weight:600;color:var(--nxi3)">há 25 min</div></div>
+        <div><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 8px;border-radius:8px;font-size:11.5px;font-weight:800;color:#8A6516;background:#FBF3E0;box-shadow:inset 0 0 0 1px #F0DCA8"><span style="width:6px;height:6px;border-radius:6px;background:#E8A33D"></span>Novo</span></div>
+        <div style="display:flex;justify-content:center;gap:5px"><span style="width:30px;height:30px;border-radius:8px;border:1px solid var(--nxborder);background:#fff;display:flex;align-items:center;justify-content:center"><lc-icon name="arrow-right" size="15" color="#2A2D7C"></lc-icon></span></div>
+        <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:800;color:#B5491D;letter-spacing:.04em;writing-mode:vertical-rl;rotate:180deg">CANCEL.</span>
+      </div>
+      <!-- cupom -->
+      <div style="position:relative;display:grid;grid-template-columns:120px 1fr 64px 120px 150px 130px 96px;align-items:center;gap:10px;padding:11px 18px;border-bottom:1px solid #F0F1F5">
+        <div style="display:flex;align-items:center;gap:7px;font-weight:800;font-size:13px;color:var(--nxi1)"><span style="width:7px;height:7px;border-radius:7px;background:transparent"></span>K7L8M9</div>
+        <div><div style="font-size:13.5px;font-weight:600;color:var(--nxi1)">Ana Beatriz Costa</div><span style="display:inline-flex;align-items:center;gap:4px;margin-top:3px;padding:1px 7px;border-radius:6px;background:#EAF2EC;color:#2E6B4E;font-size:10.5px;font-weight:800"><lc-icon name="ticket-percent" size="11" color="#2E6B4E"></lc-icon>BEMVINDO10</span></div>
+        <div style="text-align:center;font-size:13px;font-weight:700;color:var(--nxi2)">3</div>
+        <div style="text-align:right;font-size:13.5px;font-weight:800;color:var(--nxi1)">R$ 455,47</div>
+        <div style="line-height:1.25"><div style="font-size:12.5px;font-weight:700;color:var(--nxi2)">18/06 13:44</div><div style="font-size:11px;font-weight:600;color:var(--nxi3)">há 48 min</div></div>
+        <div><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 8px;border-radius:8px;font-size:11.5px;font-weight:800;color:#1E4FA8;background:#E8EFFB;box-shadow:inset 0 0 0 1px #C5D8F5"><span style="width:6px;height:6px;border-radius:6px;background:#2F6FE0"></span>Em preparação</span></div>
+        <div style="display:flex;justify-content:center;gap:5px"><span style="width:30px;height:30px;border-radius:8px;border:1px solid var(--nxborder);background:#fff;display:flex;align-items:center;justify-content:center"><lc-icon name="arrow-right" size="15" color="#2A2D7C"></lc-icon></span></div>
+        <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:800;color:#C7C5BC;letter-spacing:.04em;writing-mode:vertical-rl;rotate:180deg">CUPOM</span>
+      </div>
+      <!-- hover -->
+      <div style="position:relative;display:grid;grid-template-columns:120px 1fr 64px 120px 150px 130px 96px;align-items:center;gap:10px;padding:11px 18px;border-bottom:1px solid #F0F1F5;background:#F8F9FC">
+        <div style="display:flex;align-items:center;gap:7px;font-weight:800;font-size:13px;color:var(--nxi1)"><span style="width:7px;height:7px;border-radius:7px;background:transparent"></span>U7V8W9</div>
+        <div style="font-size:13.5px;font-weight:600;color:var(--nxi1)">Rafael Almeida</div>
+        <div style="text-align:center;font-size:13px;font-weight:700;color:var(--nxi2)">1</div>
+        <div style="text-align:right;font-size:13.5px;font-weight:800;color:var(--nxi1)">R$ 76,50</div>
+        <div style="line-height:1.25"><div style="font-size:12.5px;font-weight:700;color:var(--nxi2)">18/06 09:30</div><div style="font-size:11px;font-weight:600;color:var(--nxi3)">há 5 h</div></div>
+        <div><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 8px;border-radius:8px;font-size:11.5px;font-weight:800;color:#5B41A8;background:#EFEAFB;box-shadow:inset 0 0 0 1px #D8CCF3"><span style="width:6px;height:6px;border-radius:6px;background:#7C5CD6"></span>Enviado</span></div>
+        <div style="display:flex;justify-content:center;gap:5px"><span style="width:30px;height:30px;border-radius:8px;border:1px solid var(--nxborder);background:#fff;display:flex;align-items:center;justify-content:center"><lc-icon name="message-circle" size="15" color="#3F8A66"></lc-icon></span></div>
+        <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:800;color:#9A9CAB;letter-spacing:.04em;writing-mode:vertical-rl;rotate:180deg">HOVER</span>
+      </div>
+      <!-- selecionada -->
+      <div style="position:relative;display:grid;grid-template-columns:120px 1fr 64px 120px 150px 130px 96px;align-items:center;gap:10px;padding:11px 18px;background:#EEF0FB">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--nxp)"></div>
+        <div style="display:flex;align-items:center;gap:7px;font-weight:800;font-size:13px;color:var(--nxi1)"><span style="width:7px;height:7px;border-radius:7px;background:transparent"></span>X1Y2Z3</div>
+        <div style="font-size:13.5px;font-weight:600;color:var(--nxi1)">Juliana Ribeiro</div>
+        <div style="text-align:center;font-size:13px;font-weight:700;color:var(--nxi2)">2</div>
+        <div style="text-align:right;font-size:13.5px;font-weight:800;color:var(--nxi1)">R$ 432,10</div>
+        <div style="line-height:1.25"><div style="font-size:12.5px;font-weight:700;color:var(--nxi2)">17/06 10:12</div><div style="font-size:11px;font-weight:600;color:var(--nxi3)">há 1 dia</div></div>
+        <div><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 8px;border-radius:8px;font-size:11.5px;font-weight:800;color:#2E6B4E;background:#E7F2EC;box-shadow:inset 0 0 0 1px #BFE0CF"><span style="width:6px;height:6px;border-radius:6px;background:#3F8A66"></span>Entregue</span></div>
+        <div style="display:flex;justify-content:center;gap:5px"><span style="width:30px;height:30px;border-radius:8px;border:1px solid var(--nxborder);background:#fff;display:flex;align-items:center;justify-content:center"><lc-icon name="message-circle" size="15" color="#3F8A66"></lc-icon></span></div>
+        <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:800;color:#2A2D7C;letter-spacing:.04em;writing-mode:vertical-rl;rotate:180deg">SELEC.</span>
+      </div>
+    </div>
+
+    <!-- ===== E. CARD DO QUADRO ===== -->
+    <div style="font-size:20px;font-weight:800;letter-spacing:-.02em;color:#3A382F;margin:44px 0 18px">E · Card do Quadro — variações</div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+      <!-- rico -->
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">E1 · Card rico</div>
+        <div style="width:268px;border-radius:14px;border:1px solid var(--nxborder);background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:11px 12px">
+          <div style="display:flex;align-items:center;gap:7px"><span style="width:7px;height:7px;border-radius:7px;background:transparent"></span><span style="font-weight:800;font-size:12.5px;color:var(--nxi1)">R4S5T6</span><span style="margin-left:auto;font-size:13px;font-weight:800;color:var(--nxi1)">R$ 1.240,00</span></div>
+          <div style="margin-top:6px;font-size:13px;font-weight:600;color:var(--nxi1)">Fernanda Souza</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11.5px;font-weight:700;color:var(--nxi3)"><span style="display:flex;align-items:center;gap:4px"><lc-icon name="package" size="13" color="#8A8D9E"></lc-icon>4 itens</span><span style="display:flex;align-items:center;gap:4px"><lc-icon name="clock" size="13" color="#8A8D9E"></lc-icon>há 3 h</span></div>
+          <div style="margin-top:9px"><span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:6px;color:#2E6B4E;background:#E7F2EC;font-size:10.5px;font-weight:800"><lc-icon name="file-text" size="11" color="#2E6B4E"></lc-icon>NF-e ok</span></div>
+        </div>
+      </div>
+      <!-- não-lido -->
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">E2 · Não-lido</div>
+        <div style="width:268px;border-radius:14px;border:1px solid var(--nxborder);background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:11px 12px">
+          <div style="display:flex;align-items:center;gap:7px"><span style="width:7px;height:7px;border-radius:7px;background:#E8632A"></span><span style="font-weight:800;font-size:12.5px;color:var(--nxi1)">M2N3O4</span><span style="margin-left:auto;font-size:13px;font-weight:800;color:var(--nxi1)">R$ 67,00</span></div>
+          <div style="margin-top:6px;font-size:13px;font-weight:800;color:var(--nxi1)">Beatriz Carvalho</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11.5px;font-weight:700;color:var(--nxi3)"><span style="display:flex;align-items:center;gap:4px"><lc-icon name="package" size="13" color="#8A8D9E"></lc-icon>1 item</span><span style="display:flex;align-items:center;gap:4px"><lc-icon name="clock" size="13" color="#8A8D9E"></lc-icon>há 4 min</span></div>
+        </div>
+      </div>
+      <!-- cancelamento -->
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">E3 · Solicitação de cancelamento</div>
+        <div style="width:268px;border-radius:14px;border:1px solid var(--nxborder);background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:11px 12px">
+          <div style="display:flex;align-items:center;gap:7px"><span style="width:7px;height:7px;border-radius:7px;background:#E8632A"></span><span style="font-weight:800;font-size:12.5px;color:var(--nxi1)">F4G5H6</span><span style="margin-left:auto;font-size:13px;font-weight:800;color:var(--nxi1)">R$ 349,00</span></div>
+          <div style="margin-top:6px;font-size:13px;font-weight:800;color:var(--nxi1)">João Pedro Santos</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11.5px;font-weight:700;color:var(--nxi3)"><span style="display:flex;align-items:center;gap:4px"><lc-icon name="package" size="13" color="#8A8D9E"></lc-icon>1 item</span><span style="display:flex;align-items:center;gap:4px"><lc-icon name="clock" size="13" color="#8A8D9E"></lc-icon>há 25 min</span></div>
+          <div style="margin-top:9px"><span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:6px;background:#FBEEE6;color:#B5491D;font-size:10.5px;font-weight:800"><lc-icon name="alert-triangle" size="11" color="#B5491D"></lc-icon>Cancelamento</span></div>
+        </div>
+      </div>
+      <!-- arrastando + target -->
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">E4 · Sendo arrastado + coluna-alvo</div>
+        <div style="width:288px;border-radius:16px;border:1px solid var(--nxp);background:#EEF0FB;padding:12px;position:relative">
+          <div style="display:flex;align-items:center;gap:8px;padding:2px 4px 12px"><span style="width:8px;height:8px;border-radius:8px;background:#2F6FE0"></span><span style="font-size:13px;font-weight:800;color:var(--nxi1)">Em preparação</span><span style="min-width:20px;height:20px;padding:0 6px;border-radius:20px;background:#EEF0F4;color:var(--nxi2);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">3</span></div>
+          <div style="border:1.5px dashed #B7BBE8;border-radius:12px;height:74px;display:flex;align-items:center;justify-content:center;color:#7E82C4;font-size:12px;font-weight:800">Solte aqui</div>
+          <div style="position:absolute;top:18px;right:-22px;width:240px;border-radius:14px;border:1px solid #2A2D7C;background:#fff;box-shadow:0 18px 36px -12px rgba(28,30,43,.4);padding:11px 12px;rotate:-3deg"><div style="display:flex;align-items:center;gap:7px"><span style="width:7px;height:7px;border-radius:7px;background:transparent"></span><span style="font-weight:800;font-size:12.5px;color:var(--nxi1)">N1P2Q3</span><span style="margin-left:auto;font-size:13px;font-weight:800;color:var(--nxi1)">R$ 99,90</span></div><div style="margin-top:6px;font-size:13px;font-weight:600;color:var(--nxi1)">Carlos Eduardo Lima</div></div>
+        </div>
+      </div>
+      <!-- selecionado -->
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">E5 · Selecionado</div>
+        <div style="width:268px;border-radius:14px;border:1px solid var(--nxp);background:#fff;box-shadow:0 0 0 3px rgba(42,45,124,.12);padding:11px 12px">
+          <div style="display:flex;align-items:center;gap:7px"><span style="width:7px;height:7px;border-radius:7px;background:transparent"></span><span style="font-weight:800;font-size:12.5px;color:var(--nxi1)">P5Q6R7</span><span style="margin-left:auto;font-size:13px;font-weight:800;color:var(--nxi1)">R$ 735,00</span></div>
+          <div style="margin-top:6px;font-size:13px;font-weight:600;color:var(--nxi1)">Gustavo Pereira</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11.5px;font-weight:700;color:var(--nxi3)"><span style="display:flex;align-items:center;gap:4px"><lc-icon name="package" size="13" color="#8A8D9E"></lc-icon>4 itens</span><span style="display:flex;align-items:center;gap:4px"><lc-icon name="clock" size="13" color="#8A8D9E"></lc-icon>há 1 h</span></div>
+          <div style="display:flex;gap:5px;margin-top:9px"><span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:6px;color:#A82F4F;background:#FBE9EE;font-size:10.5px;font-weight:800"><lc-icon name="file-text" size="11" color="#A82F4F"></lc-icon>NF-e neg.</span></div>
+        </div>
+      </div>
+      <!-- coluna vazia / ver mais -->
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">E6 · Coluna vazia + “Ver mais”</div>
+        <div style="width:268px;border-radius:16px;border:1px solid var(--nxborder);background:#F8F8FB;padding:12px">
+          <div style="display:flex;align-items:center;gap:8px;padding:2px 4px 12px"><span style="width:8px;height:8px;border-radius:8px;background:#3F8A66"></span><span style="font-size:13px;font-weight:800;color:var(--nxi1)">Entregue</span><span style="min-width:20px;height:20px;padding:0 6px;border-radius:20px;background:#EEF0F4;color:var(--nxi2);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">12</span></div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <div style="border-radius:14px;border:1px solid var(--nxborder);background:#fff;padding:11px 12px"><div style="display:flex;align-items:center;gap:7px"><span style="font-weight:800;font-size:12.5px;color:var(--nxi1)">B2C3D4</span><span style="margin-left:auto;font-size:13px;font-weight:800;color:var(--nxi1)">R$ 215,00</span></div><div style="margin-top:6px;font-size:13px;font-weight:600;color:var(--nxi1)">Pedro H. Martins</div></div>
+            <button style="border:1px dashed var(--nxborder);background:#fff;border-radius:10px;padding:8px;color:var(--nxp);font-family:inherit;font-size:12px;font-weight:800;cursor:pointer">Ver mais 11</button>
+          </div>
+          <div style="margin-top:12px;border-top:1px dashed var(--nxborder);padding-top:12px"><div style="font-size:10.5px;font-weight:800;color:#B7B9C6;letter-spacing:.06em;margin-bottom:7px">COLUNA VAZIA →</div><div style="border:1.5px dashed var(--nxborder);border-radius:12px;padding:20px;text-align:center;color:var(--nxi3);font-size:12px;font-weight:700">Nenhum pedido</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== F. DRAWER — estados ===== -->
+    <div style="font-size:20px;font-weight:800;letter-spacing:-.02em;color:#3A382F;margin:44px 0 4px">F · Drawer de detalhe — estados</div>
+    <div style="font-size:13px;font-weight:600;color:#8A887E;margin-bottom:18px">As abas Resumo · Itens · Cliente · Histórico estão na tela viva (abra qualquer pedido).</div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">F1 · Carregando</div>
+        <div style="width:420px;border-radius:16px;border:1px solid var(--nxborder);background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:18px">
+          <div style="display:flex;gap:8px;margin-bottom:14px"><div class="nxsk" style="height:24px;width:88px;border-radius:8px"></div><div class="nxsk" style="height:24px;width:56px;border-radius:8px"></div></div>
+          <div class="nxsk" style="height:16px;width:40%"></div>
+          <div class="nxsk" style="height:22px;width:62%;margin-top:10px"></div>
+          <div class="nxsk" style="height:120px;margin-top:18px;border-radius:14px"></div>
+          <div class="nxsk" style="height:90px;margin-top:12px;border-radius:14px"></div>
+        </div>
+      </div>
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">F2 · Erro</div>
+        <div style="width:420px;border-radius:16px;border:1px solid var(--nxborder);background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:48px 24px;text-align:center">
+          <div style="width:54px;height:54px;border-radius:14px;background:#FBE9EE;display:flex;align-items:center;justify-content:center;margin:0 auto 14px"><lc-icon name="alert-triangle" size="25" color="#C13A2E"></lc-icon></div>
+          <div style="font-size:16px;font-weight:800;color:var(--nxi1)">Erro ao carregar o pedido</div>
+          <div style="font-size:13px;font-weight:600;color:var(--nxi3);margin-top:5px">Não conseguimos buscar os detalhes deste pedido.</div>
+          <button style="margin-top:16px;height:38px;padding:0 16px;border-radius:11px;border:none;background:var(--nxp);color:#fff;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:7px"><lc-icon name="refresh-cw" size="14" color="#fff"></lc-icon>Tentar novamente</button>
+        </div>
+      </div>
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">F3 · Alerta de cancelamento (topo)</div>
+        <div style="width:420px;padding:13px 14px;border-radius:13px;background:#FBEEE6;border:1px solid #F2D2BE">
+          <div style="display:flex;align-items:center;gap:8px;color:#B5491D;font-size:13px;font-weight:800"><lc-icon name="alert-triangle" size="15" color="#B5491D"></lc-icon>Cliente pediu cancelamento</div>
+          <div style="margin-top:6px;font-size:12.5px;font-weight:600;color:#7A4527;line-height:1.45">“Comprei o tamanho errado, queria trocar por um maior antes de enviar.”</div>
+          <div style="display:flex;gap:8px;margin-top:11px"><button style="flex:1;height:36px;border-radius:10px;border:none;background:var(--nxd);color:#fff;font-family:inherit;font-size:12.5px;font-weight:800;cursor:pointer">Aceitar e cancelar</button><button style="flex:1;height:36px;border-radius:10px;border:1px solid #E2C3AE;background:#fff;color:#8A5733;font-family:inherit;font-size:12.5px;font-weight:800;cursor:pointer">Recusar</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== G. BADGES ===== -->
+    <div style="font-size:20px;font-weight:800;letter-spacing:-.02em;color:#3A382F;margin:44px 0 18px">G · Badges de status</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px 5px 10px;border-radius:9px;font-size:13px;font-weight:800;color:#8A6516;background:#FBF3E0;box-shadow:inset 0 0 0 1px #F0DCA8"><span style="width:7px;height:7px;border-radius:7px;background:#E8A33D"></span>Novo</span>
+      <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px 5px 10px;border-radius:9px;font-size:13px;font-weight:800;color:#1E4FA8;background:#E8EFFB;box-shadow:inset 0 0 0 1px #C5D8F5"><span style="width:7px;height:7px;border-radius:7px;background:#2F6FE0"></span>Em preparação</span>
+      <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px 5px 10px;border-radius:9px;font-size:13px;font-weight:800;color:#5B41A8;background:#EFEAFB;box-shadow:inset 0 0 0 1px #D8CCF3"><span style="width:7px;height:7px;border-radius:7px;background:#7C5CD6"></span>Enviado</span>
+      <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px 5px 10px;border-radius:9px;font-size:13px;font-weight:800;color:#2E6B4E;background:#E7F2EC;box-shadow:inset 0 0 0 1px #BFE0CF"><span style="width:7px;height:7px;border-radius:7px;background:#3F8A66"></span>Entregue</span>
+      <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px 5px 10px;border-radius:9px;font-size:13px;font-weight:800;color:#A82F4F;background:#FBE9EE;box-shadow:inset 0 0 0 1px #F3C8D4"><span style="width:7px;height:7px;border-radius:7px;background:#D6456A"></span>Cancelado</span>
+    </div>
+
+    <!-- ===== H. NF-e ===== -->
+    <div style="font-size:20px;font-weight:800;letter-spacing:-.02em;color:#3A382F;margin:44px 0 18px">H · Card de NF-e — sub-estados</div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">H1 · Bling não conectado</div>
+        <div style="width:360px;border-radius:14px;border:1.5px dashed #D7D9E3;background:#FAFAFC;padding:14px"><div style="display:flex;align-items:center;gap:8px"><lc-icon name="file-text" size="15" color="#8A8D9E"></lc-icon><span style="font-size:13px;font-weight:800;color:var(--nxi1)">Nota Fiscal (NF-e)</span><span style="margin-left:auto;font-size:11.5px;font-weight:800;color:#8A8D9E">Indisponível</span></div><div style="margin-top:8px;font-size:12.5px;font-weight:600;color:var(--nxi2);line-height:1.45">Conecte sua conta Bling em Configurações para emitir notas fiscais.</div><button style="margin-top:12px;height:34px;padding:0 14px;border-radius:9px;border:1px solid var(--nxborder);background:#fff;color:var(--nxp);font-family:inherit;font-size:12px;font-weight:800;cursor:pointer">Conectar Bling</button></div>
+      </div>
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">H2 · Pronta para emitir</div>
+        <div style="width:360px;border-radius:14px;border:1px solid #C7CAEC;background:#F4F5FD;padding:14px"><div style="display:flex;align-items:center;gap:8px"><lc-icon name="file-text" size="15" color="#2A2D7C"></lc-icon><span style="font-size:13px;font-weight:800;color:var(--nxi1)">Nota Fiscal (NF-e)</span><span style="margin-left:auto;font-size:11.5px;font-weight:800;color:#2A2D7C">Pronta para emitir</span></div><div style="margin-top:8px;font-size:12.5px;font-weight:600;color:var(--nxi2);line-height:1.45">Emita a nota fiscal eletrônica deste pedido via Bling.</div><button style="margin-top:12px;width:100%;height:38px;border-radius:10px;border:none;background:var(--nxp);color:#fff;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer">Emitir NF-e via Bling</button></div>
+      </div>
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">H3 · Emitindo</div>
+        <div style="width:360px;border-radius:14px;border:1px solid #C7CAEC;background:#F4F5FD;padding:14px"><div style="display:flex;align-items:center;gap:8px"><lc-icon name="file-text" size="15" color="#2A2D7C"></lc-icon><span style="font-size:13px;font-weight:800;color:var(--nxi1)">Nota Fiscal (NF-e)</span></div><div style="margin-top:8px;font-size:12.5px;font-weight:600;color:var(--nxi2);line-height:1.45">Enviando para o Bling…</div><button style="margin-top:12px;width:100%;height:38px;border-radius:10px;border:none;background:var(--nxp);color:#fff;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px"><lc-icon name="loader-2" size="14" color="#fff" style="animation:nxspin .8s linear infinite"></lc-icon>Solicitando emissão…</button></div>
+      </div>
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">H4 · Em processo</div>
+        <div style="width:360px;border-radius:14px;border:1px solid #F0DCA8;background:#FBF8EF;padding:14px"><div style="display:flex;align-items:center;gap:8px"><lc-icon name="file-text" size="15" color="#8A6516"></lc-icon><span style="font-size:13px;font-weight:800;color:var(--nxi1)">Nota Fiscal (NF-e)</span><span style="margin-left:auto;font-size:11.5px;font-weight:800;color:#8A6516">Aguardando autorização</span></div><div style="margin-top:8px;font-size:12.5px;font-weight:600;color:var(--nxi2);line-height:1.45">A NF-e foi enviada e aguarda autorização da SEFAZ.</div></div>
+      </div>
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">H5 · Autorizada</div>
+        <div style="width:360px;border-radius:14px;border:1px solid #BFE0CF;background:#F2F8F4;padding:14px"><div style="display:flex;align-items:center;gap:8px"><lc-icon name="file-text" size="15" color="#2E6B4E"></lc-icon><span style="font-size:13px;font-weight:800;color:var(--nxi1)">Nota Fiscal (NF-e)</span><span style="margin-left:auto;font-size:11.5px;font-weight:800;color:#2E6B4E">Autorizada</span></div>
+          <div style="margin-top:11px;display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:700;color:var(--nxi2)"><div style="display:flex;justify-content:space-between"><span style="color:var(--nxi3)">Número / Série</span><span>001245 / 1</span></div><div style="display:flex;gap:6px"><span style="color:var(--nxi3);flex:none">Chave</span><span style="font-size:11px;color:var(--nxi2);word-break:break-all;line-height:1.3">4124 0699 9999 0001 5500 1000 0012 4510 0012 4501</span></div></div>
+          <div style="display:flex;gap:8px;margin-top:11px"><button style="flex:1;height:34px;border-radius:9px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi2);font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><lc-icon name="download" size="13" color="#8A8D9E"></lc-icon>DANFE.pdf</button><button style="flex:1;height:34px;border-radius:9px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi2);font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><lc-icon name="download" size="13" color="#8A8D9E"></lc-icon>XML</button></div>
+        </div>
+      </div>
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">H6 · Denegada</div>
+        <div style="width:360px;border-radius:14px;border:1px solid #F3C8D4;background:#FCF2F4;padding:14px"><div style="display:flex;align-items:center;gap:8px"><lc-icon name="file-text" size="15" color="#A82F4F"></lc-icon><span style="font-size:13px;font-weight:800;color:var(--nxi1)">Nota Fiscal (NF-e)</span><span style="margin-left:auto;font-size:11.5px;font-weight:800;color:#A82F4F">Denegada</span></div><div style="margin-top:8px;font-size:12.5px;font-weight:600;color:var(--nxi2);line-height:1.45">A SEFAZ denegou a emissão. Verifique os dados do cliente e tente novamente.</div></div>
+      </div>
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">H7 · Cancelada</div>
+        <div style="width:360px;border-radius:14px;border:1px solid #E6E7EE;background:#FBFBFD;padding:14px"><div style="display:flex;align-items:center;gap:8px"><lc-icon name="file-text" size="15" color="#8A8D9E"></lc-icon><span style="font-size:13px;font-weight:800;color:var(--nxi1)">Nota Fiscal (NF-e)</span><span style="margin-left:auto;font-size:11.5px;font-weight:800;color:#8A8D9E">Cancelada</span></div><div style="margin-top:8px;font-size:12.5px;font-weight:600;color:var(--nxi2);line-height:1.45">A NF-e deste pedido foi cancelada.</div></div>
+      </div>
+    </div>
+
+    <!-- ===== I. MODAIS ===== -->
+    <div style="font-size:20px;font-weight:800;letter-spacing:-.02em;color:#3A382F;margin:44px 0 18px">I · Modais</div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">I1 · Solicitação de cancelamento</div>
+        <div style="width:404px;background:#fff;border-radius:18px;border:1px solid var(--nxborder);box-shadow:0 20px 50px -24px rgba(20,21,34,.4);padding:22px">
+          <div style="display:flex;align-items:center;gap:11px"><span style="width:44px;height:44px;border-radius:12px;background:#DADCEC;color:var(--nxp);font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center">JS</span><div><div style="font-size:15px;font-weight:800;color:var(--nxi1)">João Pedro Santos</div><div style="font-size:12px;font-weight:600;color:var(--nxi3)">Pedido #F4G5H6</div></div></div>
+          <div style="margin-top:14px;padding:12px 13px;border-radius:12px;background:var(--nxbg);font-size:12.5px;font-weight:600;color:var(--nxi2);line-height:1.45">“Comprei o tamanho errado, queria trocar por um maior antes de enviar.”</div>
+          <div style="display:flex;gap:9px;margin-top:16px"><button style="flex:1;height:42px;border-radius:11px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi2);font-family:inherit;font-size:13.5px;font-weight:800;cursor:pointer">Recusar</button><button style="flex:1;height:42px;border-radius:11px;border:none;background:var(--nxd);color:#fff;font-family:inherit;font-size:13.5px;font-weight:800;cursor:pointer">Aceitar e cancelar</button></div>
+        </div>
+      </div>
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">I1b · Sem motivo + loading</div>
+        <div style="width:404px;background:#fff;border-radius:18px;border:1px solid var(--nxborder);box-shadow:0 20px 50px -24px rgba(20,21,34,.4);padding:22px">
+          <div style="display:flex;align-items:center;gap:11px"><span style="width:44px;height:44px;border-radius:12px;background:#DADCEC;color:var(--nxp);font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center">LR</span><div><div style="font-size:15px;font-weight:800;color:var(--nxi1)">Lucas Gabriel Rocha</div><div style="font-size:12px;font-weight:600;color:var(--nxi3)">Pedido #H8I9J1</div></div></div>
+          <div style="margin-top:14px;padding:12px 13px;border-radius:12px;background:var(--nxbg);font-size:12.5px;font-weight:600;color:var(--nxi3);font-style:italic">Nenhum motivo informado.</div>
+          <div style="display:flex;gap:9px;margin-top:16px"><button style="flex:1;height:42px;border-radius:11px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi2);font-family:inherit;font-size:13.5px;font-weight:800;cursor:pointer">Recusar</button><button style="flex:1;height:42px;border-radius:11px;border:none;background:#D88A82;color:#fff;font-family:inherit;font-size:13.5px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px"><lc-icon name="loader-2" size="14" color="#fff" style="animation:nxspin .8s linear infinite"></lc-icon>Cancelando…</button></div>
+        </div>
+      </div>
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">I2 · Motivo do cancelamento (lojista)</div>
+        <div style="width:404px;background:#fff;border-radius:18px;border:1px solid var(--nxborder);box-shadow:0 20px 50px -24px rgba(20,21,34,.4);padding:22px">
+          <div style="display:flex;align-items:center;gap:10px"><span style="width:38px;height:38px;border-radius:11px;background:#FBE9EE;display:flex;align-items:center;justify-content:center"><lc-icon name="circle-x" size="19" color="#C13A2E"></lc-icon></span><div><div style="font-size:16px;font-weight:800;color:var(--nxi1)">Cancelar pedido</div><div style="font-size:12px;font-weight:600;color:var(--nxi3)">Informe o motivo do cancelamento.</div></div></div>
+          <div style="margin-top:14px;width:100%;height:104px;border-radius:12px;border:1px solid var(--nxborder);padding:11px 12px;font-size:13px;font-weight:600;color:var(--nxi3)">Ex.: produto sem estoque, pagamento não confirmado…</div>
+          <div style="text-align:right;font-size:11px;font-weight:700;color:var(--nxi3);margin-top:4px">0/500</div>
+          <div style="display:flex;gap:9px;margin-top:8px"><button style="flex:1;height:42px;border-radius:11px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi2);font-family:inherit;font-size:13.5px;font-weight:800;cursor:pointer">Voltar</button><button style="flex:1;height:42px;border-radius:11px;border:none;background:#E9C9C5;color:#fff;font-family:inherit;font-size:13.5px;font-weight:800;cursor:not-allowed">Confirmar cancelamento</button></div>
+          <div style="margin-top:7px;font-size:11px;font-weight:700;color:var(--nxi3);text-align:center">Botão desabilitado enquanto o campo está vazio</div>
+        </div>
+      </div>
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">I3 · Plano travado (upgrade)</div>
+        <div style="width:380px;background:#fff;border-radius:18px;border:1px solid var(--nxborder);box-shadow:0 20px 50px -24px rgba(20,21,34,.4);padding:24px;text-align:center">
+          <span style="width:52px;height:52px;border-radius:14px;background:#EEF0FB;display:flex;align-items:center;justify-content:center;margin:0 auto"><lc-icon name="lock" size="24" color="#2A2D7C"></lc-icon></span>
+          <div style="margin-top:14px;font-size:18px;font-weight:800;color:var(--nxi1)">Exportar para Excel</div>
+          <div style="margin-top:6px;font-size:13px;font-weight:600;color:var(--nxi2);line-height:1.5">A exportação está disponível a partir do <b style="color:var(--nxp)">Plano Pro</b>. Faça upgrade para baixar relatórios em .xlsx.</div>
+          <button style="margin-top:18px;width:100%;height:44px;border-radius:12px;border:none;background:var(--nxp);color:#fff;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer">Conhecer o Plano Pro</button>
+          <button style="margin-top:9px;width:100%;height:40px;border-radius:12px;border:none;background:none;color:var(--nxi3);font-family:inherit;font-size:13px;font-weight:800;cursor:pointer">Agora não</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== J. TEMPO REAL ===== -->
+    <div style="font-size:20px;font-weight:800;letter-spacing:-.02em;color:#3A382F;margin:44px 0 18px">J · Tempo real</div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">J1 · Toast de novo pedido</div>
+        <div style="width:300px;background:#fff;border-radius:14px;border:1px solid #F2D2BE;box-shadow:0 20px 50px -20px rgba(20,21,34,.35);padding:13px 14px;display:flex;gap:11px">
+          <span style="width:36px;height:36px;border-radius:10px;background:var(--nxa);display:flex;align-items:center;justify-content:center;flex:none"><lc-icon name="bell" size="18" color="#fff"></lc-icon></span>
+          <div style="flex:1"><div style="font-size:13px;font-weight:800;color:var(--nxi1)">Novo pedido recebido!</div><div style="font-size:12px;font-weight:600;color:var(--nxi3);margin-top:1px">Mariana Oliveira · R$ 189,90</div></div>
+          <span style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;flex:none"><lc-icon name="x" size="14" color="#8A8D9E"></lc-icon></span>
+        </div>
+      </div>
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">J2 · Badge de contagem na sidebar</div>
+        <div style="width:236px;background:#fff;border:1px solid var(--nxborder);border-radius:12px;padding:14px">
+          <div style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:10px;background:#EEF0FB;color:var(--nxp);font-size:14px;font-weight:800"><lc-icon name="shopping-bag" size="17" color="#2A2D7C"></lc-icon>Pedidos<span style="margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:20px;background:var(--nxa);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">3</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== K. RESPONSIVIDADE ===== -->
+    <div style="font-size:20px;font-weight:800;letter-spacing:-.02em;color:#3A382F;margin:44px 0 18px">K · Responsividade</div>
+    <div style="display:flex;gap:32px;flex-wrap:wrap;align-items:flex-start">
+      <!-- mobile -->
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">Mobile · lista + filtros compactos</div>
+        <div style="width:380px;border-radius:30px;border:10px solid #1C1E2B;background:var(--nxbg);overflow:hidden;height:720px;display:flex;flex-direction:column">
+          <div style="padding:16px 16px 0;background:#fff;border-bottom:1px solid var(--nxborder)">
+            <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:22px;font-weight:800;letter-spacing:-.03em;color:var(--nxi1)">Pedidos</div><div style="display:flex;gap:6px"><span style="width:36px;height:36px;border-radius:10px;border:1px solid var(--nxborder);background:#fff;display:flex;align-items:center;justify-content:center"><lc-icon name="list" size="16" color="#2A2D7C"></lc-icon></span><span style="width:36px;height:36px;border-radius:10px;border:1px solid var(--nxborder);background:#fff;display:flex;align-items:center;justify-content:center"><lc-icon name="download" size="16" color="#8A8D9E"></lc-icon></span></div></div>
+            <div style="display:flex;gap:8px;margin-top:12px;overflow:hidden"><div style="flex:1;border-radius:13px;border:1px solid var(--nxborder);background:#fff;padding:9px 10px"><div style="font-size:10px;font-weight:700;color:var(--nxi3)">Novos</div><div style="font-size:18px;font-weight:800;color:var(--nxi1)">14</div></div><div style="flex:1;border-radius:13px;border:1px solid var(--nxborder);background:#fff;padding:9px 10px"><div style="font-size:10px;font-weight:700;color:var(--nxi3)">Receita</div><div style="font-size:18px;font-weight:800;color:var(--nxi1)">R$ 42k</div></div></div>
+            <div style="position:relative;margin-top:10px"><span style="position:absolute;left:11px;top:50%;transform:translateY(-50%)"><lc-icon name="search" size="15" color="#8A8D9E"></lc-icon></span><div style="height:38px;border-radius:11px;border:1px solid var(--nxborder);background:var(--nxbg);padding:0 34px;display:flex;align-items:center;font-size:12.5px;font-weight:600;color:var(--nxi3)">Buscar…</div></div>
+            <div style="display:flex;gap:6px;margin:11px 0;overflow:hidden"><span style="height:28px;padding:0 11px;border-radius:8px;background:var(--nxp);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center">Todos</span><span style="height:28px;padding:0 11px;border-radius:8px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi2);font-size:12px;font-weight:700;display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:6px;background:#E8A33D"></span>Novo</span><span style="height:28px;padding:0 11px;border-radius:8px;border:1px solid var(--nxborder);background:#fff;color:var(--nxi2);font-size:12px;font-weight:700;display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:6px;background:#2F6FE0"></span>Prep.</span></div>
+          </div>
+          <div class="nxscroll" style="flex:1;overflow:auto;padding:12px">
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <div style="border-radius:14px;border:1px solid var(--nxborder);background:#fff;padding:12px"><div style="display:flex;align-items:center;gap:7px"><span style="width:7px;height:7px;border-radius:7px;background:#E8632A"></span><span style="font-weight:800;font-size:12.5px;color:var(--nxi1)">A1B2C3</span><span style="margin-left:auto;font-size:13px;font-weight:800;color:var(--nxi1)">R$ 189,90</span></div><div style="margin-top:6px;font-size:13.5px;font-weight:800;color:var(--nxi1)">Mariana Oliveira</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px"><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 8px;border-radius:8px;font-size:11px;font-weight:800;color:#8A6516;background:#FBF3E0;box-shadow:inset 0 0 0 1px #F0DCA8"><span style="width:6px;height:6px;border-radius:6px;background:#E8A33D"></span>Novo</span><span style="font-size:11px;font-weight:600;color:var(--nxi3)">2 itens · há 12 min</span></div></div>
+              <div style="border-radius:14px;border:1px solid var(--nxborder);background:#fff;padding:12px"><div style="display:flex;align-items:center;gap:7px"><span style="font-weight:800;font-size:12.5px;color:var(--nxi1)">K7L8M9</span><span style="margin-left:auto;font-size:13px;font-weight:800;color:var(--nxi1)">R$ 455,47</span></div><div style="margin-top:6px;font-size:13.5px;font-weight:600;color:var(--nxi1)">Ana Beatriz Costa</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px"><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 8px;border-radius:8px;font-size:11px;font-weight:800;color:#1E4FA8;background:#E8EFFB;box-shadow:inset 0 0 0 1px #C5D8F5"><span style="width:6px;height:6px;border-radius:6px;background:#2F6FE0"></span>Em preparação</span><span style="font-size:11px;font-weight:600;color:var(--nxi3)">3 itens · há 48 min</span></div></div>
+              <div style="border-radius:14px;border:1px solid var(--nxborder);background:#fff;padding:12px"><div style="display:flex;align-items:center;gap:7px"><span style="font-weight:800;font-size:12.5px;color:var(--nxi1)">R4S5T6</span><span style="margin-left:auto;font-size:13px;font-weight:800;color:var(--nxi1)">R$ 1.240,00</span></div><div style="margin-top:6px;font-size:13.5px;font-weight:600;color:var(--nxi1)">Fernanda Souza</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px"><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 8px;border-radius:8px;font-size:11px;font-weight:800;color:#5B41A8;background:#EFEAFB;box-shadow:inset 0 0 0 1px #D8CCF3"><span style="width:6px;height:6px;border-radius:6px;background:#7C5CD6"></span>Enviado</span><span style="font-size:11px;font-weight:600;color:var(--nxi3)">1 item · há 3 h</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- mobile bottom sheet -->
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">Mobile · drawer em bottom sheet</div>
+        <div style="width:380px;border-radius:30px;border:10px solid #1C1E2B;background:rgba(20,21,34,.35);overflow:hidden;height:720px;position:relative">
+          <div style="position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:22px 22px 0 0;padding:16px;max-height:78%;overflow:hidden">
+            <div style="width:40px;height:4px;border-radius:4px;background:#D7D9E3;margin:0 auto 14px"></div>
+            <div style="display:flex;align-items:center;gap:9px"><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 8px;border-radius:8px;font-size:11.5px;font-weight:800;color:#8A6516;background:#FBF3E0;box-shadow:inset 0 0 0 1px #F0DCA8"><span style="width:6px;height:6px;border-radius:6px;background:#E8A33D"></span>Novo</span><span style="display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:8px;background:#EEF0FB;color:var(--nxp);font-size:11px;font-weight:800"><span style="width:6px;height:6px;border-radius:6px;background:#2A2D7C"></span>Bling</span></div>
+            <div style="margin-top:12px;font-size:16px;font-weight:800;color:var(--nxi1);font-variant-numeric:tabular-nums">#A1B2C3</div>
+            <div style="font-size:19px;font-weight:800;color:var(--nxi1);margin-top:2px">Mariana Oliveira</div>
+            <div style="display:flex;gap:4px;margin-top:14px"><span style="flex:1;text-align:center;height:32px;line-height:32px;border-radius:9px;background:#EEF0FB;color:var(--nxp);font-size:12.5px;font-weight:800">Resumo</span><span style="flex:1;text-align:center;height:32px;line-height:32px;color:#8A8D9E;font-size:12.5px;font-weight:800">Itens</span><span style="flex:1;text-align:center;height:32px;line-height:32px;color:#8A8D9E;font-size:12.5px;font-weight:800">Cliente</span><span style="flex:1;text-align:center;height:32px;line-height:32px;color:#8A8D9E;font-size:12.5px;font-weight:800">Hist.</span></div>
+            <div style="margin-top:12px;border-radius:14px;border:1px solid var(--nxborder);background:var(--nxsurf);padding:15px"><div style="font-size:12px;font-weight:700;color:var(--nxi3)">Total do pedido</div><div style="font-size:28px;font-weight:800;letter-spacing:-.03em;color:var(--nxi1);margin-top:3px">R$ 189,90 <span style="font-size:12px;font-weight:700;color:var(--nxi3)">· 2 itens</span></div></div>
+            <button style="margin-top:14px;width:100%;height:46px;border-radius:12px;border:none;background:var(--nxp);color:#fff;font-family:inherit;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:7px"><lc-icon name="arrow-right" size="16" color="#fff"></lc-icon>Confirmar pedido</button>
+          </div>
+        </div>
+      </div>
+      <!-- tablet -->
+      <div style="flex:none"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A988F;margin-bottom:8px">Tablet · 2 colunas de KPI + lista</div>
+        <div style="width:560px;border-radius:18px;border:8px solid #1C1E2B;background:var(--nxbg);overflow:hidden;height:440px;padding:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:22px;font-weight:800;letter-spacing:-.03em;color:var(--nxi1)">Pedidos</div><div style="display:flex;background:#fff;border:1px solid var(--nxborder);border-radius:10px;padding:3px"><span style="height:28px;padding:0 11px;border-radius:7px;background:#EEF0FB;color:var(--nxp);font-size:12px;font-weight:800;display:flex;align-items:center;gap:5px"><lc-icon name="list" size="14" color="#2A2D7C"></lc-icon>Lista</span><span style="height:28px;padding:0 11px;color:#8A8D9E;font-size:12px;font-weight:800;display:flex;align-items:center;gap:5px"><lc-icon name="layout-grid" size="14" color="#8A8D9E"></lc-icon>Quadro</span></div></div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:13px"><div style="border-radius:12px;border:1px solid var(--nxborder);background:#fff;padding:10px"><div style="font-size:10px;font-weight:700;color:var(--nxi3)">Total</div><div style="font-size:18px;font-weight:800;color:var(--nxi1)">128</div></div><div style="border-radius:12px;border:1px solid var(--nxborder);background:#fff;padding:10px"><div style="font-size:10px;font-weight:700;color:var(--nxi3)">Novos</div><div style="font-size:18px;font-weight:800;color:var(--nxi1)">14</div></div><div style="border-radius:12px;border:1px solid var(--nxborder);background:#fff;padding:10px"><div style="font-size:10px;font-weight:700;color:var(--nxi3)">Andamento</div><div style="font-size:18px;font-weight:800;color:var(--nxi1)">63</div></div><div style="border-radius:12px;border:1px solid var(--nxborder);background:linear-gradient(180deg,#2F327F,#2A2D7C);padding:10px"><div style="font-size:10px;font-weight:700;color:#C9CBEC">Receita</div><div style="font-size:16px;font-weight:800;color:#fff">R$ 42k</div></div></div>
+          <div style="margin-top:13px;border-radius:14px;border:1px solid var(--nxborder);background:#fff;overflow:hidden">
+            <div style="display:grid;grid-template-columns:90px 1fr 90px 110px;gap:8px;padding:9px 14px;border-bottom:1px solid var(--nxborder);background:#FBFBFD;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--nxi3)"><span>Código</span><span>Cliente</span><span>Total</span><span>Status</span></div>
+            <div style="display:grid;grid-template-columns:90px 1fr 90px 110px;gap:8px;padding:11px 14px;border-bottom:1px solid #F0F1F5;align-items:center"><span style="font-weight:800;font-size:12px;color:var(--nxi1)">A1B2C3</span><span style="font-size:12.5px;font-weight:600;color:var(--nxi1)">Mariana Oliveira</span><span style="font-size:12.5px;font-weight:800;color:var(--nxi1)">R$ 189,90</span><span><span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:7px;font-size:10.5px;font-weight:800;color:#8A6516;background:#FBF3E0"><span style="width:6px;height:6px;border-radius:6px;background:#E8A33D"></span>Novo</span></span></div>
+            <div style="display:grid;grid-template-columns:90px 1fr 90px 110px;gap:8px;padding:11px 14px;align-items:center"><span style="font-weight:800;font-size:12px;color:var(--nxi1)">R4S5T6</span><span style="font-size:12.5px;font-weight:600;color:var(--nxi1)">Fernanda Souza</span><span style="font-size:12.5px;font-weight:800;color:var(--nxi1)">R$ 1.240,00</span><span><span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:7px;font-size:10.5px;font-weight:800;color:#5B41A8;background:#EFEAFB"><span style="width:6px;height:6px;border-radius:6px;background:#7C5CD6"></span>Enviado</span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CATALOG_INSERT -->
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.NOW = new Date('2026-06-18T14:32:00-03:00').getTime();
+    this.state = {
+      view:'list', search:'', statusFilter:'all', sort:'recent', sortMenuOpen:false,
+      periodActive:false, exporting:false, selectedId:null, drawerTab:'resumo',
+      modal:null, cancelText:'', cancelBtnLoading:false, nfeEmitting:false,
+      copied:false, toastVisible:false, draggingId:null, dragOverCol:null,
+      colLimit:{1:99,2:99,3:99,4:99}, orders:this.seed()
+    };
+  }
+  seed(){
+    const m=(o)=>Object.assign({read:1,coupon_code:null,coupon_discount:0,notes:'',cancellation_requested:0,cancellation_request_reason:'',cancellation_reason:'',bling_sync:'synced',nfe:{status:'pronta'},delivery_address:'',customer_phone:'',items:[]},o);
+    const A='Rua das Acácias, 128 — Apt 42 · Pinheiros, São Paulo/SP · 05423-010';
+    return [
+      m({id:1,order_code:'A1B2C3',customer_name:'Mariana Oliveira',customer_phone:'(11) 98123-4567',customer_email:'mariana.oliveira@gmail.com',status:1,total:189.90,created_at:this.ago(12,'m'),read:0,notes:'Por favor, entregar somente após as 18h. Não tem campainha, ligar ao chegar.',delivery_address:A,nfe:{status:'pronta'},items:[{name:'Camiseta Pima Algodão',qty:2,price:79.90,size:'M',color:'Off-white',img:1,notes:''},{name:'Meia Cano Médio (par)',qty:1,price:30.10,size:'39-42',color:'Preto',img:1}]}),
+      m({id:2,order_code:'F4G5H6',customer_name:'João Pedro Santos',customer_phone:'(21) 99876-1122',customer_email:'jp.santos@outlook.com',status:1,total:349.00,created_at:this.ago(25,'m'),read:0,cancellation_requested:1,cancellation_request_reason:'Comprei o tamanho errado, queria trocar por um maior antes de enviar.',bling_sync:'pending',delivery_address:'Av. Atlântica, 1702 · Copacabana, Rio de Janeiro/RJ',items:[{name:'Tênis Runner Leve',qty:1,price:349.00,size:'41',color:'Grafite',img:1,notes:'Cliente pediu confirmação de numeração.'}]}),
+      m({id:3,order_code:'K7L8M9',customer_name:'Ana Beatriz Costa',customer_phone:'(31) 98555-7788',customer_email:'anabia.costa@gmail.com',status:2,total:455.47,created_at:this.ago(48,'m'),coupon_code:'BEMVINDO10',coupon_discount:56.93,delivery_address:'Rua da Bahia, 990 · Centro, Belo Horizonte/MG',nfe:{status:'em_processo'},items:[{name:'Vestido Linho Midi',qty:1,price:289.90,size:'P',color:'Terracota',img:1},{name:'Bolsa Tiracolo Couro',qty:1,price:159.90,size:'',color:'Caramelo',img:1},{name:'Lenço Seda',qty:1,price:62.60,size:'',color:'Estampado',img:0}]}),
+      m({id:4,order_code:'N1P2Q3',customer_name:'Carlos Eduardo Lima',customer_phone:'',customer_email:'cadu.lima@empresa.com.br',status:2,total:99.90,created_at:this.ago(1,'h'),delivery_address:'',nfe:{status:'pronta'},items:[{name:'Caneca Cerâmica 350ml',qty:1,price:49.90,size:'',color:'Azul-petróleo',img:1},{name:'Caderno Pautado A5',qty:1,price:50.00,size:'',color:'Kraft',img:1,notes:'Embrulhar para presente.'}]}),
+      m({id:5,order_code:'R4S5T6',customer_name:'Fernanda Souza',customer_phone:'(41) 99211-3344',customer_email:'fe.souza@gmail.com',status:3,total:1240.00,created_at:this.ago(3,'h'),delivery_address:'Rua XV de Novembro, 55 · Centro, Curitiba/PR',nfe:{status:'autorizada',number:'001245',serie:'1',chave:'4124 0699 9999 0001 5500 1000 0012 4510 0012 4501'},items:[{name:'Cafeteira Italiana 6 xíc.',qty:1,price:289.00,size:'',color:'Inox',img:1},{name:'Moedor de Café Manual',qty:1,price:451.00,size:'',color:'Madeira',img:1},{name:'Pacote Café Especial 1kg',qty:2,price:250.00,size:'',color:'Torra média',img:1}]}),
+      m({id:6,order_code:'U7V8W9',customer_name:'Rafael Almeida',customer_phone:'(51) 98777-9090',customer_email:'rafa.almeida@gmail.com',status:3,total:76.50,created_at:this.ago(5,'h'),delivery_address:'Av. Ipiranga, 7000 · Partenon, Porto Alegre/RS',items:[{name:'Boné Aba Curva',qty:1,price:76.50,size:'Único',color:'Verde-musgo',img:1}]}),
+      m({id:7,order_code:'X1Y2Z3',customer_name:'Juliana Ribeiro',customer_phone:'(85) 99444-2211',customer_email:'ju.ribeiro@gmail.com',status:4,total:432.10,created_at:this.ago(28,'h'),delivery_address:'Rua Dragão do Mar, 81 · Praia de Iracema, Fortaleza/CE',nfe:{status:'autorizada',number:'001244',serie:'1',chave:'2324 0688 8888 0001 5500 1000 0012 4410 0012 4400'},items:[{name:'Rede de Descanso Casal',qty:1,price:289.90,size:'',color:'Listrada',img:1},{name:'Suporte para Rede',qty:1,price:142.20,size:'',color:'Natural',img:0}]}),
+      m({id:8,order_code:'B2C3D4',customer_name:'Pedro Henrique Martins',customer_phone:'(62) 98333-5566',customer_email:'ph.martins@gmail.com',status:4,total:215.00,created_at:this.ago(50,'h'),delivery_address:'Av. T-9, 1200 · Setor Bueno, Goiânia/GO',items:[{name:'Camisa Social Slim',qty:1,price:215.00,size:'G',color:'Azul-claro',img:1}]}),
+      m({id:9,order_code:'E5F6G7',customer_name:'Camila Ferreira',customer_phone:'(47) 99122-7788',customer_email:'camila.f@gmail.com',status:5,total:88.00,created_at:this.ago(30,'h'),cancellation_reason:'Cliente desistiu da compra antes do envio.',nfe:{status:'cancelada'},delivery_address:'Rua das Palmeiras, 33 · Centro, Florianópolis/SC',items:[{name:'Necessaire Impermeável',qty:1,price:88.00,size:'',color:'Rosa-seco',img:1}]}),
+      m({id:10,order_code:'H8I9J1',customer_name:'Lucas Gabriel Rocha',customer_phone:'(81) 98666-1199',customer_email:'lucas.rocha@gmail.com',status:5,total:159.90,created_at:this.ago(72,'h'),cancellation_reason:'',delivery_address:'Av. Boa Viagem, 500 · Recife/PE',items:[{name:'Mochila Antifurto',qty:1,price:159.90,size:'',color:'Preto',img:1}]}),
+      m({id:11,order_code:'M2N3O4',customer_name:'Beatriz Carvalho',customer_phone:'(11) 97000-4545',customer_email:'bia.carvalho@gmail.com',status:1,total:67.00,created_at:this.ago(4,'m'),read:0,bling_sync:'error',delivery_address:'Rua Harmonia, 200 · Vila Madalena, São Paulo/SP',items:[{name:'Kit 3 Sabonetes Artesanais',qty:1,price:67.00,size:'',color:'Sortido',img:1}]}),
+      m({id:12,order_code:'P5Q6R7',customer_name:'Gustavo Pereira',customer_phone:'(19) 98221-3030',customer_email:'gustavo.pereira@gmail.com',status:2,total:735.00,created_at:this.ago(90,'m'),coupon_code:'BLACK20',coupon_discount:245.00,bling_sync:'error',nfe:{status:'denegada'},delivery_address:'Rua Barão de Jaguara, 1200 · Campinas/SP',items:[{name:'Fone Over-ear Bluetooth',qty:1,price:520.00,size:'',color:'Preto',img:1},{name:'Cabo USB-C 2m',qty:2,price:60.00,size:'',color:'Branco',img:1},{name:'Case Rígido para Fone',qty:1,price:100.00,size:'',color:'Cinza',img:0}]})
+    ];
+  }
+  ago(n,u){ const ms=u==='m'?60000:3600000; return new Date(this.NOW - n*ms).toISOString(); }
+  brl(n){ return 'R$ ' + n.toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
+  rel(iso){ const d=Math.round((this.NOW-new Date(iso).getTime())/60000); if(d<1)return 'agora'; if(d<60)return 'há '+d+' min'; const h=Math.round(d/60); if(h<24)return 'há '+h+' h'; const dd=Math.round(h/24); return 'há '+dd+(dd>1?' dias':' dia'); }
+  dateShort(iso){ const d=new Date(iso); return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+  dateFull(iso){ const d=new Date(iso); return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'})+' às '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+  statusMeta(s){ return [null,
+    {label:'Novo',fg:'#8A6516',bg:'#FBF3E0',ring:'#F0DCA8',dot:'#E8A33D'},
+    {label:'Em preparação',fg:'#1E4FA8',bg:'#E8EFFB',ring:'#C5D8F5',dot:'#2F6FE0'},
+    {label:'Enviado',fg:'#5B41A8',bg:'#EFEAFB',ring:'#D8CCF3',dot:'#7C5CD6'},
+    {label:'Entregue',fg:'#2E6B4E',bg:'#E7F2EC',ring:'#BFE0CF',dot:'#3F8A66'},
+    {label:'Cancelado',fg:'#A82F4F',bg:'#FBE9EE',ring:'#F3C8D4',dot:'#D6456A'}
+  ][s]; }
+  initials(n){ const p=n.trim().split(/\s+/); return ((p[0]||'')[0]||'')+((p[p.length-1]||'')[0]||''); }
+  nfeMeta(o){
+    const blingOff = o.bling_sync==='error';
+    const st=o.nfe.status;
+    if(o.status>=5 || st==='cancelada') return {accent:'#8A8D9E',state:'Cancelada',desc:'A NF-e deste pedido foi cancelada.',card:'plain'};
+    if(blingOff) return {accent:'#8A8D9E',state:'Indisponível',desc:'Conecte sua conta Bling em Configurações para emitir notas fiscais.',card:'dashed'};
+    if(st==='denegada') return {accent:'#A82F4F',state:'Denegada',desc:'A SEFAZ denegou a emissão. Verifique os dados do cliente e tente novamente.',card:'rose'};
+    if(st==='em_processo') return {accent:'#8A6516',state:'Aguardando autorização',desc:'A NF-e foi enviada e aguarda autorização da SEFAZ.',card:'amber'};
+    if(st==='autorizada') return {accent:'#2E6B4E',state:'Autorizada',desc:'NF-e autorizada pela SEFAZ. Baixe o DANFE ou o XML abaixo.',card:'green',auth:true};
+    return {accent:'#2A2D7C',state:'Pronta para emitir',desc:'Emita a nota fiscal eletrônica deste pedido via Bling.',card:'indigo',emit:true};
+  }
+  // ---------- view-models ----------
+  vmRow(o,idx){
+    const meta=this.statusMeta(o.status);
+    const sel=this.state.selectedId===o.id;
+    const unread=o.read===0;
+    return {
+      id:o.id, code:o.order_code, name:o.customer_name, itemsCount:o.items.reduce((a,b)=>a+b.qty,0)||o.items.length,
+      totalFmt:this.brl(o.total), dateShort:this.dateShort(o.created_at), rel:this.rel(o.created_at),
+      statusLabel:meta.label, badgeFg:meta.fg, badgeBg:meta.bg, badgeRing:meta.ring, badgeDot:meta.dot,
+      unread, unreadDot: unread?'#E8632A':'transparent', nameWeight: unread?800:600,
+      accent: sel?'#2A2D7C':(unread?'#E8632A':'transparent'),
+      hasCancelReq:o.cancellation_requested===1, hasCoupon:!!o.coupon_code, coupon:o.coupon_code,
+      itensWord:(o.items.reduce((a,b)=>a+b.qty,0)||1)>1?'itens':'item',
+      canAdvance:o.status<4 && o.status!==5,
+      rowStyle:`position:relative;display:grid;grid-template-columns:118px 1fr 64px 124px 168px 132px 96px;align-items:center;gap:10px;padding:11px 18px 11px 18px;border-bottom:1px solid #F0F1F5;cursor:pointer;background:${sel?'#EEF0FB':(unread?'#FFFDF9':'#fff')}`,
+      open:()=>this.openOrder(o.id),
+      advance:(e)=>{e.stopPropagation();this.advance(o.id);},
+      whats:(e)=>{e.stopPropagation();}
+    };
+  }
+  vmCard(o){
+    const meta=this.statusMeta(o.status);
+    const sel=this.state.selectedId===o.id;
+    const unread=o.read===0;
+    const drag=this.state.draggingId===o.id;
+    const nfe=o.nfe.status;
+    const nfeChip = nfe==='autorizada'?'NF-e ok':(nfe==='em_processo'?'NF-e proc.':(nfe==='denegada'?'NF-e neg.':''));
+    const nfeFg = nfe==='autorizada'?'#2E6B4E':(nfe==='em_processo'?'#8A6516':'#A82F4F');
+    const nfeBg = nfe==='autorizada'?'#E7F2EC':(nfe==='em_processo'?'#FBF3E0':'#FBE9EE');
+    return {
+      id:o.id, code:o.order_code, name:o.customer_name, totalFmt:this.brl(o.total),
+      itemsCount:o.items.reduce((a,b)=>a+b.qty,0)||o.items.length, rel:this.rel(o.created_at),
+      itensWord:(o.items.reduce((a,b)=>a+b.qty,0)||1)>1?'itens':'item',
+      unread, unreadDot: unread?'#E8632A':'transparent', nameWeight: unread?800:600,
+      hasCancelReq:o.cancellation_requested===1,
+      nfeChip, nfeFg, nfeBg,
+      hasBadgeRow: o.cancellation_requested===1 || !!nfeChip,
+      cardStyle:`border-radius:14px;border:1px solid ${sel?'#2A2D7C':'#E6E7EE'};background:#fff;box-shadow:${sel?'0 0 0 3px rgba(42,45,124,.12)':'0 1px 2px rgba(0,0,0,.04)'};padding:11px 12px;cursor:pointer;opacity:${drag?0.45:1}`,
+      open:()=>this.openOrder(o.id),
+      onDragStart:(e)=>{this.setState({draggingId:o.id}); if(e.dataTransfer)e.dataTransfer.effectAllowed='move';},
+      onDragEnd:()=>this.setState({draggingId:null,dragOverCol:null})
+    };
+  }
+  vmSelected(){
+    const o=this.state.orders.find(x=>x.id===this.state.selectedId);
+    if(!o) return null;
+    const meta=this.statusMeta(o.status);
+    const subtotal=o.items.reduce((a,b)=>a+b.price*b.qty,0) || o.total;
+    const nm=this.nfeMeta(o);
+    const cardMap={
+      indigo:'margin-top:12px;border-radius:14px;border:1px solid #C7CAEC;background:#F4F5FD;padding:14px',
+      amber:'margin-top:12px;border-radius:14px;border:1px solid #F0DCA8;background:#FBF8EF;padding:14px',
+      green:'margin-top:12px;border-radius:14px;border:1px solid #BFE0CF;background:#F2F8F4;padding:14px',
+      rose:'margin-top:12px;border-radius:14px;border:1px solid #F3C8D4;background:#FCF2F4;padding:14px',
+      dashed:'margin-top:12px;border-radius:14px;border:1.5px dashed #D7D9E3;background:#FAFAFC;padding:14px',
+      plain:'margin-top:12px;border-radius:14px;border:1px solid #E6E7EE;background:#FBFBFD;padding:14px'
+    };
+    const tl=this.timeline(o);
+    return {
+      code:o.order_code, name:o.customer_name, statusLabel:meta.label,
+      badgeFg:meta.fg, badgeBg:meta.bg, badgeRing:meta.ring, badgeDot:meta.dot,
+      blingSynced:o.bling_sync==='synced',
+      dateFull:this.dateFull(o.created_at), rel:this.rel(o.created_at),
+      hasCancelReq:o.cancellation_requested===1, cancelReqReason:o.cancellation_request_reason,
+      itemsCount:o.items.reduce((a,b)=>a+b.qty,0)||o.items.length,
+      itensWord:(o.items.reduce((a,b)=>a+b.qty,0)||1)>1?'itens':'item',
+      totalFmt:this.brl(o.total), subtotalFmt:this.brl(subtotal), discountFmt:this.brl(o.coupon_discount),
+      hasCoupon:!!o.coupon_code, coupon:o.coupon_code,
+      hasNotes:!!o.notes, noNotes:!o.notes, notes:o.notes,
+      items:o.items.map(it=>({name:it.name,qty:it.qty,size:it.size,color:it.color,notes:it.notes,
+        hasImage:it.img===1,noImage:it.img!==1,
+        lineFmt:this.brl(it.price*it.qty),unitFmt:this.brl(it.price)})),
+      initials:this.initials(o.customer_name),
+      hasPhone:!!o.customer_phone, noPhone:!o.customer_phone, phone:o.customer_phone, email:o.customer_email,
+      hasAddress:!!o.delivery_address, noAddress:!o.delivery_address, address:o.delivery_address,
+      whatsStyle: o.customer_phone
+        ? 'height:42px;border-radius:11px;border:none;background:#3F8A66;color:#fff;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px'
+        : 'height:42px;border-radius:11px;border:1px solid #E6E7EE;background:#F3F4F8;color:#B7B9C6;font-family:inherit;font-size:13px;font-weight:800;cursor:not-allowed;display:flex;align-items:center;justify-content:center;gap:7px',
+      whatsIcon: o.customer_phone?'#fff':'#B7B9C6',
+      nfeCardStyle:cardMap[nm.card], nfeAccent:nm.accent, nfeStateLabel:nm.state, nfeDesc:nm.desc,
+      nfeShowEmit:!!nm.emit, nfeAuthorized:!!nm.auth,
+      nfeNumero:o.nfe.number, nfeSerie:o.nfe.serie, nfeChave:o.nfe.chave,
+      isCancelled:o.status===5,
+      cancelReasonText:o.cancellation_reason?o.cancellation_reason:'Motivo não informado.',
+      timeline:tl,
+      canAdvance:o.status<4 && o.status!==5,
+      canCancel:o.status<4 && o.status!==5,
+      advanceLabel:['','Iniciar preparação','Marcar como enviado','Marcar como entregue'][o.status]||'Avançar'
+    };
+  }
+  timeline(o){
+    const steps=[{n:1,l:'Pedido recebido'},{n:2,l:'Em preparação'},{n:3,l:'Enviado'},{n:4,l:'Entregue'}];
+    if(o.status===5){
+      return [
+        {n:1,l:'Pedido recebido'},{l:'Cancelado',cancel:true}
+      ].map((s,i,arr)=>this.tlNode(s,i,arr,o,1));
+    }
+    return steps.map((s,i,arr)=>{
+      const done=o.status>=s.n; const cur=o.status===s.n;
+      return {
+        label:s.l,
+        time: done? (s.n===1?this.dateShort(o.created_at):'concluído') : 'pendente',
+        done, labelColor: cur?'#2A2D7C':(done?'#1C1E2B':'#8A8D9E'),
+        dotStyle:`width:22px;height:22px;border-radius:22px;display:flex;align-items:center;justify-content:center;flex:none;background:${done?(cur?'#2A2D7C':'#3F8A66'):'#fff'};border:2px solid ${done?(cur?'#2A2D7C':'#3F8A66'):'#D7D9E3'}`,
+        lineStyle: i<arr.length-1?`width:2px;flex:1;min-height:14px;background:${o.status>s.n?'#3F8A66':'#E6E7EE'}`:'width:2px;flex:0'
+      };
+    });
+  }
+  tlNode(s,i,arr,o,_){
+    if(s.cancel) return {label:'Cancelado',time:this.dateShort(o.created_at),done:true,labelColor:'#A82F4F',
+      dotStyle:'width:22px;height:22px;border-radius:22px;display:flex;align-items:center;justify-content:center;flex:none;background:#D6456A;border:2px solid #D6456A',
+      lineStyle:'width:2px;flex:0'};
+    return {label:s.l,time:this.dateShort(o.created_at),done:true,labelColor:'#1C1E2B',
+      dotStyle:'width:22px;height:22px;border-radius:22px;display:flex;align-items:center;justify-content:center;flex:none;background:#3F8A66;border:2px solid #3F8A66',
+      lineStyle:'width:2px;flex:1;min-height:14px;background:#D6456A'};
+  }
+  // ---------- filtering ----------
+  filtered(){
+    const {search,statusFilter,sort}=this.state;
+    let r=this.state.orders.slice();
+    if(statusFilter!=='all') r=r.filter(o=>o.status===statusFilter);
+    if(search.trim()){ const q=search.trim().toLowerCase(); r=r.filter(o=>o.order_code.toLowerCase().includes(q)||o.customer_name.toLowerCase().includes(q)); }
+    const t=(o)=>new Date(o.created_at).getTime();
+    const sorts={recent:(a,b)=>t(b)-t(a),old:(a,b)=>t(a)-t(b),high:(a,b)=>b.total-a.total,low:(a,b)=>a.total-b.total,az:(a,b)=>a.customer_name.localeCompare(b.customer_name),za:(a,b)=>b.customer_name.localeCompare(a.customer_name)};
+    r.sort(sorts[sort]||sorts.recent);
+    return r;
+  }
+  // ---------- actions ----------
+  openOrder(id){ const o=this.state.orders.map(x=>x.id===id?Object.assign({},x,{read:1}):x); this.setState({orders:o,selectedId:id,drawerTab:'resumo'}); }
+  closeDrawer(){ this.setState({selectedId:null}); }
+  advance(id){ this.setState(s=>({orders:s.orders.map(o=>o.id===id&&o.status<4&&o.status!==5?Object.assign({},o,{status:o.status+1}):o)})); }
+  advanceSel(){ if(this.state.selectedId)this.advance(this.state.selectedId); }
+  doExport(){ this.setState({modal:'plan'}); }
+  togglePeriod(){ this.setState(s=>({periodActive:!s.periodActive})); }
+  toggleSort(){ this.setState(s=>({sortMenuOpen:!s.sortMenuOpen})); }
+  setSort(k){ this.setState({sort:k,sortMenuOpen:false}); }
+  copyCode(){ this.setState({copied:true}); setTimeout(()=>this.setState({copied:false}),1400); }
+  openCancelReason(){ this.setState({modal:'cancelReason',cancelText:''}); }
+  closeModal(){ this.setState({modal:null}); }
+  confirmCancel(){ const id=this.state.selectedId, txt=this.state.cancelText.trim(); if(!txt)return;
+    this.setState(s=>({orders:s.orders.map(o=>o.id===id?Object.assign({},o,{status:5,cancellation_reason:txt,nfe:{status:'cancelada'}}):o),modal:null})); }
+  acceptCancel(){ this.setState({cancelBtnLoading:true});
+    setTimeout(()=>{ const id=this.state.selectedId;
+      this.setState(s=>({cancelBtnLoading:false,orders:s.orders.map(o=>o.id===id?Object.assign({},o,{status:5,cancellation_requested:0,cancellation_reason:o.cancellation_request_reason,nfe:{status:'cancelada'}}):o)})); },900); }
+  refuseCancel(){ const id=this.state.selectedId; this.setState(s=>({orders:s.orders.map(o=>o.id===id?Object.assign({},o,{cancellation_requested:0}):o)})); }
+  emitNfe(){ this.setState({nfeEmitting:true}); const id=this.state.selectedId;
+    setTimeout(()=>this.setState(s=>({nfeEmitting:false,orders:s.orders.map(o=>o.id===id?Object.assign({},o,{nfe:{status:'em_processo'}}):o)})),1100); }
+  dropTo(statusNum){ const id=this.state.draggingId; if(!id){this.setState({dragOverCol:null});return;}
+    this.setState(s=>({orders:s.orders.map(o=>o.id===id?Object.assign({},o,{status:statusNum}):o),draggingId:null,dragOverCol:null})); }
+  dismissToast(){ this.setState({toastVisible:false}); }
+  componentDidMount(){ this._t=setTimeout(()=>this.setState({toastVisible:true}),2600); this._t2=setTimeout(()=>{if(this.state.toastVisible)this.setState({toastVisible:false});},9000); this.refreshCatalog(); }
+  componentDidUpdate(){ if(window.lucide&&window.lucide.icons){ /* icons self-render */ } }
+  componentWillUnmount(){ clearTimeout(this._t); clearTimeout(this._t2); }
+  refreshCatalog(){}
+
+  renderVals(){
+    const all=this.state.orders;
+    const cnt=(s)=>all.filter(o=>o.status===s).length;
+    const rev=all.filter(o=>o.status!==5).reduce((a,b)=>a+b.total,0);
+    const rows=this.filtered().map((o,i)=>this.vmRow(o,i));
+    const flow=[{k:1,label:'Novo',dot:'#E8A33D'},{k:2,label:'Em preparação',dot:'#2F6FE0'},{k:3,label:'Enviado',dot:'#7C5CD6'},{k:4,label:'Entregue',dot:'#3F8A66'}];
+    const columns=flow.map(f=>{
+      const list=this.filtered().filter(o=>o.status===f.k);
+      const lim=this.state.colLimit[f.k]||99;
+      const shown=list.slice(0,lim);
+      const over=this.state.dragOverCol===f.k;
+      return {
+        key:f.k, label:f.label, dot:f.dot, count:list.length,
+        cards:shown.map(o=>this.vmCard(o)),
+        empty:list.length===0,
+        hasMore:list.length>lim, moreCount:list.length-lim,
+        colStyle:`border-radius:16px;border:1px solid ${over?'#2A2D7C':'#E6E7EE'};background:${over?'#EEF0FB':'#F8F8FB'};padding:12px;min-height:120px;transition:background .12s`,
+        onOver:(e)=>{e.preventDefault(); if(this.state.dragOverCol!==f.k)this.setState({dragOverCol:f.k});},
+        onDrop:(e)=>{e.preventDefault();this.dropTo(f.k);},
+        showMore:()=>this.setState(s=>({colLimit:Object.assign({},s.colLimit,{[f.k]:99})}))
+      };
+    });
+    const sortLabels={recent:'Mais recentes',old:'Mais antigos',high:'Maior valor',low:'Menor valor',az:'Cliente A–Z',za:'Cliente Z–A'};
+    const sortOptions=Object.keys(sortLabels).map(k=>({label:sortLabels[k],active:this.state.sort===k,pick:()=>this.setSort(k),
+      style:`display:flex;align-items:center;justify-content:space-between;width:100%;padding:8px 10px;border:none;background:${this.state.sort===k?'#EEF0FB':'transparent'};border-radius:8px;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:${this.state.sort===k?800:600};color:${this.state.sort===k?'#2A2D7C':'#4A4D5E'}`}));
+    const segs=[{k:'all',label:'Todos',count:all.length},{k:1,label:'Novo',count:cnt(1),dot:'#E8A33D'},{k:2,label:'Em preparação',count:cnt(2),dot:'#2F6FE0'},{k:3,label:'Enviado',count:cnt(3),dot:'#7C5CD6'},{k:4,label:'Entregue',count:cnt(4),dot:'#3F8A66'},{k:5,label:'Cancelado',count:cnt(5),dot:'#D6456A'}];
+    const statusTabs=segs.map(s=>{const active=this.state.statusFilter===s.k;return {
+      label:s.label,count:s.count,hasDot:!!s.dot,dot:s.dot||'transparent',pick:()=>this.setState({statusFilter:s.k}),
+      style:`display:flex;align-items:center;gap:7px;height:32px;padding:0 11px;border-radius:9px;white-space:nowrap;border:1px solid ${active?'#2A2D7C':'#E6E7EE'};background:${active?'#2A2D7C':'#fff'};color:${active?'#fff':'#4A4D5E'};font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer`,
+      countStyle:`min-width:18px;height:18px;padding:0 5px;border-radius:18px;background:${active?'rgba(255,255,255,.22)':'#EEF0F4'};color:${active?'#fff':'#8A8D9E'};font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center`
+    };});
+    const tabs=[['resumo','Resumo'],['itens','Itens'],['cliente','Cliente'],['hist','Histórico']].map(([k,l])=>{const a=this.state.drawerTab===k;return{
+      label:l,pick:()=>this.setState({drawerTab:k}),
+      style:`flex:1;height:34px;border:none;border-radius:9px;background:${a?'#EEF0FB':'transparent'};color:${a?'#2A2D7C':'#8A8D9E'};font-family:inherit;font-size:13px;font-weight:800;cursor:pointer`
+    };});
+    const sel=this.vmSelected();
+    const tabBtn=(active)=>active;
+    const toastOrder=all[0];
+
+    return {
+      sidebarBadge: all.filter(o=>o.read===0).length,
+      subtitle: rows.length+' de '+all.length+' pedidos · atualizado agora',
+      isList:this.state.view==='list', isBoard:this.state.view==='board',
+      setList:()=>this.setState({view:'list'}), setBoard:()=>this.setState({view:'board'}),
+      listTabStyle:this.tabStyle(this.state.view==='list'), boardTabStyle:this.tabStyle(this.state.view==='board'),
+      listIconColor:this.state.view==='list'?'#2A2D7C':'#8A8D9E', boardIconColor:this.state.view==='board'?'#2A2D7C':'#8A8D9E',
+      exporting:this.state.exporting, notExporting:!this.state.exporting, exportLabel:this.state.exporting?'Exportando…':'Exportar Excel', doExport:()=>this.doExport(),
+      kpiTotal:all.length, kpiPend:cnt(1), kpiAnd:cnt(2)+cnt(3), kpiCanc:cnt(5), kpiRev:this.brl(rev),
+      search:this.state.search, hasSearch:!!this.state.search,
+      onSearch:(e)=>this.setState({search:e.target.value}), clearSearch:()=>this.setState({search:''}),
+      sortLabel:sortLabels[this.state.sort], sortMenuOpen:this.state.sortMenuOpen, toggleSort:()=>this.toggleSort(), sortOptions,
+      sortByCode:()=>{}, sortByName:()=>this.setSort(this.state.sort==='az'?'za':'az'), sortByTotal:()=>this.setSort(this.state.sort==='high'?'low':'high'), sortByDate:()=>this.setSort(this.state.sort==='recent'?'old':'recent'),
+      periodActive:this.state.periodActive, togglePeriod:()=>this.togglePeriod(),
+      periodLabel:this.state.periodActive?'01–18 jun':'Período',
+      periodIconColor:this.state.periodActive?'#2A2D7C':'#8A8D9E',
+      periodBtnStyle:`display:flex;align-items:center;gap:7px;height:40px;padding:0 13px;border-radius:11px;border:1px solid ${this.state.periodActive?'#2A2D7C':'#E6E7EE'};background:${this.state.periodActive?'#EEF0FB':'#fff'};color:${this.state.periodActive?'#2A2D7C':'#4A4D5E'};font-family:inherit;font-size:13px;font-weight:700;cursor:pointer`,
+      statusTabs,
+      rows, hasRows:rows.length>0, emptyFiltered:rows.length===0,
+      clearAll:()=>this.setState({search:'',statusFilter:'all',periodActive:false}),
+      columns, cancelCount:cnt(5), filterCancel:()=>this.setState({view:'list',statusFilter:5}),
+      hasSelected:!!sel, sel,
+      closeDrawer:()=>this.closeDrawer(),
+      copyCode:()=>this.copyCode(), copyIcon:this.state.copied?'check':'copy',
+      tabs, tabResumo:this.state.drawerTab==='resumo', tabItens:this.state.drawerTab==='itens', tabCliente:this.state.drawerTab==='cliente', tabHist:this.state.drawerTab==='hist',
+      acceptCancel:()=>this.acceptCancel(), refuseCancel:()=>this.refuseCancel(), cancelBtnLoading:this.state.cancelBtnLoading,
+      emitNfe:()=>this.emitNfe(), nfeEmitting:this.state.nfeEmitting, nfeEmitLabel:this.state.nfeEmitting?'Solicitando emissão…':'Emitir NF-e via Bling',
+      advanceSel:()=>this.advanceSel(), openCancelReason:()=>this.openCancelReason(),
+      modalCancelReason:this.state.modal==='cancelReason', modalPlan:this.state.modal==='plan', closeModal:()=>this.closeModal(), stop:(e)=>e.stopPropagation(),
+      cancelText:this.state.cancelText, onCancelText:(e)=>this.setState({cancelText:e.target.value.slice(0,500)}), cancelCount2:this.state.cancelText.length,
+      confirmCancel:()=>this.confirmCancel(),
+      confirmCancelStyle:`flex:1;height:42px;border-radius:11px;border:none;background:${this.state.cancelText.trim()?'#C13A2E':'#E9C9C5'};color:#fff;font-family:inherit;font-size:13.5px;font-weight:800;cursor:${this.state.cancelText.trim()?'pointer':'not-allowed'}`,
+      toastVisible:this.state.toastVisible, dismissToast:()=>this.dismissToast(),
+      toastName:toastOrder?toastOrder.customer_name:'', toastTotal:toastOrder?this.brl(toastOrder.total):''
+    };
+  }
+  tabStyle(active){ return `display:flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:none;border-radius:8px;background:${active?'#EEF0FB':'transparent'};color:${active?'#2A2D7C':'#8A8D9E'};font-family:inherit;font-size:13px;font-weight:800;cursor:pointer`; }
+}
+</script>
+</body>
+</html>

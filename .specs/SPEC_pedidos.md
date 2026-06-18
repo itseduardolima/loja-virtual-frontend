@@ -1,167 +1,171 @@
 # SPEC — Pedidos (Vendedor)
 
 > Spec de feature. Complementa `DESIGN_SPEC.md`.
+> Atualizada em 2026-06-18 após o redesign (Claude Design `Pedidos.dc.html`).
+> Referências: `.specs/Pedidos.design.html` (design) e `.specs/PLANO_pedidos-redesign.md` (plano de implementação).
 
 ---
 
 ## Visão geral
 
-O módulo de pedidos permite ao vendedor acompanhar, filtrar e gerenciar todos os pedidos da sua loja. Acesso em `/vendedor/pedidos`.
+O módulo permite ao vendedor acompanhar, filtrar e gerenciar todos os pedidos da loja. Acesso em `/vendedor/pedidos`.
+
+A tela é **híbrida**: alterna entre **Lista** (tabela densa, padrão) e **Quadro** (Kanban com drag-and-drop) por um toggle no header, compartilhando KPIs, filtros e o **drawer de detalhe em overlay** entre as duas views.
 
 **Arquivos principais:**
-- `src/app/vendedor/pedidos/page.tsx`
-- `src/app/vendedor/pedidos/useOrdersPage.ts`
+- `src/app/vendedor/pedidos/page.tsx` — montagem (só JSX)
+- `src/app/vendedor/pedidos/useOrdersPage.ts` — estado, derivados e wiring dos hooks
+- `src/lib/orderVendorMeta.ts` — **fundação**: rótulos/cores de status, `nfeMeta`, KPIs, ordenação/filtro, formatadores
+- `src/components/Order/*` — componentes (abaixo)
 
 ---
 
-## Layout da página
+## Arquitetura de componentes (`src/components/Order/`)
 
-```
-[Header: "Pedidos" + filtros (busca, período) + botão "Exportar Excel" (plano Pro/Max)]
-[Kanban: 5 colunas, uma por status — drag-and-drop (@dnd-kit/core)]
-[Painel lateral de detalhe (lg+) — OrderDetailPanel]
-```
-
-Desktop: Kanban horizontal scrollável com 5 colunas. Mobile (`< lg`): `MobileOrdersView` (listagem vertical com swipe de ações).
-
-> **Não há tabela de pedidos nem paginação clássica.** O layout é Kanban com colunas por status. Drag-and-drop entre colunas atualiza o status via `PATCH /orders/:id/status`.
-
----
-
-## KPI cards
-
-4–5 cards no padrão do design system (`rounded-2xl border border-nxborder`):
-
-| Card | Token de cor |
+| Componente | Papel |
 |---|---|
-| Total de pedidos | `nxp` |
-| Pendentes | `nxw` |
-| Confirmados / Entregues | `nxs` |
-| Cancelados | `nxd` |
-| Receita do mês | `nxs` com símbolo R$ |
+| `OrderKpis` | 5 KPIs do topo (normal / shimmer / zerados) |
+| `OrdersFilterBar` (+ `OrderViewToggle`, `OrderExportButton`) | Busca, ordenação, período, segmentos de status, toggle de view, exportar |
+| `OrderListView` | Tabela densa ordenável (view Lista) |
+| `OrderBoardView` + `KanbanColumn` + `OrderKanbanCard` | Kanban 4 colunas (view Quadro), drag-and-drop via `@dnd-kit` |
+| `OrderDetailDrawer` | Overlay 480px (desktop): fetch + header + footer + abas |
+| `OrderDetailPanel` | Conteúdo do drawer (header + alerta + abas Resumo/Itens/Cliente/Histórico); recebe `order` |
+| `OrderNfeCard` | Card de NF-e (6 sub-estados, prop-driven) |
+| `OrderVendorTimeline` | Timeline de status do drawer (não confundir com `OrderTrackingTimeline`, que é do cliente) |
+| `OrderEmptyStates` | `OrdersLoadingState`, `OrdersEmptyState`, `OrdersFilteredEmptyState`, `OrdersErrorState` |
+| `CancelReasonModal` | Motivo do cancelamento (lojista) |
+| `CancellationRequestModal` | Solicitação de cancelamento do cliente (aceitar/recusar) |
+| `NewOrderToast` | Toast de novo pedido (tempo real) |
+| `MobileOrdersView` | View mobile (`< lg`): lista compacta + bottom sheet de detalhe |
+
+> Componentes são **apresentacionais**: recebem dados/callbacks por props e consomem a fundação `orderVendorMeta`. Todo o wiring de dados/mutações fica em `useOrdersPage`.
 
 ---
 
-## Kanban de pedidos
+## Status (rótulos e cores — visão do vendedor)
 
-5 colunas fixas, definidas em `STATUS_ORDER = [1,2,3,4,5]` (`src/lib/orderPanelUtils.tsx`).
+> ⚠️ Os **rótulos** abaixo são exclusivos do painel do vendedor (`orderVendorMeta`). Os códigos 1–5 do backend e o `ORDER_STATUS` global (usado nas telas do cliente) **não mudaram**.
+> As **cores de status** são uma paleta própria (exceção documentada aos tokens `nx*`), centralizada como classes Tailwind literais em `orderVendorMeta.ts`.
 
-### Status e cores das colunas
-
-> ⚠️ As colunas do Kanban usam **classes Tailwind diretas** (não tokens `nx*`) — é uma exceção documentada ao design system.
-
-| Status | Label | Cor da coluna | Fluxo possível |
+| Código | Rótulo (vendedor) | Cor (dot) | Fluxo |
 |---|---|---|---|
-| 1 | Pendente | `yellow` | → 2 (Confirmar) ou 5 (Cancelar) |
-| 2 | Confirmado | `blue` | → 3 (Enviar) ou 5 (Cancelar) |
-| 3 | Enviado | `purple` | → 4 (Entregue) ou 5 (Cancelar) |
-| 4 | Entregue | `green` | — (final) |
-| 5 | Cancelado | `red` | — (final) |
+| 1 | **Novo** | âmbar `#E8A33D` | → 2 (Iniciar preparação) ou 5 (Cancelar) |
+| 2 | **Em preparação** | azul `#2F6FE0` | → 3 (Marcar como enviado) ou 5 |
+| 3 | **Enviado** | violeta `#7C5CD6` | → 4 (Marcar como entregue) ou 5 |
+| 4 | **Entregue** | verde `#3F8A66` | — (final) |
+| 5 | **Cancelado** | rosa `#D6456A` | — (final) |
 
-Fluxo de status definido em `STATUS_FLOW` (só permite avançar para o próximo ou cancelar, não pular etapas).
-
-### Ícone de não-lido
-
-Pedidos com `read = 0` exibem ponto indicador no card. `PATCH /orders/:id/read` ao abrir o detalhe.
-
-### Fluxo de cancelamento
-
-Clientes podem solicitar cancelamento a partir da vitrine pública. O vendedor recebe no painel:
-- `Notice variant="amber"` no painel de detalhe com o motivo do cancelamento
-- Botão "Aceitar cancelamento" → `PATCH /orders/:id/cancel-request/accept`
-- Botão "Recusar cancelamento" → `PATCH /orders/:id/cancel-request/deny` (exige motivo em textarea)
+Avançar é linear (1→2→3→4, `nextStatus`). Cancelar (→5) sempre passa pelo `CancelReasonModal` (motivo obrigatório).
 
 ---
 
-## Filtros
+## KPIs
 
-- **Busca**: por código, nome do cliente ou número do pedido (`debounce 300ms`)
-- **Status**: Todos + cada status listado acima
-- **Período**: date range picker (`react-day-picker`) — `date_from` + `date_to`
+5 cards (`OrderKpis`), calculados **client-side** a partir do conjunto carregado (não há endpoint de stats):
 
-Filtros ativos exibem badges com botão de remoção individual (padrão da StoreSidebar).
+| Card | Fonte | Token |
+|---|---|---|
+| Total de pedidos | `meta.total` | `nxp` |
+| Novos | contagem status 1 | `nxw` |
+| Em andamento | status 2 + 3 | `nxs` |
+| Cancelados | status 5 | `nxd` |
+| Receita do período | soma dos não-cancelados | gradiente índigo |
 
 ---
 
-## Drawer de detalhe do pedido
+## Filtros (header)
 
-Ao clicar em uma linha, abrir um `Sheet` (drawer lateral direito) com:
+- **Busca** (`OrdersFilterBar`): client-side por código ou nome do cliente (instantânea).
+- **Ordenação**: dropdown — mais recentes / mais antigos / maior valor / menor valor / cliente A–Z / Z–A (`OrderSortKey`).
+- **Período**: botão toggle que aplica **últimos 7 dias** (`date_from`/`date_to` → servidor). *Simplificação: ainda não há date-picker de range completo.*
+- **Status**: segmentos "Todos + 5 status" com contagem; aplica-se à Lista e ao Quadro.
+- **Toggle de view**: Lista ↔ Quadro.
 
-### Cabeçalho do drawer
-- Código do pedido (bold, mono)
-- Badge de status
-- Data de criação
+---
 
-### Seção: Cliente
-- Nome, e-mail, telefone, CPF/CNPJ
-- Endereço de entrega formatado
+## View Lista (`OrderListView`)
 
-### Seção: Itens
-Lista dos `ORDER_ITEM`:
-- Imagem do produto (thumbnail 48×48)
-- Nome + variantes (cor, tamanho)
-- Quantidade × preço unitário
-- Subtotal alinhado à direita
+Tabela densa, colunas: Código (mono) · Cliente · Itens · Total · Data (+ tempo relativo) · Status (badge) · Ações. Cabeçalhos Cliente/Total/Data são ordenáveis.
 
-### Seção: Resumo financeiro
-```
-Subtotal:          R$ XXX,XX
-Cupom (CODIGO):   -R$ XX,XX
-Total:             R$ XXX,XX
-```
+Variações de linha: normal · **não-lido** (barra/dot `nxa`, nome em peso 800) · **com solicitação de cancelamento** (chip laranja) · **com cupom** (chip verde) · hover · selecionada (`nxp`). Ações rápidas inline: avançar status (se aplicável) e WhatsApp.
 
-### Seção: Status e histórico
-- Select de status atual → botão "Atualizar status"
-  - `PATCH /orders/:id/status` com `{status: N}`
-- Timeline do `ORDER_STATUS_HISTORY`:
-  - Cada mudança com data/hora e label do status
-  - Estilo de linha vertical conectando os pontos
+---
 
-### Ações especiais
-- **Solicitação de cancelamento pendente** (`cancellation_requested = 1`): exibir `Notice variant="amber"` com motivo e dois botões: "Aceitar cancelamento" (`nxd`) / "Recusar cancelamento" (`nxs`)
-- **Link WhatsApp**: botão que abre `GET /orders/:id/whatsapp-link` — link pré-formatado para contato com o cliente
+## View Quadro (`OrderBoardView`)
 
-### Dados NF-e (se `nfe_status` presente)
-- Status da NF-e com badge semântico
-- Links para PDF e XML
-- Número e série
+4 colunas de fluxo (Novo, Em preparação, Enviado, Entregue). **Cancelados ficam fora do fluxo** (banner abaixo do quadro → "Ver cancelados" abre Lista com filtro status 5).
+
+Drag-and-drop com `@dnd-kit` (`useDraggable` no card, `useDroppable` na coluna): arrastar para outra coluna muda o status. Estados visuais: card arrastado em opacidade reduzida, coluna-alvo destacada com zona "Solte aqui", `DragOverlay` com preview. Card rico (código, total, cliente, itens, tempo, chips de NF-e e cancelamento, dot de não-lido). Paginação por coluna via "Ver mais N".
+
+Soltar um pedido com solicitação de cancelamento abre o `CancellationRequestModal` em vez de mover.
+
+---
+
+## Drawer de detalhe (`OrderDetailDrawer` → `OrderDetailPanel`)
+
+Overlay `fixed` 480px à direita, com scrim e slide-in. Faz `useOrderDetail(orderId)` (estados de carregando/erro próprios). Estrutura:
+
+- **Header**: badge de status, chip "Bling" (se `bling_sync.status === 'synced'`), `#código` + copiar, data completa · tempo relativo, nome do cliente.
+- **Alerta de cancelamento** (se `cancellation_requested === 1`): motivo + "Aceitar e cancelar" / "Recusar".
+- **Abas** (pílula): Resumo · Itens · Cliente · Histórico.
+- **Footer**: "Iniciar preparação/Marcar como enviado/..." (avançar) + "Cancelar" (abre `CancelReasonModal`).
+
+### Aba Resumo
+Card de total (com composição de cupom quando houver) + `OrderNfeCard` + observação do cliente.
+
+### Aba Itens
+Lista de itens (thumbnail ou placeholder, badge de quantidade, chips de tamanho/cor, notas) + card de totais (subtotal / desconto / total).
+
+### Aba Cliente
+Avatar + nome + `#código`; telefone (com/sem) e e-mail com copiar; ações WhatsApp (habilitada só com telefone) / Ligar / E-mail / Imprimir; endereço de entrega (com/sem — placeholder "retirada na loja").
+
+### Aba Histórico
+Caixa de cancelamento (se status 5, com motivo) + `OrderVendorTimeline` (linha do tempo dos status, com ramo de cancelamento).
+
+---
+
+## NF-e (`OrderNfeCard` — 6 sub-estados)
+
+Derivados de `bling_sync.status` + `nfe_status` (helper `nfeMeta`):
+
+| Estado | Condição |
+|---|---|
+| **Indisponível** | Bling não sincronizado → CTA "Conectar Bling" |
+| **Pronta para emitir** | sincronizado, sem `nfe_status` → botão "Emitir NF-e via Bling" (+ estado "Solicitando emissão…") |
+| **Aguardando autorização** | `nfe_status = em_processo` |
+| **Autorizada** | `nfe_status = autorizada` → número/série/chave + downloads DANFE/XML |
+| **Denegada** | `nfe_status = denegada` |
+| **Cancelada** | status 5 ou `nfe_status = cancelada` |
+
+---
+
+## Modais e tempo real
+
+- **CancelReasonModal**: textarea com contador `0/500`; "Confirmar cancelamento" desabilitado enquanto vazio.
+- **CancellationRequestModal**: avatar/nome/código, motivo do cliente (ou "Nenhum motivo informado."), "Aceitar e cancelar" / "Recusar" (com loading).
+- **FeatureLockedModal**: exportação travada (planos sem `feature_order_export`).
+- **NewOrderToast**: alimentado por `useOrderNotifications` (socket `new_order` invalida `['orders']`); auto-dismiss. *Pendência: badge de não-lidos na sidebar não está ligado.*
+
+---
+
+## Responsividade
+
+- **Desktop (`lg+`)**: header + KPIs + filtros + Lista/Quadro + drawer overlay.
+- **Mobile (`< lg`)**: `MobileOrdersView` — KPIs compactos (Novos + Receita), segmentos com scroll, cards; detalhe em **bottom sheet** (reusa `OrderDetailPanel`).
 
 ---
 
 ## Exportação Excel
 
-Disponível apenas nos planos Pro e Max (`feature_order_export`).
-
-- Botão "Exportar" no header da página
-- Chama `GET /orders/export` com os mesmos filtros ativos
-- Download automático do arquivo `.xlsx`
-- Se plano não suportar: botão desabilitado com tooltip "Disponível no Plano Pro"
+Apenas planos com `feature_order_export`. Botão "Exportar Excel" no header (estados: normal / exportando / travado com cadeado + "Plano Pro"). Travado → abre `FeatureLockedModal`; liberado → `GET /orders/export` com os filtros ativos.
 
 ---
 
-## Estados especiais
+## Dados e estados
 
-### Estado vazio
-```
-Ícone ShoppingBag (lucide, 48px, nxi3)
-"Nenhum pedido ainda"
-"Quando seus clientes finalizarem compras, os pedidos aparecerão aqui."
-```
-
-### Carregamento
-- Skeleton nas colunas do Kanban
-- KPI cards com shimmer
-
----
-
-## Notificações em tempo real
-
-O vendedor recebe notificações via WebSocket quando um novo pedido chega:
-- Toast no canto superior direito com `nxa`
-- Badge de contagem na sidebar (item "Pedidos")
-- A tabela faz refetch automático via `invalidateQueries(['orders'])`
-
-Hook: `useOrderNotifications` em `src/hooks/`
+- Query única: `useOrders({ page:1, limit:100, date_from, date_to })` carrega o conjunto recente (ou do período). Busca, status e ordenação são **client-side** sobre esse conjunto (mantém KPIs estáveis).
+- Mudança de status com **optimistic update** em `['orders']`.
+- Estados de página: carregando (skeleton) · vazio absoluto · vazio filtrado (limpar filtros) · erro (tentar novamente).
 
 ---
 
@@ -169,13 +173,29 @@ Hook: `useOrderNotifications` em `src/hooks/`
 
 | Ação | Endpoint |
 |---|---|
-| Listar pedidos | `GET /orders?page=&limit=&status=&date_from=&date_to=&search=` |
+| Listar pedidos | `GET /orders?page=&limit=&date_from=&date_to=` |
 | Detalhe | `GET /orders/:id` |
-| Histórico de status | `GET /orders/:id/status-history` |
-| Atualizar status | `PATCH /orders/:id/status` |
+| Atualizar status | `PATCH /orders/:id/status` (`{ status, cancellation_reason? }`) |
 | Marcar como lido | `PATCH /orders/:id/read` |
-| Link WhatsApp | `GET /orders/:id/whatsapp-link` |
 | Aceitar cancelamento | `PATCH /orders/:id/cancel-request/accept` |
 | Recusar cancelamento | `PATCH /orders/:id/cancel-request/deny` |
+| Emitir NF-e | (via `useEmitNfe(orderId)`) |
 | Exportar Excel | `GET /orders/export` |
-| Stats / KPIs | `GET /orders/stats` |
+| Notificações | `GET /notifications` + socket `new_order` |
+
+---
+
+## Notas de implementação
+
+- **Design system**: chrome usa tokens `nx*`; cores de status são exceção (paleta própria centralizada em `orderVendorMeta`). O `content` do `tailwind.config.ts` foi ampliado para `./src/**/*` para escanear as classes literais em `src/lib`.
+- **lucide-react 0.294.0**: usar `XCircle` (não `CircleX`) e `Ticket` (não `TicketPercent`).
+- **Não alterar** `OrderTrackingTimeline.tsx` (usado por `CustomerOrdersDrawer` no cliente).
+
+---
+
+## Pendências conhecidas
+
+- Date-picker de range completo no filtro de período (hoje é toggle "últimos 7 dias").
+- Badge de não-lidos no item "Pedidos" da `SidebarVendedor`.
+- Endpoint `GET /orders/stats` para KPIs precisos (hoje calculados do conjunto carregado).
+- `app/rastrear/_components/statusConfig.tsx` referencia a string `'CircleX'` (pré-existente, cliente) — ícone vazio na 0.294.

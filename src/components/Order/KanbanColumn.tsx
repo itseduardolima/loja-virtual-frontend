@@ -2,10 +2,9 @@
 
 import { useDroppable } from '@dnd-kit/core'
 import { type Order } from '@/types/order'
+import { STATUS_SEGMENTS } from '@/lib/orderVendorMeta'
 import { OrderKanbanCard } from './OrderKanbanCard'
-import { getStatusIcon } from './OrderStatusIcon'
 import { cn } from '@/lib/utils'
-import { ChevronDown } from 'lucide-react'
 
 const DROPPABLE_PREFIX = 'status-'
 
@@ -19,80 +18,88 @@ export function parseStatusFromDroppableId(id: string): number | null {
   return Number.isNaN(num) ? null : num
 }
 
+/** Meta da coluna (label + dot) a partir dos segmentos de status 1–4. */
+function columnMeta(status: number): { label: string; dot: string } {
+  const seg = STATUS_SEGMENTS.find((s) => s.key === status)
+  return { label: seg?.label ?? 'Pedidos', dot: seg?.dot ?? 'bg-transparent' }
+}
+
 interface KanbanColumnProps {
-  statusKey: number
-  label: string
+  status: number
   orders: Order[]
-  colors: { bg: string; badge: string; icon: string; selectedRow: string }
-  selectedOrderId: number | null
-  onSelectOrder: (orderId: number) => void
-  hasMore?: boolean
-  onShowMore?: () => void
-  hasDateFilter?: boolean
+  totalCount: number
+  selectedId: number | null
+  hasMore: boolean
+  moreCount: number
+  onOpen: (id: number) => void
+  onShowMore: () => void
 }
 
 export function KanbanColumn({
-  statusKey,
-  label,
+  status,
   orders,
-  colors,
-  selectedOrderId,
-  onSelectOrder,
+  totalCount,
+  selectedId,
   hasMore,
+  moreCount,
+  onOpen,
   onShowMore,
-  hasDateFilter,
 }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
-    id: getStatusDroppableId(statusKey),
+    id: getStatusDroppableId(status),
   })
+
+  const { label, dot } = columnMeta(status)
+  const isEmpty = orders.length === 0
 
   return (
     <div
       ref={setNodeRef}
       className={cn(
-        'flex flex-col flex-1 min-w-[220px] rounded-xl border-2 border-dashed transition-colors',
-        isOver ? 'border-gray-400 bg-gray-50/80' : 'border-gray-200 bg-gray-50/30'
+        'min-h-[120px] rounded-[16px] border p-[12px] transition-colors',
+        isOver ? 'border-nxp bg-[#EEF0FB]' : 'border-nxborder bg-[#F8F8FB]',
       )}
     >
-      <div
-        className={cn(
-          'flex items-center gap-2 px-4 py-3 rounded-t-xl border-b',
-          colors.bg,
-          isOver && 'ring-2 ring-gray-300 ring-inset'
-        )}
-      >
-        <span className={cn('shrink-0', colors.icon)}>{getStatusIcon(statusKey)}</span>
-        <span className={cn('font-bold text-sm flex-1', colors.icon)}>{label}</span>
+      <div className="flex items-center gap-[8px] px-[4px] pb-[12px] pt-[2px]">
+        <span className={cn('h-[8px] w-[8px] flex-none rounded-full', dot)} />
+        <span className="whitespace-nowrap text-[13px] font-extrabold text-nxi1">{label}</span>
+        <span className="flex h-[20px] min-w-[20px] items-center justify-center rounded-full bg-[#EEF0F4] px-[6px] text-[11px] font-extrabold text-nxi2">
+          {totalCount}
+        </span>
       </div>
-      <div className="flex-1 min-h-[120px] p-3 space-y-2">
-        {orders.length === 0 ? (
-          <div className="flex items-center justify-center h-24 text-sm text-gray-400 text-center px-2">
-            {hasDateFilter ? 'Nenhum pedido no período' : 'Nenhum pedido'}
+
+      <div className="flex flex-col gap-[9px]">
+        {isOver && (
+          <div className="flex h-[74px] items-center justify-center rounded-[12px] border-[1.5px] border-dashed border-[#B7BBE8] text-[12px] font-extrabold text-[#7E82C4]">
+            Solte aqui
           </div>
-        ) : (
-          orders.map((order) => (
-            <OrderKanbanCard
-              key={order.id}
-              order={order}
-              isSelected={selectedOrderId === order.id}
-              onClick={() => onSelectOrder(order.id)}
-              columnColor={colors.selectedRow ? 'border-gray-200' : 'border-gray-200'}
-            />
-          ))
         )}
-      </div>
-      {hasMore && onShowMore && (
-        <div className="px-3 pb-3">
+
+        {orders.map((order) => (
+          <OrderKanbanCard
+            key={order.id}
+            order={order}
+            isSelected={selectedId === order.id}
+            onClick={() => onOpen(order.id)}
+          />
+        ))}
+
+        {isEmpty && !isOver && (
+          <div className="rounded-[12px] border-[1.5px] border-dashed border-nxborder p-[20px] text-center text-[12px] font-bold text-nxi3">
+            Nenhum pedido
+          </div>
+        )}
+
+        {hasMore && (
           <button
             type="button"
             onClick={onShowMore}
-            className="w-full flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+            className="rounded-[10px] border border-dashed border-nxborder bg-white p-[8px] text-[12px] font-extrabold text-nxp"
           >
-            <ChevronDown className="h-3.5 w-3.5" />
-            Ver mais pedidos
+            Ver mais {moreCount}
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }
