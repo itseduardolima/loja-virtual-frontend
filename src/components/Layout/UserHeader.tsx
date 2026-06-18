@@ -32,10 +32,16 @@ export function UserHeader({
   return (
     <header className="flex h-[72px] shrink-0 items-center gap-3 border-b border-nxborder bg-nxsurf px-5">
       <HeaderBreadcrumb path={currentPath} />
-      <HeaderSearch />
+      <div className="hidden lg:flex min-w-0 flex-1">
+        <HeaderSearch />
+      </div>
 
       <div className="ml-auto flex items-center gap-[10px]">
-        {store?.slug && <ViewStoreLink slug={store.slug} />}
+        {store?.slug && (
+          <div className="hidden lg:flex">
+            <ViewStoreLink slug={store.slug} />
+          </div>
+        )}
         <NotificationsPopover
           notifications={notifications}
           onMarkAllAsRead={onMarkAllAsRead}

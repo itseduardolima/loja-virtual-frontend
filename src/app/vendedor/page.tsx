@@ -29,9 +29,9 @@ export default function VendedorPage() {
         isLoading={dashLoading}
       />
 
-      <div className="grid grid-cols-[1fr_360px] items-start gap-4">
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1fr_360px]">
         <div className="flex flex-col gap-3.5">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {kpiCards.map((card) => (
               <KpiCard key={card.label} {...card} />
             ))}

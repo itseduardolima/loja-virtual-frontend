@@ -68,7 +68,7 @@ export function MobileOrdersView({
   return (
     <div className="flex flex-col bg-nxbg">
       {/* ─── Cabeçalho fixo (branco) ─────────────────────────────────────── */}
-      <div className="bg-white border-b border-nxborder px-[16px] pt-[16px] pb-[11px]">
+      <div className="sticky top-0 z-10 bg-white border-b border-nxborder px-[16px] pt-[16px] pb-[11px]">
         <div className="flex items-center justify-between">
           <h1 className="text-[22px] font-extrabold tracking-[-.03em] text-nxi1">Pedidos</h1>
           <div className="flex gap-[6px]">
@@ -285,7 +285,7 @@ function OrderDetailSheet({
         role="dialog"
         aria-modal="true"
         className={cn(
-          'absolute inset-x-0 bottom-0 flex max-h-[88%] flex-col rounded-t-[22px] bg-white transition-transform duration-[260ms] ease-[cubic-bezier(.22,1,.36,1)]',
+          'absolute inset-x-0 bottom-0 flex max-h-[88svh] flex-col rounded-t-[22px] bg-white transition-transform duration-[260ms] ease-[cubic-bezier(.22,1,.36,1)]',
           open ? 'translate-y-0' : 'translate-y-full',
         )}
       >
@@ -299,7 +299,7 @@ function OrderDetailSheet({
           <span className="h-[4px] w-[40px] rounded-[4px] bg-[#D7D9E3]" />
         </button>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-[16px] pb-[16px] pt-[12px]">
+        <div className="min-h-0 flex-1 overflow-y-auto px-[16px] pt-[12px] pb-[env(safe-area-inset-bottom,16px)]">
           {isLoading || !order ? (
             <div className="flex animate-pulse flex-col gap-[12px]">
               <div className="h-[20px] w-[40%] rounded-[8px] bg-nxbg" />

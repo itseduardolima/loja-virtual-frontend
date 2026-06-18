@@ -41,9 +41,9 @@ export function HomeGreeting({
   const hasPending = !isLoading && (pendingOrders > 0 || pendingQuestions > 0)
 
   return (
-    <div className="flex items-start justify-between gap-3">
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
       <div>
-        <h1 className="m-0 flex items-center gap-2 text-[26px] font-extrabold leading-[1.15] tracking-[-0.03em] text-nxi1">
+        <h1 className="m-0 flex items-center gap-2 text-[22px] font-extrabold leading-[1.15] tracking-[-0.03em] text-nxi1 sm:text-[26px]">
           {greetingText}
           <GreetingIcon period={period} />
         </h1>
@@ -76,7 +76,7 @@ export function HomeGreeting({
           )}
         </p>
       </div>
-      <span className="whitespace-nowrap pt-1.5 text-[11px] font-bold tracking-[0.06em] text-nxi3">
+      <span className="whitespace-nowrap text-[11px] font-bold tracking-[0.06em] text-nxi3 sm:pt-1.5">
         {todayLabel}
       </span>
     </div>

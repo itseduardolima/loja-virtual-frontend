@@ -1,4 +1,5 @@
 export { default as AccessDenied } from './AccessDenied'
+export { BottomNav } from './BottomNav'
 export { AppFooter } from './AppFooter'
 export { ErrorState } from './ErrorState'
 export { default as FeatureLocked } from './FeatureLocked'
