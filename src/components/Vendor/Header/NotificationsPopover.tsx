@@ -3,159 +3,230 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Bell, ShoppingCart, CheckCheck, Trash2, X, ExternalLink } from 'lucide-react'
+import { Bell, BellOff, ShoppingBag, CheckCheck, Trash2, X, ArrowRight, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { timeAgo } from '@/lib/vendor'
 import type { OrderNotification } from '@/hooks/useOrderNotifications'
 
 interface NotificationsPopoverProps {
   notifications: OrderNotification[]
+  isLoading?: boolean
   onMarkAllAsRead?: () => void
   onMarkAsRead?: (id: string) => void
   onDismiss?: (id: string) => void
   onClearAll?: () => void
 }
 
+function brl(n: number) {
+  return 'R$ ' + n.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+}
+
+function SkeletonRow({ w1, w2 }: { w1: string; w2: string }) {
+  return (
+    <div className="flex gap-[11px] border-b border-[#F1F2F7] px-[16px] py-[13px]">
+      <div className="h-[36px] w-[36px] flex-none animate-pulse rounded-[10px] bg-[#EBEDF6]" />
+      <div className="flex flex-1 flex-col gap-[7px] pt-[1px]">
+        <div className={cn('h-[12px] animate-pulse rounded-[8px] bg-[#EBEDF6]', w1)} />
+        <div className={cn('h-[11px] animate-pulse rounded-[8px] bg-[#EBEDF6]', w2)} />
+      </div>
+    </div>
+  )
+}
+
 export function NotificationsPopover({
   notifications,
+  isLoading = false,
   onMarkAllAsRead,
   onMarkAsRead,
   onDismiss,
   onClearAll,
 }: NotificationsPopoverProps) {
   const router = useRouter()
-  const [isOpen, setIsOpen] = useState(false)
+  const [open, setOpen] = useState(false)
+
   const unreadCount = notifications.filter((n) => !n.read).length
+  const hasUnread = unreadCount > 0
+  const hasItems = notifications.length > 0
+  const isEmpty = !isLoading && !hasItems
+  const unreadLabel = unreadCount > 9 ? '9+' : String(unreadCount)
+  const unreadBadge = `${unreadCount} nova${unreadCount > 1 ? 's' : ''}`
 
   const handleNotifClick = (notif: OrderNotification) => {
     onMarkAsRead?.(notif.id)
-    setIsOpen(false)
+    setOpen(false)
     router.push(notif.orderId ? `/vendedor/pedidos?orderId=${notif.orderId}` : '/vendedor/pedidos')
   }
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={open} onOpenChange={setOpen}>
+      {/* ── Trigger ── */}
       <PopoverTrigger asChild>
         <button
           aria-label="Notificações"
-          className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-nxborder bg-white text-nxi2"
+          className={cn(
+            'relative flex h-[42px] w-[42px] cursor-pointer items-center justify-center rounded-[11px] border transition-colors',
+            open || hasUnread ? 'border-nxp bg-[#EEF0FB]' : 'border-nxborder bg-white',
+          )}
         >
-          <Bell size={16} />
-          {unreadCount > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-nxsurf bg-nxd px-1 text-[10px] font-bold text-white">
-              {unreadCount > 9 ? '9+' : unreadCount}
+          <Bell size={20} color={open || hasUnread ? '#2A2D7C' : '#4B4E62'} />
+          {hasUnread && (
+            <span className="absolute -right-[3px] -top-[3px] flex h-[19px] min-w-[19px] items-center justify-center rounded-full border-2 border-white bg-nxd px-[5px] text-[11px] font-extrabold leading-none text-white">
+              {unreadLabel}
             </span>
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent align="end" sideOffset={8} className="w-96 p-0">
-        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-          <div className="flex items-center gap-2">
-            <Bell className="h-4 w-4 text-gray-600" />
-            <span className="text-sm font-semibold text-gray-900">Notificações</span>
-            {unreadCount > 0 && (
-              <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-600">
-                {unreadCount} nova{unreadCount > 1 ? 's' : ''}
-              </span>
+
+      {/* ── Popover ── */}
+      <PopoverContent
+        align="end"
+        sideOffset={12}
+        className="w-[384px] overflow-hidden rounded-[16px] border border-nxborder p-0 shadow-[0_24px_48px_-16px_rgba(28,30,43,.25)] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-top-2 data-[state=open]:duration-150"
+      >
+        {/* Header */}
+        <div className="flex items-center gap-[9px] border-b border-nxborder bg-[#FBFBFD] pb-[13px] pl-[16px] pr-[14px] pt-[14px]">
+          <span className="text-[15px] font-extrabold text-nxi1">Notificações</span>
+          {hasUnread && (
+            <span className="flex h-[20px] min-w-[20px] items-center justify-center rounded-full bg-[#EEF0FB] px-[7px] text-[11.5px] font-extrabold whitespace-nowrap text-nxp">
+              {unreadBadge}
+            </span>
+          )}
+          <div className="ml-auto flex items-center gap-[4px]">
+            {hasUnread && (
+              <button
+                type="button"
+                title="Marcar todas como lidas"
+                onClick={onMarkAllAsRead}
+                className="flex h-[32px] w-[32px] items-center justify-center rounded-[9px] transition-colors hover:bg-[#EEF0FB]"
+              >
+                <CheckCheck size={17} color="#4B4E62" />
+              </button>
+            )}
+            {hasItems && (
+              <button
+                type="button"
+                title="Limpar todas"
+                onClick={onClearAll}
+                className="flex h-[32px] w-[32px] items-center justify-center rounded-[9px] transition-colors hover:bg-[#EEF0FB]"
+              >
+                <Trash2 size={16} color="#4B4E62" />
+              </button>
             )}
           </div>
-          {notifications.length > 0 && (
-            <div className="flex items-center gap-1">
-              {unreadCount > 0 && (
-                <button
-                  onClick={onMarkAllAsRead}
-                  className="rounded p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-                  title="Marcar todas como lidas"
-                >
-                  <CheckCheck className="h-4 w-4" />
-                </button>
-              )}
-              <button
-                onClick={onClearAll}
-                className="rounded p-1.5 text-gray-500 hover:bg-gray-100 hover:text-red-500"
-                title="Limpar todas"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          )}
         </div>
 
-        <div className="max-h-[360px] overflow-y-auto">
-          {notifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-gray-400">
-              <Bell className="mb-3 h-10 w-10 opacity-30" />
-              <p className="text-sm font-medium">Nenhuma notificação</p>
-              <p className="mt-1 text-xs">Novos pedidos aparecerão aqui</p>
+        {/* Body */}
+        {isLoading ? (
+          <div>
+            <SkeletonRow w1="w-[62%]" w2="w-[42%]" />
+            <SkeletonRow w1="w-[70%]" w2="w-[48%]" />
+            <SkeletonRow w1="w-[55%]" w2="w-[38%]" />
+          </div>
+        ) : isEmpty ? (
+          <div className="px-[28px] py-[46px] text-center">
+            <div className="mx-auto mb-[15px] flex h-[64px] w-[64px] items-center justify-center rounded-[18px] bg-nxbg">
+              <BellOff size={28} color="#8A8CA3" />
             </div>
-          ) : (
-            notifications.map((notif) => (
-              <div
-                key={notif.id}
-                onClick={() => handleNotifClick(notif)}
-                className={cn(
-                  'flex cursor-pointer items-start gap-3 border-b border-gray-50 px-4 py-3 last:border-0 hover:bg-gray-50',
-                  notif.read ? 'bg-white' : 'bg-blue-50/50 hover:bg-blue-50',
-                )}
-              >
+            <div className="text-[15.5px] font-extrabold text-nxi1">Nenhuma notificação</div>
+            <div className="mt-[5px] text-[12.5px] font-semibold leading-[1.5] text-nxi3">
+              Novos pedidos aparecerão aqui em tempo real.
+            </div>
+          </div>
+        ) : (
+          <div className="max-h-[380px] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {notifications.map((notif) => {
+              const isUnread = !notif.read
+              return (
                 <div
+                  key={notif.id}
+                  onClick={() => handleNotifClick(notif)}
                   className={cn(
-                    'mt-0.5 shrink-0 rounded-full p-2',
-                    notif.read ? 'bg-gray-100' : 'bg-blue-100',
+                    'group relative flex cursor-pointer gap-[11px] border-b pb-[13px] pl-[16px] pr-[14px] pt-[13px] transition-colors',
+                    isUnread
+                      ? 'border-[#EAEBF2] bg-[#EEF0FB] hover:bg-[#E8EAF6]'
+                      : 'border-[#F1F2F7] bg-white hover:bg-[#F8F9FC]',
                   )}
                 >
-                  <ShoppingCart
+                  {/* Ícone */}
+                  <span
                     className={cn(
-                      'h-3.5 w-3.5',
-                      notif.read ? 'text-gray-500' : 'text-blue-600',
+                      'flex h-[36px] w-[36px] flex-none items-center justify-center rounded-[10px]',
+                      isUnread ? 'bg-nxp' : 'bg-[#F1F2F7]',
                     )}
-                  />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-semibold text-gray-900">
-                      Pedido #{notif.orderCode}
-                    </span>
-                    {!notif.read && (
-                      <span className="h-2 w-2 shrink-0 rounded-full bg-blue-500" />
-                    )}
+                  >
+                    <ShoppingBag size={17} color={isUnread ? '#fff' : '#8A8CA3'} />
+                  </span>
+
+                  {/* Conteúdo */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-[7px]">
+                      {isUnread && (
+                        <span className="h-[7px] w-[7px] flex-none rounded-full bg-nxp" />
+                      )}
+                      <span
+                        className={cn(
+                          'overflow-hidden text-ellipsis whitespace-nowrap text-[12.5px] tracking-[.02em] text-nxi1',
+                          isUnread ? 'font-black' : 'font-bold text-nxi2',
+                        )}
+                      >
+                        {notif.orderCode}
+                      </span>
+                      <span className="ml-auto flex-none whitespace-nowrap text-[11px] font-semibold text-nxi3">
+                        {timeAgo(notif.timestamp)}
+                      </span>
+                    </div>
+                    <div className="mt-[3px] flex items-center gap-[6px]">
+                      <span
+                        className={cn(
+                          'overflow-hidden text-ellipsis whitespace-nowrap text-[13px] text-nxi2',
+                          isUnread ? 'font-bold' : 'font-semibold',
+                        )}
+                      >
+                        {notif.customerName}
+                      </span>
+                      <span className="flex-none text-[13px] font-extrabold text-nxs">
+                        {brl(notif.total)}
+                      </span>
+                    </div>
                   </div>
-                  <p className="mt-0.5 truncate text-xs text-gray-500">{notif.customerName}</p>
-                  <p className="mt-0.5 text-xs font-semibold text-green-600">
-                    R$ {notif.total.toFixed(2)}
-                  </p>
-                </div>
-                <div className="flex shrink-0 flex-col items-end gap-2">
-                  <span className="text-xs text-gray-400">{timeAgo(notif.timestamp)}</span>
+
+                  {/* Chevron (aparece no hover) */}
+                  <span className="flex flex-none translate-x-[-4px] items-center opacity-0 transition-all duration-[120ms] group-hover:translate-x-0 group-hover:opacity-100">
+                    <ChevronRight size={16} color="#8A8CA3" />
+                  </span>
+
+                  {/* Botão dispensar (aparece no hover) */}
                   <button
+                    type="button"
+                    aria-label="Dispensar"
                     onClick={(e) => {
                       e.stopPropagation()
                       onDismiss?.(notif.id)
                     }}
-                    className="rounded p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+                    className="absolute right-[8px] top-[8px] flex h-[22px] w-[22px] items-center justify-center rounded-[7px] bg-[#F1F2F7] opacity-0 transition-opacity duration-[120ms] group-hover:opacity-100"
                   >
-                    <X className="h-3 w-3" />
+                    <X size={13} color="#8A8CA3" />
                   </button>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
-
-        {notifications.length > 0 && (
-          <div className="border-t border-gray-100 px-4 py-3">
-            <button
-              onClick={() => {
-                setIsOpen(false)
-                router.push('/vendedor/pedidos')
-              }}
-              className="flex w-full items-center justify-center gap-2 text-sm font-medium text-nxp hover:underline"
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-              Ver todos os pedidos
-            </button>
+              )
+            })}
           </div>
         )}
+
+        {/* Footer */}
+        <div className="border-t border-nxborder bg-[#FBFBFD] px-[16px] py-[11px]">
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false)
+              router.push('/vendedor/pedidos')
+            }}
+            className="flex items-center gap-[6px] text-[13px] font-extrabold text-nxp"
+          >
+            Ver todos os pedidos
+            <ArrowRight size={15} color="#2A2D7C" />
+          </button>
+        </div>
       </PopoverContent>
     </Popover>
   )
