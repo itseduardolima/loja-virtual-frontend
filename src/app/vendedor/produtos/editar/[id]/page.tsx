@@ -322,7 +322,7 @@ export default function EditProductPage() {
     status === 'active' ? 'nxs' : status === 'draft' ? 'nxi3' : 'nxw'
 
   return (
-    <div className="pb-28 lg:pb-0">
+    <div className="pb-[120px] lg:pb-0">
       {/* header */}
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
@@ -341,12 +341,6 @@ export default function EditProductPage() {
             Descartar
           </NxButton>
         </div>
-      </div>
-
-      {/* mobile: completion + preview */}
-      <div className="mb-5 flex flex-col gap-5 lg:hidden">
-        {completionMeter}
-        {previewCard}
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
@@ -380,6 +374,11 @@ export default function EditProductPage() {
             onRemoveExistingImage={removeExistingImage}
             showErrors={showErrors}
           />
+          {/* mobile: completion + preview — below images */}
+          <div className="flex flex-col gap-5 lg:hidden">
+            {completionMeter}
+            {previewCard}
+          </div>
         </div>
 
         <div className="hidden lg:block">
@@ -399,7 +398,7 @@ export default function EditProductPage() {
       </div>
 
       {/* mobile action bar */}
-      <div className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-2 border-t border-nxborder bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
+      <div className="fixed inset-x-0 bottom-[64px] z-30 flex items-center gap-2 border-t border-nxborder bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
         <NxBadge tone={statusTone}>{statusLabel}</NxBadge>
         <div className="ml-auto flex items-center gap-2">
           <NxButton onClick={handlePublish} loading={isLoading} disabled={!canPublish}>

@@ -145,7 +145,7 @@ export default function OrdersPage() {
       </div>
 
       {/* ===== Mobile (<lg) ===== */}
-      <div className="lg:hidden">
+      <div className="lg:hidden -mx-4 -mt-4">
         {p.isLoading ? (
           <OrdersLoadingState />
         ) : p.error ? (
