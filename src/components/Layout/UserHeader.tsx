@@ -34,7 +34,7 @@ export function UserHeader({
       <HeaderBreadcrumb path={currentPath} />
       <HeaderSearch />
 
-      <div className="ml-auto flex items-center gap-1.5">
+      <div className="ml-auto flex items-center gap-[10px]">
         {store?.slug && <ViewStoreLink slug={store.slug} />}
         <NotificationsPopover
           notifications={notifications}

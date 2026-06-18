@@ -23,24 +23,31 @@ export function UserMenu() {
       <PopoverTrigger asChild>
         <button
           aria-label={user?.name}
-          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-2 border-nxborder bg-nxp/10 text-[13px] font-bold text-nxp"
+          className="flex h-[42px] w-[42px] cursor-pointer items-center justify-center rounded-[11px] border border-nxborder bg-[#DADCEC] text-[13px] font-extrabold text-nxp transition-colors hover:border-nxp hover:bg-[#EEF0FB]"
         >
           {initials}
         </button>
       </PopoverTrigger>
-      <PopoverContent align="end" sideOffset={8} className="w-56 p-2">
-        <div className="mb-1 px-2 py-2">
-          <p className="text-sm font-semibold text-gray-900">{user?.name}</p>
-          <p className="mt-0.5 text-xs text-gray-500">{user?.profile}</p>
+      <PopoverContent
+        align="end"
+        sideOffset={12}
+        className="w-[220px] overflow-hidden rounded-[16px] border border-nxborder p-0 shadow-[0_24px_48px_-16px_rgba(28,30,43,.25)] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-top-2 data-[state=open]:duration-150"
+      >
+        <div className="bg-[#FBFBFD] px-[16px] pb-[13px] pt-[14px]">
+          <p className="text-[15px] font-extrabold text-nxi1">{user?.name}</p>
+          <p className="mt-[3px] text-[13px] font-semibold text-nxi3">{user?.profile}</p>
         </div>
-        <div className="mb-1 h-px bg-gray-100" />
-        <button
-          onClick={handleLogout}
-          className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
-        >
-          <LogOut className="h-4 w-4" />
-          Sair da conta
-        </button>
+        <div className="h-px bg-nxborder" />
+        <div className="p-[6px]">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex w-full items-center gap-[9px] rounded-[10px] px-[10px] py-[9px] text-[13px] font-bold text-nxd transition-colors hover:bg-[#FBE9EE]"
+          >
+            <LogOut size={15} />
+            Sair da conta
+          </button>
+        </div>
       </PopoverContent>
     </Popover>
   )
