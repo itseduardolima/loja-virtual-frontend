@@ -205,7 +205,7 @@ export function MobileOrdersView({
                   onStatusFilterChange('all')
                   setFilterSheetOpen(false)
                 }}
-                className="flex h-[44px] w-full items-center justify-center gap-[6px] rounded-[12px] border border-nxborder pb-[8px] text-[13.5px] font-bold text-nxi2"
+                className="flex h-[44px] w-full items-center justify-center gap-[6px] rounded-[12px] border border-nxborder text-[13.5px] font-bold text-nxi2"
               >
                 <X size={15} />
                 Limpar filtro
@@ -216,7 +216,7 @@ export function MobileOrdersView({
       </Sheet>
 
       {/* ─── Lista de cards ──────────────────────────────────────────────── */}
-      <div className="flex-1 p-[12px]">
+      <div className="flex-1 px-[16px] py-[12px]">
         {visibleOrders.length === 0 ? (
           <div className="rounded-[14px] border border-nxborder bg-white px-[20px] py-[48px] text-center">
             <div className="text-[15px] font-extrabold text-nxi1">Nenhum pedido encontrado</div>
