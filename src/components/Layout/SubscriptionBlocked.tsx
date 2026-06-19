@@ -1,74 +1,93 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components'
-import { CreditCard, AlertCircle, ArrowRight } from 'lucide-react'
+import { CreditCard, PackageX, AlertTriangle, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface SubscriptionBlockedProps {
   title?: string
   message?: string
   showManageButton?: boolean
+  variant?: 'payment_pending' | 'cancelled'
 }
 
 export default function SubscriptionBlocked({
-  title = 'Assinatura Cancelada',
-  message = 'Sua assinatura foi cancelada. Para continuar usando a plataforma, é necessário renovar sua assinatura.',
+  title,
+  message,
   showManageButton = true,
+  variant = 'cancelled',
 }: SubscriptionBlockedProps) {
   const router = useRouter()
 
-  return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <Card className="max-w-md w-full shadow-lg">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
-              <CreditCard className="w-8 h-8 text-red-600" />
-            </div>
-          </div>
-          <CardTitle className="text-2xl font-bold text-gray-900">
-            {title}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-yellow-800">{message}</p>
-          </div>
+  if (variant === 'payment_pending') {
+    const resolvedTitle = title ?? 'Pagamento pendente'
+    const resolvedMessage = message ?? 'Sua assinatura está aguardando confirmação do pagamento.'
 
-          <div className="space-y-3">
-            <p className="text-sm text-gray-600 text-center">
-              Enquanto sua assinatura estiver cancelada:
-            </p>
-            <ul className="space-y-2 text-sm text-gray-700">
-              <li className="flex items-start gap-2">
-                <span className="text-red-500 mt-1">•</span>
-                <span>Sua loja ficará inacessível para clientes</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-red-500 mt-1">•</span>
-                <span>Você não poderá acessar o painel de controle</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-red-500 mt-1">•</span>
-                <span>Não será possível gerenciar produtos e pedidos</span>
-              </li>
-            </ul>
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-nxbg px-4 text-center">
+        <span className="inline-flex h-[80px] w-[80px] items-center justify-center rounded-[22px] border border-nxborder bg-white">
+          <CreditCard className="h-9 w-9 text-nxw" />
+        </span>
+        <div className="mt-[20px] text-[24px] font-extrabold tracking-[-0.02em] text-nxi1">{resolvedTitle}</div>
+        <div className="mt-[8px] max-w-[400px] text-[14px] font-semibold leading-[1.55] text-nxi2">{resolvedMessage}</div>
+        <span className="inline-flex items-center gap-[7px] mt-[16px] rounded-[10px] border border-[#F0D070] bg-[#FDF6E3] px-[13px] py-[7px] text-[12.5px] font-extrabold text-[#9A6F0A]">
+          <AlertTriangle className="h-[14px] w-[14px] text-[#9A6F0A]" />
+          Acesso restrito até regularização
+        </span>
+        <div className="flex flex-col gap-[9px] max-w-[300px] mx-auto mt-[20px] text-left">
+          <div className="flex items-center gap-[9px] text-[13px] font-bold text-nxi2">
+            <X className="h-[15px] w-[15px] text-nxa shrink-0" />
+            Loja fora do ar
           </div>
-
-          {showManageButton && (
-            <Button
+          <div className="flex items-center gap-[9px] text-[13px] font-bold text-nxi2">
+            <X className="h-[15px] w-[15px] text-nxa shrink-0" />
+            Novos pedidos bloqueados
+          </div>
+          <div className="flex items-center gap-[9px] text-[13px] font-bold text-nxi2">
+            <X className="h-[15px] w-[15px] text-nxa shrink-0" />
+            Produtos ocultos
+          </div>
+        </div>
+        {showManageButton && (
+          <div className="mt-[24px]">
+            <button
               onClick={() => router.push('/vendedor/plano')}
-              className="w-full"
-              size="lg"
+              className="inline-flex h-[46px] items-center justify-center rounded-[12px] bg-nxp px-[22px] text-[14px] font-extrabold text-white"
             >
-              Gerenciar Assinatura
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          )}
-        </CardContent>
-      </Card>
+              Regularizar pagamento
+            </button>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // variant === 'cancelled'
+  const resolvedTitle = title ?? 'Assinatura encerrada'
+  const resolvedMessage = message ?? 'Sua assinatura foi cancelada. Para continuar usando a plataforma, é necessário renovar sua assinatura.'
+
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-nxbg px-4 text-center">
+      <span className="inline-flex h-[80px] w-[80px] items-center justify-center rounded-[22px] border border-nxborder bg-white">
+        <PackageX className="h-9 w-9 text-nxi3" />
+      </span>
+      <div className="mt-[20px] text-[24px] font-extrabold tracking-[-0.02em] text-nxi1">{resolvedTitle}</div>
+      <div className="mt-[8px] max-w-[400px] text-[14px] font-semibold leading-[1.55] text-nxi2">{resolvedMessage}</div>
+      {showManageButton && (
+        <div className="mt-[24px] flex flex-col items-center gap-[8px]">
+          <button
+            onClick={() => router.push('/vendedor/plano')}
+            className="flex h-[46px] w-full max-w-[260px] items-center justify-center rounded-[12px] bg-nxp text-[14px] font-extrabold text-white"
+          >
+            Reativar assinatura
+          </button>
+          <button
+            onClick={() => router.push('/vendedor/plano')}
+            className="h-[42px] px-[16px] text-[14px] font-extrabold text-nxi2"
+          >
+            Falar com suporte
+          </button>
+        </div>
+      )}
     </div>
   )
 }
-

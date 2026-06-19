@@ -1,3 +1,5 @@
+import { cn } from '@/lib/utils'
+
 interface LoadingSpinnerProps {
   message?: string
   size?: 'sm' | 'md' | 'lg'
@@ -5,40 +7,42 @@ interface LoadingSpinnerProps {
   className?: string
 }
 
-export function LoadingSpinner({ 
-  message = "", 
+export function LoadingSpinner({
+  message,
   size = 'md',
-  fullScreen = true,
-  className = ""
+  fullScreen = false,
+  className,
 }: LoadingSpinnerProps) {
-  const sizeClasses = {
-    sm: 'h-8 w-8',
-    md: 'h-12 w-12',
-    lg: 'h-16 w-16'
-  }
+  const spinnerSize = {
+    sm: 'w-5 h-5 border-2',
+    md: 'w-8 h-8 border-[3px]',
+    lg: 'w-12 h-12 border-[3px]',
+  }[size]
 
-  const spinner = (
-    <div className="text-center">
-      <div className={`animate-spin rounded-full border-b-2 border-blue-600 mx-auto mb-4 ${sizeClasses[size]}`}></div>
-      <p className="text-gray-600">{message}</p>
-    </div>
-  )
-
-  if (fullScreen) {
-    return (
-      <div className={`min-h-screen bg-gradient-to-br from-slate-20 via-blue-20 to-indigo-20 ${className}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex justify-center items-center h-64">
-            {spinner}
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const messageStyle = {
+    sm: 'text-[11px] font-extrabold text-nxi3 mt-[14px]',
+    md: 'text-[13px] font-semibold text-nxi3 mt-[12px]',
+    lg: 'text-[14px] font-bold text-nxi2 mt-[14px]',
+  }[size]
 
   return (
-    <div className={`flex justify-center items-center ${className}`}>
-      {spinner}
+    <div
+      className={cn(
+        fullScreen
+          ? 'min-h-screen bg-nxbg flex items-center justify-center'
+          : 'flex flex-col items-center justify-center py-12',
+        className
+      )}
+    >
+      <span
+        className={cn(
+          'rounded-full animate-spin border-nxp border-t-transparent',
+          spinnerSize
+        )}
+      />
+      {message && (
+        <span className={messageStyle}>{message}</span>
+      )}
     </div>
   )
 }

@@ -166,13 +166,14 @@ export default function VendedorLayout({
     const isPending = subscription?.status === 'pending'
     return (
       <SubscriptionBlocked
-        title={isPending ? 'Pagamento Pendente' : 'Assinatura Cancelada'}
+        title={isPending ? 'Pagamento pendente' : 'Assinatura encerrada'}
         message={
           isPending
             ? 'Sua assinatura está aguardando confirmação do pagamento. Assim que ele for processado, seu acesso será liberado automaticamente.'
             : 'Sua assinatura foi cancelada ou expirou. Para continuar usando a plataforma, é necessário renovar sua assinatura.'
         }
         showManageButton={true}
+        variant={isPending ? 'payment_pending' : 'cancelled'}
       />
     )
   }
