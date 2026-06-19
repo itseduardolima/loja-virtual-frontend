@@ -58,19 +58,11 @@ export default function StoreHomePage() {
   const [barVisible, setBarVisible] = useState(true)
 
   if (storeError && !storeInfo) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <ErrorState message={storeError} onRetry={refetch} />
-      </div>
-    )
+    return <ErrorState fullScreen message={storeError} onRetry={refetch} />
   }
 
   if (loading && !storeInfo) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <LoadingPage />
-      </div>
-    )
+    return <LoadingPage />
   }
 
   const categoryNames = ['Todos', ...categoriesToShow.map((c) => c.name)]

@@ -32,19 +32,11 @@ export default function PedidoSucessoPage() {
   } = usePedidoSucessoPage()
 
   if (storeLoading && !storeInfo) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <LoadingPage />
-      </div>
-    )
+    return <LoadingPage />
   }
 
   if (storeError && !storeInfo) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <ErrorState message={storeError} onRetry={refetchStore} />
-      </div>
-    )
+    return <ErrorState fullScreen message={storeError} onRetry={refetchStore} />
   }
 
   return (
