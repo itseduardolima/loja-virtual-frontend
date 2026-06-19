@@ -29,19 +29,11 @@ export default function StoreProductsPage() {
   const vm = useStorePage({ slug, initialCategoryId })
 
   if (vm.storeLoading && !vm.storeInfo) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <LoadingPage />
-      </div>
-    )
+    return <LoadingPage />
   }
 
   if (vm.storeError && !vm.storeInfo) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <ErrorState message={vm.storeError} onRetry={vm.refetch} />
-      </div>
-    )
+    return <ErrorState fullScreen message={vm.storeError} onRetry={vm.refetch} />
   }
 
   return (

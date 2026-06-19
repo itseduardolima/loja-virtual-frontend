@@ -85,36 +85,30 @@ export default function ProductDetailPage() {
   }, [shareOpen])
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-nxbg">
-        <LoadingPage />
-      </div>
-    )
+    return <LoadingPage />
   }
 
   if (productNotFound) return notFound()
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-nxbg">
-        <ErrorState
-          message="Erro ao carregar produto"
-          onRetry={() => refetch()}
-          retryText="Tentar novamente"
-        />
-      </div>
+      <ErrorState
+        fullScreen
+        message="Erro ao carregar produto"
+        onRetry={() => refetch()}
+        retryText="Tentar novamente"
+      />
     )
   }
 
   if (!product) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-nxbg">
-        <ErrorState
-          message="Produto não encontrado"
-          onRetry={() => router.push(`/loja/${slug}`)}
-          retryText="Voltar para a loja"
-        />
-      </div>
+      <ErrorState
+        fullScreen
+        message="Produto não encontrado"
+        onRetry={() => router.push(`/loja/${slug}`)}
+        retryText="Voltar para a loja"
+      />
     )
   }
 

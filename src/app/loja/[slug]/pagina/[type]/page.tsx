@@ -38,11 +38,7 @@ export default function StorePagePublic() {
   }, [isError, router, slug, type])
 
   if (storeLoading && !storeInfo) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <LoadingPage />
-      </div>
-    )
+    return <LoadingPage />
   }
 
   return (
