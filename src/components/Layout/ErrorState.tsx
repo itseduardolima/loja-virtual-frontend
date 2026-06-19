@@ -1,5 +1,7 @@
-import { Button } from '@/components/ui/button'
-import { AlertCircle, RefreshCw } from 'lucide-react'
+'use client'
+
+import { WifiOff, AlertCircle, RefreshCw } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface ErrorStateProps {
   message?: string
@@ -9,45 +11,59 @@ interface ErrorStateProps {
   className?: string
 }
 
-export function ErrorState({ 
-  message = "Algo deu errado",
+export function ErrorState({
+  message,
   onRetry,
-  retryText = "Tentar novamente",
-  fullScreen = true,
-  className = ""
+  retryText = 'Tentar novamente',
+  fullScreen = false,
+  className,
 }: ErrorStateProps) {
-  const errorContent = (
-    <div className="text-center">
-      <div className="p-4 bg-red-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-        <AlertCircle className="h-8 w-8 text-red-600" />
+  const card = (
+    <div className="rounded-[16px] border border-[#E3E4EC] bg-white py-[56px] px-6 text-center">
+      {onRetry ? (
+        <WifiOff className="h-12 w-12 text-[#E8632A] mx-auto" />
+      ) : (
+        <AlertCircle className="h-12 w-12 text-[#E8632A] mx-auto" />
+      )}
+
+      <div className="mt-[16px] text-[17px] font-extrabold text-[#1C1E2B]">
+        {onRetry
+          ? (message ?? 'Não foi possível carregar')
+          : (message ?? 'Algo deu errado')}
       </div>
-      <h3 className="text-xl font-semibold text-gray-900 mb-2">
-        {message}
-      </h3>
+
+      {!onRetry && (
+        <div className="mt-[5px] text-[13.5px] font-semibold text-[#4B4E62]">
+          Tente recarregar a página ou entre em contato com o suporte.
+        </div>
+      )}
+
       {onRetry && (
-        <Button onClick={onRetry} className="flex items-center gap-2 mx-auto">
-          <RefreshCw className="h-4 w-4" />
+        <button
+          type="button"
+          onClick={onRetry}
+          className="mt-[20px] inline-flex h-[42px] items-center gap-[7px] rounded-[11px] bg-[#2A2D7C] px-5 text-[13.5px] font-extrabold text-white"
+        >
+          <RefreshCw className="h-[15px] w-[15px]" />
           {retryText}
-        </Button>
+        </button>
       )}
     </div>
   )
 
   if (fullScreen) {
     return (
-      <div className={`min-h-screen bg-gradient-to-br from-slate-20 via-blue-20 to-indigo-20 ${className}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex justify-center items-center h-64">
-            {errorContent}
-          </div>
+      <div className={cn('flex min-h-screen items-center justify-center bg-[#F4F5F8] p-4', className)}>
+        <div className="w-full max-w-[420px]">
+          {card}
         </div>
       </div>
     )
   }
 
   return (
-    <div className={`flex justify-center items-center ${className}`}>
-      {errorContent}
+    <div className={cn(className)}>
+      {card}
     </div>
   )
 }

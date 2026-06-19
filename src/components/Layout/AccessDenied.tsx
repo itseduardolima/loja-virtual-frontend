@@ -1,57 +1,46 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, Button } from '@/components'
-import { ShieldX, ArrowLeft } from 'lucide-react'
+import { ShieldOff } from 'lucide-react'
 
 interface AccessDeniedProps {
   title?: string
   message?: string
   showBackButton?: boolean
+  redirectTo?: string
+  redirectLabel?: string
 }
 
 export default function AccessDenied({
-  title = 'Acesso Não Permitido',
-  message = 'Você não tem permissão para acessar esta página.',
-  showBackButton = true
+  title = 'Acesso não autorizado',
+  message = 'Você não tem permissão para acessar esta área. Entre com uma conta com o perfil correto.',
+  showBackButton = true,
+  redirectTo = '/',
+  redirectLabel = 'Ir para minha área',
 }: AccessDeniedProps) {
   const router = useRouter()
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <Card className="max-w-md w-full shadow-lg">
-        <CardContent className="p-8 text-center">
-          <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center">
-              <ShieldX className="w-10 h-10 text-red-600" />
-            </div>
-          </div>
-
-          <h1 className="text-2xl font-bold text-gray-900 mb-3">
-            {title}
-          </h1>
-
-          <p className="text-gray-600 mb-6">
-            {message}
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            {showBackButton && (
-              <Button
-
-                onClick={() => router.back()}
-                className="flex items-center justify-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Voltar
-              </Button>
-            )}
-
-
-          </div>
-        </CardContent>
-      </Card>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-nxbg px-4 text-center">
+      <span className="flex h-[80px] w-[80px] items-center justify-center rounded-[22px] border border-nxborder bg-white">
+        <ShieldOff className="h-9 w-9 text-nxa" />
+      </span>
+      <div className="mt-[22px] text-[24px] font-extrabold tracking-[-0.02em] text-nxi1">{title}</div>
+      <div className="mt-[8px] max-w-[380px] text-[14px] font-semibold leading-[1.55] text-nxi2">{message}</div>
+      <div className="mt-[24px] flex items-center gap-[10px]">
+        <button
+          onClick={() => router.push(redirectTo)}
+          className="inline-flex h-[46px] items-center justify-center rounded-[12px] bg-nxp px-[22px] text-[14px] font-extrabold text-white"
+        >
+          {redirectLabel}
+        </button>
+        <button
+          onClick={() => router.push('/login')}
+          className="h-[46px] px-[16px] text-[14px] font-extrabold text-nxi2"
+        >
+          Sair
+        </button>
+      </div>
     </div>
   )
 }
-

@@ -1,99 +1,15 @@
 'use client'
 
-import React from 'react';
-import styled from 'styled-components';
-
-const LoadingPage = () => {
+export default function LoadingPage() {
   return (
-    <StyledContainer>
-      <StyledWrapper>
-        <div className="loader" />
-      </StyledWrapper>
-    </StyledContainer>
-  );
+    <div className="flex min-h-screen flex-col items-center justify-center gap-[26px] bg-nxbg">
+      <div className="flex items-center gap-[11px]">
+        <span className="flex h-[38px] w-[38px] items-center justify-center rounded-[11px] bg-nxp text-[20px] font-black tracking-[-0.04em] text-white">
+          N
+        </span>
+        <span className="text-[26px] font-black tracking-[-0.04em] text-nxp">nexo</span>
+      </div>
+      <span className="h-[40px] w-[40px] animate-spin rounded-full border-[3px] border-nxp border-t-transparent" />
+    </div>
+  )
 }
-
-const StyledContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-`;
-
-const StyledWrapper = styled.div`
-  .loader {
-   position: relative;
-   width: 2.5em;
-   height: 2.5em;
-   transform: rotate(165deg);
-  }
-
-  .loader:before, .loader:after {
-   content: "";
-   position: absolute;
-   top: 50%;
-   left: 50%;
-   display: block;
-   width: 0.5em;
-   height: 0.5em;
-   border-radius: 0.25em;
-   transform: translate(-50%, -50%);
-  }
-
-  .loader:before {
-   animation: before8 2s infinite;
-  }
-
-  .loader:after {
-   animation: after6 2s infinite;
-  }
-
-  @keyframes before8 {
-   0% {
-    width: 0.5em;
-    box-shadow: 1em -0.5em rgba(225, 20, 98, 0.75), -1em 0.5em rgba(111, 202, 220, 0.75);
-   }
-
-   35% {
-    width: 2.5em;
-    box-shadow: 0 -0.5em rgba(225, 20, 98, 0.75), 0 0.5em rgba(111, 202, 220, 0.75);
-   }
-
-   70% {
-    width: 0.5em;
-    box-shadow: -1em -0.5em rgba(225, 20, 98, 0.75), 1em 0.5em rgba(111, 202, 220, 0.75);
-   }
-
-   100% {
-    box-shadow: 1em -0.5em rgba(225, 20, 98, 0.75), -1em 0.5em rgba(111, 202, 220, 0.75);
-   }
-  }
-
-  @keyframes after6 {
-   0% {
-    height: 0.5em;
-    box-shadow: 0.5em 1em rgba(61, 184, 143, 0.75), -0.5em -1em rgba(233, 169, 32, 0.75);
-   }
-
-   35% {
-    height: 2.5em;
-    box-shadow: 0.5em 0 rgba(61, 184, 143, 0.75), -0.5em 0 rgba(233, 169, 32, 0.75);
-   }
-
-   70% {
-    height: 0.5em;
-    box-shadow: 0.5em -1em rgba(61, 184, 143, 0.75), -0.5em 1em rgba(233, 169, 32, 0.75);
-   }
-
-   100% {
-    box-shadow: 0.5em 1em rgba(61, 184, 143, 0.75), -0.5em -1em rgba(233, 169, 32, 0.75);
-   }
-  }
-
-  .loader {
-   position: absolute;
-   top: calc(50% - 1.25em);
-   left: calc(50% - 1.25em);
-  }`;
-
-export default LoadingPage;

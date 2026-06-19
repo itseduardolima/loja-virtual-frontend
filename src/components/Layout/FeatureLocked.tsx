@@ -1,10 +1,7 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
-import { Lock, Sparkles, Info } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { FeatureLockedModal } from './FeatureLockedModal'
+import { Lock } from 'lucide-react'
 import type { PlanFeatures } from '@/hooks/usePlanFeatures'
 
 interface FeatureLockedProps {
@@ -13,36 +10,23 @@ interface FeatureLockedProps {
   feature?: keyof PlanFeatures
 }
 
-export default function FeatureLocked({ title, description, feature }: FeatureLockedProps) {
-  const [modalOpen, setModalOpen] = useState(false)
-
+export default function FeatureLocked({ title, description }: FeatureLockedProps) {
   return (
-    <>
-      <div className="max-w-[1380px] mx-auto sm:py-4 md:py-6 lg:py-8">
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-8 sm:p-12 flex flex-col items-center text-center max-w-2xl mx-auto">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center mb-5">
-            <Lock className="h-7 w-7 text-primary" />
-          </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">{title}</h1>
-          <p className="text-sm sm:text-base text-gray-600 max-w-md mb-6">{description}</p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Link href="/vendedor/plano">
-              <Button size="lg" className="gap-2">
-                <Sparkles className="h-4 w-4" />
-                Ver opções de plano
-              </Button>
-            </Link>
-            {feature && (
-              <Button size="lg" variant="outline" className="gap-2" onClick={() => setModalOpen(true)}>
-                <Info className="h-4 w-4" />
-                Saber mais
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {feature && <FeatureLockedModal feature={feature} open={modalOpen} onOpenChange={setModalOpen} />}
-    </>
+    <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
+      <span className="inline-flex h-[80px] w-[80px] items-center justify-center rounded-[22px] border border-nxborder bg-white">
+        <Lock className="h-[38px] w-[38px] text-nxi3" />
+      </span>
+      <div className="mt-[20px] text-[24px] font-extrabold tracking-[-0.02em] text-nxi1">{title}</div>
+      <div
+        className="mt-[8px] max-w-[380px] text-[14px] font-semibold leading-[1.55] text-nxi2"
+        dangerouslySetInnerHTML={{ __html: description }}
+      />
+      <Link
+        href="/vendedor/plano"
+        className="mt-[22px] inline-flex h-[46px] items-center justify-center rounded-[12px] bg-nxp px-[22px] text-[14px] font-extrabold text-white"
+      >
+        Ver planos de assinatura
+      </Link>
+    </div>
   )
 }
