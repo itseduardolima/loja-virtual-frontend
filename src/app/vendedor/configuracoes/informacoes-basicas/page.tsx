@@ -79,7 +79,7 @@ export default function InformacoesBasicasPage() {
         {/* Banner zone */}
         <label
           htmlFor="banner-upload"
-          className="group relative block h-[400px] w-full cursor-pointer overflow-hidden bg-gradient-to-br from-nxp/[0.08] via-nxp/[0.04] to-nxbg"
+          className="group relative block h-[140px] w-full cursor-pointer overflow-hidden bg-gradient-to-br from-nxp/[0.08] via-nxp/[0.04] to-nxbg sm:h-[220px] lg:h-[400px]"
         >
           {bannerPreview ? (
             <>
