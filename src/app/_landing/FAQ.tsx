@@ -1,94 +1,39 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { ChevronDown, MessageCircle } from 'lucide-react'
 import s from '../landing.module.css'
-import { EASE } from './motion'
-import { SimpleSectionHeader } from './SectionHeader'
-import { IcPlus, IcWA } from './icons'
-import { FAQ_ITEMS, FAQ_COPY, type FaqItem } from './data'
+import { FAQS } from './data'
 
-const itemVariant = {
-  hidden: { opacity: 0, y: 12 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } },
+function FaqEntry({ item, isOpen, onToggle }: { item: { q: string; a: string }; isOpen: boolean; onToggle: () => void }) {
+  return (
+    <div className={s.faqItem}>
+      <button className={s.faqQ} onClick={onToggle}>
+        <span>{item.q}</span>
+        <span className={`${s.faqIcon} ${isOpen ? s.faqChevOpen : ''}`}>
+          <ChevronDown size={15} />
+        </span>
+      </button>
+      <div className={`${s.faqA} ${isOpen ? s.faqAOpen : ''}`}>
+        <div className={s.faqAInner}>{item.a}</div>
+      </div>
+    </div>
+  )
 }
 
-interface FaqEntryProps {
-  item: FaqItem
-  isOpen: boolean
-  onToggle: () => void
-}
-
-const FaqEntry = ({ item, isOpen, onToggle }: FaqEntryProps) => (
-  <motion.div variants={itemVariant} className={s.faqItem}>
-    <button className={s.faqQ} onClick={onToggle}>
-      <span>{item.q}</span>
-      <span className={`${s.faqIcon} ${isOpen ? s.faqIconOpen : ''}`}>
-        <IcPlus size={16} />
-      </span>
-    </button>
-    <AnimatePresence initial={false}>
-      {isOpen && (
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: 'auto', opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.3, ease: EASE }}
-          style={{ overflow: 'hidden' }}
-        >
-          <div style={{ paddingTop: 12, color: 'var(--ink-3)', fontSize: 15, lineHeight: 1.6 }}>
-            {item.a}
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  </motion.div>
-)
-
-const HelpCard = () => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
-    transition={{ duration: 0.6, delay: 0.2 }}
-    style={{ textAlign: 'center', marginTop: 48, padding: 24, background: 'white', border: '1px solid var(--line)', borderRadius: 16 }}
-  >
-    <div style={{ fontSize: 16, fontWeight: 500, marginBottom: 4 }}>{FAQ_COPY.helpTitle}</div>
-    <div style={{ fontSize: 14, color: 'var(--ink-3)', marginBottom: 14 }}>{FAQ_COPY.helpSubtitle}</div>
-    <motion.a
-      href="#"
-      className={`${s.btn} ${s.btnGhost}`}
-      whileHover={{ y: -2 }}
-      whileTap={{ scale: 0.98 }}
-    >
-      <IcWA size={16} style={{ color: '#10B981' }} />{FAQ_COPY.helpCta}
-    </motion.a>
-  </motion.div>
-)
-
-export const FAQ = () => {
+export function FAQ() {
   const [openIdx, setOpenIdx] = useState(0)
 
   return (
-    <section
-      id="faq"
-      className={`${s.section} ${s.bgGradSoft}`}
-      style={{ borderTop: '1px solid var(--line)' }}
-    >
-      <div className={s.container} style={{ maxWidth: 880 }}>
-        <SimpleSectionHeader
-          eyebrow={FAQ_COPY.eyebrow}
-          title={FAQ_COPY.title}
-          titleHighlight={FAQ_COPY.titleHighlight}
-        />
+    <section id="faq" className={`${s.section} ${s.bgGradSoft} ${s.faqSection}`}>
+      <div className={s.containerSm}>
+        <div className={s.faqHeading} data-rev>
+          <span className={s.eyebrow}><span className={s.dot} />Dúvidas</span>
+          <h2 className={`${s.hSection} ${s.sectionTitle}`}>Perguntas frequentes</h2>
+        </div>
 
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.05 }}
-          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.05 } } }}
-        >
-          {FAQ_ITEMS.map((item, i) => (
+        <div className={s.faqWrap}>
+          {FAQS.map((item, i) => (
             <FaqEntry
               key={i}
               item={item}
@@ -96,9 +41,17 @@ export const FAQ = () => {
               onToggle={() => setOpenIdx(openIdx === i ? -1 : i)}
             />
           ))}
-        </motion.div>
+        </div>
 
-        <HelpCard />
+        <div className={s.faqHelp} data-rev>
+          <div className={s.faqHelpTitle}>Não encontrou sua resposta?</div>
+          <div className={s.faqHelpSub}>
+            Fala com a gente no WhatsApp. Resposta em até 5 minutos no horário comercial.
+          </div>
+          <a href="https://wa.me/5511999999999" className={`${s.btn} ${s.btnGhost}`}>
+            <MessageCircle size={16} /> Conversar no WhatsApp
+          </a>
+        </div>
       </div>
     </section>
   )

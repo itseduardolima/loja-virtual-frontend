@@ -1,44 +1,59 @@
-import { motion } from 'framer-motion'
-import Link from 'next/link'
-import s from '../landing.module.css'
-import { EASE } from './motion'
-import { handleAnchor } from './scroll'
-import { NexoWordmark } from './Logo'
-import { IcArrow } from './icons'
-import { NAV_LINKS } from './data'
+'use client'
 
-export const Navbar = () => (
-  <motion.nav
-    className={s.nav}
-    initial={{ y: -64, opacity: 0 }}
-    animate={{ y: 0, opacity: 1 }}
-    transition={{ duration: 0.6, ease: EASE }}
-  >
-    <div className={s.container}>
-      <div className={s.navInner}>
-        <NexoWordmark />
-        <nav className={s.navLinks}>
-          {NAV_LINKS.map((link) => (
-            <a key={link.href} href={link.href} onClick={(e) => handleAnchor(e, link.href)}>
-              {link.label}
-            </a>
-          ))}
-        </nav>
-        <div className={s.navActions}>
-          <Link href="/login" style={{ fontSize: 14, color: 'var(--ink-2)', fontWeight: 500, padding: '0 10px' }}>
-            Entrar
-          </Link>
-          <Link href="/assinatura" style={{ display: 'contents' }}>
-            <motion.span
-              className={`${s.btn} ${s.btnPrimary}`}
-              whileHover={{ y: -1 }}
-              whileTap={{ y: 1 }}
-            >
-              Começar grátis<IcArrow size={16} />
-            </motion.span>
-          </Link>
+import { useState } from 'react'
+import Link from 'next/link'
+import { Menu, X, ArrowRight } from 'lucide-react'
+import s from '../landing.module.css'
+
+export function Navbar() {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <>
+      <nav className={s.nav}>
+        <div className={s.container}>
+          <div className={s.navInner}>
+            <Link href="/" className={s.logo}>
+              <span className={s.logoMark}>N</span>
+              nexo
+            </Link>
+
+            <div className={s.navLinks}>
+              <a href="#recursos">Recursos</a>
+              <a href="#como">Como funciona</a>
+              <a href="#precos">Planos</a>
+              <a href="#faq">FAQ</a>
+            </div>
+
+            <div className={s.navActions}>
+              <div className={s.navActionsDesktop}>
+                <Link href="/login" className={s.navLogin}>Entrar</Link>
+                <Link href="/assinatura" className={`${s.btn} ${s.btnPrimary}`}>
+                  Criar loja <ArrowRight size={15} />
+                </Link>
+              </div>
+              <button
+                className={s.burger}
+                aria-label="Menu"
+                onClick={() => setOpen((v) => !v)}
+              >
+                {open ? <X size={18} /> : <Menu size={18} />}
+              </button>
+            </div>
+          </div>
         </div>
+      </nav>
+
+      <div className={`${s.mobileMenu} ${open ? s.mobileMenuOpen : ''}`}>
+        <a href="#recursos" onClick={() => setOpen(false)}>Recursos</a>
+        <a href="#como" onClick={() => setOpen(false)}>Como funciona</a>
+        <a href="#precos" onClick={() => setOpen(false)}>Planos</a>
+        <a href="#faq" onClick={() => setOpen(false)}>FAQ</a>
+        <Link href="/login" onClick={() => setOpen(false)}>Entrar</Link>
+        <Link href="/assinatura" onClick={() => setOpen(false)} className={`${s.btn} ${s.btnPrimary}`}>
+          Criar loja grátis
+        </Link>
       </div>
-    </div>
-  </motion.nav>
-)
+    </>
+  )
+}

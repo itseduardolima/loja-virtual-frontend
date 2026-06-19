@@ -1,203 +1,166 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState } from 'react'
+import { Check, X, ArrowRight } from 'lucide-react'
+import Link from 'next/link'
 import s from '../landing.module.css'
-import { useSubscriptionPlans } from '@/hooks/useSubscriptionPlans'
-import { EASE } from './motion'
-import { SimpleSectionHeader } from './SectionHeader'
-import { PlansSkeletonGrid } from './PlanSkeleton'
-import { IcArrow, IcCheck } from './icons'
-import { PRICING_COPY } from './data'
-import {
-  formatBRL,
-  formatYearlyTotal,
-  normalizePlans,
-  calcYearlyDiscount,
-  type NormalizedPlan,
-} from './price'
 
 type Billing = 'monthly' | 'yearly'
 
-const planVariant = {
-  hidden: { opacity: 0, y: 32 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE } },
+interface Feature { label: string; included: boolean }
+
+interface Plan {
+  id: string
+  name: string
+  slug: string
+  monthlyPrice: number
+  yearlyPrice: number
+  description: string
+  featured: boolean
+  features: Feature[]
 }
 
-/* ─── Toggle ─────────────────────────────────────────────────── */
-interface BillingToggleProps {
-  billing: Billing
-  setBilling: (v: Billing) => void
-  discount: number
+const PLANS: Plan[] = [
+  {
+    id: 'basico',
+    name: 'Básico',
+    slug: 'plano-basico',
+    monthlyPrice: 29.90,
+    yearlyPrice: 24.92,
+    description: 'Ideal pra começar. Loja no ar, pedidos organizados e Pix na conta.',
+    featured: false,
+    features: [
+      { label: 'Até 30 produtos', included: true },
+      { label: 'Pix, cartão e boleto (Asaas)', included: true },
+      { label: 'Suporte em português seg–sex', included: true },
+      { label: 'Cupons de desconto', included: false },
+      { label: 'Dashboard avançado', included: false },
+      { label: 'Exportar pedidos (XLS)', included: false },
+      { label: 'Integração Bling ERP', included: false },
+      { label: 'Domínio próprio', included: false },
+    ],
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    slug: 'plano-pro',
+    monthlyPrice: 79.90,
+    yearlyPrice: 66.58,
+    description: 'Pra quem vende de verdade. Todos os recursos pra escalar sem limites.',
+    featured: true,
+    features: [
+      { label: 'Até 100 produtos', included: true },
+      { label: 'Pix, cartão e boleto (Asaas)', included: true },
+      { label: 'Suporte em português seg–sex', included: true },
+      { label: 'Cupons de desconto', included: true },
+      { label: 'Dashboard avançado', included: true },
+      { label: 'Exportar pedidos (XLS)', included: true },
+      { label: 'Integração Bling ERP', included: true },
+      { label: 'Domínio próprio', included: false },
+    ],
+  },
+  {
+    id: 'max',
+    name: 'Max',
+    slug: 'plano-max',
+    monthlyPrice: 149.90,
+    yearlyPrice: 124.92,
+    description: 'Sem limite de produtos, domínio próprio e suporte 24/7.',
+    featured: false,
+    features: [
+      { label: 'Produtos ilimitados', included: true },
+      { label: 'Pix, cartão e boleto (Asaas)', included: true },
+      { label: 'Suporte 24/7', included: true },
+      { label: 'Cupons de desconto', included: true },
+      { label: 'Dashboard avançado', included: true },
+      { label: 'Exportar pedidos (XLS)', included: true },
+      { label: 'Integração Bling ERP', included: true },
+      { label: 'Domínio próprio', included: true },
+    ],
+  },
+]
+
+function formatBRL(val: number) {
+  return val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-const BillingToggle = ({ billing, setBilling, discount }: BillingToggleProps) => (
-  <motion.div
-    initial={{ opacity: 0, scale: 0.9 }}
-    whileInView={{ opacity: 1, scale: 1 }}
-    viewport={{ once: true }}
-    transition={{ duration: 0.5, ease: EASE, delay: 0.1 }}
-    style={{ display: 'flex', justifyContent: 'center', marginBottom: 64, paddingTop: 8 }}
-  >
-    <div className={s.toggle}>
-      <button
-        className={`${s.toggleBtn} ${billing === 'monthly' ? s.active : ''}`}
-        onClick={() => setBilling('monthly')}
-      >
-        Mensal
-      </button>
-      <button
-        className={`${s.toggleBtn} ${billing === 'yearly' ? s.active : ''}`}
-        onClick={() => setBilling('yearly')}
-      >
-        Anual{discount > 0 && <span className={s.toggleSave}>−{discount}%</span>}
-      </button>
-    </div>
-  </motion.div>
-)
-
-/* ─── Plan Card ──────────────────────────────────────────────── */
-interface PlanCardProps {
-  plan: NormalizedPlan
-  billing: Billing
-}
-
-const PlanCard = ({ plan, billing }: PlanCardProps) => {
-  const showYearly = billing === 'yearly' && plan.yearly > 0
-  const displayPrice = showYearly ? plan.yearlyPerMonth : plan.monthly
-
-  return (
-    <motion.div
-      variants={planVariant}
-      whileHover={{ y: plan.featured ? -12 : -4 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
-      className={`${s.plan} ${plan.featured ? s.planFeatured : ''}`}
-    >
-      {plan.featured && <span className={s.planBadge}>Mais popular</span>}
-      <div>
-        <div className={s.planName}>{plan.name}</div>
-        <div className={s.price} style={{ marginTop: 10 }}>
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.span
-              key={billing + String(plan.id)}
-              className={s.priceNum}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.25, ease: EASE }}
-            >
-              {formatBRL(displayPrice)}
-            </motion.span>
-          </AnimatePresence>
-          <span className={s.pricePer}>/mês</span>
-        </div>
-        <div style={{ fontSize: 12, color: 'var(--ink-3)', fontFamily: 'monospace', marginTop: 4 }}>
-          {showYearly
-            ? `cobrado R$ ${formatYearlyTotal(plan.yearly)} por ano`
-            : 'cobrado mensalmente'}
-        </div>
-      </div>
-      <p className={s.pitch}>{plan.description}</p>
-      <ul className={s.planFeatures}>
-        {plan.features.map((f, j) => (
-          <motion.li
-            key={j}
-            className={s.planFeatureItem}
-            initial={{ opacity: 0, x: -8 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: 0.05 * j + 0.2 }}
-          >
-            <IcCheck size={16} style={{ color: plan.featured ? '#4F46E5' : '#10B981', flexShrink: 0, marginTop: 2 }} />
-            <span style={{ color: 'var(--ink-2)' }}>{f}</span>
-          </motion.li>
-        ))}
-      </ul>
-      <motion.a
-        href={`/assinatura?plan=${plan.slug}`}
-        whileHover={{ y: -2, scale: 1.01 }}
-        whileTap={{ scale: 0.98 }}
-        className={`${s.btn} ${s.btnLg} ${plan.featured ? s.btnPrimary : s.btnGhost}`}
-        style={{ marginTop: 'auto', width: '100%', justifyContent: 'center' }}
-      >
-        {plan.cta}<IcArrow size={16} />
-      </motion.a>
-    </motion.div>
-  )
-}
-
-/* ─── Empty State ────────────────────────────────────────────── */
-const PlansMessage = ({ children }: { children: React.ReactNode }) => (
-  <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--ink-3)' }}>
-    {children}
-  </div>
-)
-
-/* ─── Section ────────────────────────────────────────────────── */
-export const PricingSection = () => {
+export function PricingSection() {
   const [billing, setBilling] = useState<Billing>('yearly')
-  const { data: rawPlans, isLoading, isError } = useSubscriptionPlans()
-
-  const plans = useMemo(() => normalizePlans(rawPlans ?? []), [rawPlans])
-  const yearlyDiscount = useMemo(() => calcYearlyDiscount(plans), [plans])
-  const hasAnyYearly = plans.some((p) => p.yearly > 0)
 
   return (
-    <section id="pricing" className={s.section}>
+    <section id="precos" className={s.section}>
       <div className={s.container}>
-        <SimpleSectionHeader
-          eyebrow={PRICING_COPY.eyebrow}
-          title={PRICING_COPY.title}
-          titleHighlight={PRICING_COPY.titleHighlight}
-          marginBottom={40}
-        />
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.4 }}
-          transition={{ duration: 0.6, ease: EASE }}
-          className={s.lede}
-          style={{ margin: '-32px auto 40px', textAlign: 'center' }}
-        >
-          {PRICING_COPY.subtitle}
-        </motion.p>
+        <div className={s.pricingHeading} data-rev>
+          <span className={s.eyebrow}><span className={s.dot} />Planos</span>
+          <h2 className={`${s.hSection} ${s.sectionTitle}`}>
+            Preço justo, sem letra miúda
+          </h2>
+          <p className={`${s.lede} ${s.sectionSubtitle}`}>
+            Sem taxa de transação. Sem contrato. Cancele quando quiser.
+          </p>
+        </div>
 
-        {hasAnyYearly && (
-          <BillingToggle billing={billing} setBilling={setBilling} discount={yearlyDiscount} />
-        )}
+        <div className={s.billingToggleWrap}>
+          <div className={s.toggle}>
+            <button
+              className={`${s.toggleBtn} ${billing === 'monthly' ? s.on : ''}`}
+              onClick={() => setBilling('monthly')}
+            >
+              Mensal
+            </button>
+            <button
+              className={`${s.toggleBtn} ${billing === 'yearly' ? s.on : ''}`}
+              onClick={() => setBilling('yearly')}
+            >
+              Anual <span className={s.toggleSave}>−17%</span>
+            </button>
+          </div>
+        </div>
 
-        {isLoading ? (
-          <PlansSkeletonGrid />
-        ) : isError ? (
-          <PlansMessage>Não foi possível carregar os planos. Tente recarregar a página.</PlansMessage>
-        ) : plans.length === 0 ? (
-          <PlansMessage>Em breve, novos planos por aqui.</PlansMessage>
-        ) : (
-          <motion.div
-            className={s.plans}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.15 }}
-            variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.12, delayChildren: 0.05 } } }}
-          >
-            {plans.map((plan) => (
-              <PlanCard key={plan.id} plan={plan} billing={billing} />
-            ))}
-          </motion.div>
-        )}
+        <div className={s.plans} data-rev>
+          {PLANS.map((plan) => {
+            const price = billing === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice
+            const ctaClass = plan.featured ? s.btnPrimary : s.btnGhost
+            return (
+              <div key={plan.id} className={`${s.plan} ${plan.featured ? s.planFeatured : ''}`}>
+                {plan.featured && <span className={s.planBadge}>Mais popular</span>}
+                <div>
+                  <div className={s.planName}>{plan.name}</div>
+                  <div className={`${s.price} ${s.priceMt}`}>
+                    <span className={s.priceNum}>R${formatBRL(price)}</span>
+                    <span className={s.pricePer}>/mês</span>
+                  </div>
+                  <div className={s.priceSub}>
+                    {billing === 'yearly'
+                      ? `cobrado R$ ${formatBRL(plan.yearlyPrice * 12)} por ano`
+                      : 'cobrado mensalmente'}
+                  </div>
+                </div>
+                <p className={s.pitch}>{plan.description}</p>
+                <ul className={s.planFeatures}>
+                  {plan.features.map((f, j) => (
+                    <li key={j} className={s.planFeatureItem}>
+                      {f.included
+                        ? <Check size={15} className={`${s.planFeatureCheck} ${plan.featured ? s.planCheckIndigo : s.planCheckGreen}`} />
+                        : <X size={15} className={s.planXIcon} />}
+                      <span className={f.included ? '' : s.muted}>{f.label}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className={s.planCtaWrap}>
+                  <Link href={`/assinatura?plan=${plan.slug}`} className={`${s.planCta} ${s.btn} ${ctaClass}`}>
+                    {plan.featured ? 'Começar com Pro' : `Escolher ${plan.name}`}
+                    <ArrowRight size={16} />
+                  </Link>
+                </div>
+              </div>
+            )
+          })}
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          style={{ textAlign: 'center', marginTop: 36, fontSize: 14, color: 'var(--ink-3)' }}
-        >
-          {PRICING_COPY.trialNote}{' '}
-          <a href={PRICING_COPY.trialLink.href} style={{ color: '#4F46E5', fontWeight: 500 }}>
-            {PRICING_COPY.trialLink.label}
-          </a>
-        </motion.div>
+        <p className={s.compFootnote}>
+          Todos os planos incluem Pix, cartão e boleto via Asaas — sem custo adicional da Nexo.
+        </p>
       </div>
     </section>
   )
