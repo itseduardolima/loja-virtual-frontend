@@ -35,6 +35,28 @@ export function useStoreQuestions() {
     },
   })
 
+  const { data: pendingCountData } = useQuery({
+    queryKey: ['store-questions-count', 1],
+    queryFn: async () => {
+      const response = await api.get<{ data: StoreQuestion[]; meta: Meta }>(
+        '/product-questions',
+        { params: { page: 1, limit: 1, status: 1 } }
+      )
+      return response.data
+    },
+  })
+
+  const { data: answeredCountData } = useQuery({
+    queryKey: ['store-questions-count', 2],
+    queryFn: async () => {
+      const response = await api.get<{ data: StoreQuestion[]; meta: Meta }>(
+        '/product-questions',
+        { params: { page: 1, limit: 1, status: 2 } }
+      )
+      return response.data
+    },
+  })
+
   const answerMutation = useMutation({
     mutationFn: async ({ id, answer }: { id: number; answer: string }) => {
       const response = await api.patch(`/product-questions/${id}/answer`, { answer })
@@ -61,5 +83,7 @@ export function useStoreQuestions() {
     setPage,
     answerQuestion: answerMutation.mutate,
     isAnswering: answerMutation.isPending,
+    pendingTotal: pendingCountData?.meta?.total ?? 0,
+    answeredTotal: answeredCountData?.meta?.total ?? 0,
   }
 }
