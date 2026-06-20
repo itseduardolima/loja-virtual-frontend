@@ -1,56 +1,39 @@
 'use client'
-
 import { useState } from 'react'
-import { ChevronDown, MessageCircle } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import s from '../landing.module.css'
-import { FAQS } from './data'
 
-function FaqEntry({ item, isOpen, onToggle }: { item: { q: string; a: string }; isOpen: boolean; onToggle: () => void }) {
+const FAQS = [
+  {q:'Preciso de computador para usar?',a:'Não. Todo o painel foi pensado para funcionar no celular. Você gerencia pedidos, cadastra produtos e acompanha vendas pelo iPhone ou Android.'},
+  {q:'Tem taxa por venda?',a:'Nenhuma. Você paga só a mensalidade do plano. O dinheiro das vendas cai direto na sua conta Asaas — sem passar pela gente.'},
+  {q:'Como funciona o pagamento dos clientes?',a:'Seus clientes pagam via Pix (na hora), cartão de crédito ou boleto. O dinheiro vai direto para a sua conta, não para a Nexo.'},
+  {q:'Consigo migrar de outra plataforma?',a:'Sim. Importamos seu catálogo (CSV ou manualmente) e o time ajuda na migração sem custo.'},
+  {q:'Posso emitir nota fiscal?',a:'Nos planos Pro e Max, sim — via integração com o Bling ERP. A NF-e é emitida automaticamente a cada pedido pago.'},
+  {q:'Posso cancelar quando quiser?',a:'Sim, a qualquer momento pelo painel, sem multa. Você usa até o fim do período já pago.'},
+  {q:'O suporte é em português?',a:'Sim, chat em português de segunda a sexta, das 9h às 19h. No plano Max, o suporte é prioritário.'},
+]
+
+export const FAQ = () => {
+  const [open, setOpen] = useState<number | null>(null)
   return (
-    <div className={s.faqItem}>
-      <button className={s.faqQ} onClick={onToggle}>
-        <span>{item.q}</span>
-        <span className={`${s.faqIcon} ${isOpen ? s.faqChevOpen : ''}`}>
-          <ChevronDown size={15} />
-        </span>
-      </button>
-      <div className={`${s.faqA} ${isOpen ? s.faqAOpen : ''}`}>
-        <div className={s.faqAInner}>{item.a}</div>
-      </div>
-    </div>
-  )
-}
-
-export function FAQ() {
-  const [openIdx, setOpenIdx] = useState(0)
-
-  return (
-    <section id="faq" className={`${s.section} ${s.bgGradSoft} ${s.faqSection}`}>
-      <div className={s.containerSm}>
-        <div className={s.faqHeading} data-rev>
-          <span className={s.eyebrow}><span className={s.dot} />Dúvidas</span>
-          <h2 className={`${s.hSection} ${s.sectionTitle}`}>Perguntas frequentes</h2>
+    <section className={s.sec} id="suporte">
+      <div className={s.wrap}>
+        <div className={s.secHead} data-rev>
+          <div className={s.eyebrow}>Dúvidas</div>
+          <h2 className={s.h2}>Perguntas frequentes</h2>
         </div>
-
-        <div className={s.faqWrap}>
-          {FAQS.map((item, i) => (
-            <FaqEntry
-              key={i}
-              item={item}
-              isOpen={openIdx === i}
-              onToggle={() => setOpenIdx(openIdx === i ? -1 : i)}
-            />
+        <div className={s.faq}>
+          {FAQS.map((f, i) => (
+            <div key={i} className={s.faqItem} data-rev>
+              <button className={s.faqQ} onClick={() => setOpen(open === i ? null : i)} type="button">
+                {f.q}
+                <span className={open === i ? `${s.faqChev} ${s.faqChevOpen}` : s.faqChev}>
+                  <ChevronDown size={20} color="#64748B" />
+                </span>
+              </button>
+              {open === i && <div className={s.faqA}>{f.a}</div>}
+            </div>
           ))}
-        </div>
-
-        <div className={s.faqHelp} data-rev>
-          <div className={s.faqHelpTitle}>Não encontrou sua resposta?</div>
-          <div className={s.faqHelpSub}>
-            Fala com a gente no WhatsApp. Resposta em até 5 minutos no horário comercial.
-          </div>
-          <a href="https://wa.me/5511999999999" className={`${s.btn} ${s.btnGhost}`}>
-            <MessageCircle size={16} /> Conversar no WhatsApp
-          </a>
         </div>
       </div>
     </section>

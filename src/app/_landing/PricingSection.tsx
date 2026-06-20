@@ -1,166 +1,139 @@
 'use client'
-
 import { useState } from 'react'
-import { Check, X, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import { Check, X, Lock } from 'lucide-react'
 import s from '../landing.module.css'
 
-type Billing = 'monthly' | 'yearly'
+type Billing = 'monthly' | 'annual'
 
-interface Feature { label: string; included: boolean }
-
-interface Plan {
-  id: string
-  name: string
-  slug: string
-  monthlyPrice: number
-  yearlyPrice: number
-  description: string
-  featured: boolean
-  features: Feature[]
-}
-
-const PLANS: Plan[] = [
+const PLANS = [
   {
-    id: 'basico',
-    name: 'Básico',
     slug: 'plano-basico',
-    monthlyPrice: 29.90,
-    yearlyPrice: 24.92,
-    description: 'Ideal pra começar. Loja no ar, pedidos organizados e Pix na conta.',
-    featured: false,
+    name: 'Básico',
+    desc: 'Pra começar a vender online',
+    monthly: 'R$ 29,90',
+    annual: 'R$ 24,92',
+    subMonthly: 'cobrança mensal',
+    subAnnual: 'R$ 299,00 cobrados 1× ao ano',
+    reco: false,
     features: [
-      { label: 'Até 30 produtos', included: true },
-      { label: 'Pix, cartão e boleto (Asaas)', included: true },
-      { label: 'Suporte em português seg–sex', included: true },
-      { label: 'Cupons de desconto', included: false },
-      { label: 'Dashboard avançado', included: false },
-      { label: 'Exportar pedidos (XLS)', included: false },
-      { label: 'Integração Bling ERP', included: false },
-      { label: 'Domínio próprio', included: false },
+      { label: 'Até 30 produtos', on: true },
+      { label: 'Gestão de pedidos (Kanban e lista)', on: true },
+      { label: 'Pagamentos Pix, cartão e boleto', on: true },
+      { label: 'Cupons de desconto', on: false },
+      { label: 'Dashboard avançado', on: false },
+      { label: 'Perguntas e respostas', on: false },
+      { label: 'Exportar pedidos · Bling ERP', on: false },
     ],
   },
   {
-    id: 'pro',
-    name: 'Pro',
     slug: 'plano-pro',
-    monthlyPrice: 79.90,
-    yearlyPrice: 66.58,
-    description: 'Pra quem vende de verdade. Todos os recursos pra escalar sem limites.',
-    featured: true,
+    name: 'Pro',
+    desc: 'Pra loja que está crescendo',
+    monthly: 'R$ 79,90',
+    annual: 'R$ 66,58',
+    subMonthly: 'cobrança mensal',
+    subAnnual: 'R$ 799,00 cobrados 1× ao ano',
+    reco: true,
     features: [
-      { label: 'Até 100 produtos', included: true },
-      { label: 'Pix, cartão e boleto (Asaas)', included: true },
-      { label: 'Suporte em português seg–sex', included: true },
-      { label: 'Cupons de desconto', included: true },
-      { label: 'Dashboard avançado', included: true },
-      { label: 'Exportar pedidos (XLS)', included: true },
-      { label: 'Integração Bling ERP', included: true },
-      { label: 'Domínio próprio', included: false },
+      { label: 'Até 100 produtos', on: true },
+      { label: 'Tudo do Básico', on: true },
+      { label: 'Cupons de desconto', on: true },
+      { label: 'Dashboard avançado', on: true },
+      { label: 'Perguntas e respostas nos produtos', on: true },
+      { label: 'Exportar pedidos em Excel', on: true },
+      { label: 'Bling ERP · NF-e automática', on: true },
     ],
   },
   {
-    id: 'max',
-    name: 'Max',
     slug: 'plano-max',
-    monthlyPrice: 149.90,
-    yearlyPrice: 124.92,
-    description: 'Sem limite de produtos, domínio próprio e suporte 24/7.',
-    featured: false,
+    name: 'Max',
+    desc: 'Pra quem vende em escala',
+    monthly: 'R$ 149,90',
+    annual: 'R$ 124,92',
+    subMonthly: 'cobrança mensal',
+    subAnnual: 'R$ 1.499,00 cobrados 1× ao ano',
+    reco: false,
     features: [
-      { label: 'Produtos ilimitados', included: true },
-      { label: 'Pix, cartão e boleto (Asaas)', included: true },
-      { label: 'Suporte 24/7', included: true },
-      { label: 'Cupons de desconto', included: true },
-      { label: 'Dashboard avançado', included: true },
-      { label: 'Exportar pedidos (XLS)', included: true },
-      { label: 'Integração Bling ERP', included: true },
-      { label: 'Domínio próprio', included: true },
+      { label: 'Produtos ilimitados', on: true },
+      { label: 'Tudo do Pro', on: true },
+      { label: 'Domínio próprio (sualoja.com.br)', on: true },
+      { label: 'Suporte prioritário 24/7', on: true },
     ],
   },
 ]
 
-function formatBRL(val: number) {
-  return val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-}
-
-export function PricingSection() {
-  const [billing, setBilling] = useState<Billing>('yearly')
+export const PricingSection = () => {
+  const [billing, setBilling] = useState<Billing>('monthly')
+  const annual = billing === 'annual'
 
   return (
-    <section id="precos" className={s.section}>
-      <div className={s.container}>
-        <div className={s.pricingHeading} data-rev>
-          <span className={s.eyebrow}><span className={s.dot} />Planos</span>
-          <h2 className={`${s.hSection} ${s.sectionTitle}`}>
-            Preço justo, sem letra miúda
-          </h2>
-          <p className={`${s.lede} ${s.sectionSubtitle}`}>
-            Sem taxa de transação. Sem contrato. Cancele quando quiser.
+    <section className={`${s.sec} ${s.bgWht}`} id="precos">
+      <div className={s.wrap}>
+        <div className={s.secHead} data-rev>
+          <div className={s.eyebrow}>Preços</div>
+          <h2 className={s.h2}>Escolha seu plano</h2>
+          <p className={s.lead}>
+            Sem taxa por venda — o dinheiro das vendas cai direto na sua conta.
           </p>
-        </div>
-
-        <div className={s.billingToggleWrap}>
-          <div className={s.toggle}>
-            <button
-              className={`${s.toggleBtn} ${billing === 'monthly' ? s.on : ''}`}
-              onClick={() => setBilling('monthly')}
-            >
-              Mensal
-            </button>
-            <button
-              className={`${s.toggleBtn} ${billing === 'yearly' ? s.on : ''}`}
-              onClick={() => setBilling('yearly')}
-            >
-              Anual <span className={s.toggleSave}>−17%</span>
-            </button>
+          <div className={s.billingToggleWrap}>
+            <div className={s.billingToggle}>
+              <button
+                className={billing === 'monthly' ? s.on : ''}
+                onClick={() => setBilling('monthly')}
+                type="button"
+              >
+                Mensal
+              </button>
+              <button
+                className={billing === 'annual' ? s.on : ''}
+                onClick={() => setBilling('annual')}
+                type="button"
+              >
+                Anual<span className={s.savePill}>-17%</span>
+              </button>
+            </div>
           </div>
         </div>
-
-        <div className={s.plans} data-rev>
-          {PLANS.map((plan) => {
-            const price = billing === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice
-            const ctaClass = plan.featured ? s.btnPrimary : s.btnGhost
-            return (
-              <div key={plan.id} className={`${s.plan} ${plan.featured ? s.planFeatured : ''}`}>
-                {plan.featured && <span className={s.planBadge}>Mais popular</span>}
-                <div>
-                  <div className={s.planName}>{plan.name}</div>
-                  <div className={`${s.price} ${s.priceMt}`}>
-                    <span className={s.priceNum}>R${formatBRL(price)}</span>
-                    <span className={s.pricePer}>/mês</span>
-                  </div>
-                  <div className={s.priceSub}>
-                    {billing === 'yearly'
-                      ? `cobrado R$ ${formatBRL(plan.yearlyPrice * 12)} por ano`
-                      : 'cobrado mensalmente'}
-                  </div>
-                </div>
-                <p className={s.pitch}>{plan.description}</p>
-                <ul className={s.planFeatures}>
-                  {plan.features.map((f, j) => (
-                    <li key={j} className={s.planFeatureItem}>
-                      {f.included
-                        ? <Check size={15} className={`${s.planFeatureCheck} ${plan.featured ? s.planCheckIndigo : s.planCheckGreen}`} />
-                        : <X size={15} className={s.planXIcon} />}
-                      <span className={f.included ? '' : s.muted}>{f.label}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className={s.planCtaWrap}>
-                  <Link href={`/assinatura?plan=${plan.slug}`} className={`${s.planCta} ${s.btn} ${ctaClass}`}>
-                    {plan.featured ? 'Começar com Pro' : `Escolher ${plan.name}`}
-                    <ArrowRight size={16} />
-                  </Link>
-                </div>
+        <div className={s.plans}>
+          {PLANS.map((plan) => (
+            <div key={plan.slug} className={plan.reco ? `${s.plan} ${s.reco}` : s.plan} data-rev>
+              {plan.reco && <span className={s.planTag}>Mais popular</span>}
+              <div className={s.planName}>{plan.name}</div>
+              <div className={s.planDesc}>{plan.desc}</div>
+              <div className={s.planPrice}>
+                {annual ? plan.annual : plan.monthly}
+                <small>/mês</small>
               </div>
-            )
-          })}
+              <div className={s.planSub}>{annual ? plan.subAnnual : plan.subMonthly}</div>
+              <ul className={s.planFeats}>
+                {plan.features.map((f) => (
+                  <li key={f.label} className={f.on ? '' : s.off}>
+                    {f.on ? <Check size={17} color="#10B981" /> : <X size={17} color="#CBD5E1" />}
+                    {f.label}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href={`/assinatura?plan=${plan.slug}`}
+                className={plan.reco ? `${s.btn} ${s.btnPri}` : `${s.btn} ${s.btnOutline}`}
+                style={{
+                  width: '100%',
+                  height: '48px',
+                  justifyContent: 'center',
+                  marginTop: 'auto',
+                  color: plan.reco ? 'var(--wht)' : 'var(--t1)',
+                }}
+              >
+                Assinar {plan.name}
+              </Link>
+            </div>
+          ))}
         </div>
-
-        <p className={s.compFootnote}>
-          Todos os planos incluem Pix, cartão e boleto via Asaas — sem custo adicional da Nexo.
-        </p>
+        <div className={s.pricingFoot}>
+          <Lock size={16} color="#64748B" />
+          Sem taxa de transação em nenhum plano. Cancele quando quiser.
+        </div>
       </div>
     </section>
   )
