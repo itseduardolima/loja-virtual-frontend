@@ -1,58 +1,29 @@
-import { Smartphone, Users, TrendingUp } from 'lucide-react'
+import { LayoutGrid, ClipboardList, Store } from 'lucide-react'
 import s from '../landing.module.css'
 
 const CARDS = [
-  {
-    icon: <Smartphone size={22} />,
-    tagClass: s.posCardTagIndigo,
-    iconClass: s.posCardIconIndigo,
-    tag: 'Mobile-first',
-    title: 'Você vende pelo celular',
-    desc: 'Não importa se você não tem computador. O Nexo é feito pra você gerir tudo pelo smartphone — pedidos, produtos e pagamentos na palma da mão.',
-  },
-  {
-    icon: <Users size={22} />,
-    tagClass: s.posCardTagAmber,
-    iconClass: s.posCardIconAmber,
-    tag: 'Sem técnico',
-    title: 'Simples como deve ser',
-    desc: 'Sem contratar desenvolvedor. Sem depender de ninguém pra atualizar produto ou trocar preço. Você mesmo cuida da sua loja em minutos.',
-  },
-  {
-    icon: <TrendingUp size={22} />,
-    tagClass: s.posCardTagGreen,
-    iconClass: s.posCardIconGreen,
-    tag: 'Crescimento',
-    title: 'Seu negócio em escala',
-    desc: 'Do primeiro produto à centena de pedidos por dia. O Nexo cresce com você — sem migrar de plataforma, sem reinventar o que já funciona.',
-  },
+  { icon: <LayoutGrid size={20} color="#4F46E5" />, title: 'Catálogo organizado', desc: 'Suas peças por categoria, com foto, preço e variações — fácil do cliente achar e escolher.' },
+  { icon: <ClipboardList size={20} color="#4F46E5" />, title: 'Gestão dos pedidos', desc: 'Tudo num painel: o que entrou, o que falta enviar e o que já foi entregue. Sem planilha.' },
+  { icon: <Store size={20} color="#4F46E5" />, title: 'Sua loja, sua marca', desc: 'Um link só seu pra mandar no WhatsApp e no Instagram. O cliente é seu, não da plataforma.' },
 ]
 
-export function Posicionamento() {
-  return (
-    <section className={s.section}>
-      <div className={s.container}>
-        <div className={s.posHeading} data-rev>
-          <span className={s.eyebrow}><span className={s.dot} />Pra quem é o Nexo</span>
-          <h2 className={`${s.hSection} ${s.sectionTitle}`}>
-            Feito pra quem vende de verdade
-          </h2>
-          <p className={`${s.lede} ${s.sectionSubtitle}`}>
-            Sem jargão técnico, sem mensalidade absurda, sem precisar de ninguém pra te ajudar.
-          </p>
-        </div>
-
-        <div className={s.posCards}>
-          {CARDS.map((card, i) => (
-            <div key={i} className={s.posCard} data-rev>
-              <span className={`${s.posCardTag} ${card.tagClass}`}>{card.tag}</span>
-              <div className={`${s.posCardIcon} ${card.iconClass}`}>{card.icon}</div>
-              <h3>{card.title}</h3>
-              <p>{card.desc}</p>
-            </div>
-          ))}
-        </div>
+export const Posicionamento = () => (
+  <section className={s.sec} style={{paddingTop:'64px',paddingBottom:0}}>
+    <div className={s.wrap}>
+      <div style={{maxWidth:'760px',margin:'0 auto',textAlign:'center'}}>
+        <div className={s.eyebrow}>Pra quem é o Nexo</div>
+        <h2 className={s.h2} style={{marginTop:'10px'}}>Feito pra quem vende pro cliente local.</h2>
+        <p className={s.lead} style={{marginTop:'12px'}}>O Nexo organiza e mostra o seu catálogo do jeito certo e cuida da gestão dos seus pedidos. Não é um marketplace gigante como Shein ou Shopee — é a <b style={{color:'var(--t1)'}}>sua loja</b>, com os <b style={{color:'var(--t1)'}}>seus clientes</b> do bairro, da cidade e das suas redes.</p>
       </div>
-    </section>
-  )
-}
+      <div className={s.posGrid}>
+        {CARDS.map((c) => (
+          <div key={c.title} className={s.posCard} data-rev>
+            <span className={s.posIcon}>{c.icon}</span>
+            <div className={s.posTitle}>{c.title}</div>
+            <p className={s.posDesc}>{c.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+)

@@ -19,18 +19,23 @@ import { Footer } from './_landing/Footer'
 export default function Home() {
   useEffect(() => {
     const els = document.querySelectorAll('[data-rev]')
+    els.forEach((el) => el.classList.add(s.rev))
+
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry, idx) => {
           if (entry.isIntersecting) {
             const el = entry.target as HTMLElement
-            const delay = el.dataset.revDelay ?? String(idx * 80)
-            setTimeout(() => el.classList.add('in'), Number(delay))
+            const delay = Number(el.dataset.revDelay ?? idx * 60)
+            setTimeout(() => {
+              el.classList.remove(s.rev)
+              el.classList.add(s.revIn)
+            }, delay)
             io.unobserve(el)
           }
         })
       },
-      { threshold: 0.12 },
+      { threshold: 0.08 },
     )
     els.forEach((el) => io.observe(el))
     return () => io.disconnect()

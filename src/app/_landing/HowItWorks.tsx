@@ -1,33 +1,38 @@
 import s from '../landing.module.css'
-import { HOW_IT_WORKS_STEPS } from './data'
 
-export function HowItWorks() {
-  return (
-    <section id="como" className={`${s.section} ${s.bgGradSoft}`}>
-      <div className={s.container}>
-        <div className={s.stepsHeading} data-rev>
-          <span className={s.eyebrow}><span className={s.dot} />3 passos</span>
-          <h2 className={`${s.hSection} ${s.sectionTitle}`}>
-            Da ideia ao primeiro pedido em menos de 10 minutos
-          </h2>
+export const HowItWorks = () => (
+  <section className={s.sec} id="como-funciona">
+    <div className={s.wrap}>
+      <div className={s.secHead} data-rev>
+        <div className={s.eyebrow}>Como funciona</div>
+        <h2 className={s.h2}>Sua loja no ar em 3 passos</h2>
+      </div>
+      <div className={s.steps}>
+        <div className={s.step} data-rev>
+          <div className={s.stepTop}>
+            <span className={s.stepNum}>1</span>
+            <span className={s.stepLabel}>~2 min</span>
+          </div>
+          <h3>Crie sua conta e escolha o plano</h3>
+          <p>Cadastro simples: escolhe Básico, Pro ou Max e paga com Pix na hora. Aí seu painel de vendedor libera.</p>
         </div>
-
-        <div className={s.steps}>
-          {HOW_IT_WORKS_STEPS.map((step, i) => (
-            <div key={step.number} className={s.step} data-rev>
-              <div className={s.stepTop}>
-                <span className={s.stepNum}>{step.number}</span>
-                <span className={s.stepDuration}>{step.duration}</span>
-              </div>
-              <div className={s.stepEmoji}>{step.emoji}</div>
-              <div>
-                <h3>{step.title}</h3>
-                <p>{step.description}</p>
-              </div>
-            </div>
-          ))}
+        <div className={s.step} data-rev>
+          <div className={s.stepTop}>
+            <span className={s.stepNum}>2</span>
+            <span className={s.stepLabel}>~8 min</span>
+          </div>
+          <h3>Monte sua loja do celular</h3>
+          <p>Adicione produtos com fotos, defina preços e variações de tamanho e cor, configure a entrega. Sem computador.</p>
+        </div>
+        <div className={s.step} data-rev>
+          <div className={s.stepTop}>
+            <span className={s.stepNum}>3</span>
+            <span className={s.stepLabelEmr}>venda 24h</span>
+          </div>
+          <h3>Compartilhe e venda</h3>
+          <p>Envie o link da loja pelo WhatsApp e Instagram. Os pedidos chegam no painel e o Pix cai direto na sua conta.</p>
         </div>
       </div>
-    </section>
-  )
-}
+    </div>
+  </section>
+)

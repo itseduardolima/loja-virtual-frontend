@@ -1,63 +1,40 @@
-import { X, Check, MessageCircle, Store } from 'lucide-react'
+import { X, Check, MessageCircle } from 'lucide-react'
 import s from '../landing.module.css'
+import { WhatsappIcon } from '@/assets/icons'
 
-const BAD = [
-  'Pedidos perdidos no meio da conversa',
-  'Sem controle de estoque — vende o que não tem',
-  'Pagamento manual via Pix — sem comprovante automático',
-  'Sem histórico de clientes nem recompra',
-  'Imagem amadora — cliente desconfia',
-]
-
-const GOOD = [
-  'Painel de pedidos organizado por status',
-  'Estoque atualizado a cada venda',
-  'Pix, cartão e boleto automáticos via Asaas',
-  'Histórico completo — retargeting simples',
-  'Loja profissional — confiança que converte',
-]
-
-export function BeforeAfter() {
-  return (
-    <section className={`${s.section} ${s.bgGradSoft} ${s.baSection}`}>
-      <div className={s.container}>
-        <div className={s.baHeading} data-rev>
-          <span className={s.eyebrow}><span className={s.dot} />Antes e depois</span>
-          <h2 className={`${s.hSection} ${s.sectionTitle}`}>
-            Pare de improvisar. Comece a vender.
-          </h2>
+export const BeforeAfter = () => (
+  <section className={`${s.sec} ${s.bgWht}`}>
+    <div className={s.wrap}>
+      <div className={s.secHead} data-rev>
+        <div className={s.eyebrow}>Antes e depois</div>
+        <h2 className={s.h2}>Você reconhece a primeira coluna?</h2>
+        <p className={s.lead}>A maioria das lojas de roupa começa anotando tudo na mão. O Nexo automatiza o que rouba seu tempo.</p>
+      </div>
+      <div className={s.baGrid}>
+        <div className={`${s.baCard} ${s.baAntes}`} data-rev>
+          <div className={`${s.baHead} ${s.baHeadAntes}`}>
+            <WhatsappIcon />Antes · só WhatsApp
+          </div>
+          <ul className={s.baList}>
+            <li><X size={19} color="#94A3B8" />Tira pedido por mensagem de texto, uma a uma</li>
+            <li><X size={19} color="#94A3B8" />Confirma cada Pix na mão, olhando o extrato</li>
+            <li><X size={19} color="#94A3B8" />Anota numeração e pedido no bloco de notas</li>
+            <li><X size={19} color="#94A3B8" />Perde a venda porque a peça já tinha esgotado</li>
+          </ul>
         </div>
-
-        <div className={s.baGrid} data-rev>
-          <div className={`${s.baCol} ${s.baColBad}`}>
-            <div className={`${s.baColHead} ${s.baColHeadBad}`}>
-              <MessageCircle size={16} /> WhatsApp
-            </div>
-            {BAD.map((text, i) => (
-              <div key={i} className={s.baRow}>
-                <X size={15} className={s.baRowIcon} color="#F43F5E" />
-                {text}
-              </div>
-            ))}
+        <div className={`${s.baCard} ${s.baDepois}`} data-rev>
+          <div className={`${s.baHead} ${s.baHeadDepois}`}>
+            <span className={s.logoMark} style={{width:'24px',height:'24px',fontSize:'14px',borderRadius:'7px'}}>N</span>
+            Depois · com o Nexo
           </div>
-
-          <div className={s.baVs}>
-            <div className={s.baVsPill}>VS</div>
-          </div>
-
-          <div className={s.baCol}>
-            <div className={`${s.baColHead} ${s.baColHeadGood}`}>
-              <Store size={16} /> Nexo
-            </div>
-            {GOOD.map((text, i) => (
-              <div key={i} className={s.baRow}>
-                <Check size={15} className={s.baRowIcon} color="#10B981" />
-                {text}
-              </div>
-            ))}
-          </div>
+          <ul className={s.baList}>
+            <li><Check size={19} color="#4F46E5" />Cliente escolhe, paga e recebe a confirmação sozinho</li>
+            <li><Check size={19} color="#4F46E5" />Pix confirmado entra no painel automático</li>
+            <li><Check size={19} color="#4F46E5" />Status do pedido atualizado com notificação no WhatsApp</li>
+            <li><Check size={19} color="#4F46E5" />Nunca mais pedido sem resposta</li>
+          </ul>
         </div>
       </div>
-    </section>
-  )
-}
+    </div>
+  </section>
+)

@@ -1,98 +1,102 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { Play } from 'lucide-react'
 import s from '../landing.module.css'
-import { HERO_FACES } from './data'
 
-const ORDERS = [
-  { code: '#1042', name: 'Kit festa junina', meta: 'Pix · R$ 189', badge: s.heroOrderBadgeNew, label: 'Novo' },
-  { code: '#1041', name: 'Bolo de morango', meta: 'Cartão · R$ 95', badge: s.heroOrderBadgeProg, label: 'Em preparo' },
-  { code: '#1040', name: 'Brigadeiros (40un)', meta: 'Pix · R$ 120', badge: s.heroOrderBadgeSent, label: 'Enviado' },
+const FACES = [
+  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&q=80&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&q=80&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&q=80&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=120&q=80&fit=crop&crop=faces',
 ]
 
-export function Hero() {
-  return (
-    <section id="top" className={s.section}>
-      <div className={s.bgHero} />
-      <div className={s.container}>
-        <div className={s.heroWrap}>
-          <div className={s.heroCopy} data-rev>
-            <span className={s.eyebrow}>
-              <span className={s.dot} />
-              Plataforma para quem vende pelo celular
-            </span>
-            <h1 className={`${s.hDisplay} ${s.heroHeadline}`}>
-              Chega de perder venda{' '}
-              <span className={s.heroGrad}>no WhatsApp.</span>
-            </h1>
-            <p className={`${s.lede} ${s.heroLede}`}>
-              Crie sua loja virtual em minutos. Receba pedidos organizados, pagamentos automáticos e controle tudo pelo celular.
-            </p>
-
-            <div className={s.heroCtas}>
-              <Link href="/assinatura" className={`${s.btn} ${s.btnPrimary} ${s.btnLg}`}>
-                Criar minha loja <ArrowRight size={18} />
-              </Link>
-              <a href="#como" className={`${s.btn} ${s.btnGhost} ${s.btnLg}`}>
-                Ver como funciona
-              </a>
-            </div>
-
-            <div className={s.heroFaces}>
-              {HERO_FACES.map((src, i) => (
-                <Image
-                  key={i}
-                  src={src}
-                  alt="Vendedor Nexo"
-                  width={36}
-                  height={36}
-                  className={s.heroFaceImg}
-                />
-              ))}
-              <span className={s.heroFacesLabel}>
-                <strong>+500 vendedores</strong><br />já vendem pela Nexo
-              </span>
-            </div>
+export const Hero = () => (
+  <section className={s.hero}>
+    <div className={s.wrap}>
+      <div className={s.heroGrid}>
+        <div data-rev>
+          <h1 className={s.h1}>Chega de perder venda no WhatsApp.</h1>
+          <p className={s.heroSub}>
+            Sua loja com Pix, cartão e WhatsApp automático. Gerencie do celular, venda 24h.
+          </p>
+          <div className={s.heroCtas}>
+            <Link
+              href="#precos"
+              style={{ color: 'var(--wht)' }}
+              className={`${s.btn} ${s.btnPri} ${s.btnLg}`}
+            >
+              Criar minha loja
+            </Link>
+            <button className={`${s.btn} ${s.btnOutline}`} type="button">
+              <Play size={17} color="#4F46E5" />
+              Ver como funciona (2 min)
+            </button>
           </div>
+          <div className={s.heroProof}>
+            <div className={s.stackFaces}>
+              {FACES.map((src, i) => (
+                <Image key={i} src={src} alt="" width={32} height={32} />
+              ))}
+            </div>
+            Mais de 1.200 lojistas de moda já migraram do WhatsApp
+          </div>
+        </div>
 
-          <div className={`${s.heroPhoneWrap} ${s.floatAnim}`} data-rev>
-            <div className={s.heroPhone}>
-              <div className={s.heroPhoneScreen}>
-                <div className={s.heroPhoneNotch} />
-                <div className={s.heroPhoneInner}>
-                  <div className={s.heroPhoneHeader}>Meus pedidos</div>
-                  <div className={s.heroKpis}>
-                    <div className={s.heroKpi}>
-                      <div className={s.heroKpiVal}>R$890</div>
-                      <div className={s.heroKpiLabel}>Hoje</div>
-                    </div>
-                    <div className={s.heroKpi}>
-                      <div className={s.heroKpiVal}>14</div>
-                      <div className={s.heroKpiLabel}>Pedidos</div>
-                    </div>
-                    <div className={s.heroKpi}>
-                      <div className={s.heroKpiVal}>5</div>
-                      <div className={s.heroKpiLabel}>A enviar</div>
-                    </div>
+        <div className={s.phoneStage} data-rev>
+          <div className={`${s.phone} ${s.floatAnim}`}>
+            <div className={s.phoneScreen}>
+              <div className={s.psHead}>
+                <div className={s.psHeadRow}>
+                  <span className={s.psTitle}>Pedidos</span>
+                  <span className={`${s.badge} ${s.bNovo}`}>3 novos</span>
+                </div>
+                <div className={s.psKpis}>
+                  <div className={s.psKpi}>
+                    <div className={s.psKpiLabel}>Hoje</div>
+                    <div className={s.psKpiVal}>R$ 890</div>
                   </div>
-                  <div className={s.heroOrderList}>
-                    {ORDERS.map((o) => (
-                      <div key={o.code} className={s.heroOrderCard}>
-                        <div>
-                          <div className={s.heroOrderCode}>{o.code}</div>
-                          <div className={s.heroOrderName}>{o.name}</div>
-                          <div className={s.heroOrderMeta}>{o.meta}</div>
-                        </div>
-                        <span className={`${s.heroOrderBadge} ${o.badge}`}>{o.label}</span>
-                      </div>
-                    ))}
+                  <div className={s.psKpi}>
+                    <div className={s.psKpiLabel}>Pedidos</div>
+                    <div className={s.psKpiVal}>14</div>
                   </div>
+                  <div className={s.psKpi}>
+                    <div className={s.psKpiLabel}>A enviar</div>
+                    <div className={s.psKpiVal}>5</div>
+                  </div>
+                </div>
+              </div>
+              <div className={s.psBody}>
+                <div className={s.psCard}>
+                  <div className={s.psCardRow}>
+                    <span className={s.psCode}>#A1B2C3</span>
+                    <span className={`${s.badge} ${s.bNovo} ${s.badgeMarginLeft}`}>Novo</span>
+                  </div>
+                  <div className={s.psCardName}>Vestido midi linho · Tam M</div>
+                  <div className={s.psCardMeta}>Marina · há 4 min · R$ 189,90</div>
+                </div>
+                <div className={s.psCard}>
+                  <div className={s.psCardRow}>
+                    <span className={s.psCode}>#F4G5H6</span>
+                    <span className={`${s.badge} ${s.bPrep} ${s.badgeMarginLeft}`}>
+                      Em preparação
+                    </span>
+                  </div>
+                  <div className={s.psCardName}>Tênis branco · Tam 39</div>
+                  <div className={s.psCardMeta}>João · há 1 h · R$ 229,00</div>
+                </div>
+                <div className={s.psCard}>
+                  <div className={s.psCardRow}>
+                    <span className={s.psCode}>#K7L8M9</span>
+                    <span className={`${s.badge} ${s.bEnv} ${s.badgeMarginLeft}`}>Enviado</span>
+                  </div>
+                  <div className={s.psCardName}>Camisa social slim · G</div>
+                  <div className={s.psCardMeta}>Ana B. · há 3 h · R$ 139,00</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </section>
-  )
-}
+    </div>
+  </section>
+)
