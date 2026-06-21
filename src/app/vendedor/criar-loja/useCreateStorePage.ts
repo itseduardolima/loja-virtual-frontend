@@ -34,9 +34,9 @@ const emptyForm: CreateStoreData = {
   whatsapp: '',
   instagram: '',
   facebook: '',
-  website: '',
+  tiktok: '',
+  youtube: '',
   email: '',
-  phone: '',
   cnpj: '',
   cpf: '',
   address: '',
@@ -227,7 +227,8 @@ export function useCreateStorePage() {
       const callingCode = getCountryCallingCode()
       await createStore({
         ...formData,
-        whatsapp: formData.whatsapp ? `${callingCode}${formData.whatsapp}` : formData.whatsapp,
+        // Backend exige o formato +<código><número> (ex: +5511999999999)
+        whatsapp: formData.whatsapp ? `+${callingCode}${formData.whatsapp}` : formData.whatsapp,
       })
     } catch (error) {
       if (error instanceof yup.ValidationError) {

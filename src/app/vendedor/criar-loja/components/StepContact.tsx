@@ -1,8 +1,15 @@
-import { Input, Label } from '@/components'
+import { Input } from '@/components'
 import { PhoneCountryInput } from '@/components/Form'
-import { Phone, Mail, Instagram, Facebook } from 'lucide-react'
+import { FieldLabel, FieldHelp, nxInputClass } from '@/app/vendedor/configuracoes/_shared'
+import { Phone, Mail, Instagram, Facebook, Youtube, Music2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { extractHandle, toInstagramUrl, toFacebookUrl } from '../utils/social'
+import {
+  extractHandle,
+  toInstagramUrl,
+  toFacebookUrl,
+  toTiktokUrl,
+  toYoutubeUrl,
+} from '../utils/social'
 import type { CreateStoreData } from '@/hooks/useCreateStore'
 import type { Country } from '@/hooks/useCountries'
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime'
@@ -18,6 +25,14 @@ interface StepContactProps {
   router: AppRouterInstance | null
 }
 
+function OptionalBadge() {
+  return (
+    <span className="rounded-full bg-nxi3/[0.08] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.04em] text-nxi3">
+      opcional
+    </span>
+  )
+}
+
 export function StepContact({
   formData,
   selectedCountry,
@@ -29,20 +44,20 @@ export function StepContact({
   router,
 }: StepContactProps) {
   return (
-    <div className="space-y-7">
+    <div className="space-y-6">
       <div>
-        <h2 className="font-semibold text-gray-900 leading-tight text-2xl sm:text-3xl">
+        <h2 className="text-[26px] font-extrabold leading-tight tracking-[-0.03em] text-nxi1">
           Como os clientes falam com você?
         </h2>
-        <p className="text-sm text-gray-500 mt-1.5">WhatsApp e email são obrigatórios.</p>
+        <p className="mt-1 text-[13px] text-nxi2">WhatsApp e email são obrigatórios.</p>
       </div>
 
       {/* WhatsApp */}
-      <div>
-        <Label className="text-[13px] font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
-          <Phone className="w-3.5 h-3.5 text-green-500" />
-          WhatsApp <span className="text-red-400">*</span>
-        </Label>
+      <div className="space-y-1.5">
+        <FieldLabel required>
+          <Phone className="h-3.5 w-3.5 text-nxs" />
+          WhatsApp
+        </FieldLabel>
         <PhoneCountryInput
           id="whatsapp"
           value={formData.whatsapp ?? ''}
@@ -51,47 +66,43 @@ export function StepContact({
           minLength={8}
           maxLength={15}
           required
+          lockCountry
           selectedCountry={selectedCountry}
           onSelectedCountryChange={setSelectedCountry}
           countriesData={countriesData}
           countriesLoading={countriesLoading}
-          inputClassName={cn('flex-1 min-w-0 h-10', errors.whatsapp && 'border-red-400')}
+          inputClassName={cn('h-10 min-w-0 flex-1', errors.whatsapp && 'border-nxd')}
         />
-        {errors.whatsapp && <p className="text-xs text-red-400 mt-1">{errors.whatsapp}</p>}
+        {errors.whatsapp && <FieldHelp variant="error">{errors.whatsapp}</FieldHelp>}
       </div>
 
       {/* Email */}
-      <div>
-        <Label className="text-[13px] font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
-          <Mail className="w-3.5 h-3.5 text-gray-400" />
-          Email <span className="text-red-400">*</span>
-        </Label>
+      <div className="space-y-1.5">
+        <FieldLabel required>
+          <Mail className="h-3.5 w-3.5 text-nxi3" />
+          Email
+        </FieldLabel>
         <Input
           type="email"
           value={formData.email}
           onChange={(e) => onChange('email', e.target.value)}
           placeholder="contato@minhaloja.com.br"
-          className={cn(
-            'focus-visible:ring-[#1E3A5F]/20 focus-visible:border-[#1E3A5F]',
-            errors.email && 'border-red-400',
-          )}
+          className={cn(nxInputClass(!!errors.email), 'w-full')}
         />
-        {errors.email && <p className="text-xs text-red-400 mt-1">{errors.email}</p>}
+        {errors.email && <FieldHelp variant="error">{errors.email}</FieldHelp>}
       </div>
 
       {/* Social */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         {/* Instagram */}
-        <div>
-          <Label className="text-[13px] font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
-            <Instagram className="w-3.5 h-3.5 text-pink-400" />
+        <div className="space-y-1.5">
+          <FieldLabel>
+            <Instagram className="h-3.5 w-3.5 text-nxi3" />
             Instagram
-            <span className="text-[10px] font-normal px-1.5 py-0.5 bg-gray-100 text-gray-400 rounded leading-none">
-              opcional
-            </span>
-          </Label>
+            <OptionalBadge />
+          </FieldLabel>
           <div className="relative">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400 select-none pointer-events-none">
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 select-none text-[13px] text-nxi3">
               @
             </span>
             <Input
@@ -99,31 +110,27 @@ export function StepContact({
               value={extractHandle(formData.instagram ?? '')}
               onChange={(e) => onChange('instagram', toInstagramUrl(e.target.value))}
               placeholder="minhaloja"
-              className={cn(
-                'pl-7 focus-visible:ring-[#1E3A5F]/20 focus-visible:border-[#1E3A5F]',
-                errors.instagram && 'border-red-400',
-              )}
+              className={cn(nxInputClass(!!errors.instagram), 'w-full pl-7')}
             />
           </div>
           {extractHandle(formData.instagram ?? '') && (
-            <p className="text-xs text-gray-400 mt-1.5">
-              instagram.com/<strong className="text-gray-600">{extractHandle(formData.instagram ?? '')}</strong>
-            </p>
+            <FieldHelp>
+              instagram.com/
+              <strong className="text-nxi2">{extractHandle(formData.instagram ?? '')}</strong>
+            </FieldHelp>
           )}
-          {errors.instagram && <p className="text-xs text-red-400 mt-1">{errors.instagram}</p>}
+          {errors.instagram && <FieldHelp variant="error">{errors.instagram}</FieldHelp>}
         </div>
 
         {/* Facebook */}
-        <div>
-          <Label className="text-[13px] font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
-            <Facebook className="w-3.5 h-3.5 text-blue-400" />
+        <div className="space-y-1.5">
+          <FieldLabel>
+            <Facebook className="h-3.5 w-3.5 text-nxi3" />
             Facebook
-            <span className="text-[10px] font-normal px-1.5 py-0.5 bg-gray-100 text-gray-400 rounded leading-none">
-              opcional
-            </span>
-          </Label>
+            <OptionalBadge />
+          </FieldLabel>
           <div className="relative">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 select-none pointer-events-none whitespace-nowrap">
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 select-none whitespace-nowrap text-[12px] text-nxi3">
               fb.com/
             </span>
             <Input
@@ -131,30 +138,85 @@ export function StepContact({
               value={extractHandle(formData.facebook ?? '')}
               onChange={(e) => onChange('facebook', toFacebookUrl(e.target.value))}
               placeholder="minhaloja"
-              className={cn(
-                'pl-[62px] focus-visible:ring-[#1E3A5F]/20 focus-visible:border-[#1E3A5F]',
-                errors.facebook && 'border-red-400',
-              )}
+              className={cn(nxInputClass(!!errors.facebook), 'w-full pl-[60px]')}
             />
           </div>
           {extractHandle(formData.facebook ?? '') && (
-            <p className="text-xs text-gray-400 mt-1.5">
-              facebook.com/<strong className="text-gray-600">{extractHandle(formData.facebook ?? '')}</strong>
-            </p>
+            <FieldHelp>
+              facebook.com/
+              <strong className="text-nxi2">{extractHandle(formData.facebook ?? '')}</strong>
+            </FieldHelp>
           )}
-          {errors.facebook && <p className="text-xs text-red-400 mt-1">{errors.facebook}</p>}
+          {errors.facebook && <FieldHelp variant="error">{errors.facebook}</FieldHelp>}
+        </div>
+
+        {/* TikTok */}
+        <div className="space-y-1.5">
+          <FieldLabel>
+            <Music2 className="h-3.5 w-3.5 text-nxi3" />
+            TikTok
+            <OptionalBadge />
+          </FieldLabel>
+          <div className="relative">
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 select-none text-[13px] text-nxi3">
+              @
+            </span>
+            <Input
+              type="text"
+              value={extractHandle(formData.tiktok ?? '')}
+              onChange={(e) => onChange('tiktok', toTiktokUrl(e.target.value))}
+              placeholder="minhaloja"
+              className={cn(nxInputClass(!!errors.tiktok), 'w-full pl-7')}
+            />
+          </div>
+          {extractHandle(formData.tiktok ?? '') && (
+            <FieldHelp>
+              tiktok.com/@
+              <strong className="text-nxi2">{extractHandle(formData.tiktok ?? '')}</strong>
+            </FieldHelp>
+          )}
+          {errors.tiktok && <FieldHelp variant="error">{errors.tiktok}</FieldHelp>}
+        </div>
+
+        {/* YouTube */}
+        <div className="space-y-1.5">
+          <FieldLabel>
+            <Youtube className="h-3.5 w-3.5 text-nxi3" />
+            YouTube
+            <OptionalBadge />
+          </FieldLabel>
+          <div className="relative">
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 select-none text-[13px] text-nxi3">
+              @
+            </span>
+            <Input
+              type="text"
+              value={extractHandle(formData.youtube ?? '')}
+              onChange={(e) => onChange('youtube', toYoutubeUrl(e.target.value))}
+              placeholder="meucanal"
+              className={cn(nxInputClass(!!errors.youtube), 'w-full pl-7')}
+            />
+          </div>
+          {extractHandle(formData.youtube ?? '') && (
+            <FieldHelp>
+              youtube.com/@
+              <strong className="text-nxi2">{extractHandle(formData.youtube ?? '')}</strong>
+            </FieldHelp>
+          )}
+          {errors.youtube && <FieldHelp variant="error">{errors.youtube}</FieldHelp>}
         </div>
       </div>
 
       {/* Footnote */}
-      <p className="text-[13px] italic text-gray-400">
+      <p className="text-[12.5px] text-nxi3">
         Endereço, formas de pagamento e horários ficam em{' '}
-        <span
-          className="not-italic font-semibold text-gray-500 cursor-pointer hover:text-gray-700 transition-colors"
+        <button
+          type="button"
+          className="font-semibold text-nxp transition-colors hover:text-nxp/80"
           onClick={() => router?.push('/vendedor/configuracoes/informacoes-basicas')}
         >
           Configurações →
-        </span>
+        </button>
       </p>
     </div>
   )
