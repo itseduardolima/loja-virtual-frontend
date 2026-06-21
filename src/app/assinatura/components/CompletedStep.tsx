@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Check, Sparkles, Ticket, type LucideIcon } from 'lucide-react'
+import { ArrowRight, Calendar, Check, Package, Share2, Sparkles, Store, Ticket, type LucideIcon } from 'lucide-react'
 import { formatDateLong } from '@/lib/utils'
 
 export type CompletedReason = 'paid' | 'trial' | 'coupon'
@@ -14,10 +14,11 @@ interface CompletedStepProps {
 
 interface StepCopy {
   icon: LucideIcon
-  iconClass: string
+  iconBg: string
+  iconColor: string
   title: string
   subtitle: string
-  nextSteps: string
+  nextSteps: { icon: LucideIcon; text: string }[]
   buttonLabel: string
 }
 
@@ -28,14 +29,21 @@ function getCopy(props: CompletedStepProps): StepCopy {
     const days = trialDays ?? null
     return {
       icon: Sparkles,
-      iconClass: 'bg-nxp/[0.08] text-nxp',
+      iconBg: 'bg-nxp/[0.08]',
+      iconColor: 'text-nxp',
       title: 'Trial ativado!',
       subtitle: days
         ? `Você tem ${days} dias de acesso completo, sem cartão de crédito.`
         : 'Seu acesso gratuito está liberado.',
-      nextSteps: freeAccessUntil
-        ? `Aproveite até ${formatDateLong(freeAccessUntil)}. Para continuar depois desse prazo, você poderá assinar um plano em "Meu Plano".`
-        : 'Crie sua loja agora e comece a vender. Quando o trial acabar, você escolhe um plano em "Meu Plano".',
+      nextSteps: [
+        { icon: Store, text: 'Monte sua loja e comece a vender' },
+        {
+          icon: Calendar,
+          text: freeAccessUntil
+            ? `Aproveite até ${formatDateLong(freeAccessUntil)} · depois escolha um plano`
+            : 'Quando o trial acabar, escolha um plano em "Meu Plano"',
+        },
+      ],
       buttonLabel: 'Criar minha loja',
     }
   }
@@ -43,26 +51,36 @@ function getCopy(props: CompletedStepProps): StepCopy {
   if (reason === 'coupon') {
     return {
       icon: Ticket,
-      iconClass: 'bg-nxs/10 text-nxs',
+      iconBg: 'bg-nxs/10',
+      iconColor: 'text-nxs',
       title: 'Acesso liberado!',
       subtitle: couponCode
-        ? `Cupom ${couponCode} aplicado — você tem acesso gratuito durante o período do desconto.`
+        ? `Cupom ${couponCode} aplicado — acesso gratuito durante o período do desconto.`
         : 'Seu cupom foi aplicado e você tem acesso gratuito durante o período do desconto.',
-      nextSteps: freeAccessUntil
-        ? `Sua conta é vendedor até ${formatDateLong(freeAccessUntil)}. Depois, será necessário assinar para continuar.`
-        : 'Sua conta foi atualizada para o perfil de vendedor. Crie sua loja e comece a vender agora.',
+      nextSteps: [
+        { icon: Store, text: 'Sua conta agora é de vendedor' },
+        {
+          icon: Calendar,
+          text: freeAccessUntil
+            ? `Acesso até ${formatDateLong(freeAccessUntil)} · depois assine para continuar`
+            : 'Crie sua loja e comece a vender agora',
+        },
+      ],
       buttonLabel: 'Criar minha loja',
     }
   }
 
-  // default: paid
   return {
     icon: Check,
-    iconClass: 'bg-nxs/10 text-nxs',
+    iconBg: 'bg-nxs/[0.12]',
+    iconColor: 'text-nxs',
     title: 'Assinatura confirmada!',
-    subtitle: 'Seu pagamento foi confirmado com sucesso e sua assinatura está ativa!',
-    nextSteps:
-      'Sua conta foi atualizada para o perfil de vendedor. Crie sua loja e comece a vender agora mesmo!',
+    subtitle: 'Seu pagamento foi confirmado e sua conta agora é de vendedor.',
+    nextSteps: [
+      { icon: Store, text: 'Crie sua loja e defina o link (/loja/sua-loja)' },
+      { icon: Package, text: 'Cadastre seus produtos com foto e variação' },
+      { icon: Share2, text: 'Compartilhe o link e receba pedidos' },
+    ],
     buttonLabel: 'Criar minha loja',
   }
 }
@@ -74,69 +92,67 @@ export function CompletedStep(props: CompletedStepProps) {
   return (
     <motion.div
       key="completed"
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.5 }}
-      className="text-center"
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      transition={{ duration: 0.3 }}
     >
-      <div className="mx-auto max-w-2xl rounded-2xl border border-nxborder bg-white p-8 shadow-sm sm:p-12">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{
-            type: 'spring',
-            stiffness: 200,
-            damping: 15,
-            delay: 0.2,
-          }}
-          className={`mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl ${copy.iconClass}`}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="flex items-center gap-3"
+      >
+        <span
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[11px] ${copy.iconBg} ${copy.iconColor}`}
         >
-          <Icon size={32} />
-        </motion.div>
+          <Icon className="h-[22px] w-[22px]" strokeWidth={2.5} />
+        </span>
+        <h2 className="text-[24px] font-extrabold tracking-tight text-nxi1">{copy.title}</h2>
+      </motion.div>
 
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mb-3 text-[24px] font-extrabold tracking-tight text-nxi1 sm:text-[28px]"
-        >
-          {copy.title}
-        </motion.h2>
+      <motion.p
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.18 }}
+        className="mt-2.5 text-[14px] font-semibold text-nxi2"
+      >
+        {copy.subtitle}
+      </motion.p>
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="mb-6 text-[15px] leading-relaxed text-nxi2"
-        >
-          {copy.subtitle}
-        </motion.p>
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.26 }}
+        className="mt-5 flex flex-col gap-3"
+      >
+        {copy.nextSteps.map((s, i) => {
+          const ItemIcon = s.icon
+          return (
+            <div key={i} className="flex items-center gap-2.5">
+              <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg bg-nxbg">
+                <ItemIcon className="h-4 w-4 text-nxp" />
+              </span>
+              <span className="text-[13.5px] font-bold text-nxi2">{s.text}</span>
+            </div>
+          )
+        })}
+      </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="mb-6 rounded-xl border border-nxp/15 bg-nxp/[0.04] p-4 text-left sm:p-5"
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.34 }}
+        className="mt-6"
+      >
+        <button
+          onClick={props.onGoToDashboard}
+          className="flex h-11 items-center gap-2 rounded-lg bg-nxp px-5 text-[14px] font-bold text-white transition-colors hover:bg-nxp/90 active:scale-[0.99]"
         >
-          <p className="mb-1 text-[13.5px] font-bold text-nxi1">Próximos passos:</p>
-          <p className="text-[13.5px] leading-relaxed text-nxi2">{copy.nextSteps}</p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="flex justify-center"
-        >
-          <button
-            onClick={props.onGoToDashboard}
-            className="h-12 rounded-xl bg-nxp px-8 text-[14.5px] font-bold text-white shadow-[0_1px_2px_hsl(237_49%_33%/0.3)] transition-[transform,background-color] hover:bg-nxp/90 active:scale-[0.99]"
-          >
-            {copy.buttonLabel}
-          </button>
-        </motion.div>
-      </div>
+          <ArrowRight className="h-4 w-4" />
+          {copy.buttonLabel}
+        </button>
+      </motion.div>
     </motion.div>
   )
 }
