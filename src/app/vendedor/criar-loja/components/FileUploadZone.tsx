@@ -38,10 +38,10 @@ export function FileUploadZone({ label, hint, preview, onFile }: FileUploadZoneP
     <>
       <div
         className={cn(
-          'flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed cursor-pointer transition-colors',
+          'flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed transition-colors',
           drag
-            ? 'border-[#1E3A5F] bg-blue-50/40'
-            : 'border-gray-200 bg-gray-50/60 hover:border-[#1E3A5F] hover:bg-blue-50/30',
+            ? 'border-nxp bg-nxp/[0.05]'
+            : 'border-nxborder bg-nxbg hover:border-nxp hover:bg-nxp/[0.03]',
         )}
         style={{ height: 128 }}
         onDragOver={(e) => { e.preventDefault(); setDrag(true) }}
@@ -49,10 +49,10 @@ export function FileUploadZone({ label, hint, preview, onFile }: FileUploadZoneP
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
       >
-        <Upload className="w-5 h-5 text-gray-300" />
+        <Upload className="h-5 w-5 text-nxi3" />
         <div className="text-center">
-          <p className="text-[13px] font-semibold text-gray-600">{label}</p>
-          <p className="text-[11px] text-gray-400 mt-0.5">{hint}</p>
+          <p className="text-[13px] font-semibold text-nxi2">{label}</p>
+          <p className="mt-0.5 text-[11.5px] text-nxi3">{hint}</p>
         </div>
       </div>
       <input

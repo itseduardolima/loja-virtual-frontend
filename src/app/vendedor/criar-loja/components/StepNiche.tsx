@@ -18,10 +18,10 @@ export function StepNiche({ selectedIds, nichesData, nichesLoading, errors, onTo
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold leading-tight text-gray-900 sm:text-3xl">
+        <h2 className="text-[26px] font-extrabold leading-tight tracking-[-0.03em] text-nxi1">
           O que você vai vender?
         </h2>
-        <p className="mt-1.5 text-sm text-gray-500">
+        <p className="mt-1 text-[13px] text-nxi2">
           Selecione todos que se aplicam — pode ser mais de um.
         </p>
       </div>

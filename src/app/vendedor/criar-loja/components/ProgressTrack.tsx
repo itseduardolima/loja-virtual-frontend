@@ -1,13 +1,12 @@
-import { NAVY } from '../constants'
+import { cn } from '@/lib/utils'
 
 export function ProgressTrack({ step }: { step: number }) {
   return (
-    <div className="flex gap-[2px] w-full">
+    <div className="flex w-full gap-[2px]">
       {[1, 2, 3].map((s) => (
         <div
           key={s}
-          className="flex-1 transition-all duration-500"
-          style={{ height: 2, background: s <= step ? NAVY : '#F1F3F5' }}
+          className={cn('h-0.5 flex-1 transition-colors duration-500', s <= step ? 'bg-nxp' : 'bg-nxborder')}
         />
       ))}
     </div>

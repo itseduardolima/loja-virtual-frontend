@@ -1,5 +1,5 @@
-import { Button } from '@/components'
-import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
+import { NxButton } from '@/app/vendedor/configuracoes/_shared'
 
 interface NavBarProps {
   currentStep: number
@@ -12,64 +12,56 @@ interface NavBarProps {
 export function NavBar({ currentStep, isStepValid, isCreating, onBack, onNext }: NavBarProps) {
   const isLast = currentStep === 3
 
-  const ctaLabel = isCreating ? (
+  const ctaLabel = isLast ? (
     <>
-      <Loader2 className="w-4 h-4 animate-spin" />
-      Criando...
-    </>
-  ) : isLast ? (
-    <>
-      <Check className="w-4 h-4" />
-      Criar Loja
+      <Check className="h-4 w-4" />
+      Criar loja
     </>
   ) : (
     <>
       Próximo
-      <ArrowRight className="w-4 h-4" />
+      <ArrowRight className="h-4 w-4" />
     </>
   )
 
   return (
-    <div className="flex-shrink-0 bg-white border-t border-gray-100">
+    <div className="shrink-0 border-t border-nxborder bg-white">
       {/* Desktop */}
-      <div className="hidden sm:flex items-center justify-between px-12" style={{ height: 64 }}>
+      <div className="hidden h-16 items-center justify-between px-12 sm:flex">
         {currentStep > 1 ? (
           <button
             onClick={onBack}
-            className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition-colors"
+            className="flex items-center gap-1.5 text-[13px] font-semibold text-nxi3 transition-colors hover:text-nxi1"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
+            <ArrowLeft className="h-3.5 w-3.5" />
             Anterior
           </button>
         ) : (
           <span />
         )}
-        <Button
-          onClick={onNext}
-          disabled={!isStepValid || isCreating}
-          className="flex items-center gap-2 h-11 px-8 bg-[#1E3A5F] hover:bg-[#17304f]"
-        >
-          {ctaLabel}
-        </Button>
+        <NxButton onClick={onNext} disabled={!isStepValid} loading={isCreating} className="h-11 px-8">
+          {isCreating ? 'Criando…' : ctaLabel}
+        </NxButton>
       </div>
 
       {/* Mobile: CTA on top, back below */}
-      <div className="sm:hidden flex flex-col-reverse gap-2 px-6 py-4">
+      <div className="flex flex-col-reverse gap-2 px-6 py-4 sm:hidden">
         {currentStep > 1 && (
           <button
             onClick={onBack}
-            className="text-sm text-center text-gray-400 hover:text-gray-700 transition-colors py-2"
+            className="py-2 text-center text-[13px] font-semibold text-nxi3 transition-colors hover:text-nxi1"
           >
             ← Anterior
           </button>
         )}
-        <Button
+        <NxButton
           onClick={onNext}
-          disabled={!isStepValid || isCreating}
-          className="w-full h-11 flex items-center justify-center gap-2 bg-[#1E3A5F] hover:bg-[#17304f]"
+          disabled={!isStepValid}
+          loading={isCreating}
+          className="h-11 w-full"
         >
-          {ctaLabel}
-        </Button>
+          {isCreating ? 'Criando…' : ctaLabel}
+        </NxButton>
       </div>
     </div>
   )
