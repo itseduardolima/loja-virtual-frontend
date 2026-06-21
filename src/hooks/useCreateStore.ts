@@ -15,9 +15,9 @@ export interface CreateStoreData {
   whatsapp?: string
   instagram?: string
   facebook?: string
-  website?: string
+  tiktok?: string
+  youtube?: string
   email?: string
-  phone?: string
   cnpj?: string
   cpf?: string
   address?: string
@@ -55,9 +55,9 @@ export function useCreateStore() {
       if (data.whatsapp) formData.append('whatsapp', data.whatsapp)
       if (data.instagram) formData.append('instagram', data.instagram)
       if (data.facebook) formData.append('facebook', data.facebook)
-      if (data.website) formData.append('website', data.website)
+      if (data.tiktok) formData.append('tiktok', data.tiktok)
+      if (data.youtube) formData.append('youtube', data.youtube)
       if (data.email) formData.append('email', data.email)
-      if (data.phone) formData.append('phone', data.phone)
       if (data.cnpj) formData.append('cnpj', data.cnpj)
       if (data.cpf) formData.append('cpf', data.cpf)
       if (data.address) formData.append('address', data.address)

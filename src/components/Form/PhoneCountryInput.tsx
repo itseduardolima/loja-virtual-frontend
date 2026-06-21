@@ -15,6 +15,8 @@ interface PhoneCountryInputProps {
   maxLength?: number
   required?: boolean
   inputClassName?: string
+  /** Trava o país (ex.: lojas só aceitam WhatsApp brasileiro) — sem dropdown */
+  lockCountry?: boolean
 
   // País / código
   selectedCountry: string
@@ -32,6 +34,7 @@ export function PhoneCountryInput({
   maxLength,
   required,
   inputClassName,
+  lockCountry = false,
   selectedCountry,
   onSelectedCountryChange,
   countriesData,
@@ -67,8 +70,13 @@ export function PhoneCountryInput({
       <div className="relative shrink-0" ref={dropdownRef}>
         <button
           type="button"
-          onClick={() => setShowDropdown(!showDropdown)}
-          className="flex items-center rounded-lg h-10 gap-2 px-3 border border-nxborder bg-white hover:bg-nxbg focus:outline-none focus:ring-2 focus:ring-nxp/30 focus:border-nxp min-w-[80px] transition-colors"
+          onClick={() => !lockCountry && setShowDropdown(!showDropdown)}
+          aria-disabled={lockCountry}
+          className={`flex h-10 min-w-[80px] items-center gap-2 rounded-lg border border-nxborder bg-white px-3 transition-colors ${
+            lockCountry
+              ? 'cursor-default'
+              : 'hover:bg-nxbg focus:border-nxp focus:outline-none focus:ring-2 focus:ring-nxp/30'
+          }`}
         >
           {getSelectedCountry()?.flagUrl ? (
             <img
@@ -80,13 +88,11 @@ export function PhoneCountryInput({
               }}
             />
           ) : null}
-          <span className="text-sm font-medium text-gray-700">
-            {getCountryCallingCode()}
-          </span>
-          <ChevronDown className="h-4 w-4 text-gray-500" />
+          <span className="text-[13px] font-semibold text-nxi1">{getCountryCallingCode()}</span>
+          {!lockCountry && <ChevronDown className="h-4 w-4 text-nxi3" />}
         </button>
-        {showDropdown && (
-          <div className="absolute top-full left-0 z-20 w-56 max-h-52 overflow-y-auto bg-white border border-gray-200 shadow-lg mt-1 py-1 rounded-lg">
+        {!lockCountry && showDropdown && (
+          <div className="absolute left-0 top-full z-20 mt-1 max-h-52 w-56 overflow-y-auto rounded-lg border border-nxborder bg-white py-1 shadow-lg">
             {countriesLoading ? (
               <div className="p-4 text-center">
                 <LoadingSpinner size="sm" fullScreen={false} />
@@ -97,26 +103,20 @@ export function PhoneCountryInput({
                   key={country.cca2}
                   type="button"
                   onClick={() => handleCountrySelect(country.cca2)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-50 transition-colors ${
-                    selectedCountry === country.cca2
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'text-gray-700'
+                  className={`flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-nxbg ${
+                    selectedCountry === country.cca2 ? 'bg-nxp/[0.06] text-nxp' : 'text-nxi2'
                   }`}
                 >
                   <img
                     src={country.flagUrl}
                     alt=""
-                    className="w-5 h-4 object-cover rounded-sm"
+                    className="h-4 w-5 rounded-sm object-cover"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).style.display = 'none'
                     }}
                   />
-                  <span className="flex-1 text-sm truncate">
-                    {country.name.common}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    +{country.callingCodes[0]}
-                  </span>
+                  <span className="flex-1 truncate text-[13px]">{country.name.common}</span>
+                  <span className="text-[11.5px] text-nxi3">+{country.callingCodes[0]}</span>
                 </button>
               ))
             )}
@@ -129,7 +129,7 @@ export function PhoneCountryInput({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onValueChange(e.target.value.replace(/\D/g, ''))}
-        className={inputClassName ?? 'flex-1 h-11 border-gray-200'}
+        className={inputClassName ?? 'h-10 flex-1 border-nxborder'}
         minLength={minLength}
         maxLength={maxLength}
         required={required}

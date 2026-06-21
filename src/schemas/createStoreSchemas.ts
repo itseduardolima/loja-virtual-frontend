@@ -6,8 +6,13 @@ const instagramUrlRegex = /^(https?:\/\/)?(www\.)?(instagram\.com|instagr\.am)\/
 // Validação para URL do Facebook
 const facebookUrlRegex = /^(https?:\/\/)?(www\.)?(facebook\.com|fb\.com)\/.+$/i
 
-// Validação para número de celular (apenas dígitos, mínimo 8, máximo 15 caracteres)
-const phoneNumberRegex = /^\d{8,15}$/
+// Validação para URL do TikTok / YouTube (handle prefixado com @)
+const tiktokUrlRegex = /^(https?:\/\/)?(www\.)?tiktok\.com\/@.+$/i
+const youtubeUrlRegex = /^(https?:\/\/)?(www\.)?youtube\.com\/@.+$/i
+
+// WhatsApp brasileiro: DDD (2) + número (8 ou 9 dígitos) = 10 ou 11 dígitos.
+// O código +55 é adicionado no envio; aqui validamos só o número local.
+const phoneNumberRegex = /^\d{10,11}$/
 
 // Validação para CNPJ
 const cnpjRegex = /^(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}|\d{14})$/
@@ -51,7 +56,7 @@ export const createStoreStep3Schema = yup.object({
     .required('WhatsApp é obrigatório')
     .test(
       'whatsapp-phone',
-      'Número de celular inválido. Digite apenas números (8 a 15 dígitos)',
+      'WhatsApp inválido. Informe DDD + número (10 ou 11 dígitos).',
       (value) => {
         if (!value || value.trim() === '') return false
         const cleanNumber = value.replace(/\D/g, '')
@@ -84,6 +89,20 @@ export const createStoreStep3Schema = yup.object({
         return facebookUrlRegex.test(value)
       }
     ),
+  tiktok: yup
+    .string()
+    .optional()
+    .test('tiktok-url', 'Link inválido. Use: https://tiktok.com/@seu-usuario', (value) => {
+      if (!value || value.trim() === '') return true
+      return tiktokUrlRegex.test(value)
+    }),
+  youtube: yup
+    .string()
+    .optional()
+    .test('youtube-url', 'Link inválido. Use: https://youtube.com/@seu-canal', (value) => {
+      if (!value || value.trim() === '') return true
+      return youtubeUrlRegex.test(value)
+    }),
 })
 
 // Schema para criação de loja - Step 4 (Configurações)
@@ -122,7 +141,7 @@ export const createStoreSchema = yup.object({
     .required('WhatsApp é obrigatório')
     .test(
       'whatsapp-phone',
-      'Número de celular inválido. Digite apenas números (8 a 15 dígitos)',
+      'WhatsApp inválido. Informe DDD + número (10 ou 11 dígitos).',
       (value) => {
         if (!value || value.trim() === '') return false
         const cleanNumber = value.replace(/\D/g, '')
@@ -155,6 +174,20 @@ export const createStoreSchema = yup.object({
         return facebookUrlRegex.test(value)
       }
     ),
+  tiktok: yup
+    .string()
+    .optional()
+    .test('tiktok-url', 'Link inválido. Use: https://tiktok.com/@seu-usuario', (value) => {
+      if (!value || value.trim() === '') return true
+      return tiktokUrlRegex.test(value)
+    }),
+  youtube: yup
+    .string()
+    .optional()
+    .test('youtube-url', 'Link inválido. Use: https://youtube.com/@seu-canal', (value) => {
+      if (!value || value.trim() === '') return true
+      return youtubeUrlRegex.test(value)
+    }),
 })
 
 // Tipos inferidos dos schemas

@@ -30,6 +30,8 @@ export interface StoreInfo {
   whatsapp?: string
   instagram?: string
   facebook?: string
+  tiktok?: string
+  youtube?: string
   website?: string
   email?: string
   phone?: string
@@ -81,6 +83,8 @@ export interface UpdateStoreData {
   whatsapp?: string
   instagram?: string
   facebook?: string
+  tiktok?: string
+  youtube?: string
   website?: string
   email?: string
   phone?: string
