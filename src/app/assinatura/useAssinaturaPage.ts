@@ -7,7 +7,6 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useSubscriptionPlans, useValidatePlanCoupon } from '@/hooks/useSubscriptionPlans'
 import { useCreateSubscription, useMySubscription } from '@/hooks/useSubscription'
 import {
-  BillingType,
   BillingCycle,
   SubscriptionPlan,
   PlanCouponValidation,
@@ -18,14 +17,7 @@ import { formatCPF, formatCNPJ } from '@/lib/utils'
 import { api } from '@/lib/api'
 import toast from 'react-hot-toast'
 
-export type Step =
-  | 'register'
-  | 'plan'
-  | 'select'
-  | 'processing'
-  | 'payment'
-  | 'success'
-  | 'completed'
+export type Step = 'register' | 'plan' | 'select' | 'processing' | 'success' | 'completed'
 
 const CYCLE_STORAGE_KEY = 'subscription-cycle-pref'
 
@@ -66,14 +58,9 @@ export function useAssinaturaPage() {
   })()
   const [selectedCycle, setSelectedCycle] = useState<BillingCycle>(initialCycle)
 
-  const [selectedMethod, setSelectedMethod] = useState<BillingType | null>('CREDIT_CARD')
-  const [documentType, setDocumentType] = useState<'cpf' | 'cnpj' | null>(null)
-  const [cpf, setCpf] = useState('')
-  const [cnpj, setCnpj] = useState('')
-  const [paymentData, setPaymentData] = useState<{
-    payment_url: string
-    qr_code: string | null
-  } | null>(null)
+  // CPF/CNPJ — o Asaas exige o documento no cliente para gerar a cobrança.
+  // Campo único que aceita CPF ou CNPJ; o tipo é inferido pela quantidade de dígitos.
+  const [documentValue, setDocumentValue] = useState('')
 
   // Cupom de desconto de plano
   const [couponInput, setCouponInput] = useState<string>('')
@@ -388,82 +375,42 @@ export function useAssinaturaPage() {
     setStep('plan')
   }
 
-  const handleSelectMethod = (method: BillingType) => {
-    setSelectedMethod(method)
-    if (method === 'CREDIT_CARD') {
-      setCpf('')
-      setCnpj('')
-      setDocumentType(null)
-    } else {
-      setDocumentType(null)
-    }
-  }
-
-  const handleSelectDocumentType = (type: 'cpf' | 'cnpj') => {
-    setDocumentType(type)
-    if (type === 'cpf') {
-      setCnpj('')
-    } else {
-      setCpf('')
-    }
-  }
-
   const handleCreateSubscription = async () => {
-    const isFree = appliedCoupon?.valid && (appliedCoupon.final_price ?? 0) <= 0
-    if (!isFree && !selectedMethod) return
-
-    if (selectedMethod === 'PIX' || selectedMethod === 'BOLETO') {
-      if (!documentType) {
-        toast.error('Por favor, selecione CPF ou CNPJ para continuar.')
-        return
-      }
-
-      const cpfClean = cpf.replace(/\D/g, '')
-      const cnpjClean = cnpj.replace(/\D/g, '')
-
-      if (documentType === 'cpf' && !cpfClean) {
-        toast.error('Por favor, preencha o CPF para continuar.')
-        return
-      }
-
-      if (documentType === 'cnpj' && !cnpjClean) {
-        toast.error('Por favor, preencha o CNPJ para continuar.')
-        return
-      }
+    if (!isFreeCheckout && !isDocumentValid) {
+      toast.error('Informe um CPF ou CNPJ válido para continuar.')
+      return
     }
+
+    // Abre a aba do Asaas AGORA, de forma síncrona dentro do gesto de clique,
+    // para o navegador não bloquear como popup. A URL só é conhecida após o
+    // await, então abrimos em branco e apontamos depois. Free não gera cobrança.
+    const paymentWindow = isFreeCheckout ? null : window.open('about:blank', '_blank')
 
     setStep('processing')
     try {
       const payload: {
-        billing_type?: BillingType
-        cpf?: string
-        cnpj?: string
         plan_slug?: string
         billing_cycle?: BillingCycle
         coupon_code?: string
+        cpf?: string
+        cnpj?: string
       } = {
         billing_cycle: selectedCycle,
-        ...(selectedMethod && { billing_type: selectedMethod }),
         ...(selectedPlan && { plan_slug: selectedPlan.slug }),
         ...(appliedCoupon?.coupon && { coupon_code: appliedCoupon.coupon.code }),
       }
 
-      if (selectedMethod === 'PIX' || selectedMethod === 'BOLETO') {
-        const cpfClean = cpf.replace(/\D/g, '')
-        const cnpjClean = cnpj.replace(/\D/g, '')
-        if (cpfClean) payload.cpf = cpfClean
-        if (cnpjClean) payload.cnpj = cnpjClean
+      // Documento só é necessário no caminho pago (gera cobrança no Asaas)
+      if (!isFreeCheckout && isDocumentValid) {
+        if (documentDigits.length === 11) payload.cpf = documentDigits
+        else payload.cnpj = documentDigits
       }
 
       const response = await createSubscription.mutateAsync(payload)
 
-      setPaymentData({
-        payment_url: response.payment_url,
-        qr_code: response.qr_code,
-      })
-
       // Free path: backend não criou cobrança no Asaas (cupom 100% off)
       if (!response.payment_url && !response.qr_code) {
+        paymentWindow?.close()
         // Backend promoveu o user a vendedor — atualiza JWT/cache
         hasCompletedRef.current = true
         queryClient.removeQueries({ queryKey: ['validate-token'] })
@@ -476,41 +423,42 @@ export function useAssinaturaPage() {
         return
       }
 
-      if (selectedMethod === 'PIX' && response.qr_code) {
-        setStep('payment')
-      } else if (response.payment_url) {
-        window.open(response.payment_url, '_blank')
+      // Abre o checkout do Asaas na nova aba e mantém a aba atual na tela de
+      // "aguardando confirmação", onde o polling detecta o pagamento.
+      if (response.payment_url) {
+        if (paymentWindow) {
+          paymentWindow.location.href = response.payment_url
+        } else {
+          // Popup bloqueado: fallback para nova aba (gesto pode já ter expirado)
+          window.open(response.payment_url, '_blank')
+        }
         setStep('success')
-      } else {
-        // fallback de segurança
-        setStep('completed')
+        return
       }
+
+      // fallback de segurança: sem URL, mostra tela de aguardando confirmação
+      paymentWindow?.close()
+      setStep('success')
     } catch {
+      paymentWindow?.close()
       setStep('select')
       toast.error('Erro ao processar assinatura. Tente novamente.')
     }
   }
 
-  const handleRedirectToPayment = () => {
-    if (paymentData?.payment_url) {
-      window.open(paymentData.payment_url, '_blank')
-      setStep('success')
-    }
-  }
-
-  const handleCpfChange = (value: string) => setCpf(formatCPF(value))
-  const handleCnpjChange = (value: string) => setCnpj(formatCNPJ(value))
-  const handleDocumentTypeReset = () => setDocumentType(null)
   const handleGoToDashboard = () => router.push('/vendedor/criar-loja')
 
+  const handleDocumentChange = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 14)
+    setDocumentValue(digits.length <= 11 ? formatCPF(digits) : formatCNPJ(digits))
+  }
+
+  const documentDigits = documentValue.replace(/\D/g, '')
+  const isDocumentValid = documentDigits.length === 11 || documentDigits.length === 14
+
   const isFreeCheckout = !!appliedCoupon?.valid && (appliedCoupon?.final_price ?? 0) <= 0
-  const needsDocument = !isFreeCheckout && (selectedMethod === 'PIX' || selectedMethod === 'BOLETO')
-  const hasDocument =
-    (documentType === 'cpf' && cpf.replace(/\D/g, '')) ||
-    (documentType === 'cnpj' && cnpj.replace(/\D/g, ''))
   const canContinue =
-    !createSubscription.isPending &&
-    (isFreeCheckout || (selectedMethod && (!needsDocument || (documentType && hasDocument))))
+    !createSubscription.isPending && (isFreeCheckout || isDocumentValid)
 
   const isPaymentConfirmed =
     subscriptionStatus === 'active' ||
@@ -531,16 +479,13 @@ export function useAssinaturaPage() {
 
   return {
     // State
-    selectedMethod,
     step,
-    documentType,
-    cpf,
-    cnpj,
-    paymentData,
     plans,
     selectedPlan,
     selectedCycle,
     plan: selectedPlan,
+    documentValue,
+    handleDocumentChange,
 
     // Cupom
     couponInput,
@@ -576,13 +521,7 @@ export function useAssinaturaPage() {
     handleBackToPlan,
 
     // Subscription handlers
-    handleSelectMethod,
-    handleSelectDocumentType,
     handleCreateSubscription,
-    handleRedirectToPayment,
-    handleCpfChange,
-    handleCnpjChange,
-    handleDocumentTypeReset,
     handleGoToDashboard,
     refetchPlan,
 
@@ -593,7 +532,6 @@ export function useAssinaturaPage() {
 
     // Computed
     canContinue,
-    needsDocument,
     isFreeCheckout,
   }
 }

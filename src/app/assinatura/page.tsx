@@ -13,7 +13,6 @@ import {
   PlanSelectionStep,
   SelectPaymentMethodStep,
   ProcessingStep,
-  PaymentStep,
   SuccessStep,
   CompletedStep,
 } from './components'
@@ -69,12 +68,7 @@ function MobileBrandBar() {
 function AssinaturaContent() {
   const router = useRouter()
   const {
-    selectedMethod,
     step,
-    documentType,
-    cpf,
-    cnpj,
-    paymentData,
     plans,
     plan,
     selectedCycle,
@@ -95,23 +89,18 @@ function AssinaturaContent() {
     isLoadingPlan,
     isCreatingSubscription,
     planError,
+    documentValue,
+    handleDocumentChange,
     handleSelectPlan,
     handleStartTrial,
     handleBackToPlan,
-    handleSelectMethod,
-    handleSelectDocumentType,
     handleCreateSubscription,
-    handleRedirectToPayment,
-    handleCpfChange,
-    handleCnpjChange,
-    handleDocumentTypeReset,
     handleGoToDashboard,
     refetchPlan,
     handleRegisterAndContinue,
     handleInlineLogin,
     toggleRegisterMode,
     canContinue,
-    needsDocument,
     isFreeCheckout,
   } = useAssinaturaPage()
 
@@ -223,32 +212,18 @@ function AssinaturaContent() {
                   onCouponInputChange={setCouponInput}
                   onApplyCoupon={handleApplyCoupon}
                   onRemoveCoupon={handleRemoveCoupon}
-                  selectedMethod={selectedMethod}
-                  documentType={documentType}
-                  cpf={cpf}
-                  cnpj={cnpj}
-                  needsDocument={Boolean(needsDocument)}
                   canContinue={Boolean(canContinue)}
                   isCreatingSubscription={isCreatingSubscription}
                   isFreeCheckout={isFreeCheckout}
-                  onSelectMethod={handleSelectMethod}
-                  onSelectDocumentType={handleSelectDocumentType}
-                  onCpfChange={handleCpfChange}
-                  onCnpjChange={handleCnpjChange}
-                  onDocumentTypeReset={handleDocumentTypeReset}
+                  documentValue={documentValue}
+                  onDocumentChange={handleDocumentChange}
                   onCreateSubscription={handleCreateSubscription}
                   onBack={handleBackToPlan}
                 />
               )}
 
-              {step === 'processing' && <ProcessingStep key="processing" />}
-
-              {step === 'payment' && paymentData?.qr_code && (
-                <PaymentStep
-                  key="payment"
-                  qrCode={paymentData.qr_code}
-                  onRedirectToPayment={handleRedirectToPayment}
-                />
+              {step === 'processing' && (
+                <ProcessingStep key="processing" isRedirecting={!isFreeCheckout} />
               )}
 
               {step === 'success' && (

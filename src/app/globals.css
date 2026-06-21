@@ -423,6 +423,24 @@ html {
   .trust-grid { grid-template-columns: repeat(4, 1fr); }
 }
 
+/* Barra de progresso indeterminada — ProcessingStep / PaymentStep */
+@keyframes nxIndet {
+  0%   { left: -40%; width: 40%; }
+  50%  { width: 60%; }
+  100% { left: 100%; width: 40%; }
+}
+.nx-indet {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 9999px;
+  background: hsl(var(--nxp));
+  animation: nxIndet 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nx-indet { animation: none; width: 40%; left: 30%; }
+}
+
 .scroll-row-wrap { position: relative; }
 .scroll-row-wrap::before {
   content: '';
