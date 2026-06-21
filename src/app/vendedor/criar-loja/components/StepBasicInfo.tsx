@@ -1,4 +1,5 @@
-import { Input, Label, Textarea } from '@/components'
+import { Input, Textarea } from '@/components'
+import { FieldLabel, FieldHelp, nxInputClass } from '@/app/vendedor/configuracoes/_shared'
 import { cn } from '@/lib/utils'
 import { slugify } from '../utils/social'
 import { FileUploadZone } from './FileUploadZone'
@@ -13,6 +14,14 @@ interface StepBasicInfoProps {
   onFile: (field: 'logo' | 'banner', file: File) => void
 }
 
+function OptionalBadge() {
+  return (
+    <span className="rounded-full bg-nxi3/[0.08] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.04em] text-nxi3">
+      opcional
+    </span>
+  )
+}
+
 export function StepBasicInfo({
   formData,
   logoPreview,
@@ -24,66 +33,60 @@ export function StepBasicInfo({
   const slug = slugify(formData.name)
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-6">
       <div>
-        <h2 className="font-semibold text-gray-900 leading-tight text-2xl sm:text-3xl">
+        <h2 className="text-[26px] font-extrabold leading-tight tracking-[-0.03em] text-nxi1">
           Como vai se chamar sua loja?
         </h2>
-        <p className="text-sm text-gray-500 mt-1.5">
+        <p className="mt-1 text-[13px] text-nxi2">
           Você pode mudar isso depois nas configurações.
         </p>
       </div>
 
       {/* Nome */}
-      <div>
-        <Label className="text-[13px] font-semibold text-gray-700 mb-1 block">
-          Nome da Loja <span className="text-red-400">*</span>
-        </Label>
+      <div className="space-y-1.5">
+        <FieldLabel required>Nome da loja</FieldLabel>
         <Input
           value={formData.name}
           onChange={(e) => onChange('name', e.target.value)}
           placeholder="Ex: Boutique da Maria"
-          className={cn(
-            'h-12 focus-visible:ring-[#1E3A5F]/20 focus-visible:border-[#1E3A5F]',
-            errors.name && 'border-red-400',
-          )}
+          className={cn(nxInputClass(!!errors.name), 'w-full')}
         />
         {formData.name.length >= 3 && (
-          <p className="text-xs text-gray-400 mt-1.5">
-            Sua URL será: {process.env.NEXT_PUBLIC_APP_URL}/loja/<strong className="text-gray-600">{slug}</strong>
-          </p>
+          <FieldHelp>
+            Sua URL será: {process.env.NEXT_PUBLIC_APP_URL}/loja/
+            <strong className="text-nxi2">{slug}</strong>
+          </FieldHelp>
         )}
-        {errors.name && <p className="text-xs text-red-400 mt-1.5">{errors.name}</p>}
+        {errors.name && <FieldHelp variant="error">{errors.name}</FieldHelp>}
       </div>
 
       {/* Descrição */}
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <Label className="text-[13px] font-semibold text-gray-700">Descrição</Label>
-          <span className="text-[10px] font-normal px-1.5 py-0.5 bg-gray-100 text-gray-400 rounded leading-none">
-            opcional
-          </span>
-        </div>
+      <div className="space-y-1.5">
+        <FieldLabel>
+          Descrição
+          <OptionalBadge />
+        </FieldLabel>
         <Textarea
           value={formData.description}
           onChange={(e) => onChange('description', e.target.value.slice(0, 170))}
           placeholder="Descreva sua loja — o que você vende, quem são seus clientes..."
           rows={4}
-          className="resize-none focus-visible:ring-[#1E3A5F]/20 focus-visible:border-[#1E3A5F]"
+          className="resize-none rounded-lg border-nxborder text-[13px] text-nxi1 placeholder:text-nxi3 focus-visible:border-nxp focus-visible:ring-2 focus-visible:ring-nxp/30"
         />
-        <p className="text-xs text-gray-400 text-right mt-1">
-          {formData.description?.length || 0}/170
-        </p>
+        <p className="text-right text-[11.5px] text-nxi3">{formData.description?.length || 0}/170</p>
       </div>
 
       {/* Identidade Visual */}
       <div>
-        <p className="text-[13px] font-semibold text-gray-700 mb-3">Identidade Visual</p>
+        <p className="mb-3 text-[12.5px] font-semibold tracking-[0.01em] text-nxi2">
+          Identidade visual
+        </p>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-[11px] text-gray-400 mb-2 flex items-center gap-1">
+            <p className="mb-2 flex items-center gap-1.5 text-[11.5px] text-nxi3">
               Logo
-              <span className="px-1 py-0.5 bg-gray-100 rounded text-[10px]">opcional</span>
+              <OptionalBadge />
             </p>
             <FileUploadZone
               label="Logo"
@@ -93,9 +96,9 @@ export function StepBasicInfo({
             />
           </div>
           <div>
-            <p className="text-[11px] text-gray-400 mb-2 flex items-center gap-1">
+            <p className="mb-2 flex items-center gap-1.5 text-[11.5px] text-nxi3">
               Banner
-              <span className="px-1 py-0.5 bg-gray-100 rounded text-[10px]">opcional</span>
+              <OptionalBadge />
             </p>
             <FileUploadZone
               label="Banner"
