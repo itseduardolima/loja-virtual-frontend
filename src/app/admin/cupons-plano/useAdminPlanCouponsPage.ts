@@ -64,7 +64,7 @@ export function useAdminPlanCouponsPage() {
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all')
   const [confirmDelete, setConfirmDelete] = useState<AdminPlanCoupon | null>(null)
 
-  const { data, isLoading } = useAdminPlanCoupons({ page: 1, limit: 200 })
+  const { data, isLoading, isError, refetch } = useAdminPlanCoupons({ page: 1, limit: 200 })
   const deleteMutation = useAdminDeletePlanCoupon()
 
   const allCoupons = data?.data ?? []
@@ -118,6 +118,8 @@ export function useAdminPlanCouponsPage() {
     setConfirmDelete,
     // data
     isLoading,
+    isError,
+    refetch,
     coupons,
     stats,
     filterCounts,
