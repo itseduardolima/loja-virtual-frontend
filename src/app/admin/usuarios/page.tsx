@@ -329,7 +329,7 @@ export default function AdminUsuariosPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
-        <div className="relative min-w-[260px] flex-1">
+        <div className="relative min-w-[400px]">
           <Search
             size={16}
             className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-nxi3"
