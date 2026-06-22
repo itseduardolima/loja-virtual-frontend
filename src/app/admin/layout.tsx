@@ -2,8 +2,8 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
-import { SidebarAdmin, UserHeader } from '@/components'
-import { LoadingPage, AccessDenied } from '@/components/Layout'
+import { SidebarAdmin } from '@/components'
+import { LoadingPage, AccessDenied, BottomNavAdmin, UserHeaderAdmin } from '@/components/Layout'
 import { useEffect, useState } from 'react'
 import { useValidateToken } from '@/hooks/useValidateToken'
 
@@ -14,7 +14,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isReady, setIsReady] = useState(false)
   const [accessDenied, setAccessDenied] = useState(false)
   const { data: validatedUser, isLoading: isValidating, isError } = useValidateToken(
-    !authLoading && isAuthenticated
+    !authLoading && isAuthenticated,
   )
 
   useEffect(() => {
@@ -73,16 +73,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!isReady) return <LoadingPage />
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <SidebarAdmin currentPath={pathname} />
-      <div className="flex-1 lg:ml-0 flex flex-col overflow-hidden">
-        <UserHeader currentPath={pathname} />
-        <div className="flex-1 overflow-y-auto bg-nxbg">
-          <div className="px-4 py-8">
+    <div className="flex h-screen overflow-hidden bg-nxbg">
+      <div className="hidden lg:flex h-full">
+        <SidebarAdmin currentPath={pathname} />
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <UserHeaderAdmin currentPath={pathname} />
+        <main className="flex-1 overflow-y-auto bg-nxbg">
+          <div className="mx-auto max-w-[1640px] px-4 py-4 pb-[80px] lg:px-6 lg:py-6 lg:pb-6">
             {children}
           </div>
-        </div>
+        </main>
       </div>
+      <BottomNavAdmin currentPath={pathname} />
     </div>
   )
 }
