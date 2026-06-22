@@ -8,7 +8,7 @@ export function useAssinaturasPage() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
 
-  const { data, isLoading } = useAdminSubscriptions({
+  const { data, isLoading, isError, refetch } = useAdminSubscriptions({
     page,
     limit: 20,
     search: search || undefined,
@@ -29,18 +29,26 @@ export function useAssinaturasPage() {
     }
   }
 
-  // SUBSCRIPTION_STATUS.*.tone not used here — page.tsx badge colors are keyed by status string
   const statusMap: Record<string, { label: string; color: string }> = Object.fromEntries(
     Object.entries(SUBSCRIPTION_STATUS).map(([key, { label }]) => [key, { label, color: key }])
   )
 
   const subs = data?.data ?? []
   const meta = data?.meta ?? null
+  const hasActiveFilters = !!(search || statusFilter)
+
+  const clearFilters = () => {
+    setSearch('')
+    setStatusFilter('')
+    setPage(1)
+  }
 
   return {
     subs,
     meta,
     isLoading,
+    isError,
+    refetch,
     page,
     setPage,
     search,
@@ -50,5 +58,7 @@ export function useAssinaturasPage() {
     statusMap,
     handleSync,
     isSyncing: syncMutation.isPending,
+    hasActiveFilters,
+    clearFilters,
   }
 }
