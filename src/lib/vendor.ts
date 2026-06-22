@@ -63,7 +63,7 @@ export function formatTodayLabel(date = new Date()): string {
     .replace(',', ' ·')
 }
 
-const BREADCRUMB_MAP: Record<string, string> = {
+const VENDEDOR_BREADCRUMB_MAP: Record<string, string> = {
   '/vendedor': 'Início',
   '/vendedor/dashboard': 'Dashboard',
   '/vendedor/produtos': 'Produtos',
@@ -83,8 +83,29 @@ const BREADCRUMB_MAP: Record<string, string> = {
   '/vendedor/configuracoes/integracao-bling': 'Integração Bling',
 }
 
+const ADMIN_BREADCRUMB_MAP: Record<string, { parent: string; current: string }> = {
+  '/admin': { parent: 'Admin', current: 'Dashboard' },
+  '/admin/usuarios': { parent: 'Admin', current: 'Usuários' },
+  '/admin/lojas': { parent: 'Admin', current: 'Lojas' },
+  '/admin/assinaturas': { parent: 'Admin', current: 'Assinaturas' },
+  '/admin/estornos': { parent: 'Admin', current: 'Estornos' },
+  '/admin/planos': { parent: 'Admin', current: 'Planos' },
+  '/admin/planos/criar': { parent: 'Planos', current: 'Novo Plano' },
+  '/admin/cupons-plano': { parent: 'Admin', current: 'Cupons de Plano' },
+  '/admin/cupons-plano/criar': { parent: 'Cupons de Plano', current: 'Novo Cupom' },
+}
+
 export function getBreadcrumb(path: string): { parent: string; current: string } {
-  const exact = BREADCRUMB_MAP[path]
+  if (path.startsWith('/admin')) {
+    const exact = ADMIN_BREADCRUMB_MAP[path]
+    if (exact) return exact
+    if (path.startsWith('/admin/usuarios/')) return { parent: 'Usuários', current: 'Detalhes' }
+    if (path.startsWith('/admin/planos/editar/')) return { parent: 'Planos', current: 'Editar Plano' }
+    if (path.startsWith('/admin/cupons-plano/editar/')) return { parent: 'Cupons de Plano', current: 'Editar Cupom' }
+    return { parent: 'Admin', current: 'Dashboard' }
+  }
+
+  const exact = VENDEDOR_BREADCRUMB_MAP[path]
   if (exact) return { parent: 'Vendedor', current: exact }
   if (path.startsWith('/vendedor/produtos/criar')) return { parent: 'Produtos', current: 'Criar' }
   if (path.startsWith('/vendedor/produtos/editar')) return { parent: 'Produtos', current: 'Editar' }
