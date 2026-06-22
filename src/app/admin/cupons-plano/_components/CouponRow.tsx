@@ -23,7 +23,7 @@ export function CouponRow({ coupon, onEdit, onDelete }: CouponRowProps) {
     : coupon.plans.map(p => p.plan.name).join(', ')
 
   return (
-    <tr className="border-b border-nxborder transition-colors last:border-0 hover:bg-nxbg/50">
+    <tr className="border-t border-[#F0F1F5] transition-colors hover:bg-[#FAFAFE]">
       <td className="px-4 py-3.5">
         <span className="rounded-lg border border-nxborder bg-nxbg px-2.5 py-1 font-mono text-[12px] font-semibold tracking-wide text-nxi1">
           {coupon.code}
