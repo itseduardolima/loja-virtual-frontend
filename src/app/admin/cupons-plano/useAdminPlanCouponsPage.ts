@@ -22,6 +22,8 @@ export const FILTERS = [
 
 export const COLS = ['Código', 'Desconto', 'Ciclo', 'Duração', 'Usos', 'Expira', 'Planos', 'Status', ''] as const
 
+export const GRID = 'grid grid-cols-[1fr_1.2fr_0.9fr_0.9fr_1.3fr_1.1fr_1.2fr_0.9fr_52px] items-center gap-3'
+
 export const CYCLE_LABEL: Record<string, string> = {
   monthly: 'Mensal',
   yearly: 'Anual',
