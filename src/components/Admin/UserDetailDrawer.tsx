@@ -1,39 +1,14 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useForm, Controller } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
-import * as yup from 'yup'
-import { useState } from 'react'
-import { User, Pencil, X, Check } from 'lucide-react'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useAdminUser, useAdminUpdateUser } from '@/hooks/useAdminUsers'
-import type { AdminUser } from '@/types/admin'
+import { X, RefreshCw, ArrowLeft, UserX, UserCheck, AlertCircle } from 'lucide-react'
+import { Sheet, SheetContent } from '@/components/ui/sheet'
+import { useAdminUser, useAdminToggleUserStatus } from '@/hooks/useAdminUsers'
+import { getInitials, avatarHueFor } from '@/lib/vendor'
+import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import toast from 'react-hot-toast'
-
-const editUserSchema = yup.object({
-  name: yup
-    .string()
-    .required('Nome é obrigatório')
-    .min(5, 'Mínimo 5 caracteres')
-    .max(40, 'Máximo 40 caracteres')
-    .matches(/^[a-zA-ZÀ-ÿçÇ]+(\s+[a-zA-ZÀ-ÿçÇ]+)*$/, 'Somente letras'),
-  email: yup
-    .string()
-    .required('Email é obrigatório')
-    .min(10, 'Mínimo 10 caracteres')
-    .max(100, 'Máximo 100 caracteres')
-    .matches(/^[\w\-.]+@([\w-]+\.)+[a-zA-Z]{2,4}$/, 'Informe um e-mail válido'),
-  profile_id: yup.string().required('Selecione um perfil'),
-})
-
-type EditUserForm = yup.InferType<typeof editUserSchema>
+import type { AxiosError } from 'axios'
+import { useToastContext } from '@/contexts/ToastContext'
 
 interface UserDetailDrawerProps {
   userId: number | null
@@ -41,214 +16,274 @@ interface UserDetailDrawerProps {
   onClose: () => void
 }
 
-const profileNames: Record<number, string> = {
+const PROFILE_NAMES: Record<number, string> = {
   1: 'Administrador',
   2: 'Vendedor',
   3: 'Cliente',
 }
 
-export function UserDetailDrawer({ userId, open, onClose }: UserDetailDrawerProps) {
-  const { data: user, isLoading } = useAdminUser(userId ?? 0)
-  const updateUser = useAdminUpdateUser()
-  const [editing, setEditing] = useState(false)
-
-  const {
-    register,
-    control,
-    reset,
-    handleSubmit,
-    formState: { errors, isValid },
-  } = useForm<EditUserForm>({
-    resolver: yupResolver(editUserSchema),
-    mode: 'onChange',
-  })
-
-  useEffect(() => {
-    setEditing(false)
-    reset()
-  }, [userId, reset])
-
-  const startEdit = () => {
-    if (!user) return
-    reset({ name: user.name ?? '', email: user.email ?? '', profile_id: String(user.profile_id) })
-    setEditing(true)
-  }
-
-  const cancelEdit = () => {
-    setEditing(false)
-    reset()
-  }
-
-  const onSubmit = async (values: EditUserForm) => {
-    if (!userId) return
-    try {
-      await updateUser.mutateAsync({
-        id: userId,
-        data: { user_name: values.name, user_email: values.email, profile_id: Number(values.profile_id) } as Partial<AdminUser>,
-      })
-      toast.success('Usuário atualizado com sucesso.')
-      setEditing(false)
-    } catch (err: any) {
-      const msg = err?.response?.data?.message
-      toast.error(Array.isArray(msg) ? msg[0] : msg || 'Erro ao atualizar usuário.')
+function roleBadgeStyle(profileId: number): React.CSSProperties {
+  if (profileId === 1)
+    return {
+      color: '#2A2D7C',
+      background: 'rgba(42,45,124,0.08)',
+      boxShadow: 'inset 0 0 0 1px rgba(42,45,124,0.18)',
     }
-  }
-
-  const handleOpenChange = (v: boolean) => {
-    if (!v) {
-      setEditing(false)
-      reset()
-      onClose()
+  if (profileId === 2)
+    return {
+      color: '#5557A8',
+      background: 'rgba(42,45,124,0.05)',
+      boxShadow: 'inset 0 0 0 1px rgba(42,45,124,0.12)',
     }
+  return {
+    color: '#6B6E82',
+    background: 'rgba(138,140,163,0.1)',
+    boxShadow: 'inset 0 0 0 1px rgba(138,140,163,0.2)',
   }
-
-  return (
-    <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetContent side="right" className="flex flex-col p-0 w-full sm:max-w-md">
-        <SheetHeader className="px-6 py-5 border-b border-gray-100">
-          <div className="flex items-center gap-2">
-            <User className="h-5 w-5 text-gray-500" />
-            <SheetTitle>{editing ? 'Editar Usuário' : 'Detalhes do Usuário'}</SheetTitle>
-          </div>
-          <SheetDescription>
-            {editing ? 'Altere os dados e salve.' : 'Informações completas do usuário selecionado'}
-          </SheetDescription>
-        </SheetHeader>
-
-        <div className="flex-1 overflow-y-auto px-6 py-6">
-          {isLoading ? (
-            <div className="flex items-center justify-center h-40 text-gray-400 text-sm">
-              Carregando...
-            </div>
-          ) : !user ? (
-            <div className="flex items-center justify-center h-40 text-gray-400 text-sm">
-              Usuário não encontrado.
-            </div>
-          ) : editing ? (
-            <form id="edit-user-form" onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-              <div className="space-y-1.5">
-                <Label htmlFor="edit-name">Nome</Label>
-                <Input
-                  id="edit-name"
-                  placeholder="Nome completo"
-                  {...register('name')}
-                />
-                {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="edit-email">Email</Label>
-                <Input
-                  id="edit-email"
-                  type="email"
-                  placeholder="email@exemplo.com"
-                  {...register('email')}
-                />
-                {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
-              </div>
-
-              <div className="space-y-1.5">
-                <Label>Perfil</Label>
-                <Controller
-                  name="profile_id"
-                  control={control}
-                  render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o perfil" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">Administrador</SelectItem>
-                        <SelectItem value="2">Vendedor</SelectItem>
-                        <SelectItem value="3">Cliente</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                {errors.profile_id && <p className="text-xs text-red-500">{errors.profile_id.message}</p>}
-              </div>
-            </form>
-          ) : (
-            <div className="space-y-6">
-              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-primary font-bold text-lg">
-                    {user.name?.charAt(0)?.toUpperCase() ?? '?'}
-                  </span>
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">{user.name ?? '-'}</p>
-                  <p className="text-sm text-gray-500">{user.email ?? '-'}</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <InfoItem label="ID" value={`#${user.id}`} />
-                <InfoItem label="Perfil" value={profileNames[user.profile_id] ?? '-'} />
-                <InfoItem label="Telefone" value={user.phone ?? '-'} />
-                <InfoItem
-                  label="Status"
-                  value={
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${user.status === 1 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      {user.status === 1 ? 'Ativo' : 'Inativo'}
-                    </span>
-                  }
-                />
-                {user.created_at && (
-                  <InfoItem
-                    label="Cadastrado em"
-                    value={format(new Date(user.created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                  />
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {!isLoading && user && (
-          <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-2">
-            {editing ? (
-              <>
-                <Button variant="outline" size="sm" onClick={cancelEdit} disabled={updateUser.isPending}>
-                  <X className="w-4 h-4 mr-1.5" />
-                  Cancelar
-                </Button>
-                <Button
-                  size="sm"
-                  type="submit"
-                  form="edit-user-form"
-                  disabled={!isValid || updateUser.isPending}
-                >
-                  <Check className="w-4 h-4 mr-1.5" />
-                  {updateUser.isPending ? 'Salvando...' : 'Salvar'}
-                </Button>
-              </>
-            ) : (
-              <Button variant="outline" size="sm" onClick={startEdit}>
-                <Pencil className="w-4 h-4 mr-1.5" />
-                Editar
-              </Button>
-            )}
-          </div>
-        )}
-      </SheetContent>
-    </Sheet>
-  )
 }
 
-function InfoItem({
+function Sk({ className, style }: { className?: string; style?: React.CSSProperties }) {
+  return <div className={cn('animate-pulse rounded-lg bg-[#ECEDF2]', className)} style={style} />
+}
+
+function InfoRow({
   label,
   value,
-  className,
+  last = false,
 }: {
   label: string
   value: React.ReactNode
-  className?: string
+  last?: boolean
 }) {
   return (
-    <div className={className}>
-      <p className="text-xs text-gray-400 mb-1">{label}</p>
-      <p className="text-sm font-medium text-gray-900">{value}</p>
+    <div
+      className={cn(
+        'flex items-center justify-between py-[10px]',
+        !last && 'border-b border-[#F0F1F5]',
+      )}
+    >
+      <span className="text-[12.5px] font-bold text-nxi3">{label}</span>
+      <span className="text-[13px] font-bold text-nxi1">{value}</span>
     </div>
+  )
+}
+
+export function UserDetailDrawer({ userId, open, onClose }: UserDetailDrawerProps) {
+  const { success, error: showError } = useToastContext()
+  const { data: user, isLoading, isError, error, refetch } = useAdminUser(userId ?? 0)
+  const toggleStatus = useAdminToggleUserStatus()
+
+  const isNotFound =
+    isError && (error as AxiosError | null)?.response?.status === 404
+
+  const isActive = user?.status === 1
+
+  const handleToggle = async () => {
+    if (!userId) return
+    try {
+      await toggleStatus.mutateAsync(userId)
+      success('Status atualizado com sucesso')
+    } catch {
+      showError('Erro ao atualizar status do usuário')
+    }
+  }
+
+  return (
+    <Sheet open={open} onOpenChange={(v) => { if (!v) onClose() }}>
+      <SheetContent
+        side="right"
+        className="flex flex-col p-0 w-full sm:w-[440px] sm:max-w-[440px] [&>button]:hidden"
+      >
+        {/* ── Loading ── */}
+        {isLoading && (
+          <>
+            <div className="border-b border-nxborder px-[22px] py-[22px]">
+              <div className="flex items-start gap-[14px]">
+                <Sk className="h-[54px] w-[54px] rounded-[14px]" />
+                <div className="flex-1 pt-0.5">
+                  <Sk className="h-[18px] w-[70%]" />
+                  <Sk className="mt-2 h-3 w-[85%]" />
+                </div>
+              </div>
+              <div className="mt-[14px] flex gap-2">
+                <Sk className="h-6 w-[100px] rounded-full" />
+                <Sk className="h-6 w-[70px] rounded-full" />
+              </div>
+            </div>
+            <div className="flex-1 px-[22px] py-[18px]">
+              <Sk className="h-[10px] w-[80px]" />
+              <div className="mt-[14px] flex flex-col gap-[18px]">
+                {[
+                  { l: 60, v: 130 },
+                  { l: 70, v: 100 },
+                  { l: 65, v: 90 },
+                ].map((s, i) => (
+                  <div key={i} className="flex justify-between">
+                    <Sk className="h-3" style={{ width: s.l }} />
+                    <Sk className="h-3" style={{ width: s.v }} />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="border-t border-nxborder px-[22px] py-4">
+              <Sk className="h-[42px] rounded-[9px]" />
+            </div>
+          </>
+        )}
+
+        {/* ── Not found ── */}
+        {!isLoading && isNotFound && (
+          <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-[14px] bg-nxbg">
+              <UserX size={24} className="text-nxi3" />
+            </span>
+            <p className="mt-[14px] text-[15px] font-extrabold text-nxi1">
+              Usuário não encontrado
+            </p>
+            <p className="mt-1 text-[13px] font-semibold text-nxi2">
+              Este registro não existe ou pode ter sido removido.
+            </p>
+            <button
+              type="button"
+              onClick={onClose}
+              className="mt-[14px] flex items-center gap-[7px] rounded-[9px] border border-nxborder bg-white px-4 h-[38px] text-[13px] font-bold text-nxi2"
+            >
+              <ArrowLeft size={14} />
+              Voltar para a lista
+            </button>
+          </div>
+        )}
+
+        {/* ── Error ── */}
+        {!isLoading && isError && !isNotFound && (
+          <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-[14px] bg-[rgba(193,58,46,0.08)]">
+              <AlertCircle size={24} className="text-[#C13A2E]" />
+            </span>
+            <p className="mt-[14px] text-[15px] font-extrabold text-nxi1">
+              Erro ao carregar o usuário
+            </p>
+            <p className="mt-1 text-[13px] font-semibold text-nxi2">
+              Não foi possível buscar os dados deste usuário.
+            </p>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="mt-[14px] flex items-center gap-[7px] rounded-[9px] bg-nxp px-4 h-[38px] text-[13px] font-bold text-white"
+            >
+              <RefreshCw size={14} />
+              Tentar novamente
+            </button>
+          </div>
+        )}
+
+        {/* ── Loaded ── */}
+        {!isLoading && !isError && user && (
+          <>
+            <div className="border-b border-nxborder px-[22px] py-[22px]">
+              <div className="flex items-start gap-[14px]">
+                <span
+                  className="flex h-[54px] w-[54px] flex-none items-center justify-center rounded-[14px] text-[19px] font-extrabold text-white"
+                  style={{ background: avatarHueFor(user.name ?? '') }}
+                >
+                  {getInitials(user.name ?? '')}
+                </span>
+                <div className="min-w-0 flex-1 pt-0.5">
+                  <p className="text-[18px] font-extrabold leading-snug tracking-[-0.02em] text-nxi1">
+                    {user.name}
+                  </p>
+                  <p className="mt-0.5 truncate text-[13px] font-semibold text-nxi2">
+                    {user.email}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex h-8 w-8 flex-none items-center justify-center rounded-[9px] border border-nxborder bg-white"
+                >
+                  <X size={17} className="text-nxi2" />
+                </button>
+              </div>
+              <div className="mt-[14px] flex gap-2">
+                <span
+                  className="inline-flex items-center rounded-full px-[10px] py-1 text-[10.5px] font-extrabold uppercase tracking-[.04em]"
+                  style={roleBadgeStyle(user.profile_id)}
+                >
+                  {PROFILE_NAMES[user.profile_id] ?? '—'}
+                </span>
+                <span
+                  className="inline-flex items-center gap-[5px] rounded-full px-[10px] py-1 text-[10.5px] font-extrabold uppercase tracking-[.04em]"
+                  style={
+                    isActive
+                      ? {
+                          color: '#2E6B4E',
+                          background: 'rgba(63,138,102,0.08)',
+                          boxShadow: 'inset 0 0 0 1px rgba(63,138,102,0.18)',
+                        }
+                      : {
+                          color: '#8A8CA3',
+                          background: 'rgba(138,140,163,0.1)',
+                          boxShadow: 'inset 0 0 0 1px rgba(138,140,163,0.2)',
+                        }
+                  }
+                >
+                  <span
+                    className="h-[6px] w-[6px] rounded-full"
+                    style={{ background: isActive ? '#2E6B4E' : '#8A8CA3' }}
+                  />
+                  {isActive ? 'Ativo' : 'Inativo'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-auto px-[22px] py-[18px]">
+              <p className="mb-3 text-[10px] font-extrabold uppercase tracking-[.06em] text-nxi3">
+                Informações
+              </p>
+              <InfoRow label="Telefone" value={user.phone || 'Não informado'} />
+              <InfoRow
+                label="ID interno"
+                value={
+                  <span className="font-mono text-[12px] text-nxi2">USR-{user.id}</span>
+                }
+              />
+              <InfoRow
+                label="Cadastro"
+                value={
+                  user.created_at
+                    ? format(new Date(user.created_at), 'dd/MM/yyyy', { locale: ptBR })
+                    : '—'
+                }
+                last
+              />
+            </div>
+
+            <div className="border-t border-nxborder px-[22px] py-4">
+              <button
+                type="button"
+                onClick={handleToggle}
+                disabled={toggleStatus.isPending}
+                className={cn(
+                  'flex w-full h-[42px] items-center justify-center gap-[7px] rounded-[9px] text-[13px] font-bold text-white disabled:opacity-60',
+                  isActive ? 'bg-[#C13A2E]' : 'bg-nxp',
+                )}
+              >
+                {isActive ? (
+                  <>
+                    <UserX size={15} />
+                    Desativar usuário
+                  </>
+                ) : (
+                  <>
+                    <UserCheck size={15} />
+                    Ativar usuário
+                  </>
+                )}
+              </button>
+            </div>
+          </>
+        )}
+      </SheetContent>
+    </Sheet>
   )
 }
