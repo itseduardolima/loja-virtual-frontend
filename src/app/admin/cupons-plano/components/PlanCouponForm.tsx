@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { CalendarClock, Hash, Percent, Settings, Tag, Ticket, Users } from 'lucide-react'
+import { cn, formatBRL } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -201,28 +202,52 @@ export function PlanCouponForm({ initial, isSubmitting, submitLabel, onSubmit, o
           </SectionCard>
 
           <SectionCard>
-            <SectionHeader title="Planos elegíveis" description="Não selecione nenhum para valer em todos os planos" />
-            <div className="flex flex-col gap-2">
-              {plansData?.data?.length ? (
-                plansData.data.map((plan) => (
-                  <label
-                    key={plan.id}
-                    className="flex cursor-pointer items-center gap-3 rounded-xl border border-nxborder bg-white px-4 py-3 hover:bg-nxbg"
-                  >
-                    <Checkbox
-                      checked={planIds.includes(plan.id)}
-                      onCheckedChange={() => togglePlan(plan.id)}
-                    />
-                    <div className="flex-1">
-                      <p className="text-[13px] font-semibold text-nxi1">{plan.name}</p>
-                      <p className="text-[11.5px] font-mono text-nxi3">{plan.slug}</p>
-                    </div>
-                  </label>
-                ))
-              ) : (
-                <p className="text-[13px] text-nxi3">Carregando planos…</p>
-              )}
-            </div>
+            <SectionHeader
+              title="Planos elegíveis"
+              description="Não selecione nenhum para valer em todos os planos"
+            />
+            {plansData?.data?.length ? (
+              <div className="mt-[14px] overflow-hidden rounded-xl border border-nxborder">
+                {plansData.data.map((plan, i) => {
+                  const checked = planIds.includes(plan.id)
+                  return (
+                    <label
+                      key={plan.id}
+                      className={cn(
+                        'flex cursor-pointer items-center gap-[13px] px-[16px] py-[14px] transition-colors',
+                        i > 0 && 'border-t border-[#F0F1F5]',
+                        checked ? 'bg-[#FAFAFE]' : 'bg-white hover:bg-[#FAFAFE]',
+                      )}
+                    >
+                      <span
+                        className="flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[9px] text-[13px] font-extrabold"
+                        style={{
+                          background: checked ? 'rgba(42,45,124,0.10)' : '#F6F7FA',
+                          color: checked ? '#2A2D7C' : '#8A8CA3',
+                        }}
+                      >
+                        {plan.name.charAt(0).toUpperCase()}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[13.5px] font-extrabold text-nxi1">{plan.name}</div>
+                        <div className="text-[12px] font-semibold text-nxi3">
+                          {formatBRL(Number(plan.price_monthly))}/mês
+                          {plan.price_yearly
+                            ? ` · ${formatBRL(Number(plan.price_yearly))}/ano`
+                            : ''}
+                        </div>
+                      </div>
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={() => togglePlan(plan.id)}
+                      />
+                    </label>
+                  )
+                })}
+              </div>
+            ) : (
+              <p className="mt-3 text-[13px] font-semibold text-nxi3">Carregando planos…</p>
+            )}
           </SectionCard>
         </div>
 
