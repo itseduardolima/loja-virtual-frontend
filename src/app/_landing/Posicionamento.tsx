@@ -8,7 +8,7 @@ const CARDS = [
 ]
 
 export const Posicionamento = () => (
-  <section className={s.sec} style={{paddingTop:'64px',paddingBottom:0}}>
+  <section className={s.sec} style={{padding:'64px 0px'}}>
     <div className={s.wrap}>
       <div style={{maxWidth:'760px',margin:'0 auto',textAlign:'center'}}>
         <div className={s.eyebrow}>Pra quem é o Nexo</div>

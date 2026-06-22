@@ -3,69 +3,24 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Check, X, Lock } from 'lucide-react'
 import s from '../landing.module.css'
+import { useSubscriptionPlans } from '@/hooks/useSubscriptionPlans'
+import { derivePlanFeaturesComparison, computeYearlySavings } from '@/lib/planUtils'
+import type { BillingCycle } from '@/types/subscription'
 
-type Billing = 'monthly' | 'annual'
-
-const PLANS = [
-  {
-    slug: 'plano-basico',
-    name: 'Básico',
-    desc: 'Pra começar a vender online',
-    monthly: 'R$ 29,90',
-    annual: 'R$ 24,92',
-    subMonthly: 'cobrança mensal',
-    subAnnual: 'R$ 299,00 cobrados 1× ao ano',
-    reco: false,
-    features: [
-      { label: 'Até 30 produtos', on: true },
-      { label: 'Gestão de pedidos (Kanban e lista)', on: true },
-      { label: 'Pagamentos Pix, cartão e boleto', on: true },
-      { label: 'Cupons de desconto', on: false },
-      { label: 'Dashboard avançado', on: false },
-      { label: 'Perguntas e respostas', on: false },
-      { label: 'Exportar pedidos · Bling ERP', on: false },
-    ],
-  },
-  {
-    slug: 'plano-pro',
-    name: 'Pro',
-    desc: 'Pra loja que está crescendo',
-    monthly: 'R$ 79,90',
-    annual: 'R$ 66,58',
-    subMonthly: 'cobrança mensal',
-    subAnnual: 'R$ 799,00 cobrados 1× ao ano',
-    reco: true,
-    features: [
-      { label: 'Até 100 produtos', on: true },
-      { label: 'Tudo do Básico', on: true },
-      { label: 'Cupons de desconto', on: true },
-      { label: 'Dashboard avançado', on: true },
-      { label: 'Perguntas e respostas nos produtos', on: true },
-      { label: 'Exportar pedidos em Excel', on: true },
-      { label: 'Bling ERP · NF-e automática', on: true },
-    ],
-  },
-  {
-    slug: 'plano-max',
-    name: 'Max',
-    desc: 'Pra quem vende em escala',
-    monthly: 'R$ 149,90',
-    annual: 'R$ 124,92',
-    subMonthly: 'cobrança mensal',
-    subAnnual: 'R$ 1.499,00 cobrados 1× ao ano',
-    reco: false,
-    features: [
-      { label: 'Produtos ilimitados', on: true },
-      { label: 'Tudo do Pro', on: true },
-      { label: 'Domínio próprio (sualoja.com.br)', on: true },
-      { label: 'Suporte prioritário 24/7', on: true },
-    ],
-  },
-]
+function formatBRL(value: string | number | null | undefined): string {
+  if (value == null) return '—'
+  const num = typeof value === 'string' ? parseFloat(value) : value
+  return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+}
 
 export const PricingSection = () => {
-  const [billing, setBilling] = useState<Billing>('monthly')
-  const annual = billing === 'annual'
+  const [billing, setBilling] = useState<BillingCycle>('monthly')
+  const { data: plans, isLoading } = useSubscriptionPlans()
+
+  const annual = billing === 'yearly'
+
+  const savingsPercent =
+    plans?.length ? computeYearlySavings(plans[0].price_monthly, plans[0].price_yearly) : 17
 
   return (
     <section className={`${s.sec} ${s.bgWht}`} id="precos">
@@ -86,49 +41,83 @@ export const PricingSection = () => {
                 Mensal
               </button>
               <button
-                className={billing === 'annual' ? s.on : ''}
-                onClick={() => setBilling('annual')}
+                className={billing === 'yearly' ? s.on : ''}
+                onClick={() => setBilling('yearly')}
                 type="button"
               >
-                Anual<span className={s.savePill}>-17%</span>
+                Anual
+                {savingsPercent > 0 && (
+                  <span className={s.savePill}>-{savingsPercent}%</span>
+                )}
               </button>
             </div>
           </div>
         </div>
         <div className={s.plans}>
-          {PLANS.map((plan) => (
-            <div key={plan.slug} className={plan.reco ? `${s.plan} ${s.reco}` : s.plan} data-rev>
-              {plan.reco && <span className={s.planTag}>Mais popular</span>}
-              <div className={s.planName}>{plan.name}</div>
-              <div className={s.planDesc}>{plan.desc}</div>
-              <div className={s.planPrice}>
-                {annual ? plan.annual : plan.monthly}
-                <small>/mês</small>
-              </div>
-              <div className={s.planSub}>{annual ? plan.subAnnual : plan.subMonthly}</div>
-              <ul className={s.planFeats}>
-                {plan.features.map((f) => (
-                  <li key={f.label} className={f.on ? '' : s.off}>
-                    {f.on ? <Check size={17} color="#10B981" /> : <X size={17} color="#CBD5E1" />}
-                    {f.label}
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href={`/assinatura?plan=${plan.slug}`}
-                className={plan.reco ? `${s.btn} ${s.btnPri}` : `${s.btn} ${s.btnOutline}`}
-                style={{
-                  width: '100%',
-                  height: '48px',
-                  justifyContent: 'center',
-                  marginTop: 'auto',
-                  color: plan.reco ? 'var(--wht)' : 'var(--t1)',
-                }}
+          {isLoading &&
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className={s.plan} style={{ opacity: 0.4, minHeight: 400 }} data-rev />
+            ))}
+          {plans?.map((plan, index) => {
+            const isReco = index === 1 && plans.length >= 2
+            const features = derivePlanFeaturesComparison(plan)
+
+            const yearlyTotal =
+              plan.price_yearly != null ? parseFloat(plan.price_yearly) : null
+            const yearlyPerMonth = yearlyTotal != null ? yearlyTotal / 12 : null
+
+            const displayPrice =
+              annual && yearlyPerMonth != null
+                ? formatBRL(yearlyPerMonth)
+                : formatBRL(plan.price_monthly)
+
+            const displaySub =
+              annual && yearlyTotal != null
+                ? `${formatBRL(yearlyTotal)} cobrados 1× ao ano`
+                : 'cobrança mensal'
+
+            return (
+              <div
+                key={plan.slug}
+                className={isReco ? `${s.plan} ${s.reco}` : s.plan}
+                data-rev
               >
-                Assinar {plan.name}
-              </Link>
-            </div>
-          ))}
+                {isReco && <span className={s.planTag}>Mais popular</span>}
+                <div className={s.planName}>{plan.name}</div>
+                <div className={s.planDesc}>{plan.description}</div>
+                <div className={s.planPrice}>
+                  {displayPrice}
+                  <small>/mês</small>
+                </div>
+                <div className={s.planSub}>{displaySub}</div>
+                <ul className={s.planFeats}>
+                  {features.map((f) => (
+                    <li key={f.label} className={f.included ? '' : s.off}>
+                      {f.included ? (
+                        <Check size={17} color="#10B981" />
+                      ) : (
+                        <X size={17} color="#CBD5E1" />
+                      )}
+                      {f.label}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href={`/assinatura?plano=${plan.slug}&cycle=${billing}`}
+                  className={isReco ? `${s.btn} ${s.btnPri}` : `${s.btn} ${s.btnOutline}`}
+                  style={{
+                    width: '100%',
+                    height: '48px',
+                    justifyContent: 'center',
+                    marginTop: 'auto',
+                    color: isReco ? 'var(--wht)' : 'var(--t1)',
+                  }}
+                >
+                  Assinar {plan.name}
+                </Link>
+              </div>
+            )
+          })}
         </div>
         <div className={s.pricingFoot}>
           <Lock size={16} color="#64748B" />
