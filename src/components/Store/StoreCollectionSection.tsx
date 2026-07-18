@@ -11,9 +11,13 @@ import { Stars } from '@/components/Store/Product'
 import { EmptyImageState } from '@/components/Product'
 import { StoreHomeCard } from './StoreHomeCard'
 import { StoreSectionHeader } from './StoreSectionHeader'
+import { StoreButton, storeButtonClass } from '@/components/Store/ui'
 import type { CollectionSort, CollectionView } from '@/types/store'
 
 export type { CollectionSort, CollectionView }
+
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2'
 
 const SORT_OPTIONS: Array<[CollectionSort, string]> = [
   ['relevancia', 'Relevância'],
@@ -57,7 +61,8 @@ function ListRow({
       type="button"
       onClick={onOpen}
       className={cn(
-        'flex w-full items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-nxbg',
+        'group flex w-full items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-store/[0.06]',
+        FOCUS_RING,
         index > 0 && 'border-t border-nxborder',
       )}
     >
@@ -72,7 +77,9 @@ function ListRow({
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="line-clamp-1 text-[14px] font-semibold text-nxi1">{product.name}</p>
+        <p className="line-clamp-1 text-[14px] font-semibold text-nxi1 transition-colors group-hover:text-store">
+          {product.name}
+        </p>
         {product.category?.name && (
           <p className="mt-0.5 text-[11.5px] text-nxi3">{product.category.name}</p>
         )}
@@ -91,7 +98,7 @@ function ListRow({
           </div>
         )}
       </div>
-      <ChevronRight size={16} className="shrink-0 text-nxi3" />
+      <ChevronRight size={16} className="shrink-0 text-nxi3 transition-colors group-hover:text-store" />
     </button>
   )
 }
@@ -127,7 +134,7 @@ export function StoreCollectionSection({
   )
 
   return (
-    <section id="colecao" className="mx-auto max-w-[1180px] scroll-mt-28 px-4 pb-4 pt-10 md:px-10">
+    <section id="colecao" className="mx-auto max-w-store scroll-mt-28 px-4 pb-4 pt-10 md:px-10">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <StoreSectionHeader
@@ -146,7 +153,10 @@ export function StoreCollectionSection({
               value={sort}
               onChange={(e) => onSortChange(e.target.value as CollectionSort)}
               aria-label="Ordenar produtos"
-              className="h-9 appearance-none rounded-full border border-nxborder bg-white pl-4 pr-9 text-[12.5px] font-semibold text-nxi2 focus:border-nxp focus:outline-none"
+              className={cn(
+                'h-9 appearance-none rounded-full border border-nxborder bg-white pl-4 pr-9 text-[12.5px] font-semibold text-nxi2 transition-colors focus:border-store',
+                FOCUS_RING,
+              )}
             >
               {SORT_OPTIONS.map(([value, label]) => (
                 <option key={value} value={value}>
@@ -175,7 +185,8 @@ export function StoreCollectionSection({
                 aria-pressed={view === v}
                 className={cn(
                   'flex h-8 w-9 items-center justify-center rounded-full transition-all',
-                  view === v ? 'bg-white text-nxi1 shadow-sm' : 'text-nxi3',
+                  FOCUS_RING,
+                  view === v ? 'bg-white text-nxi1 shadow-sm' : 'text-nxi3 hover:text-nxi1',
                 )}
               >
                 <Icon size={15} />
@@ -188,11 +199,11 @@ export function StoreCollectionSection({
       {loading ? (
         <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3 md:gap-3 lg:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="aspect-[3/4] animate-pulse rounded-2xl bg-nxbg" />
+            <div key={i} className="aspect-[3/4] animate-pulse rounded-[20px] bg-nxsurf" />
           ))}
         </div>
       ) : products.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-nxborder bg-nxbg/60 py-16 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-[20px] border border-nxborder bg-nxbg/60 py-16 text-center">
           <SearchX size={28} className="text-nxi3" />
           <div>
             <p className="text-[15px] font-bold text-nxi1">Nenhum produto encontrado</p>
@@ -200,16 +211,12 @@ export function StoreCollectionSection({
               Ajuste a busca ou os filtros para encontrar o que procura.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={onClearFilters}
-            className="mt-1 rounded-full bg-nxp px-5 py-2.5 text-[12.5px] font-bold text-white transition-transform active:scale-95"
-          >
+          <StoreButton variant="primary" onClick={onClearFilters} className="mt-1">
             Limpar filtros
-          </button>
+          </StoreButton>
         </div>
       ) : view === 'list' ? (
-        <div className="overflow-hidden rounded-2xl border border-nxborder">
+        <div className="overflow-hidden rounded-[20px] border border-nxborder bg-nxsurf">
           {products.map((product, i) => (
             <ListRow key={product.id} product={product} index={i} onOpen={() => onOpen(product)} />
           ))}
@@ -232,10 +239,7 @@ export function StoreCollectionSection({
 
       {!loading && products.length > 0 && (
         <div className="mt-8 flex justify-center">
-          <Link
-            href={`/loja/${slug}/produtos`}
-            className="inline-flex items-center gap-2 rounded-full border border-nxborder bg-white px-6 py-3 text-[13px] font-bold text-nxi1 transition-colors hover:border-nxp hover:text-nxp"
-          >
+          <Link href={`/loja/${slug}/produtos`} className={storeButtonClass({ variant: 'outline' })}>
             Ver todos os produtos <ArrowRight size={15} />
           </Link>
         </div>

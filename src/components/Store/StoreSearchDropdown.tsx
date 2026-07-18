@@ -1,9 +1,11 @@
 'use client'
 
 import Image from 'next/image'
-import { IconSearch, IconStar } from '@/assets/icons'
+import { Search } from 'lucide-react'
+import { IconStar } from '@/assets/icons'
 import { Product } from '@/types/product'
 import { formatPrice, buildImageUrl } from '@/lib/utils'
+import { StoreEyebrow } from '@/components/Store/ui'
 
 function getProductImage(product: Product): string | null {
   const imgs = product.images as unknown
@@ -14,6 +16,9 @@ function getProductImage(product: Product): string | null {
   if (Array.isArray(imgs) && imgs.length) return imgs[0]
   return null
 }
+
+const CHIP_CLASS =
+  'rounded-full bg-nxbg px-3 py-[6px] text-[12px] font-medium text-nxi2 transition-colors duration-[120ms] hover:bg-nxsurf focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2'
 
 export interface StoreSearchDropdownProps {
   query: string
@@ -45,8 +50,8 @@ export function StoreSearchDropdown({
     <div
       className={[
         'absolute top-[calc(100%+10px)] left-1/2 w-[580px]',
-        'bg-white rounded-[20px] border border-[#F0EBE3] overflow-hidden z-[500]',
-        'shadow-[0_20px_64px_rgba(0,0,0,.16),0_2px_8px_rgba(0,0,0,.06)]',
+        'bg-white rounded-[20px] border border-nxborder overflow-hidden z-[500]',
+        'shadow-[0_20px_64px_-24px_rgba(7,8,21,0.35)]',
         'origin-top transition-[opacity,transform] duration-200 ease-[cubic-bezier(.22,1,.36,1)]',
         visible
           ? 'opacity-100 translate-x-[-50%] translate-y-0 scale-100 pointer-events-auto'
@@ -55,56 +60,41 @@ export function StoreSearchDropdown({
     >
       {!hasQ ? (
         <div className="px-5 pt-[18px] pb-5">
-          {filteredCats.length > 0 && (
+          {filteredCats.length > 0 ? (
             <>
-              <p className="font-mono text-[8.5px] tracking-[.18em] uppercase text-[#B0A89E] mb-[10px]">
+              <StoreEyebrow tone="muted" className="mb-[10px]">
                 Categorias
-              </p>
-              <div className="flex flex-wrap gap-[6px] mb-4">
+              </StoreEyebrow>
+              <div className="flex flex-wrap gap-[6px]">
                 {filteredCats.map(cat => (
-                  <button
-                    key={cat}
-                    onClick={() => onSelect(cat)}
-                    className="bg-[#F7F3EF] border-0 rounded-full px-3 py-[5px] text-[12px] font-medium text-[#5A3C1E] cursor-pointer transition-colors duration-[120ms] hover:bg-[#EDE5DB]"
-                  >
+                  <button key={cat} onClick={() => onSelect(cat)} className={CHIP_CLASS}>
                     {cat}
                   </button>
                 ))}
               </div>
             </>
+          ) : (
+            <p className="py-2 text-[13px] text-nxi3">
+              Digite para buscar produtos na loja.
+            </p>
           )}
-          <p className="font-mono text-[8.5px] tracking-[.18em] uppercase text-[#B0A89E] mb-2">
-            Sugestões
-          </p>
-          {['vestido midi', 'blusa de linho', 'calça wide leg', 'acessórios', 'novidades'].map((term, i) => (
-            <button
-              key={i}
-              onClick={() => onSelect(term)}
-              className="w-full flex items-center gap-[10px] px-[2px] py-2 bg-transparent border-0 cursor-pointer text-left rounded-lg transition-colors duration-[120ms] hover:bg-[#FAF6F2]"
-            >
-              <span className="flex-shrink-0 opacity-50">
-                <IconSearch size={13} />
-              </span>
-              <span className="text-[13px] text-[#374151]">{term}</span>
-            </button>
-          ))}
         </div>
       ) : loading ? (
-        <div className="px-8 py-8 flex items-center justify-center gap-[10px]">
-          <div className="w-[18px] h-[18px] border-2 border-[#E5E7EB] border-t-[#5A3C1E] rounded-full animate-spin" />
-          <span className="text-[13px] text-[#9CA3AF]">Buscando...</span>
+        <div className="flex items-center justify-center gap-[10px] px-8 py-8">
+          <div className="h-[18px] w-[18px] animate-spin rounded-full border-2 border-nxborder border-t-store" />
+          <span className="text-[13px] text-nxi3">Buscando...</span>
         </div>
       ) : suggestions.length > 0 ? (
         <div>
-          <div className="flex items-center justify-between px-5 pt-[14px] pb-[10px] border-b border-[#F5F0EB]">
-            <span className="text-[12px] text-[#9CA3AF]">
-              <b className="text-[#111]">{suggestions.length}</b>{' '}
+          <div className="flex items-center justify-between border-b border-nxborder px-5 pb-[10px] pt-[14px]">
+            <span className="text-[12px] text-nxi3">
+              <b className="text-nxi1">{suggestions.length}</b>{' '}
               resultado{suggestions.length > 1 ? 's' : ''} para{' '}
-              <b className="text-[#111] italic">&ldquo;{q}&rdquo;</b>
+              <b className="italic text-nxi1">&ldquo;{q}&rdquo;</b>
             </span>
             <button
               onClick={onClose}
-              className="text-[12px] text-[#5A3C1E] font-semibold bg-transparent border-0 cursor-pointer"
+              className="rounded-lg text-[12px] font-semibold text-store transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2"
             >
               Ver todos →
             </button>
@@ -117,26 +107,30 @@ export function StoreSearchDropdown({
                 key={p.id}
                 onClick={() => onClickProduct(p)}
                 className={[
-                  'w-full flex items-center gap-[14px] px-5 py-3',
-                  'bg-transparent border-0 cursor-pointer text-left',
-                  'transition-colors duration-[120ms] hover:bg-[#FAF6F2]',
-                  i < Math.min(suggestions.length, 5) - 1 ? 'border-b border-[#FAF7F4]' : '',
+                  'flex w-full items-center gap-[14px] px-5 py-3 text-left',
+                  'transition-colors duration-[120ms] hover:bg-nxsurf',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-store',
+                  i < Math.min(suggestions.length, 5) - 1 ? 'border-b border-nxborder' : '',
                 ].join(' ')}
               >
-                <div className="w-[52px] h-16 rounded-[10px] overflow-hidden flex-shrink-0 bg-[#f0ebe5] relative">
-                  {imgSrc ? (
-                    <Image src={buildImageUrl(imgSrc)} alt={p.name} fill className="object-cover" sizes="52px" />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-[#f5ede3] to-[#d4c4b4]" />
+                <div className="relative h-16 w-[52px] flex-shrink-0 overflow-hidden rounded-[10px] bg-nxbg">
+                  {imgSrc && (
+                    <Image
+                      src={buildImageUrl(imgSrc)}
+                      alt={p.name}
+                      fill
+                      className="object-cover"
+                      sizes="52px"
+                    />
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13.5px] font-bold text-[#111] tracking-[-0.01em] whitespace-nowrap overflow-hidden text-ellipsis">
+                <div className="min-w-0 flex-1">
+                  <p className="overflow-hidden text-ellipsis whitespace-nowrap text-[13.5px] font-bold tracking-[-0.01em] text-nxi1">
                     {p.name}
                   </p>
-                  <div className="flex items-center gap-[6px] mt-[5px]">
+                  <div className="mt-[5px] flex items-center gap-[6px]">
                     {p.category && (
-                      <span className="text-[10px] font-semibold text-[#9CA3AF] bg-[#F3F4F6] px-2 py-[2px] rounded-full">
+                      <span className="rounded-full bg-nxbg px-2 py-[2px] text-[10px] font-semibold text-nxi3">
                         {p.category.name}
                       </span>
                     )}
@@ -149,8 +143,8 @@ export function StoreSearchDropdown({
                     )}
                   </div>
                 </div>
-                <div className="text-right flex-shrink-0">
-                  <p className="text-[15px] font-extrabold text-[#111] tracking-[-0.02em]">
+                <div className="flex-shrink-0 text-right">
+                  <p className="text-[15px] font-bold tracking-[-0.02em] text-nxi1">
                     {formatPrice(price)}
                   </p>
                 </div>
@@ -160,23 +154,19 @@ export function StoreSearchDropdown({
         </div>
       ) : (
         <div className="px-8 py-10 text-center">
-          <div className="w-[52px] h-[52px] rounded-[14px] bg-[#FAF6F2] flex items-center justify-center mx-auto mb-4">
-            <IconSearch size={13} />
+          <div className="mx-auto mb-4 flex h-[52px] w-[52px] items-center justify-center rounded-[14px] bg-nxbg text-nxi3">
+            <Search size={18} strokeWidth={2} />
           </div>
-          <p className="text-[15px] font-bold text-[#111]">
+          <p className="text-[15px] font-bold text-nxi1">
             Sem resultados para <span className="italic">&ldquo;{q}&rdquo;</span>
           </p>
-          <p className="text-[12.5px] text-[#9CA3AF] mt-[6px] leading-[1.5]">
+          <p className="mt-[6px] text-[12.5px] leading-[1.5] text-nxi3">
             Tente um termo diferente ou explore nossas categorias.
           </p>
           {filteredCats.length > 0 && (
-            <div className="flex justify-center flex-wrap gap-[6px] mt-4">
+            <div className="mt-4 flex flex-wrap justify-center gap-[6px]">
               {filteredCats.map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => onSelect(cat)}
-                  className="bg-[#F7F3EF] border-0 rounded-full px-[14px] py-[6px] text-[12px] font-medium text-[#5A3C1E] cursor-pointer transition-colors duration-[120ms] hover:bg-[#EDE5DB]"
-                >
+                <button key={cat} onClick={() => onSelect(cat)} className={CHIP_CLASS}>
                   {cat}
                 </button>
               ))}
