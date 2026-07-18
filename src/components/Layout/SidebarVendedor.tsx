@@ -93,6 +93,7 @@ export function SidebarVendedor({
       items: [
         { id: 'produtos', label: 'Produtos', href: '/vendedor/produtos', icon: Package },
         { id: 'categorias', label: 'Categorias', href: '/vendedor/categorias', icon: FolderOpen },
+        { id: 'vitrine', label: 'Vitrine', href: '/vendedor/vitrine', icon: Store },
         {
           id: 'perguntas',
           label: 'Perguntas',
