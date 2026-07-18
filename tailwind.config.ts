@@ -11,6 +11,7 @@ const config: Config = {
         integral: ['var(--font-integral)', 'system-ui', 'sans-serif'],
         nunito: ['var(--font-nunito)', 'sans-serif'],
         satoshi: ['var(--font-satoshi)', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-ibm-plex-mono)', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
       colors: {
         background: 'hsl(var(--background))',
@@ -67,11 +68,18 @@ const config: Config = {
         nxborder: 'hsl(var(--nxborder) / <alpha-value>)',
         wa: 'hsl(var(--wa) / <alpha-value>)',
         coal: '#070815',
+        // Accent do lojista (multi-tenant) — default = nxp índigo; override por loja via brand_color
+        store: 'hsl(var(--store-accent) / <alpha-value>)',
+        'store-ink': 'hsl(var(--store-accent-ink) / <alpha-value>)',
       },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+      },
+      maxWidth: {
+        // Largura única do container da vitrine (fonte de verdade — antes 1180/1280 soltos)
+        store: '1440px',
       },
     },
   },

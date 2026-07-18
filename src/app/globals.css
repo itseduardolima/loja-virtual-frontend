@@ -23,7 +23,7 @@ html {
     --accent: 210 40% 96%;
     --accent-foreground: 222.2 84% 4.9%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 255 86 48;
+    --destructive-foreground: 0 0% 100%;
     --border: 214.3 31.8% 91.4%;
     --border-primary: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
@@ -82,13 +82,18 @@ html {
   --nxs: 151 37% 40%;          /* success verde   #3F8A66 */
   --nxw: 38 76% 57%;           /* warning âmbar   #E8A33D */
   --nxd: 4 61% 47%;            /* danger vermelho #C13A2E */
-  --nxsurf: 100 100% 100%;        /* surface off-white #FBFAF7 */
+  --nxsurf: 40 33% 98%;        /* surface off-white #FBFAF7 */
   --nxbg: 220 14% 96%;         /* background área #F3F4F8 */
   --nxi1: 225 32% 17%;         /* ink-strong  */
   --nxi2: 225 14% 38%;         /* ink-medium  */
-  --nxi3: 225 10% 58%;         /* ink-faint   */
+  --nxi3: 225 11% 48%;         /* ink-faint (corrigido p/ ~4.5:1 no branco) */
   --nxborder: 220 14% 92%;     /* border      */
   --wa: 142 64% 38%;           /* verde WhatsApp */
+
+  /* Accent do lojista (multi-tenant) — default = nxp índigo.
+     Sobrescrito por loja via style inline (brand_color) no root da vitrine. */
+  --store-accent: 237 49% 33%;      /* = nxp */
+  --store-accent-ink: 237 45% 26%;  /* variação escura p/ faixas/hover */
 }
 
 /* Fade-in para campos dinâmicos / seções (fluxo Criar Produto) */
@@ -459,4 +464,20 @@ html {
   background: linear-gradient(to left, #fff, transparent);
   pointer-events: none;
   z-index: 2;
+}
+
+/* Máscara de borda para faixas roláveis (marquee + rows da vitrine) —
+   funciona sobre qualquer fundo, diferente do scroll-row-wrap (assume branco). */
+.edge-fade-x {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+}
+
+/* Rodapé da vitrine — glow e hairline no accent do lojista (gradiente com CSS var,
+   não expressável só em Tailwind; mesmo padrão de .hero-glow). */
+.store-glow {
+  background: radial-gradient(circle, hsl(var(--store-accent)) 0%, transparent 70%);
+}
+.store-hairline {
+  background: linear-gradient(90deg, transparent, hsl(var(--store-accent) / 0.6), transparent);
 }

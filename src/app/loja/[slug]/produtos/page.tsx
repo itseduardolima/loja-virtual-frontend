@@ -55,7 +55,7 @@ export default function StoreProductsPage() {
         search={vm.debouncedSearch || undefined}
       />
 
-      <div className="mx-auto max-w-[1280px] px-4 md:px-10">
+      <div className="mx-auto max-w-store px-4 md:px-10">
         <div className="flex gap-7 py-6">
           <PlpFilterRail activeCount={vm.activeCount} onClearAll={vm.clearAll}>
             <PlpFilterPanel {...vm.panelProps} />

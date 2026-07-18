@@ -19,7 +19,7 @@ export function PlpHero({ slug, niche, title, resultCount, search }: PlpHeroProp
 
   return (
     <div className="border-b border-nxborder bg-nxbg/50">
-      <div className="mx-auto max-w-[1280px] px-4 py-6 md:px-10">
+      <div className="mx-auto max-w-store px-4 py-6 md:px-10">
         <div className="flex items-center gap-1.5 text-[11px] font-medium text-nxi3">
           <Link href={`/loja/${slug}`} className="hover:text-nxp">
             Início
