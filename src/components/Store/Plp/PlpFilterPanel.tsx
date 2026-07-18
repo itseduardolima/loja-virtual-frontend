@@ -2,12 +2,17 @@
 
 import { cn } from '@/lib/utils'
 import { getColorHex } from '@/schemas'
-import { colorLuma, getNicheIcon } from '@/components/ProductForm'
+import { getNicheIcon } from '@/components/ProductForm'
 import { formatBRL } from '@/lib/storefront'
 import { Stars } from '../Product'
 import { FilterGroup } from './FilterGroup'
 import { CheckRow } from './CheckRow'
 import type { PlpFilterPanelProps } from './types'
+
+const RATING_OPTIONS = [4, 4.5]
+
+const focusRing =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2'
 
 /** Corpo completo dos filtros — compartilhado entre rail (desktop) e drawer (mobile) */
 export function PlpFilterPanel({
@@ -31,6 +36,7 @@ export function PlpFilterPanel({
   onToggleFeatured,
 }: PlpFilterPanelProps) {
   const priceValue = Math.min(filters.maxPrice, priceMax)
+  const pricePct = priceMax > 0 ? Math.round((priceValue / priceMax) * 100) : 0
 
   return (
     <div>
@@ -48,8 +54,9 @@ export function PlpFilterPanel({
                   onClick={() => onToggleNiche(n.id)}
                   className={cn(
                     'flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12.5px] font-semibold transition-colors',
+                    focusRing,
                     on
-                      ? 'border-nxp bg-nxp/[0.08] text-nxp'
+                      ? 'border-store bg-store/[0.08] text-store-ink'
                       : 'border-nxborder text-nxi2 hover:border-nxi3',
                   )}
                 >
@@ -87,11 +94,47 @@ export function PlpFilterPanel({
             step={10}
             value={priceValue}
             onChange={(e) => onSetMaxPrice(+e.target.value)}
-            className="w-full accent-nxp"
+            aria-label="Preço máximo"
+            className={cn(
+              'h-1.5 w-full cursor-pointer appearance-none rounded-full bg-nxborder accent-[hsl(var(--store-accent))]',
+              focusRing,
+            )}
+            style={{
+              background: `linear-gradient(to right, hsl(var(--store-accent)) ${pricePct}%, hsl(var(--nxborder)) ${pricePct}%)`,
+            }}
           />
-          <div className="mt-1.5 flex items-center justify-between text-[12px] text-nxi2">
-            <span>R$ 0</span>
-            <span className="font-bold text-nxi1">até {formatBRL(priceValue)}</span>
+          <div className="mt-3 flex items-center gap-2.5">
+            <div className="flex flex-1 flex-col gap-1">
+              <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-nxi3">
+                Mín
+              </span>
+              <div className="flex h-9 items-center gap-1 rounded-[9px] border border-nxborder bg-nxbg/50 px-2.5">
+                <span className="text-[12.5px] text-nxi3">R$</span>
+                <span className="text-[13px] font-bold text-nxi2">0</span>
+              </div>
+            </div>
+            <span className="mt-4 text-nxi3">—</span>
+            <div className="flex flex-1 flex-col gap-1">
+              <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-nxi3">
+                Máx
+              </span>
+              <div
+                className={cn(
+                  'flex h-9 items-center gap-1 rounded-[9px] border border-nxborder bg-white px-2.5 focus-within:border-store',
+                )}
+              >
+                <span className="text-[12.5px] text-nxi3">R$</span>
+                <input
+                  type="number"
+                  min={0}
+                  max={priceMax}
+                  value={Math.round(priceValue)}
+                  onChange={(e) => onSetMaxPrice(Math.max(0, Math.min(priceMax, +e.target.value || 0)))}
+                  aria-label="Preço máximo em reais"
+                  className="w-full border-0 bg-transparent text-[13px] font-bold text-nxi1 outline-none"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </FilterGroup>
@@ -99,35 +142,16 @@ export function PlpFilterPanel({
       {/* Cor (dimensão de variante) */}
       {colorFacet.length > 0 && (
         <FilterGroup title={colorLabel ?? 'Cor'} count={filters.colors.length}>
-          <div className="grid grid-cols-2 gap-1.5">
-            {colorFacet.map((c) => {
-              const on = filters.colors.includes(c)
-              const hex = getColorHex(c)
-              const light = colorLuma(hex) > 0.82
-              return (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => onToggleColor(c)}
-                  className={cn(
-                    'flex items-center gap-2 rounded-lg border px-2 py-1.5 text-left text-[12px] font-medium transition-colors',
-                    on
-                      ? 'border-nxp bg-nxp/[0.05] text-nxp'
-                      : 'border-nxborder text-nxi2 hover:border-nxi3',
-                  )}
-                >
-                  {/* swatch dinâmico — cor e ring por luminância */}
-                  <span
-                    className="h-4 w-4 shrink-0 rounded-full"
-                    style={{
-                      background: hex,
-                      boxShadow: light ? 'inset 0 0 0 1px hsl(var(--nxborder))' : 'none',
-                    }}
-                  />
-                  <span className="truncate">{c}</span>
-                </button>
-              )
-            })}
+          <div className="flex flex-col">
+            {colorFacet.map((c) => (
+              <CheckRow
+                key={c}
+                label={c}
+                checked={filters.colors.includes(c)}
+                onToggle={() => onToggleColor(c)}
+                swatch={getColorHex(c)}
+              />
+            ))}
           </div>
         </FilterGroup>
       )}
@@ -135,7 +159,7 @@ export function PlpFilterPanel({
       {/* Tamanho (dimensão de variante) */}
       {sizeFacet.length > 0 && (
         <FilterGroup title={sizeLabel ?? 'Tamanho'} count={filters.sizes.length}>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-2">
             {sizeFacet.map((s) => {
               const on = filters.sizes.includes(s)
               return (
@@ -144,9 +168,10 @@ export function PlpFilterPanel({
                   type="button"
                   onClick={() => onToggleSize(s)}
                   className={cn(
-                    'flex h-9 min-w-[2.25rem] items-center justify-center rounded-lg border px-2 text-[12.5px] font-bold transition-colors',
+                    'flex h-9 min-w-[2.25rem] items-center justify-center rounded-full border px-3 text-[13px] font-bold transition-colors',
+                    focusRing,
                     on
-                      ? 'border-nxp bg-nxp text-white'
+                      ? 'border-store bg-store/[0.08] text-store-ink'
                       : 'border-nxborder text-nxi2 hover:border-nxi3',
                   )}
                 >
@@ -175,8 +200,9 @@ export function PlpFilterPanel({
                       onClick={() => onToggleDyn(facet, opt)}
                       className={cn(
                         'rounded-lg border px-3 py-1.5 text-[12.5px] font-semibold transition-colors',
+                        focusRing,
                         on
-                          ? 'border-nxp bg-nxp/[0.08] text-nxp'
+                          ? 'border-store bg-store/[0.08] text-store-ink'
                           : 'border-nxborder text-nxi2 hover:border-nxi3',
                       )}
                     >
@@ -203,34 +229,29 @@ export function PlpFilterPanel({
 
       {/* Avaliação */}
       <FilterGroup title="Avaliação">
-        <div className="flex flex-col gap-0.5">
-          {[4, 3, 0].map((r) => {
+        <div className="flex flex-col gap-1">
+          {RATING_OPTIONS.map((r) => {
             const active = filters.minRating === r
             return (
               <button
                 key={r}
                 type="button"
-                onClick={() => onSetMinRating(r)}
+                onClick={() => onSetMinRating(active ? 0 : r)}
+                aria-pressed={active}
                 className={cn(
-                  'flex items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-colors',
-                  active ? 'bg-nxp/[0.06]' : 'hover:bg-nxbg',
+                  'flex items-center gap-2.5 rounded-lg px-1.5 py-2 text-left transition-colors',
+                  focusRing,
                 )}
               >
                 <span
                   className={cn(
-                    'flex h-4 w-4 items-center justify-center rounded-full border-2',
-                    active ? 'border-nxp' : 'border-nxi3/50',
+                    'flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-[5px] transition-colors',
+                    active ? 'border-store bg-white' : 'border-nxborder bg-white',
                   )}
-                >
-                  {active && <span className="h-2 w-2 rounded-full bg-nxp" />}
+                />
+                <span className="flex items-center gap-1.5 text-[14px] font-bold text-nxi1">
+                  <Stars rating={r} size={14} /> {r}★ ou mais
                 </span>
-                {r === 0 ? (
-                  <span className="text-[13px] text-nxi2">Todas</span>
-                ) : (
-                  <span className="flex items-center gap-1 text-[12.5px] text-nxi2">
-                    <Stars rating={r} size={13} /> ou mais
-                  </span>
-                )}
               </button>
             )
           })}

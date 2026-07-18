@@ -17,16 +17,16 @@ export function FilterGroup({ title, count, defaultOpen = true, children }: Filt
   const [open, setOpen] = useState(defaultOpen)
 
   return (
-    <div className="border-b border-nxborder py-4 last:border-0">
+    <div className="border-t border-nxborder py-[18px] first:border-0 first:pt-0">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between"
+        className="flex w-full items-center justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2 rounded-md"
       >
-        <span className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.06em] text-nxi1">
+        <span className="flex items-center gap-2 text-[14px] font-extrabold text-nxi1">
           {title}
           {count != null && count > 0 && (
-            <span className="rounded-full bg-nxp/10 px-1.5 py-0.5 text-[10px] font-bold text-nxp">
+            <span className="rounded-[6px] bg-nxbg px-[7px] py-[2px] font-mono text-[11px] text-nxi3">
               {count}
             </span>
           )}

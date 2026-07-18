@@ -235,24 +235,24 @@ html {
   .ac-slide { animation: none; }
 }
 
-/* PLP da loja — entrada de cards e drawer de filtros (transform-only) */
+/* PLP da loja — entrada de cards e sheet de filtros (mobile, bottom sheet) */
 @keyframes plpRise {
-  from { transform: translateY(12px); }
-  to   { transform: translateY(0); }
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 .plp-rise {
   animation: plpRise 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
-@keyframes plpDrawer {
-  from { transform: translateX(-100%); }
-  to   { transform: translateX(0); }
+@keyframes plpSheet {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
 }
-.plp-drawer {
-  animation: plpDrawer 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+.plp-sheet {
+  animation: plpSheet 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 @media (prefers-reduced-motion: reduce) {
   .plp-rise,
-  .plp-drawer { animation: none; }
+  .plp-sheet { animation: none; }
 }
 
 /* Marquee de promessas da home da loja (transform-only) */
