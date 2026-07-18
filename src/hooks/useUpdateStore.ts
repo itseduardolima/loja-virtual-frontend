@@ -21,6 +21,7 @@ const CLEARABLE_FIELDS = new Set([
   'announcement_text',
   'campaign_title',
   'campaign_text',
+  'brand_color',
 ])
 
 export function useUpdateStore(options: UpdateStoreOptions = {}) {

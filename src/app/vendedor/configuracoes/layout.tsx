@@ -14,7 +14,6 @@ import {
   Coins,
   Users,
   Plug,
-  Store,
   HelpCircle,
   ChevronDown,
   X,
@@ -32,7 +31,6 @@ interface SectionDef {
 const SECTIONS: SectionDef[] = [
   { id: 'informacoes-basicas', href: '/vendedor/configuracoes/informacoes-basicas', icon: Box, title: 'Informações básicas', desc: 'Nome, descrição e logo' },
   { id: 'nichos', href: '/vendedor/configuracoes/nichos', icon: Layers, title: 'Nichos', desc: 'Categorias de produtos da loja' },
-  { id: 'vitrine', href: '/vendedor/configuracoes/vitrine', icon: Store, title: 'Vitrine', desc: 'Hero, anúncio e campanha da loja' },
   { id: 'endereco', href: '/vendedor/configuracoes/endereco', icon: Home, title: 'Endereço', desc: 'Endereço da loja física' },
   { id: 'contatos', href: '/vendedor/configuracoes/contatos', icon: Phone, title: 'Contatos', desc: 'WhatsApp, email e redes sociais' },
   { id: 'documentos', href: '/vendedor/configuracoes/documentos', icon: Receipt, title: 'Documentos', desc: 'CNPJ ou CPF do lojista' },
