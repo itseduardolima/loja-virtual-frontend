@@ -115,7 +115,7 @@ export function CustomerAccountDrawer({
                 className={cn(
                   'relative flex flex-1 flex-col items-center justify-center gap-1',
                   'text-[10px] font-bold uppercase tracking-[0.08em] transition-colors',
-                  isActive ? 'text-nxp' : 'text-nxi3 hover:text-nxi2',
+                  isActive ? 'text-store' : 'text-nxi3 hover:text-nxi2',
                 )}
               >
                 <Icon size={18} strokeWidth={isActive ? 2.4 : 2} />
@@ -123,7 +123,7 @@ export function CustomerAccountDrawer({
                 {/* Indicador no topo da barra */}
                 <span
                   className={cn(
-                    'absolute left-[22%] right-[22%] top-0 h-[2px] rounded-full bg-nxp transition-transform duration-300',
+                    'absolute left-[22%] right-[22%] top-0 h-[2px] rounded-full bg-store transition-transform duration-300',
                     isActive ? 'scale-x-100' : 'scale-x-0',
                   )}
                 />

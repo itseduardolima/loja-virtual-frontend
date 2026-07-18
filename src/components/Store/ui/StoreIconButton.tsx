@@ -4,12 +4,14 @@ import { forwardRef } from 'react'
 import type { ComponentPropsWithoutRef } from 'react'
 import { cn } from '@/lib/utils'
 
-export type StoreIconButtonVariant = 'ghost' | 'surface' | 'dark'
+export type StoreIconButtonVariant = 'ghost' | 'surface' | 'dark' | 'accent'
 
 const VARIANTS: Record<StoreIconButtonVariant, string> = {
   ghost: 'bg-transparent text-nxi1 hover:bg-nxbg',
   surface: 'bg-white/90 text-nxi2 shadow-sm backdrop-blur hover:text-nxi1',
   dark: 'bg-nxi1 text-white hover:brightness-110',
+  /** cor de marca do lojista (brand_color) — sacola, CTAs principais do header */
+  accent: 'bg-store text-white hover:brightness-110',
 }
 
 interface StoreIconButtonProps extends ComponentPropsWithoutRef<'button'> {

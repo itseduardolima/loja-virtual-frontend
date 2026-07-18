@@ -80,7 +80,7 @@ export function DrawerOrderTimeline({ status, orderId, updatedAt }: DrawerOrderT
                 done
                   ? 'bg-nxs text-white'
                   : active
-                    ? 'bg-nxp text-white ring-4 ring-nxp/15'
+                    ? 'bg-store text-white ring-4 ring-store/15'
                     : 'bg-nxbg text-nxi3',
               )}
             >
@@ -92,12 +92,12 @@ export function DrawerOrderTimeline({ status, orderId, updatedAt }: DrawerOrderT
               <p
                 className={cn(
                   'text-[13px] font-bold',
-                  active ? 'text-nxp' : done ? 'text-nxi1' : 'text-nxi3',
+                  active ? 'text-store' : done ? 'text-nxi1' : 'text-nxi3',
                 )}
               >
                 {step.label}
               </p>
-              {active && <p className="text-[11px] font-semibold text-nxp">Em andamento</p>}
+              {active && <p className="text-[11px] font-semibold text-store">Em andamento</p>}
               {done && historyDate && (
                 <p className="text-[11px] text-nxi3">{formatDateShort(historyDate)}</p>
               )}

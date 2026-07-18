@@ -63,14 +63,14 @@ export function CustomerProfileMenuDrawer({
       <div className="absolute right-0 z-20 overflow-hidden top-[calc(100%+8px)] w-[288px] bg-nxsurf rounded-[18px] border border-nxborder shadow-[0_12px_48px_rgba(0,0,0,.14),0_2px_8px_rgba(0,0,0,.06)]">
         <div className="px-4 pt-4 pb-3 border-b border-nxborder">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center flex-shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-nxp/40 to-nxp shadow-[inset_0_1px_0_rgba(255,255,255,.15)]">
+            <div className="flex items-center justify-center flex-shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-store/40 to-store shadow-[inset_0_1px_0_rgba(255,255,255,.15)]">
               <span className="italic text-base font-semibold text-white">{initials}</span>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[13.5px] font-bold text-nxi1 tracking-[-0.01em] whitespace-nowrap overflow-hidden text-ellipsis">{user?.name}</p>
               <p className="text-[11px] text-nxi3 mt-px whitespace-nowrap overflow-hidden text-ellipsis">{user?.email}</p>
             </div>
-            <span className="shrink-0 text-[9px] font-extrabold tracking-[.1em] text-nxp bg-nxp/[0.08] px-[7px] py-[3px] rounded-[5px]">CLIENTE</span>
+            <span className="shrink-0 text-[9px] font-extrabold tracking-[.1em] text-store bg-store/[0.08] px-[7px] py-[3px] rounded-[5px]">CLIENTE</span>
           </div>
         </div>
 

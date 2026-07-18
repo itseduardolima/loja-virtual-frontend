@@ -153,7 +153,7 @@ export function SectionConta({ isOpen, onClose }: { isOpen: boolean; onClose: ()
     <div className="scrollbar-thin flex-1 overflow-y-auto px-6 py-1">
       {/* Avatar + nome */}
       <div className="mb-7 mt-5 flex flex-col items-center border-b border-nxborder pb-7 text-center">
-        <div className="flex h-[72px] w-[72px] items-center justify-center rounded-[22px] bg-nxp text-[24px] font-extrabold text-white shadow-[inset_0_1px_0_rgba(255,255,255,.2)]">
+        <div className="flex h-[72px] w-[72px] items-center justify-center rounded-[22px] bg-store text-[24px] font-extrabold text-white shadow-[inset_0_1px_0_rgba(255,255,255,.2)]">
           {initials}
         </div>
         <p className="mt-3.5 text-[19px] font-extrabold tracking-tight text-nxi1">
@@ -217,7 +217,7 @@ export function SectionConta({ isOpen, onClose }: { isOpen: boolean; onClose: ()
           <button
             onClick={handleSave}
             disabled={isUpdating}
-            className="h-12 flex-1 rounded-full bg-nxp text-[13.5px] font-bold text-white transition-transform active:scale-[0.99] disabled:opacity-60"
+            className="h-12 flex-1 rounded-full bg-store text-[13.5px] font-bold text-white transition-transform active:scale-[0.99] disabled:opacity-60"
           >
             {isUpdating ? 'Salvando...' : 'Salvar alterações'}
           </button>
