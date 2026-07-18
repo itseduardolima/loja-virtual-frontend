@@ -5,6 +5,7 @@ import { VitrinePreviewPanel } from './VitrinePreviewPanel'
 import { Input, LoadingSpinner } from '@/components'
 import { Textarea } from '@/components/ui/textarea'
 import { Eye, Megaphone, Palette, Store } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import {
   SectionCard,
   SectionHeader,
@@ -15,12 +16,27 @@ import {
   NxButton,
 } from '../configuracoes/_shared'
 
-// Sugestões de cor de marca (a 1ª é o índigo Nexo padrão)
-const BRAND_PRESETS = [
-  '#2A2D7C', '#1D4ED8', '#0891B2', '#0E7490',
-  '#2F6B4F', '#15803D', '#4D7C0F', '#B45309',
-  '#C2410C', '#C1121F', '#BE185D', '#A21CAF',
-  '#7C3AED', '#7C4A2D', '#334155', '#111827',
+interface BrandPreset {
+  name: string
+  hex: string
+  /** nichos onde a cor costuma funcionar bem — só contexto, não restringe a escolha */
+  niches: string
+}
+
+// Paleta curada por nicho — a ink (variação escura) e o tom de fundo suave são
+// derivados automaticamente do hex (ver storeAccentStyle em lib/storefront.ts),
+// não precisam ser guardados aqui.
+const BRAND_PRESETS: BrandPreset[] = [
+  { name: 'Verde-floresta', hex: '#2F6B4F', niches: 'café, natural, orgânico' },
+  { name: 'Amora (oxblood)', hex: '#8A2F43', niches: 'moda, boutique' },
+  { name: 'Azul-petróleo', hex: '#1F6570', niches: 'beleza, cosmético, clínicas' },
+  { name: 'Ameixa', hex: '#5B3A78', niches: 'perfumaria, joias, premium' },
+  { name: 'Ocre queimado', hex: '#A85A24', niches: 'cerâmica, artesanal, decor' },
+  { name: 'Caramelo couro', hex: '#7A4A28', niches: 'calçados, pet, marcenaria' },
+  { name: 'Oliva', hex: '#5B6B2F', niches: 'outdoor, plantas' },
+  { name: 'Bordô tinto', hex: '#6E2436', niches: 'vinhos, gourmet' },
+  { name: 'Rosa-terroso', hex: '#A64D6B', niches: 'cosmético, floricultura' },
+  { name: 'Grafite quente', hex: '#2C2C31', niches: 'tech, minimal, streetwear' },
 ]
 
 export default function VitrinePage() {
@@ -128,26 +144,47 @@ export default function VitrinePage() {
                   maxLength={9}
                   className="w-[150px] font-mono uppercase"
                 />
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {BRAND_PRESETS.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => setField('brand_color', c)}
-                      className="h-7 w-7 rounded-lg border border-nxborder transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nxp/40"
-                      style={{ background: c }}
-                      title={c}
-                      aria-label={`Usar ${c}`}
-                    />
-                  ))}
-                </div>
                 {formData.brand_color && (
                   <NxButton variant="ghost" onClick={() => setField('brand_color', '')}>
                     Restaurar padrão
                   </NxButton>
                 )}
               </div>
-              
+            </Field>
+
+            <Field full>
+              <FieldLabel>Paleta sugerida por nicho</FieldLabel>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {BRAND_PRESETS.map((preset) => {
+                  const active = formData.brand_color.trim().toUpperCase() === preset.hex
+                  return (
+                    <button
+                      key={preset.hex}
+                      type="button"
+                      onClick={() => setField('brand_color', preset.hex)}
+                      aria-pressed={active}
+                      className={cn(
+                        'flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nxp/40',
+                        active ? 'border-nxp bg-nxp/[0.06]' : 'border-nxborder hover:border-nxi3',
+                      )}
+                    >
+                      <span
+                        className="h-8 w-8 flex-none rounded-full ring-1 ring-inset ring-black/10"
+                        style={{ background: preset.hex }}
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[12.5px] font-bold text-nxi1">
+                          {preset.name}
+                        </span>
+                        <span className="block truncate text-[11px] text-nxi3">
+                          {preset.niches}
+                        </span>
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+              <FieldHelp>Só um ponto de partida — use a que combinar com a sua marca.</FieldHelp>
             </Field>
           </SectionCard>
 

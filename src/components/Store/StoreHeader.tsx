@@ -196,7 +196,7 @@ export function StoreHeader({
         className="w-auto min-w-[44px] gap-2 px-2.5 text-nxi1"
         aria-label={isAuthenticated ? 'Menu do perfil' : 'Login'}
       >
-        <User className="h-[21px] w-[21px]" />
+        <User className="h-[21px] w-[21px] text-store" />
         {isAuthenticated && user && (
           <span className="hidden max-w-[100px] truncate text-[13px] font-semibold text-nxi1 sm:inline">
             {user.name}
@@ -252,14 +252,14 @@ export function StoreHeader({
   const cartButton = (
     <StoreIconButton
       id="cart-icon-button"
-      variant="dark"
+      variant="accent"
       onClick={onCartClick}
       className="relative"
       aria-label="Carrinho"
     >
       <ShoppingBag className="h-5 w-5" />
       {totalItems > 0 && (
-        <Badge className="absolute -right-1.5 -top-1.5 flex h-[19px] min-w-[19px] items-center justify-center rounded-full border-2 border-nxsurf bg-store px-1.5 text-[11px] font-extrabold text-white">
+        <Badge className="absolute -right-1.5 -top-1.5 flex h-[19px] min-w-[19px] items-center justify-center rounded-full border-2 border-nxsurf bg-white px-1.5 text-[11px] font-extrabold text-store-ink">
           {totalItems > 99 ? '99+' : totalItems}
         </Badge>
       )}

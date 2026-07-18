@@ -116,7 +116,7 @@ export function SectionDesejos({ isOpen, onClose }: { isOpen: boolean; onClose: 
               {/* CTA */}
               <button
                 onClick={() => handleViewProduct(item.store_slug, item.product_id)}
-                className="mt-2 w-full rounded-lg bg-nxp py-2 text-[11px] font-bold text-white transition-transform active:scale-95"
+                className="mt-2 w-full rounded-lg bg-store py-2 text-[11px] font-bold text-white transition-transform active:scale-95"
               >
                 Ver produto
               </button>

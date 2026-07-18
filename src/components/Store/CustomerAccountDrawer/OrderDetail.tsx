@@ -74,7 +74,7 @@ export function OrderDetail({ orderId, onBack, onOpenCart }: OrderDetailProps) {
       <div className="flex items-center gap-2 border-b border-nxborder px-5 py-3">
         <button
           onClick={onBack}
-          className="flex items-center gap-1.5 text-[12.5px] font-semibold text-nxi2 transition-colors hover:text-nxp"
+          className="flex items-center gap-1.5 text-[12.5px] font-semibold text-nxi2 transition-colors hover:text-store"
         >
           <ChevronLeft size={16} />
           Pedidos
@@ -157,7 +157,7 @@ export function OrderDetail({ orderId, onBack, onOpenCart }: OrderDetailProps) {
                 })
               }
               className={cn(
-                'flex h-11 items-center justify-center gap-2 rounded-full bg-nxp text-[13px] font-bold text-white transition-transform active:scale-[0.99]',
+                'flex h-11 items-center justify-center gap-2 rounded-full bg-store text-[13px] font-bold text-white transition-transform active:scale-[0.99]',
                 isRepeating && 'opacity-50',
               )}
             >
@@ -193,7 +193,7 @@ export function OrderDetail({ orderId, onBack, onOpenCart }: OrderDetailProps) {
 
             {isLoadingStoreInfo ? (
               <div className="mt-2 flex justify-center py-2">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-nxborder border-t-nxp" />
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-nxborder border-t-store" />
               </div>
             ) : storeInfo?.data ? (
               <>

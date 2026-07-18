@@ -62,8 +62,8 @@ export function Thumb({
 const STATUS_TONES: Record<string, { classes: string; icon: LucideIcon }> = {
   /* tinta âmbar (#9a6a16) do design p/ contraste sobre nxw — exceção de hex documentada */
   yellow: { classes: 'bg-nxw/[0.18] text-[#9a6a16]', icon: Clock },
-  blue: { classes: 'bg-nxp/10 text-nxp', icon: CheckCircle },
-  purple: { classes: 'bg-nxp/10 text-nxp', icon: Truck },
+  blue: { classes: 'bg-store/10 text-store', icon: CheckCircle },
+  purple: { classes: 'bg-store/10 text-store', icon: Truck },
   green: { classes: 'bg-nxs/[0.12] text-nxs', icon: CheckCircle },
   red: { classes: 'bg-nxd/10 text-nxd', icon: XCircle },
 }
@@ -116,7 +116,7 @@ export function Empty({
       {cta && (
         <button
           onClick={onCta}
-          className="mt-5 rounded-full bg-nxp px-5 py-2.5 text-[12.5px] font-bold text-white transition-transform active:scale-95"
+          className="mt-5 rounded-full bg-store px-5 py-2.5 text-[12.5px] font-bold text-white transition-transform active:scale-95"
         >
           {cta}
         </button>
@@ -151,12 +151,12 @@ export function UField({
       </label>
       <div
         className={cn(
-          'flex items-center gap-2 border-b-[1.5px] pb-1.5 transition-colors focus-within:border-nxp',
+          'flex items-center gap-2 border-b-[1.5px] pb-1.5 transition-colors focus-within:border-store',
           error ? 'border-nxd' : 'border-nxborder',
         )}
       >
         {Icon && (
-          <Icon size={15} className="text-nxi3 transition-colors group-focus-within:text-nxp" />
+          <Icon size={15} className="text-nxi3 transition-colors group-focus-within:text-store" />
         )}
         <input
           value={value}
@@ -176,7 +176,7 @@ export function UField({
 export function SectionSpinner() {
   return (
     <div className="flex flex-1 items-center justify-center py-16">
-      <div className="h-6 w-6 animate-spin rounded-full border-2 border-nxborder border-t-nxp" />
+      <div className="h-6 w-6 animate-spin rounded-full border-2 border-nxborder border-t-store" />
     </div>
   )
 }
