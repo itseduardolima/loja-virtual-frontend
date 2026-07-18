@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { StoreInfo } from '@/types/store'
 import { buildImageUrl } from '@/lib/utils'
+import { paymentMethodLabel } from '@/lib/storefront'
 
 function extractSocialUsername(value: string): string {
   return value
@@ -43,24 +44,6 @@ function getPaymentIcon(method: string) {
   )
     return <ArrowLeftRight className="w-3.5 h-3.5" />
   return <CreditCard className="w-3.5 h-3.5" />
-}
-
-function getPaymentLabel(method: string) {
-  const lower = method.toLowerCase()
-  if (lower.includes('pix')) return 'Pix'
-  if (lower.includes('crédito') || lower.includes('credito') || lower.includes('credit'))
-    return 'Crédito'
-  if (lower.includes('débito') || lower.includes('debito') || lower.includes('debit'))
-    return 'Débito'
-  if (lower.includes('boleto')) return 'Boleto'
-  if (lower.includes('cash') || lower.includes('dinheiro')) return 'Dinheiro'
-  if (
-    lower.includes('transfer') ||
-    lower.includes('transferência') ||
-    lower.includes('transferencia')
-  )
-    return 'Transferência'
-  return method
 }
 
 function FooterWa({ size = 16, className }: { size?: number; className?: string }) {
@@ -145,22 +128,17 @@ export function StoreNewFooter({ storeInfo, slug }: StoreNewFooterProps) {
   ]
 
   return (
-    <footer className="relative overflow-hidden bg-[#070815] text-white">
-      {/* glow índigo no topo */}
+    <footer className="relative overflow-hidden bg-coal text-white">
+      {/* glow accent no topo */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-32 left-1/2 h-64 w-[680px] -translate-x-1/2 rounded-full opacity-[0.16] blur-3xl"
-        style={{ background: 'radial-gradient(circle, hsl(var(--nxp)) 0%, transparent 70%)' }}
+        className="store-glow pointer-events-none absolute -top-32 left-1/2 h-64 w-[680px] -translate-x-1/2 rounded-full opacity-[0.16] blur-3xl"
       />
-      <div
-        aria-hidden="true"
-        className="absolute inset-x-0 top-0 h-px"
-        style={{ background: 'linear-gradient(90deg, transparent, hsl(var(--nxp)/0.6), transparent)' }}
-      />
+      <div aria-hidden="true" className="store-hairline absolute inset-x-0 top-0 h-px" />
 
       {/* trust strip */}
-      <div className="relative border-b border-white/[0.07] px-5 md:px-20">
-        <div className="mx-auto flex max-w-[1280px] flex-wrap justify-center gap-x-12 gap-y-5 py-7">
+      <div className="relative border-b border-white/[0.07]">
+        <div className="mx-auto flex max-w-store flex-wrap justify-center gap-x-12 gap-y-5 px-4 py-7 md:px-10">
           {trust.map(({ icon, title, sub }) => (
             <div key={title} className="flex items-center gap-3">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.06] text-white/90 ring-1 ring-inset ring-white/10">
@@ -176,7 +154,7 @@ export function StoreNewFooter({ storeInfo, slug }: StoreNewFooterProps) {
       </div>
 
       {/* main grid */}
-      <div className="relative mx-auto max-w-[1280px] px-5 py-12 md:px-20 md:py-14">
+      <div className="relative mx-auto max-w-store px-4 py-12 md:px-10 md:py-14">
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-12">
 
           {/* Col 1 — Identidade (md:4) */}
@@ -191,7 +169,7 @@ export function StoreNewFooter({ storeInfo, slug }: StoreNewFooterProps) {
                   className="h-10 w-10 rounded-xl object-cover"
                 />
               ) : (
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[15px] font-extrabold text-[#070815]">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-store text-[15px] font-extrabold text-white">
                   {initials}
                 </span>
               )}
@@ -358,8 +336,8 @@ export function StoreNewFooter({ storeInfo, slug }: StoreNewFooterProps) {
       </div>
 
       {/* bottom bar */}
-      <div className="relative border-t border-white/[0.07] px-5 md:px-20">
-        <div className="mx-auto flex max-w-[1280px] flex-col items-center justify-between gap-4 py-6 md:flex-row">
+      <div className="relative border-t border-white/[0.07]">
+        <div className="mx-auto flex max-w-store flex-col items-center justify-between gap-4 px-4 py-6 md:flex-row md:px-10">
           {/* esquerda: pagamentos */}
           <div className="flex flex-wrap items-center gap-2.5">
             {storeInfo.payment_methods && storeInfo.payment_methods.length > 0 ? (
@@ -375,7 +353,7 @@ export function StoreNewFooter({ storeInfo, slug }: StoreNewFooterProps) {
                     className="flex h-7 items-center gap-1.5 rounded-md bg-white/[0.06] px-2 text-[11px] font-medium text-white/55 ring-1 ring-inset ring-white/10"
                   >
                     {getPaymentIcon(m)}
-                    <span className="hidden sm:inline">{getPaymentLabel(m)}</span>
+                    <span className="hidden sm:inline">{paymentMethodLabel(m)}</span>
                   </span>
                 ))}
               </>
