@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import localFont from 'next/font/local'
-import { Nunito } from 'next/font/google'
+import { Nunito, IBM_Plex_Mono } from 'next/font/google'
 import './globals.css'
 import '../styles/toast.css'
 import { QueryProvider } from '@/providers/QueryProvider'
@@ -34,6 +34,14 @@ const nunito = Nunito({
   display: 'swap',
 })
 
+// Voz editorial dos eyebrows/labels da vitrine (mono intencional — mapeado em font-mono)
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  variable: '--font-ibm-plex-mono',
+  weight: ['500', '600'],
+  display: 'swap',
+})
+
 
 export const metadata: Metadata = {
   title: 'Loja - Frontend',
@@ -47,7 +55,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className={`${satoshi.variable} ${integralCF.variable} ${nunito.variable} font-sans`}>
+      <body className={`${satoshi.variable} ${integralCF.variable} ${nunito.variable} ${ibmPlexMono.variable} font-sans`}>
         <QueryProvider>
           <AuthProvider>
             <CompleteProfileGuard>

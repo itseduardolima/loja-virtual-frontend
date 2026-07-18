@@ -91,7 +91,7 @@ export default function PedidoSucessoPage() {
 
       {/* seção de sugestões — oculta quando a loja não tem produtos */}
       {(productsLoading || suggestions.length > 0) && (
-        <div className="mx-auto max-w-[1180px] border-t border-nxborder px-4 py-12 md:px-10">
+        <div className="mx-auto max-w-store border-t border-nxborder px-4 py-12 md:px-10">
           <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-nxi3">
             Você pode gostar
           </span>
