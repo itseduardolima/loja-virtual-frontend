@@ -9,28 +9,37 @@ interface CheckRowProps {
   onToggle: () => void
   /** slot opcional à direita (ex.: contagem da categoria) */
   right?: React.ReactNode
+  /** cor hex opcional — ponto de cor ao lado do rótulo (grupo "Cor") */
+  swatch?: string
 }
 
 /** Linha de checkbox usada nos grupos de filtro */
-export function CheckRow({ label, checked, onToggle, right }: CheckRowProps) {
+export function CheckRow({ label, checked, onToggle, right, swatch }: CheckRowProps) {
   return (
     <button
       type="button"
       onClick={onToggle}
-      className="flex w-full items-center gap-2.5 py-1.5 text-left"
+      aria-pressed={checked}
+      className="flex w-full items-center gap-2.5 py-[7px] text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2 rounded-md"
     >
       <span
         className={cn(
-          'flex h-4 w-4 shrink-0 items-center justify-center rounded-[5px] border transition-colors',
-          checked ? 'border-nxp bg-nxp text-white' : 'border-nxi3/50',
+          'flex h-5 w-5 shrink-0 items-center justify-center rounded-[6px] border transition-colors',
+          checked ? 'border-store bg-store text-white' : 'border-nxborder bg-white',
         )}
       >
-        {checked && <Check size={11} strokeWidth={3} />}
+        {checked && <Check size={13} strokeWidth={3.4} />}
       </span>
-      <span className={cn('flex-1 text-[13px]', checked ? 'font-semibold text-nxi1' : 'text-nxi2')}>
+      {swatch && (
+        <span
+          className="h-4 w-4 shrink-0 rounded-full ring-1 ring-inset ring-black/10"
+          style={{ background: swatch }}
+        />
+      )}
+      <span className={cn('flex-1 text-[14px]', checked ? 'font-bold text-nxi1' : 'text-nxi2')}>
         {label}
       </span>
-      {right != null && <span className="text-[11px] text-nxi3">{right}</span>}
+      {right != null && <span className="text-[13px] text-nxi3">{right}</span>}
     </button>
   )
 }
