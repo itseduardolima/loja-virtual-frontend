@@ -1,9 +1,16 @@
 'use client'
 
 import { Suspense } from 'react'
+import Link from 'next/link'
 import { ArrowRight, Check, Loader2 } from 'lucide-react'
 import { PhoneCountryInput } from '@/components/Form'
-import { AuthField, AuthPasswordInput, AuthShell, AuthTopLink } from '@/components/Auth'
+import {
+  AuthCheckbox,
+  AuthField,
+  AuthPasswordInput,
+  AuthShell,
+  AuthTopLink,
+} from '@/components/Auth'
 import { cn } from '@/lib/utils'
 import { useCadastro } from './useCadastro'
 
@@ -22,6 +29,8 @@ function CadastroContent() {
     setConfirmPassword,
     selectedCountry,
     setSelectedCountry,
+    acceptedTerms,
+    setAcceptedTerms,
     countriesData,
     countriesLoading,
     requirements,
@@ -30,6 +39,7 @@ function CadastroContent() {
     whatsappError,
     passwordError,
     confirmPasswordError,
+    acceptedTermsError,
     markTouched,
     handleSubmit,
     isRegistering,
@@ -159,6 +169,28 @@ function CadastroContent() {
             </div>
           </div>
 
+          <AuthCheckbox
+            checked={acceptedTerms}
+            onChange={(value) => {
+              setAcceptedTerms(value)
+              markTouched('acceptedTerms')
+            }}
+            error={acceptedTermsError}
+            label={
+              <span>
+                Li e aceito os{' '}
+                <Link href="/termos" className="font-semibold text-nxp hover:text-nxp/80">
+                  Termos de Uso
+                </Link>{' '}
+                e a{' '}
+                <Link href="/privacidade" className="font-semibold text-nxp hover:text-nxp/80">
+                  Política de Privacidade
+                </Link>
+                .
+              </span>
+            }
+          />
+
           <button
             type="submit"
             disabled={isRegistering}
@@ -175,12 +207,6 @@ function CadastroContent() {
             )}
           </button>
         </form>
-
-        <p className="mt-6 text-center text-[12px] leading-relaxed text-nxi3">
-          Ao criar a conta, você concorda com os{' '}
-          <span className="font-semibold text-nxi2">Termos</span> e a{' '}
-          <span className="font-semibold text-nxi2">Política de Privacidade</span>.
-        </p>
       </div>
     </AuthShell>
   )

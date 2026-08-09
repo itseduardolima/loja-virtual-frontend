@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { PlanCouponValidation } from '@/types/subscription'
 import {
@@ -323,8 +324,14 @@ export function SelectPaymentMethodStep({
           </div>
           <p className="mt-2 text-[11.5px] font-semibold leading-relaxed text-nxi3">
             Ao continuar, você concorda com os{' '}
-            <span className="font-extrabold text-nxi2">termos</span> e a{' '}
-            <span className="font-extrabold text-nxi2">privacidade</span>.
+            <Link href="/termos" className="font-extrabold text-nxi2 hover:text-nxp">
+              termos
+            </Link>{' '}
+            e a{' '}
+            <Link href="/privacidade" className="font-extrabold text-nxi2 hover:text-nxp">
+              privacidade
+            </Link>
+            .
           </p>
         </motion.div>
       </div>
