@@ -19,9 +19,8 @@ export const Footer = () => (
             <a href="#suporte">Suporte</a>
           </div>
           <div className={s.footerCol}>
-            <a href="#">Termos de uso</a>
-            <a href="#">Privacidade</a>
-            <a href="#">Central de ajuda</a>
+            <Link href="/termos">Termos de uso</Link>
+            <Link href="/privacidade">Privacidade</Link>
           </div>
         </div>
       </div>
