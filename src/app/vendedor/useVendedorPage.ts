@@ -200,6 +200,7 @@ export function useVendedorPage() {
     // User / store
     user,
     store,
+    hasWhatsapp: !!store?.whatsapp,
     isUpdating,
     // Dashboard KPI data
     greeting,

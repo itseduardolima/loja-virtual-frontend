@@ -53,8 +53,8 @@ export interface StoreInfo {
   delivery_fee?: string | number | null
   free_delivery_min?: string | number | null
   delivery_time?: string
-  /** Cor de marca do lojista (hex, ex.: "#2F6B4F") — pinta o accent da vitrine.
-      Ainda não exposto pelo backend; quando ausente a vitrine usa o índigo Nexo. */
+  /** Cor de marca do lojista (hex, ex.: "#2F6B4F") — retornada por /catalog/store/:slug;
+      quando nula, a vitrine usa o índigo Nexo. */
   brand_color?: string
   hero_eyebrow?: string
   hero_title?: string
