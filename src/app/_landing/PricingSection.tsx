@@ -115,7 +115,7 @@ export const PricingSection = () => {
                 ))}
               </ul>
               <Link
-                href={`/assinatura?plan=${plan.slug}`}
+                href={`/assinatura?plano=${plan.slug}`}
                 className={plan.reco ? `${s.btn} ${s.btnPri}` : `${s.btn} ${s.btnOutline}`}
                 style={{
                   width: '100%',

@@ -87,6 +87,7 @@ function AssinaturaContent() {
     isSubmittingAuth,
     isLoadingAuth,
     isLoadingPlan,
+    isLoadingSubscription,
     isCreatingSubscription,
     planError,
     documentValue,
@@ -121,6 +122,11 @@ function AssinaturaContent() {
   if (isLoadingAuth) return <LoadingPage />
 
   if (step !== 'register' && isLoadingPlan) return <LoadingPage />
+
+  // Enquanto o step 'select' ainda não tem plano resolvido (aguardando
+  // isLoadingSubscription decidir plano/redirect/trial), evita renderizar a
+  // tela de confirmação com o plano vazio.
+  if (step === 'select' && !plan && isLoadingSubscription) return <LoadingPage />
 
   if (step !== 'register' && (planError || !plans?.length)) {
     return (
@@ -223,11 +229,23 @@ function AssinaturaContent() {
               )}
 
               {step === 'processing' && (
-                <ProcessingStep key="processing" isRedirecting={!isFreeCheckout} />
+                <ProcessingStep
+                  key="processing"
+                  isRedirecting={!isFreeCheckout}
+                  planName={plan?.name}
+                  planPrice={isFreeCheckout ? undefined : planPriceNum}
+                  billingCycle={selectedCycle}
+                />
               )}
 
               {step === 'success' && (
-                <SuccessStep key="success" isPaymentConfirmed={Boolean(isPaymentConfirmed)} />
+                <SuccessStep
+                  key="success"
+                  isPaymentConfirmed={Boolean(isPaymentConfirmed)}
+                  planName={plan?.name}
+                  planPrice={planPriceNum}
+                  billingCycle={selectedCycle}
+                />
               )}
 
               {step === 'completed' && (
@@ -238,6 +256,9 @@ function AssinaturaContent() {
                   trialDays={completedTrialDays}
                   couponCode={completedCouponCode}
                   freeAccessUntil={completedFreeAccessUntil}
+                  planName={plan?.name}
+                  planPrice={planPriceNum}
+                  billingCycle={selectedCycle}
                 />
               )}
             </AnimatePresence>
