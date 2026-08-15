@@ -13,7 +13,7 @@ export function useEstornosPage() {
   const { success, error } = useToastContext()
   const qc = useQueryClient()
 
-  const { data, isLoading } = useAdminRefunds({
+  const { data, isLoading, isError, refetch } = useAdminRefunds({
     page,
     limit: 20,
     search: search || undefined,
@@ -42,5 +42,19 @@ export function useEstornosPage() {
   const refunds = data?.data ?? []
   const meta = data?.meta ?? null
 
-  return { refunds, meta, isLoading, page, setPage, search, setSearch, confirmAction, setConfirmAction, handleAction, methodMap }
+  return {
+    refunds,
+    meta,
+    isLoading,
+    isError,
+    refetch,
+    page,
+    setPage,
+    search,
+    setSearch,
+    confirmAction,
+    setConfirmAction,
+    handleAction,
+    methodMap,
+  }
 }

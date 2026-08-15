@@ -22,6 +22,8 @@ export const FILTERS = [
 
 export const COLS = ['Código', 'Desconto', 'Ciclo', 'Duração', 'Usos', 'Expira', 'Planos', 'Status', ''] as const
 
+export const GRID = 'grid grid-cols-[1fr_1.2fr_0.9fr_0.9fr_1.3fr_1.1fr_1.2fr_0.9fr_52px] items-center gap-3'
+
 export const CYCLE_LABEL: Record<string, string> = {
   monthly: 'Mensal',
   yearly: 'Anual',
@@ -64,7 +66,7 @@ export function useAdminPlanCouponsPage() {
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all')
   const [confirmDelete, setConfirmDelete] = useState<AdminPlanCoupon | null>(null)
 
-  const { data, isLoading } = useAdminPlanCoupons({ page: 1, limit: 200 })
+  const { data, isLoading, isError, refetch } = useAdminPlanCoupons({ page: 1, limit: 200 })
   const deleteMutation = useAdminDeletePlanCoupon()
 
   const allCoupons = data?.data ?? []
@@ -118,6 +120,8 @@ export function useAdminPlanCouponsPage() {
     setConfirmDelete,
     // data
     isLoading,
+    isError,
+    refetch,
     coupons,
     stats,
     filterCounts,

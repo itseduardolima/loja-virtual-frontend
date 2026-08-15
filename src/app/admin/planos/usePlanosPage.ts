@@ -8,7 +8,7 @@ export function usePlanosPage() {
   const [page, setPage] = useState(1)
   const [confirmDelete, setConfirmDelete] = useState<AdminPlan | null>(null)
 
-  const { data, isLoading } = useAdminPlans({ page, limit: 20 })
+  const { data, isLoading, isError, refetch } = useAdminPlans({ page, limit: 20 })
   const deletePlan = useAdminDeletePlan()
 
   const handleDelete = async () => {
@@ -26,5 +26,5 @@ export function usePlanosPage() {
   const plans = data?.data ?? []
   const meta = data?.meta ?? null
 
-  return { plans, meta, isLoading, page, setPage, confirmDelete, setConfirmDelete, handleDelete }
+  return { plans, meta, isLoading, isError, refetch, page, setPage, confirmDelete, setConfirmDelete, handleDelete }
 }

@@ -16,7 +16,7 @@ export function useUsuariosPage() {
   const [profileFilter, setProfileFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
 
-  const { data, isLoading } = useAdminUsers({
+  const { data, isLoading, isError, refetch } = useAdminUsers({
     page,
     limit: 10,
     search: search || undefined,
@@ -35,24 +35,35 @@ export function useUsuariosPage() {
     }
   }
 
-  const profileNames: Record<number, string> = { 1: 'Administrador', 2: 'Vendedor', 3: 'Cliente' }
-
   const response = data as AdminUsersResponse | undefined
   const users = response?.data ?? []
   const rawMeta = response?.meta
-  const meta = rawMeta ? {
-    total: rawMeta.total ?? 0,
-    currentPage: rawMeta.currentPage ?? page,
-    perPage: rawMeta.perPage ?? 10,
-    lastPage: rawMeta.lastPage ?? 1,
-    prev: rawMeta.prev ?? null,
-    next: rawMeta.next ?? null,
-  } : null
+  const meta = rawMeta
+    ? {
+        total: rawMeta.total ?? 0,
+        currentPage: rawMeta.currentPage ?? page,
+        perPage: rawMeta.perPage ?? 10,
+        lastPage: rawMeta.lastPage ?? 1,
+        prev: rawMeta.prev ?? null,
+        next: rawMeta.next ?? null,
+      }
+    : null
+
+  const hasActiveFilters = !!(search || profileFilter || statusFilter)
+
+  const clearFilters = () => {
+    setSearch('')
+    setProfileFilter('')
+    setStatusFilter('')
+    setPage(1)
+  }
 
   return {
     users,
     meta,
     isLoading,
+    isError,
+    refetch,
     page,
     setPage,
     search,
@@ -64,6 +75,7 @@ export function useUsuariosPage() {
     selectedUserId,
     setSelectedUserId,
     handleToggleStatus,
-    profileNames,
+    hasActiveFilters,
+    clearFilters,
   }
 }
