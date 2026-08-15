@@ -446,6 +446,18 @@ html {
   .nx-indet { animation: none; width: 40%; left: 30%; }
 }
 
+/* Selo carimbado do comprovante (pendente) — respiração sutil de tinta */
+@keyframes nxStampBreathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
+.nx-stamp-pending {
+  animation: nxStampBreathe 1.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nx-stamp-pending { animation: none; }
+}
+
 .scroll-row-wrap { position: relative; }
 .scroll-row-wrap::before {
   content: '';

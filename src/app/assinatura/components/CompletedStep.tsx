@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion'
-import { ArrowRight, Calendar, Check, Package, Share2, Sparkles, Store, Ticket, type LucideIcon } from 'lucide-react'
+import { ArrowRight, Calendar, Package, Share2, Store, type LucideIcon } from 'lucide-react'
 import { formatDateLong } from '@/lib/utils'
+import { TicketCard, TicketDivider, TicketEyebrow, TicketStamp, type StampTone } from './TicketUI'
+import type { BillingCycle } from '@/types/subscription'
 
 export type CompletedReason = 'paid' | 'trial' | 'coupon'
 
@@ -10,12 +12,15 @@ interface CompletedStepProps {
   trialDays?: number | null
   couponCode?: string | null
   freeAccessUntil?: string | null
+  planName?: string
+  planPrice?: number
+  billingCycle?: BillingCycle
 }
 
 interface StepCopy {
-  icon: LucideIcon
-  iconBg: string
-  iconColor: string
+  stampLabel: string
+  stampTone: StampTone
+  priceLine: string
   title: string
   subtitle: string
   nextSteps: { icon: LucideIcon; text: string }[]
@@ -23,14 +28,16 @@ interface StepCopy {
 }
 
 function getCopy(props: CompletedStepProps): StepCopy {
-  const { reason, trialDays, couponCode, freeAccessUntil } = props
+  const { reason, trialDays, couponCode, freeAccessUntil, planPrice, billingCycle } = props
+  const priceStr = planPrice != null ? planPrice.toFixed(2).replace('.', ',') : null
+  const priceSuffix = billingCycle === 'yearly' ? '/ano' : '/mês'
 
   if (reason === 'trial') {
     const days = trialDays ?? null
     return {
-      icon: Sparkles,
-      iconBg: 'bg-nxp/[0.08]',
-      iconColor: 'text-nxp',
+      stampLabel: 'Trial ativo',
+      stampTone: 'brand',
+      priceLine: days ? `${days} dias grátis · sem cartão` : 'Acesso gratuito liberado',
       title: 'Trial ativado!',
       subtitle: days
         ? `Você tem ${days} dias de acesso completo, sem cartão de crédito.`
@@ -50,9 +57,9 @@ function getCopy(props: CompletedStepProps): StepCopy {
 
   if (reason === 'coupon') {
     return {
-      icon: Ticket,
-      iconBg: 'bg-nxs/10',
-      iconColor: 'text-nxs',
+      stampLabel: 'Cupom aplicado',
+      stampTone: 'accent',
+      priceLine: couponCode ? `Cupom ${couponCode} · R$ 0,00` : 'Acesso gratuito · R$ 0,00',
       title: 'Acesso liberado!',
       subtitle: couponCode
         ? `Cupom ${couponCode} aplicado — acesso gratuito durante o período do desconto.`
@@ -71,9 +78,9 @@ function getCopy(props: CompletedStepProps): StepCopy {
   }
 
   return {
-    icon: Check,
-    iconBg: 'bg-nxs/[0.12]',
-    iconColor: 'text-nxs',
+    stampLabel: 'Pago',
+    stampTone: 'confirmed',
+    priceLine: priceStr ? `R$ ${priceStr} ${priceSuffix}` : 'Pagamento confirmado',
     title: 'Assinatura confirmada!',
     subtitle: 'Seu pagamento foi confirmado e sua conta agora é de vendedor.',
     nextSteps: [
@@ -87,7 +94,6 @@ function getCopy(props: CompletedStepProps): StepCopy {
 
 export function CompletedStep(props: CompletedStepProps) {
   const copy = getCopy(props)
-  const Icon = copy.icon
 
   return (
     <motion.div
@@ -96,26 +102,71 @@ export function CompletedStep(props: CompletedStepProps) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
       transition={{ duration: 0.3 }}
+      className="mx-auto w-full max-w-[380px]"
     >
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="flex items-center gap-3"
+        transition={{ delay: 0.08 }}
       >
-        <span
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[11px] ${copy.iconBg} ${copy.iconColor}`}
-        >
-          <Icon className="h-[22px] w-[22px]" strokeWidth={2.5} />
-        </span>
-        <h2 className="text-[24px] font-extrabold tracking-tight text-nxi1">{copy.title}</h2>
+        <TicketCard>
+          <TicketEyebrow>Nexo · comprovante</TicketEyebrow>
+          {props.planName && <p className="mt-2 text-[15px] font-extrabold text-nxi1">{props.planName}</p>}
+          <p className="mt-1 font-mono text-[12.5px] font-bold text-nxi2">{copy.priceLine}</p>
+
+          <TicketDivider />
+
+          <motion.div
+            initial={{ scale: 1.6, rotate: 6, opacity: 0 }}
+            animate={{ scale: 1, rotate: -2, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 340, damping: 16, delay: 0.15 }}
+          >
+            <TicketStamp label={copy.stampLabel} tone={copy.stampTone} />
+          </motion.div>
+
+          {/* Linha de corte — o comprovante "destaca" para os próximos passos */}
+          <div className="relative -mx-6 mt-6">
+            <span className="absolute left-0 top-0 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
+            <span className="absolute right-0 top-0 h-4 w-4 translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
+            <div className="border-t-2 border-dashed border-nxborder" />
+          </div>
+
+          <div className="mt-5 flex flex-col gap-3 text-left">
+            {copy.nextSteps.map((s, i) => {
+              const ItemIcon = s.icon
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -6 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.28 + i * 0.08 }}
+                  className="flex items-center gap-2.5"
+                >
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[5px] border border-nxborder bg-white font-mono text-[9.5px] font-bold text-nxi3">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <ItemIcon className="h-3.5 w-3.5 shrink-0 text-nxp" />
+                  <span className="text-[13px] font-bold text-nxi2">{s.text}</span>
+                </motion.div>
+              )
+            })}
+          </div>
+        </TicketCard>
       </motion.div>
 
+      <motion.h2
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.22 }}
+        className="mt-6 text-center text-[21px] font-extrabold tracking-tight text-nxi1"
+      >
+        {copy.title}
+      </motion.h2>
       <motion.p
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.18 }}
-        className="mt-2.5 text-[14px] font-semibold text-nxi2"
+        transition={{ delay: 0.28 }}
+        className="mt-1.5 text-center text-[13.5px] font-semibold text-nxi2"
       >
         {copy.subtitle}
       </motion.p>
@@ -123,27 +174,8 @@ export function CompletedStep(props: CompletedStepProps) {
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.26 }}
-        className="mt-5 flex flex-col gap-3"
-      >
-        {copy.nextSteps.map((s, i) => {
-          const ItemIcon = s.icon
-          return (
-            <div key={i} className="flex items-center gap-2.5">
-              <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg bg-nxbg">
-                <ItemIcon className="h-4 w-4 text-nxp" />
-              </span>
-              <span className="text-[13.5px] font-bold text-nxi2">{s.text}</span>
-            </div>
-          )
-        })}
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.34 }}
-        className="mt-6"
+        transition={{ delay: 0.4 }}
+        className="mt-5 flex justify-center"
       >
         <button
           onClick={props.onGoToDashboard}
