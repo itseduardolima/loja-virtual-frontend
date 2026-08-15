@@ -1,3 +1,5 @@
+export { AppSidebar } from './AppSidebar'
+export { SidebarAdminHeader } from './SidebarAdminHeader'
 export { SidebarStoreHeader } from './SidebarStoreHeader'
 export { SidebarSection } from './SidebarSection'
 export { SidebarNavItem } from './SidebarNavItem'
