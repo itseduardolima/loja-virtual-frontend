@@ -4,10 +4,10 @@ import {
   ArrowUpDown,
   ArrowDown,
   ArrowRight,
-  MessageCircle,
   AlertTriangle,
   Ticket,
 } from 'lucide-react'
+import { WhatsappIcon } from '@/assets/icons/WhatsappIcon'
 import { type Order } from '@/types/order'
 import { cn } from '@/lib/utils'
 import {
@@ -62,7 +62,7 @@ export function OrderListView({
         <button
           type="button"
           onClick={() => onSortBy(sortKey === 'high' ? 'low' : 'high')}
-          className={cn(HEAD_BTN, HEAD_LABEL, 'justify-end')}
+          className={cn(HEAD_BTN, HEAD_LABEL, 'justify-end pr-[18px]')}
         >
           Total
           <ArrowUpDown size={12} className="text-[#B7B9C6]" />
@@ -147,7 +147,7 @@ export function OrderListView({
             </div>
 
             {/* Total */}
-            <div className="text-right text-[13.5px] font-extrabold tabular-nums text-nxi1">
+            <div className="pr-[18px] text-right text-[13.5px] font-extrabold tabular-nums text-nxi1">
               {formatPrice(parseFloat(order.total))}
             </div>
 
@@ -200,7 +200,9 @@ export function OrderListView({
                 }}
                 className="flex h-[30px] w-[30px] items-center justify-center rounded-[8px] border border-nxborder bg-white cursor-pointer"
               >
-                <MessageCircle size={15} className="text-nxs" />
+                <span className="flex h-[18px] w-[18px] items-center justify-center [&>svg]:h-full [&>svg]:w-full">
+                  <WhatsappIcon />
+                </span>
               </button>
             </div>
           </div>
