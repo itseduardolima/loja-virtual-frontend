@@ -33,7 +33,7 @@ interface OrderListViewProps {
 // Cliente com fr moderado: com valor alto (ex-2.2fr) ele engolia toda a sobra
 // em telas largas e "Itens" parecia uma coluna gigante
 const GRID =
-  'grid grid-cols-[minmax(160px,1.1fr)_minmax(220px,1.3fr)_36px_minmax(170px,1.5fr)_minmax(200px,1.6fr)_minmax(140px,1fr)_104px] items-center gap-[10px] px-[18px] py-[11px]'
+  'grid grid-cols-[minmax(160px,1.1fr)_minmax(220px,1.3fr)_36px_minmax(170px,1.5fr)_minmax(130px,1fr)_minmax(140px,1fr)_104px] items-center gap-[10px] px-[18px] py-[11px]'
 const HEAD_LABEL = 'text-[11px] font-extrabold uppercase tracking-[0.06em] text-nxi3'
 const HEAD_BTN = 'flex items-center gap-[5px] border-none bg-transparent p-0 cursor-pointer'
 
