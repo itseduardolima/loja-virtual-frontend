@@ -403,7 +403,10 @@ export default function ProductDetailPage() {
         hasSizes={hasSizes}
         selectedColor={selectedColor}
         selectedSize={selectedSize}
+        quantity={quantity}
         isAddingToCart={isAddingToCart}
+        onIncrease={increaseQuantity}
+        onDecrease={decreaseQuantity}
         onAddToCart={handleAddToCart}
       />
 
@@ -424,7 +427,7 @@ export default function ProductDetailPage() {
         />
       )}
 
-      <WhatsAppChatWidget whatsapp={storeInfo?.whatsapp} storeName={storeInfo?.name} />
+      <WhatsAppChatWidget whatsapp={storeInfo?.whatsapp} storeName={storeInfo?.name} liftedOnMobile />
     </div>
   )
 }
