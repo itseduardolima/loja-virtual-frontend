@@ -26,6 +26,7 @@ import {
   Stars,
 } from '@/components/Store/Product'
 import { cn } from '@/lib/utils'
+import { storeAccentStyle } from '@/lib/storefront'
 
 const NAV_OFFSET = 64 + 48
 
@@ -198,7 +199,7 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white" style={storeAccentStyle(storeInfo)}>
       {barVisible && <AnnouncementBar storeInfo={storeInfo} onDismiss={() => setBarVisible(false)} />}
 
       <StoreHeader
@@ -215,7 +216,10 @@ export default function ProductDetailPage() {
       <main className="mx-auto w-full max-w-store px-4 md:px-10">
         {/* breadcrumb */}
         <nav className="flex items-center gap-1.5 pt-5 text-[11px] font-medium text-nxi3">
-          <button onClick={() => router.push(`/loja/${slug}`)} className="hover:text-nxi1">
+          <button
+            onClick={() => router.push(`/loja/${slug}`)}
+            className="rounded hover:text-nxi1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store"
+          >
             Início
           </button>
           <span>›</span>
@@ -227,7 +231,7 @@ export default function ProductDetailPage() {
                   : `/loja/${slug}/produtos`,
               )
             }
-            className="hover:text-nxi1"
+            className="rounded hover:text-nxi1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store"
           >
             {product.category?.name || 'Produtos'}
           </button>
@@ -322,7 +326,7 @@ export default function ProductDetailPage() {
                 onClick={() => toggleWishlist(product.id)}
                 disabled={wishlistLoading}
                 className={cn(
-                  'flex h-10 flex-1 items-center justify-center gap-2 rounded-full border text-[12.5px] font-semibold transition-colors disabled:opacity-60',
+                  'flex h-10 flex-1 items-center justify-center gap-2 rounded-full border text-[12.5px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2 disabled:opacity-60',
                   favorited
                     ? 'border-nxd/30 bg-nxd/[0.06] text-nxd'
                     : 'border-nxborder text-nxi2 hover:border-nxi3',
@@ -334,7 +338,7 @@ export default function ProductDetailPage() {
               <div className="relative" ref={shareRef}>
                 <button
                   onClick={() => setShareOpen((o) => !o)}
-                  className="flex h-10 items-center justify-center gap-2 rounded-full border border-nxborder px-4 text-[12.5px] font-semibold text-nxi2 transition-colors hover:border-nxi3"
+                  className="flex h-10 items-center justify-center gap-2 rounded-full border border-nxborder px-4 text-[12.5px] font-semibold text-nxi2 transition-colors hover:border-nxi3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2"
                 >
                   <Share2 size={15} /> Compartilhar
                 </button>

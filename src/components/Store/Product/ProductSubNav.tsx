@@ -83,7 +83,7 @@ export function ProductSubNav({ sections, storeHref }: ProductSubNavProps) {
         className="relative mx-auto flex h-12 max-w-store items-center overflow-x-auto px-4 [&::-webkit-scrollbar]:hidden md:px-10"
       >
         <div
-          className="pointer-events-none absolute bottom-0 z-0 h-[2px] bg-nxp"
+          className="pointer-events-none absolute bottom-0 z-0 h-[2px] bg-store"
           style={{
             left: indicator.left,
             width: indicator.width,
@@ -99,7 +99,7 @@ export function ProductSubNav({ sections, storeHref }: ProductSubNavProps) {
             }}
             onClick={() => jump(section.id)}
             className={cn(
-              'relative z-10 h-full whitespace-nowrap px-4 font-mono text-[10.5px] font-semibold uppercase tracking-[0.14em] transition-colors first:pl-0',
+              'relative z-10 h-full whitespace-nowrap px-4 font-mono text-[10.5px] font-semibold uppercase tracking-[0.14em] transition-colors first:pl-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-inset',
               active === section.id ? 'text-nxi1' : 'text-nxi3 hover:text-nxi2',
             )}
           >
@@ -109,7 +109,7 @@ export function ProductSubNav({ sections, storeHref }: ProductSubNavProps) {
         ))}
         <Link
           href={storeHref}
-          className="ml-auto hidden items-center gap-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.14em] text-nxi3 no-underline transition-colors hover:text-nxp sm:flex"
+          className="ml-auto hidden items-center gap-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.14em] text-nxi3 no-underline transition-colors hover:text-store-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-inset sm:flex"
         >
           <ArrowLeft size={13} /> Continuar comprando
         </Link>

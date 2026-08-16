@@ -49,16 +49,6 @@ function StoreLogoMark({ storeInfo }: { storeInfo: StoreInfo | null | undefined 
   )
 }
 
-/* Selo da plataforma: o índigo (nxp) aqui é intencional — é chrome da Nexo, não o accent do lojista. */
-function StorePlatformSeal() {
-  return (
-    <span className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-nxi3">
-      <span className="h-1.5 w-1.5 rounded-[2px] bg-nxp" />
-      Loja por Nexo
-    </span>
-  )
-}
-
 interface StoreHeaderProps {
   storeInfo: StoreInfo | null | undefined
   slug: string
@@ -358,7 +348,7 @@ export function StoreHeader({
                 <span className="whitespace-nowrap font-integral text-[17px] tracking-[-0.01em] text-nxi1">
                   {storeInfo?.name}
                 </span>
-                <StorePlatformSeal />
+               
               </span>
             </button>
           </div>

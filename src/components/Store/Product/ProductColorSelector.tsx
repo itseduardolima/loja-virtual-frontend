@@ -43,8 +43,8 @@ function ColorSwatch({
       aria-pressed={isSelected}
       aria-label={`Selecionar cor ${color}`}
       className={cn(
-        'relative h-11 w-11 rounded-full transition-transform active:scale-90',
-        isSelected ? 'ring-2 ring-nxp ring-offset-2' : 'ring-1 ring-nxborder hover:ring-nxi3',
+        'relative h-11 w-11 rounded-full transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2 active:scale-90',
+        isSelected ? 'ring-2 ring-store ring-offset-2' : 'ring-1 ring-nxborder hover:ring-nxi3',
       )}
       style={{ background: hex }}
     >

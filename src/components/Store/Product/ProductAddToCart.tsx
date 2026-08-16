@@ -47,7 +47,7 @@ export function ProductAddToCart({
         <button
           onClick={onDecrease}
           disabled={quantity <= 1}
-          className="flex h-12 w-11 items-center justify-center text-nxi1 disabled:opacity-30"
+          className="flex h-12 w-11 items-center justify-center rounded-full text-nxi1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2 disabled:opacity-30"
           aria-label="Diminuir quantidade"
         >
           <Minus size={16} />
@@ -58,7 +58,7 @@ export function ProductAddToCart({
         <button
           onClick={onIncrease}
           disabled={currentStock > 0 && quantity >= currentStock}
-          className="flex h-12 w-11 items-center justify-center text-nxi1 disabled:opacity-30"
+          className="flex h-12 w-11 items-center justify-center rounded-full text-nxi1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2 disabled:opacity-30"
           aria-label="Aumentar quantidade"
         >
           <Plus size={16} />
@@ -70,8 +70,10 @@ export function ProductAddToCart({
         onClick={onAddToCart}
         disabled={!canAdd || isAddingToCart}
         className={cn(
-          'flex h-12 flex-1 items-center justify-center gap-2 rounded-full text-[14px] font-semibold transition-transform active:scale-[0.99]',
-          canAdd ? 'bg-nxp text-white hover:bg-nxp/90' : 'cursor-not-allowed bg-nxbg text-nxi3',
+          'flex h-12 flex-1 items-center justify-center gap-2 rounded-full text-[14px] font-semibold transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2 active:scale-[0.99]',
+          canAdd
+            ? 'bg-store text-white hover:brightness-[1.05]'
+            : 'cursor-not-allowed bg-nxbg text-nxi3',
         )}
       >
         {isAddingToCart ? (

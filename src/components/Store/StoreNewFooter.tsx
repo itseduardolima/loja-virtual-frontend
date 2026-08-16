@@ -136,22 +136,7 @@ export function StoreNewFooter({ storeInfo, slug }: StoreNewFooterProps) {
       />
       <div aria-hidden="true" className="store-hairline absolute inset-x-0 top-0 h-px" />
 
-      {/* trust strip */}
-      <div className="relative border-b border-white/[0.07]">
-        <div className="mx-auto flex max-w-store flex-wrap justify-center gap-x-12 gap-y-5 px-4 py-7 md:px-10">
-          {trust.map(({ icon, title, sub }) => (
-            <div key={title} className="flex items-center gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.06] text-white/90 ring-1 ring-inset ring-white/10">
-                {icon}
-              </span>
-              <div className="min-w-0">
-                <p className="text-[12.5px] font-bold leading-tight text-white">{title}</p>
-                <p className="text-[11px] leading-tight text-white/45">{sub}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+  
 
       {/* main grid */}
       <div className="relative mx-auto max-w-store px-4 py-12 md:px-10 md:py-14">

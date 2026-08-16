@@ -88,7 +88,7 @@ export function ProductImageGallery({
                   key={index}
                   className={cn(
                     'h-1.5 rounded-full transition-all',
-                    index === mobileIndex ? 'w-5 bg-nxp' : 'w-1.5 bg-nxborder',
+                    index === mobileIndex ? 'w-5 bg-store' : 'w-1.5 bg-nxborder',
                   )}
                 />
               ))}

@@ -55,8 +55,8 @@ export function ProductMobileBuyBar({
         onClick={onAddToCart}
         disabled={!canAdd || isAddingToCart}
         className={cn(
-          'ml-auto flex h-11 flex-1 items-center justify-center gap-2 rounded-full text-[14px] font-semibold transition-transform active:scale-95',
-          canAdd ? 'bg-nxp text-white' : 'bg-nxbg text-nxi3',
+          'ml-auto flex h-11 flex-1 items-center justify-center gap-2 rounded-full text-[14px] font-semibold transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2 active:scale-95',
+          canAdd ? 'bg-store text-white' : 'bg-nxbg text-nxi3',
         )}
       >
         {isAddingToCart ? (

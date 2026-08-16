@@ -18,7 +18,7 @@ export function Stars({ rating, size = 12, className }: StarsProps) {
           size={size}
           className={
             i < Math.round(rating)
-              ? 'fill-amber-400 text-amber-400'
+              ? 'fill-nxw text-nxw'
               : 'fill-nxborder text-nxborder'
           }
         />

@@ -39,11 +39,11 @@ export function ProductSizeSelector({
               disabled={isOut}
               aria-pressed={isSelected}
               className={cn(
-                'relative h-11 rounded-lg text-[13.5px] font-semibold transition-all active:scale-95',
+                'relative h-11 rounded-lg text-[13.5px] font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2 active:scale-95',
                 isOut
                   ? 'cursor-not-allowed bg-nxbg text-nxi3'
                   : isSelected
-                    ? 'bg-nxp text-white'
+                    ? 'bg-store text-white'
                     : 'bg-nxbg text-nxi2 hover:bg-nxborder',
               )}
             >
