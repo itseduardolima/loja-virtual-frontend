@@ -93,7 +93,7 @@ export default function ContatosPage() {
       <SectionCard>
         <SectionHeader
           title="Contatos"
-          description="Como clientes podem falar com sua loja."
+          description="Como clientes podem falar com sua loja. Informe pelo menos um: WhatsApp ou email."
         />
 
         <FieldGrid columns={2}>
@@ -104,6 +104,7 @@ export default function ContatosPage() {
                 <WhatsappIcon />
               </span>
               WhatsApp para vendas
+              <span className="text-nxa">*</span>
               {formData.whatsapp && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-nxs/10 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.04em] text-nxs ring-1 ring-inset ring-nxs/20">
                   <CheckCircle2 className="h-2 w-2" strokeWidth={3} />
@@ -134,6 +135,7 @@ export default function ContatosPage() {
             <FieldLabel htmlFor="email">
               <Mail className="h-3.5 w-3.5 text-nxi3" />
               Email público
+              <span className="text-nxa">*</span>
               {formData.email && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-nxs/10 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.04em] text-nxs ring-1 ring-inset ring-nxs/20">
                   <CheckCircle2 className="h-2 w-2" strokeWidth={3} />
