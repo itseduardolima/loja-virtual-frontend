@@ -105,12 +105,6 @@ export default function ContatosPage() {
               </span>
               WhatsApp para vendas
               <span className="text-nxa">*</span>
-              {formData.whatsapp && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-nxs/10 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.04em] text-nxs ring-1 ring-inset ring-nxs/20">
-                  <CheckCircle2 className="h-2 w-2" strokeWidth={3} />
-                  Ativo
-                </span>
-              )}
             </FieldLabel>
             <PhoneCountryInput
               id="whatsapp"
@@ -136,12 +130,6 @@ export default function ContatosPage() {
               <Mail className="h-3.5 w-3.5 text-nxi3" />
               Email público
               <span className="text-nxa">*</span>
-              {formData.email && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-nxs/10 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.04em] text-nxs ring-1 ring-inset ring-nxs/20">
-                  <CheckCircle2 className="h-2 w-2" strokeWidth={3} />
-                  Ativo
-                </span>
-              )}
             </FieldLabel>
             <Input
               id="email"
@@ -163,12 +151,6 @@ export default function ContatosPage() {
             <FieldLabel htmlFor="instagram">
               <Instagram className="h-3.5 w-3.5 text-pink-600" />
               Instagram
-              {formData.instagram && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-nxs/10 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.04em] text-nxs ring-1 ring-inset ring-nxs/20">
-                  <CheckCircle2 className="h-2 w-2" strokeWidth={3} />
-                  Ativo
-                </span>
-              )}
             </FieldLabel>
             <Input
               id="instagram"
@@ -186,12 +168,6 @@ export default function ContatosPage() {
             <FieldLabel htmlFor="facebook">
               <Facebook className="h-3.5 w-3.5 text-blue-600" />
               Facebook
-              {formData.facebook && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-nxs/10 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.04em] text-nxs ring-1 ring-inset ring-nxs/20">
-                  <CheckCircle2 className="h-2 w-2" strokeWidth={3} />
-                  Ativo
-                </span>
-              )}
             </FieldLabel>
             <Input
               id="facebook"
