@@ -33,7 +33,7 @@ export function Field({ label, required, error, hint, counter, children }: Field
 
 export function inputCls(err?: boolean): string {
   return cn(
-    'h-11 w-full rounded-xl border bg-white px-3.5 text-[13.5px] text-nxi1 transition-colors placeholder:text-nxi3 focus:outline-none focus:ring-2 focus:ring-nxp/15',
-    err ? 'border-nxd' : 'border-nxborder focus:border-nxp',
+    'h-11 w-full rounded-xl border bg-white px-3.5 text-[13.5px] text-nxi1 transition-colors placeholder:text-nxi3 focus:outline-none focus:ring-2 focus:ring-store/25',
+    err ? 'border-nxd' : 'border-nxborder hover:border-nxi3 focus:border-store',
   )
 }

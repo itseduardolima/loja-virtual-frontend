@@ -33,7 +33,13 @@ export function CouponSection({
   }
 
   return (
-    <SectionCard n="3" icon={Tag} title="Cupom de desconto" desc="Tem um código? Aplique aqui.">
+    <SectionCard
+      n="3"
+      icon={Tag}
+      title="Cupom de desconto"
+      desc="Tem um código? Aplique aqui."
+      done={!!couponResult}
+    >
       {couponResult ? (
         <div className="flex items-center justify-between rounded-xl border border-nxs/30 bg-nxs/[0.07] px-4 py-3">
           <div className="flex items-center gap-2.5">
@@ -75,7 +81,7 @@ export function CouponSection({
               type="button"
               onClick={handleValidateCoupon}
               disabled={!couponInput.trim() || isValidatingCoupon}
-              className="h-11 shrink-0 rounded-xl border border-nxp px-5 text-[13px] font-bold text-nxp transition-colors hover:bg-nxp hover:text-white disabled:opacity-40"
+              className="h-11 shrink-0 rounded-xl border border-store px-5 text-[13px] font-bold text-store-ink transition-colors hover:bg-store hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2 disabled:opacity-40"
             >
               {isValidatingCoupon ? '...' : 'Aplicar'}
             </button>

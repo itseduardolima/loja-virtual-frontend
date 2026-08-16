@@ -63,6 +63,7 @@ export function CustomerDataSection({
             <input
               value={formData.customer_name}
               onChange={(e) => handleInput('customer_name', e.target.value.slice(0, 100))}
+              autoComplete="name"
               placeholder="Seu nome"
               className={inputCls(!!errors.customer_name)}
             />
@@ -75,6 +76,8 @@ export function CustomerDataSection({
             type="email"
             value={formData.customer_email}
             onChange={(e) => handleInput('customer_email', e.target.value.slice(0, 100))}
+            autoComplete="email"
+            inputMode="email"
             placeholder="seu@email.com"
             className={inputCls(!!errors.customer_email)}
           />
@@ -91,6 +94,8 @@ export function CustomerDataSection({
             type="tel"
             value={formData.customer_phone}
             onChange={(e) => handleInput('customer_phone', fmtPhone(e.target.value))}
+            autoComplete="tel-national"
+            inputMode="tel"
             placeholder="(11) 99999-9999"
             className={inputCls(!!errors.customer_phone)}
           />
@@ -107,6 +112,7 @@ export function CustomerDataSection({
             <input
               value={formData.customer_document}
               onChange={(e) => handleInput('customer_document', fmtDoc(e.target.value))}
+              inputMode="numeric"
               placeholder="000.000.000-00"
               className={inputCls(!!errors.customer_document)}
             />

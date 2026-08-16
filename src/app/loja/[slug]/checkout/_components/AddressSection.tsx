@@ -84,6 +84,8 @@ export function AddressSection({
             <input
               value={addressForm.zipcode}
               onChange={(e) => handleZipcodeChange(e.target.value)}
+              autoComplete="postal-code"
+              inputMode="numeric"
               placeholder="00000-000"
               maxLength={9}
               className={inputCls(!!cepError)}
@@ -104,6 +106,7 @@ export function AddressSection({
           <input
             value={addressForm.number}
             onChange={(e) => setAddressForm((p) => ({ ...p, number: e.target.value.slice(0, 10) }))}
+            inputMode="numeric"
             placeholder="123"
             className={inputCls(false)}
           />
@@ -223,7 +226,7 @@ export function AddressSection({
             type="button"
             onClick={handleSaveAndSelectAddress}
             disabled={isCreating}
-            className="h-9 rounded-xl bg-nxp px-4 text-[13px] font-bold text-white transition-opacity disabled:opacity-50"
+            className="h-9 rounded-xl bg-store px-4 text-[13px] font-bold text-white transition-[opacity,filter] hover:brightness-[1.05] disabled:opacity-50"
           >
             {isCreating ? 'Salvando…' : 'Salvar endereço'}
           </button>
@@ -255,19 +258,23 @@ export function AddressSection({
                   setSelectedAddressId(addr.id)
                   setUseManualAddress(false)
                 }}
+                role="radio"
+                aria-checked={isSelected}
                 className={cn(
-                  'flex items-start gap-3 rounded-xl border p-3.5 text-left transition-colors',
-                  isSelected ? 'border-nxp bg-nxp/[0.04]' : 'border-nxborder hover:border-nxi3',
+                  'flex items-start gap-3 rounded-xl border-[1.5px] p-3.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2',
+                  isSelected
+                    ? 'border-store bg-store/[0.05]'
+                    : 'border-nxborder bg-white hover:border-nxi3',
                 )}
               >
                 {/* Radio fake */}
                 <span
                   className={cn(
-                    'mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-2',
-                    isSelected ? 'border-nxp' : 'border-nxi3',
+                    'mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-2 bg-white',
+                    isSelected ? 'border-store' : 'border-nxi3',
                   )}
                 >
-                  {isSelected && <span className="h-2 w-2 rounded-full bg-nxp" />}
+                  {isSelected && <span className="h-2 w-2 rounded-full bg-store" />}
                 </span>
 
                 <div className="flex-1 min-w-0">
@@ -295,7 +302,7 @@ export function AddressSection({
                   </p>
                 </div>
 
-                {isSelected && <Check size={16} className="mt-0.5 shrink-0 text-nxp" />}
+                {isSelected && <Check size={16} className="mt-0.5 shrink-0 text-store-ink" />}
               </button>
             )
           })}
@@ -311,7 +318,7 @@ export function AddressSection({
             className={cn(
               'flex items-center gap-2.5 rounded-xl border p-3.5 text-left text-[13px] font-semibold transition-colors',
               showAddressForm
-                ? 'border-nxp bg-nxp/[0.04] text-nxp'
+                ? 'border-store bg-store/[0.05] text-store-ink'
                 : 'border-dashed border-nxborder text-nxi2 hover:border-nxi3',
             )}
           >

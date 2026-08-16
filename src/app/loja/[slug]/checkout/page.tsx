@@ -4,7 +4,9 @@ import Link from 'next/link'
 import { ShoppingBag } from 'lucide-react'
 import { LoadingPage } from '@/components/Layout'
 import { useCheckoutPage } from './useCheckoutPage'
+import { storeAccentStyle } from '@/lib/storefront'
 import { CheckoutHeader } from './_components/CheckoutHeader'
+import { CheckoutMobileBar } from './_components/CheckoutMobileBar'
 import { WhatsAppFlowBanner } from './_components/WhatsAppFlowBanner'
 import { CustomerDataSection } from './_components/CustomerDataSection'
 import { AddressSection } from './_components/AddressSection'
@@ -81,16 +83,20 @@ export default function CheckoutPage() {
   const storeName = storeInfo?.name ?? ''
 
   return (
-    <div className="min-h-screen bg-nxbg">
-      <CheckoutHeader slug={slug} bagCount={bagCount} />
+    <div className="min-h-screen bg-nxbg pb-24 lg:pb-0" style={storeAccentStyle(storeInfo)}>
+      <CheckoutHeader slug={slug} bagCount={bagCount} storeName={storeName} />
 
       <div className="mx-auto max-w-[1080px] px-4 py-6 md:px-8">
         <WhatsAppFlowBanner storeName={storeName} />
 
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
-            {/* Coluna esquerda: seções do formulário */}
-            <div className="flex flex-col gap-5">
+            {/* Coluna esquerda: seções do formulário + espinha ligando as etapas */}
+            <div className="relative flex flex-col gap-5">
+              <div
+                aria-hidden="true"
+                className="absolute bottom-10 left-[38px] top-10 w-0.5 bg-nxborder"
+              />
               <CustomerDataSection
                 formData={formData}
                 errors={errors}
@@ -139,9 +145,12 @@ export default function CheckoutPage() {
                 finalTotal={finalTotal}
                 couponResult={couponResult}
                 isCheckoutLoading={isCheckoutLoading}
+                storeName={storeName}
               />
             </div>
           </div>
+
+          <CheckoutMobileBar finalTotal={finalTotal} isCheckoutLoading={isCheckoutLoading} />
         </form>
       </div>
     </div>
