@@ -119,8 +119,15 @@ function LoginContent() {
         <AuthGoogleButton onClick={loginWithGoogle} disabled={isLoading} />
 
         <p className="mt-6 text-center text-[12px] leading-relaxed text-nxi3">
-          Ao entrar, você concorda com os <span className="font-semibold text-nxi2">Termos</span> e
-          a <span className="font-semibold text-nxi2">Política de Privacidade</span>.
+          Ao entrar, você concorda com os{' '}
+          <Link href="/termos" className="font-semibold text-nxi2 hover:text-nxp">
+            Termos
+          </Link>{' '}
+          e a{' '}
+          <Link href="/privacidade" className="font-semibold text-nxi2 hover:text-nxp">
+            Política de Privacidade
+          </Link>
+          .
         </p>
       </div>
     </AuthShell>

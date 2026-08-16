@@ -6,7 +6,13 @@ import { useRegister } from '@/hooks/useRegister'
 import { useCountries } from '@/hooks/useCountries'
 import { isValidEmail, isValidPassword, passwordRules, passwordsMatch } from '@/schemas/authSchemas'
 
-type CadastroField = 'name' | 'email' | 'whatsapp' | 'password' | 'confirmPassword'
+type CadastroField =
+  | 'name'
+  | 'email'
+  | 'whatsapp'
+  | 'password'
+  | 'confirmPassword'
+  | 'acceptedTerms'
 
 export function useCadastro() {
   const searchParams = useSearchParams()
@@ -19,6 +25,7 @@ export function useCadastro() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [selectedCountry, setSelectedCountry] = useState('BR')
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [touched, setTouched] = useState<Partial<Record<CadastroField, boolean>>>({})
 
   const { register, isRegistering } = useRegister({ loginQuery })
@@ -43,6 +50,10 @@ export function useCadastro() {
     touched.confirmPassword && !passwordsMatch(password, confirmPassword)
       ? 'As senhas não coincidem.'
       : null
+  const acceptedTermsError =
+    touched.acceptedTerms && !acceptedTerms
+      ? 'É preciso aceitar os Termos de Uso e a Política de Privacidade para continuar.'
+      : null
 
   function markTouched(field: CadastroField) {
     setTouched((t) => ({ ...t, [field]: true }))
@@ -58,7 +69,14 @@ export function useCadastro() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setTouched({ name: true, email: true, whatsapp: true, password: true, confirmPassword: true })
+    setTouched({
+      name: true,
+      email: true,
+      whatsapp: true,
+      password: true,
+      confirmPassword: true,
+      acceptedTerms: true,
+    })
 
     const whatsappDigits = whatsapp.replace(/\D/g, '')
     const valid =
@@ -66,7 +84,8 @@ export function useCadastro() {
       isValidEmail(email) &&
       whatsappDigits.length >= 8 &&
       isValidPassword(password) &&
-      passwordsMatch(password, confirmPassword)
+      passwordsMatch(password, confirmPassword) &&
+      acceptedTerms
 
     if (!valid) return
 
@@ -92,6 +111,8 @@ export function useCadastro() {
     setConfirmPassword,
     selectedCountry,
     setSelectedCountry,
+    acceptedTerms,
+    setAcceptedTerms,
     countriesData,
     countriesLoading,
     requirements,
@@ -100,6 +121,7 @@ export function useCadastro() {
     whatsappError,
     passwordError,
     confirmPasswordError,
+    acceptedTermsError,
     markTouched,
     handleSubmit,
     isRegistering,

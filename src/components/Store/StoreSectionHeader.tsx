@@ -1,21 +1,25 @@
 interface StoreSectionHeaderProps {
   eyebrow: string
   title: string
-  /** Tamanho do h2 — 'md' (22/26px, rows) ou 'lg' (24/30px, coleção). Default: 'md'. */
+  /** Tamanho do h2 — 'md' (rows) ou 'lg' (coleção). Default: 'md'. */
   size?: 'md' | 'lg'
 }
 
+/**
+ * Gramática editorial da vitrine: eyebrow mono-uppercase (voz do lojista)
+ * sobre título display em Integral CF. Reusado em coleção, rows e banners.
+ */
 export function StoreSectionHeader({ eyebrow, title, size = 'md' }: StoreSectionHeaderProps) {
   return (
     <div>
-      <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-nxi3">
+      <span className="block font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-store-ink sm:text-[12px]">
         {eyebrow}
       </span>
       <h2
         className={
           size === 'lg'
-            ? 'mt-1.5 text-[24px] font-extrabold tracking-[-0.02em] text-nxi1 sm:text-[30px]'
-            : 'mt-1.5 text-[22px] font-extrabold tracking-[-0.02em] text-nxi1 sm:text-[26px]'
+            ? 'mt-3 font-integral text-[28px] leading-[1] tracking-[-0.03em] text-nxi1 sm:text-[38px]'
+            : 'mt-3 font-integral text-[24px] leading-[1] tracking-[-0.03em] text-nxi1 sm:text-[34px]'
         }
       >
         {title}

@@ -212,7 +212,7 @@ export default function ProductDetailPage() {
 
       <ProductSubNav sections={sections} storeHref={`/loja/${slug}`} />
 
-      <main className="mx-auto w-full max-w-[1180px] px-4 md:px-10">
+      <main className="mx-auto w-full max-w-store px-4 md:px-10">
         {/* breadcrumb */}
         <nav className="flex items-center gap-1.5 pt-5 text-[11px] font-medium text-nxi3">
           <button onClick={() => router.push(`/loja/${slug}`)} className="hover:text-nxi1">

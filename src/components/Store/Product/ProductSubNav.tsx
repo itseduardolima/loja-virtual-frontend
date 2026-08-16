@@ -80,7 +80,7 @@ export function ProductSubNav({ sections, storeHref }: ProductSubNavProps) {
     <div className="sticky top-16 z-40 border-b border-nxborder bg-white/95 backdrop-blur">
       <div
         ref={trackRef}
-        className="relative mx-auto flex h-12 max-w-[1180px] items-center overflow-x-auto px-4 [&::-webkit-scrollbar]:hidden md:px-10"
+        className="relative mx-auto flex h-12 max-w-store items-center overflow-x-auto px-4 [&::-webkit-scrollbar]:hidden md:px-10"
       >
         <div
           className="pointer-events-none absolute bottom-0 z-0 h-[2px] bg-nxp"

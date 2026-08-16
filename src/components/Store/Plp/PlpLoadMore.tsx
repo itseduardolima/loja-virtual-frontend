@@ -13,24 +13,24 @@ export function PlpLoadMore({ shown, total, isFetching, error, onLoadMore }: Plp
   const pct = total > 0 ? Math.min(100, (shown / total) * 100) : 100
 
   return (
-    <div className="mt-8 flex flex-col items-center gap-3">
-      <div className="h-1 w-44 overflow-hidden rounded-full bg-nxbg">
+    <div className="mt-10 flex flex-col items-center gap-3.5">
+      <div className="h-[5px] w-full max-w-[240px] overflow-hidden rounded-full bg-nxborder">
         <div
-          className="h-full rounded-full bg-nxp transition-[width] duration-500"
+          className="h-full rounded-full bg-store transition-[width] duration-500"
           style={{ width: `${pct}%` }}
         />
       </div>
-      <p className="text-[12px] text-nxi3">
-        Mostrando <b className="text-nxi1">{shown}</b> de {total}
+      <p className="font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-nxi3">
+        Mostrando <span className="text-nxi1">{shown}</span> de {total}
       </p>
       {error && <p className="text-[12px] text-nxd">{error}</p>}
       <button
         type="button"
         onClick={onLoadMore}
         disabled={isFetching}
-        className="rounded-full border border-nxborder px-8 py-3 text-[13px] font-bold text-nxi1 transition-colors hover:border-nxp hover:text-nxp disabled:opacity-60"
+        className="h-12 rounded-full border-[1.5px] border-store px-8 text-[14px] font-bold text-store-ink transition-colors hover:bg-store/[0.08] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2"
       >
-        {isFetching ? 'Carregando...' : 'Carregar mais'}
+        {isFetching ? 'Carregando…' : 'Carregar mais'}
       </button>
     </div>
   )

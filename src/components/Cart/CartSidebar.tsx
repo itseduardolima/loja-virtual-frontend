@@ -78,7 +78,7 @@ export function CartSidebar({ isOpen, onClose, storeId, storeSlug }: CartSidebar
           <div className="flex items-center gap-2.5">
             <ShoppingBag size={19} className="text-nxi1" />
             <h2 className="text-[16px] font-extrabold tracking-tight text-nxi1">Sua sacola</h2>
-            <span className="rounded-full bg-nxp/10 px-2 py-0.5 text-[11px] font-bold text-nxp">
+            <span className="rounded-full bg-store/10 px-2 py-0.5 text-[11px] font-bold text-store-ink">
               {totalItems > 99 ? '99+' : totalItems}
             </span>
           </div>
@@ -95,7 +95,7 @@ export function CartSidebar({ isOpen, onClose, storeId, storeSlug }: CartSidebar
         <div className="flex flex-1 flex-col overflow-hidden">
           {isLoadingCart ? (
             <div className="flex flex-1 items-center justify-center">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-nxborder border-t-nxp" />
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-nxborder border-t-store" />
             </div>
           ) : !hasItems ? (
             /* Empty state */
@@ -109,7 +109,7 @@ export function CartSidebar({ isOpen, onClose, storeId, storeSlug }: CartSidebar
               </p>
               <button
                 onClick={onClose}
-                className="mt-2 rounded-full bg-nxp px-5 py-2.5 text-[13px] font-bold text-white transition-opacity hover:opacity-90"
+                className="mt-2 rounded-full bg-store px-5 py-2.5 text-[13px] font-bold text-white transition-opacity hover:opacity-90"
               >
                 Explorar a loja
               </button>
@@ -248,7 +248,7 @@ export function CartSidebar({ isOpen, onClose, storeId, storeSlug }: CartSidebar
                 {/* CTA finalizar */}
                 <button
                   onClick={handleCheckout}
-                  className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-nxp text-[14px] font-bold text-white transition-transform active:scale-[0.99]"
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-store text-[14px] font-bold text-white transition-transform active:scale-[0.99]"
                 >
                   Finalizar compra
                   <ArrowRight size={16} />

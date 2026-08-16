@@ -44,6 +44,15 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
 
+    const isRefreshRequest = originalRequest?.url?.includes('/auth/refresh_token')
+
+    // Se o próprio refresh falhar com 401, não tenta renovar de novo (evitaria
+    // deadlock: essa chamada ficaria presa na fila esperando por si mesma).
+    // Propaga o erro para o catch de quem chamou o refresh.
+    if (error.response?.status === 401 && isRefreshRequest) {
+      return Promise.reject(error)
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {

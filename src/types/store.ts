@@ -53,6 +53,9 @@ export interface StoreInfo {
   delivery_fee?: string | number | null
   free_delivery_min?: string | number | null
   delivery_time?: string
+  /** Cor de marca do lojista (hex, ex.: "#2F6B4F") — retornada por /catalog/store/:slug;
+      quando nula, a vitrine usa o índigo Nexo. */
+  brand_color?: string
   hero_eyebrow?: string
   hero_title?: string
   hero_subtitle?: string
@@ -111,6 +114,8 @@ export interface UpdateStoreData {
   campaign_text?: string
   campaign_image?: File
   remove_campaign_image?: boolean
+  /** Cor de marca (hex "#RRGGBB"); string vazia limpa e volta ao índigo Nexo. */
+  brand_color?: string
 }
 
 export interface StoreInfoResponse {

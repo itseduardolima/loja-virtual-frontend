@@ -57,7 +57,7 @@ function BoxInput({
 const inputCls = (filled?: boolean) =>
   cn(
     'h-11 w-full rounded-xl border border-nxborder bg-white px-3.5 text-[13.5px] text-nxi1 placeholder:text-nxi3',
-    'focus:border-nxp focus:outline-none focus:ring-2 focus:ring-nxp/15',
+    'focus:border-store focus:outline-none focus:ring-2 focus:ring-store/15',
     filled && 'bg-nxs/[0.04]',
   )
 
@@ -199,7 +199,7 @@ export function SectionEnderecos({ isOpen }: { isOpen: boolean }) {
           <button
             type="button"
             onClick={handleCancel}
-            className="mb-4 flex items-center gap-1.5 text-[12.5px] font-semibold text-nxi2 hover:text-nxp"
+            className="mb-4 flex items-center gap-1.5 text-[12.5px] font-semibold text-nxi2 hover:text-store"
           >
             <ChevronLeft size={16} />
             Voltar
@@ -344,7 +344,7 @@ export function SectionEnderecos({ isOpen }: { isOpen: boolean }) {
             <label className="col-span-2 mt-3 flex items-center gap-2 text-[12.5px] font-semibold text-nxi2">
               <input
                 type="checkbox"
-                className="h-4 w-4 accent-nxp"
+                className="h-4 w-4 accent-store"
                 checked={form.is_default === 1}
                 onChange={(e) => setForm((p) => ({ ...p, is_default: e.target.checked ? 1 : 0 }))}
               />
@@ -355,7 +355,7 @@ export function SectionEnderecos({ isOpen }: { isOpen: boolean }) {
             <button
               type="submit"
               disabled={isCreating || isUpdating}
-              className="col-span-2 mt-5 h-12 w-full rounded-full bg-nxp text-[13.5px] font-bold text-white transition-transform active:scale-[0.99] disabled:opacity-60"
+              className="col-span-2 mt-5 h-12 w-full rounded-full bg-store text-[13.5px] font-bold text-white transition-transform active:scale-[0.99] disabled:opacity-60"
             >
               {isCreating || isUpdating ? 'Salvando...' : 'Salvar endereço'}
             </button>
@@ -372,14 +372,14 @@ export function SectionEnderecos({ isOpen }: { isOpen: boolean }) {
                 key={addr.id}
                 className={cn(
                   'ac-rise rounded-2xl border bg-white p-4',
-                  addr.is_default === 1 ? 'border-nxp/40' : 'border-nxborder',
+                  addr.is_default === 1 ? 'border-store/40' : 'border-nxborder',
                 )}
               >
                 {/* Topo */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
                     {/* Chip ícone */}
-                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-nxp/[0.08] text-nxp">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-store/[0.08] text-store">
                       <LabelIcon label={addr.label} />
                     </span>
 
@@ -390,7 +390,7 @@ export function SectionEnderecos({ isOpen }: { isOpen: boolean }) {
                           {addr.label || addr.name}
                         </span>
                         {addr.is_default === 1 && (
-                          <span className="inline-flex rounded-full bg-nxp/10 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.03em] text-nxp">
+                          <span className="inline-flex rounded-full bg-store/10 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.03em] text-store">
                             Padrão
                           </span>
                         )}
@@ -406,7 +406,7 @@ export function SectionEnderecos({ isOpen }: { isOpen: boolean }) {
                       type="button"
                       onClick={() => handleEdit(addr)}
                       title="Editar"
-                      className="flex h-7 w-7 items-center justify-center rounded-lg text-nxi3 transition-colors hover:bg-nxbg hover:text-nxp"
+                      className="flex h-7 w-7 items-center justify-center rounded-lg text-nxi3 transition-colors hover:bg-nxbg hover:text-store"
                     >
                       <Pencil size={14} />
                     </button>
@@ -439,7 +439,7 @@ export function SectionEnderecos({ isOpen }: { isOpen: boolean }) {
                   <button
                     type="button"
                     onClick={() => setDefaultAddress(addr.id)}
-                    className="mt-2.5 text-[11.5px] font-bold text-nxp hover:underline"
+                    className="mt-2.5 text-[11.5px] font-bold text-store hover:underline"
                   >
                     Tornar padrão
                   </button>
@@ -458,7 +458,7 @@ export function SectionEnderecos({ isOpen }: { isOpen: boolean }) {
               setFilled(false)
               setShowForm(true)
             }}
-            className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-nxborder py-3.5 text-[13px] font-bold text-nxi2 transition-colors hover:border-nxp hover:text-nxp"
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-nxborder py-3.5 text-[13px] font-bold text-nxi2 transition-colors hover:border-store hover:text-store"
           >
             <Plus size={16} />
             Adicionar endereço

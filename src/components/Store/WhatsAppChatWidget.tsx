@@ -2,13 +2,16 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { cn } from '@/lib/utils'
 
 interface WhatsAppChatWidgetProps {
   whatsapp?: string | null
   storeName?: string | null
+  /** sobe o FAB acima de um dock flutuante mobile (ex.: PlpMobileDock) para não sobrepor */
+  liftedOnMobile?: boolean
 }
 
-export function WhatsAppChatWidget({ whatsapp, storeName }: WhatsAppChatWidgetProps) {
+export function WhatsAppChatWidget({ whatsapp, storeName, liftedOnMobile }: WhatsAppChatWidgetProps) {
   const [hovered, setHovered] = useState(false)
 
   if (!whatsapp) return null
@@ -20,7 +23,12 @@ export function WhatsAppChatWidget({ whatsapp, storeName }: WhatsAppChatWidgetPr
   const href = `https://wa.me/${phone}?text=${message}`
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3">
+    <div
+      className={cn(
+        'fixed right-6 z-50 flex items-center gap-3',
+        liftedOnMobile ? 'bottom-[92px] lg:bottom-6' : 'bottom-6',
+      )}
+    >
       {/* Tooltip */}
       <AnimatePresence>
         {hovered && (

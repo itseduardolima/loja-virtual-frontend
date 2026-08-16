@@ -5,9 +5,11 @@ import { ArrowRight, ArrowUpRight, MapPin, Truck, Clock } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Product } from '@/types/product'
 import type { StoreInfo } from '@/types/store'
+import { cn } from '@/lib/utils'
 import { heroContent, heroChips, freeShippingLabel, formatBRL, getStoreMonogram, getProductPrice } from '@/lib/storefront'
 import { getProductImageUrl, getProductImageUrls } from '@/lib/imageUtils'
 import { EmptyImageState } from '@/components/Product'
+import { StoreButton, StoreEyebrow, StoreBadge } from '@/components/Store/ui'
 
 interface StoreHomeHeroProps {
   storeInfo: StoreInfo
@@ -23,6 +25,9 @@ function chipIcon(chip: string, store: StoreInfo): LucideIcon {
   if (chip.startsWith('Entrega')) return Clock
   return MapPin
 }
+
+const focusRing =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2 focus-visible:ring-offset-nxsurf'
 
 export function StoreHomeHero({
   storeInfo,
@@ -45,57 +50,52 @@ export function StoreHomeHero({
   )
 
   return (
-    <section className="mx-auto max-w-[1180px] px-4 pt-6 md:px-10">
-      <div className="relative overflow-hidden rounded-3xl bg-nxp">
-        {/* monograma decorativo + linha de grade */}
-        <div className="pointer-events-none absolute -right-10 -top-16 select-none font-integral text-[260px] leading-none text-white/[0.05]">
+    <section className="mx-auto max-w-store px-4 pt-6 md:px-10">
+      <div className="relative overflow-hidden">
+        {/* monograma marca-d'água */}
+        <div className="pointer-events-none absolute -right-6 -top-14 select-none font-integral text-[200px] leading-none text-store/[0.05] sm:-top-20 sm:text-[300px]">
           {monogram}
         </div>
-        <div className="pointer-events-none absolute inset-y-0 left-1/2 hidden w-px bg-white/[0.06] lg:block" />
 
-        <div className="grid grid-cols-1 items-center gap-8 p-8 md:p-12 lg:grid-cols-2 lg:gap-6">
+        <div
+          className={cn(
+            'relative grid grid-cols-1 items-center gap-8 py-6 md:py-10 lg:gap-12',
+            showcase && 'md:grid-cols-2',
+          )}
+        >
           {/* copy */}
           <div className="nx-fade">
-            <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-white/55">
-              {eyebrow}
-            </span>
-            <h1
-              className="mt-3 font-extrabold leading-[0.95] tracking-[-0.035em] text-white"
-              style={{ fontSize: 'clamp(40px, 5.5vw, 68px)' }}
-            >
+            <StoreEyebrow tone="accent">{eyebrow}</StoreEyebrow>
+            <h1 className="mt-4 break-words font-integral text-[clamp(40px,5.5vw,66px)] leading-[1] tracking-[-0.03em] text-nxi1">
               {title}
             </h1>
             {subtitle && (
-              <p className="break-words mt-4 max-w-[42ch] text-[14.5px] leading-relaxed text-white/70">
+              <p className="mt-5 max-w-[46ch] break-words text-[15px] leading-[1.6] text-nxi2 sm:text-[17px]">
                 {subtitle}
               </p>
             )}
-            <div className="mt-7 flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={onExplore}
-                className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-[13px] font-bold text-nxp transition-transform active:scale-95"
-              >
-                Explorar coleção <ArrowRight size={16} />
-              </button>
-              <button
-                type="button"
-                onClick={onNovidades}
-                className="inline-flex items-center gap-2 rounded-full border border-white/30 px-5 py-3 text-[13px] font-bold text-white transition-colors hover:bg-white/10"
-              >
+
+            <div className="mt-8 flex flex-wrap items-center gap-3.5">
+              <StoreButton variant="primary" size="lg" onClick={onExplore}>
+                Explorar coleção <ArrowRight size={18} strokeWidth={2.2} />
+              </StoreButton>
+              <StoreButton variant="outline" size="lg" onClick={onNovidades}>
                 Ver novidades
-              </button>
+              </StoreButton>
             </div>
+
             {chips.length > 0 && (
-              <div className="mt-8 flex flex-wrap gap-x-7 gap-y-2">
+              <div className="mt-8 flex flex-wrap gap-x-7 gap-y-3">
                 {chips.map((chip) => {
                   const Icon = chipIcon(chip, storeInfo)
                   return (
                     <span
                       key={chip}
-                      className="flex items-center gap-1.5 text-[11.5px] font-semibold text-white/60"
+                      className="flex items-center gap-2.5 text-[13px] font-semibold text-nxi2"
                     >
-                      <Icon size={14} className="text-white/40" />
+                      <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-store/[0.08] text-store">
+                        <Icon size={16} />
+                      </span>
                       {chip}
                     </span>
                   )
@@ -106,35 +106,43 @@ export function StoreHomeHero({
 
           {/* showcase do produto em destaque */}
           {showcase && (
-            <div className="relative hidden nx-fade lg:block" style={{ animationDelay: '.08s' }}>
-              <div className="relative ml-auto w-[78%]">
-                {backImage && (
-                  <div className="absolute -left-12 top-10 w-[60%] rotate-[-5deg] overflow-hidden rounded-2xl border border-white/15 bg-white/5 shadow-2xl">
-                    <div className="relative aspect-[3/4]">
-                      <Image
-                        src={backImage}
-                        alt=""
-                        fill
-                        sizes="220px"
-                        className="object-cover"
-                        aria-hidden
-                      />
-                    </div>
-                  </div>
-                )}
+            <div className="nx-fade relative hidden md:block">
+              <div className="relative mx-auto w-full max-w-[360px]">
+                {/* card fantasma rotacionado atrás */}
+                <div
+                  aria-hidden
+                  className="absolute right-2 top-6 h-[82%] w-[70%] rotate-[6deg] overflow-hidden rounded-[22px] border border-nxborder bg-nxbg shadow-[0_30px_60px_-30px_rgba(7,8,21,0.4)]"
+                >
+                  {backImage && (
+                    <Image
+                      src={backImage}
+                      alt=""
+                      fill
+                      sizes="240px"
+                      className="object-cover opacity-90"
+                      aria-hidden
+                    />
+                  )}
+                </div>
+
+                {/* card em destaque */}
                 <button
                   type="button"
                   onClick={() => onOpenProduct(showcase)}
-                  className="group relative block w-full overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-transform duration-500 hover:-translate-y-1"
+                  aria-label={`Ver ${showcase.name}`}
+                  className={cn(
+                    'group relative z-10 block w-full overflow-hidden rounded-[24px] border border-nxborder bg-white p-4 text-left shadow-[0_40px_80px_-34px_rgba(7,8,21,0.5)] transition-transform duration-500 hover:-translate-y-1 active:scale-[0.99]',
+                    focusRing,
+                  )}
                 >
-                  <div className="relative aspect-[4/5] overflow-hidden bg-nxbg">
-                    <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-[1.04]">
+                  <div className="relative aspect-[4/5] overflow-hidden rounded-[16px] bg-nxbg">
+                    <div className="absolute inset-0 transition-transform duration-[600ms] ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.05]">
                       {frontImage ? (
                         <Image
                           src={frontImage}
                           alt={showcase.name}
                           fill
-                          sizes="370px"
+                          sizes="360px"
                           className="object-cover"
                           priority
                         />
@@ -142,31 +150,33 @@ export function StoreHomeHero({
                         <EmptyImageState iconSize="sm" className="rounded-none" />
                       )}
                     </div>
-                    {hasPromo && (
-                      <span className="absolute left-3 top-3 rounded-full bg-nxa px-2.5 py-1 text-[11px] font-bold text-white">
-                        -{Math.round(showcase.discount_percentage!)}%
+                    <StoreBadge tone="new" className="absolute left-3 top-3 z-10">
+                      Mais vendido
+                    </StoreBadge>
+                  </div>
+
+                  <div className="px-1.5 pb-1 pt-4">
+                    {showcase.category?.name && (
+                      <span className="block font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-nxi3">
+                        {showcase.category.name}
                       </span>
                     )}
-                  </div>
-                  <div className="flex items-center justify-between gap-3 px-4 py-3.5">
-                    <div className="min-w-0">
-                      <p className="truncate text-[13px] font-bold text-nxi1">{showcase.name}</p>
-                      {showcase.category?.name && (
-                        <p className="text-[11px] text-nxi3">{showcase.category.name}</p>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <div className="text-[15px] font-extrabold text-nxi1">
+                    <p className="mt-1.5 line-clamp-2 font-bold leading-[1.25] tracking-[-0.01em] text-nxi1">
+                      {showcase.name}
+                    </p>
+                    <div className="mt-3 flex items-baseline gap-2">
+                      <span className="text-[20px] font-extrabold text-nxi1">
                         {formatBRL(getProductPrice(showcase))}
-                      </div>
+                      </span>
                       {hasPromo && (
-                        <div className="text-[11px] text-nxi3 line-through">
+                        <span className="text-[13px] text-nxi3 line-through">
                           {formatBRL(parseFloat(showcase.price))}
-                        </div>
+                        </span>
                       )}
                     </div>
                   </div>
-                  <span className="absolute bottom-3 right-3 flex h-9 w-9 translate-y-2 items-center justify-center rounded-full bg-nxp text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+
+                  <span className="absolute bottom-4 right-4 flex h-9 w-9 translate-y-2 items-center justify-center rounded-full bg-store text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
                     <ArrowUpRight size={17} />
                   </span>
                 </button>

@@ -15,12 +15,11 @@ import {
   StoreMarquee,
   StoreCategoryPills,
   StoreCollectionSection,
-  StoreFeatureBanner,
   StoreProductRow,
   StoreNewFooter,
   WhatsAppChatWidget,
 } from '@/components/Store'
-import { marqueeItems } from '@/lib/storefront'
+import { marqueeItems, storeAccentStyle } from '@/lib/storefront'
 
 export default function StoreHomePage() {
   const params = useParams()
@@ -87,7 +86,7 @@ export default function StoreHomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white" style={storeAccentStyle(storeInfo)}>
       {barVisible && (
         <AnnouncementBar storeInfo={storeInfo} onDismiss={() => setBarVisible(false)} />
       )}
@@ -140,8 +139,6 @@ export default function StoreHomePage() {
         slug={slug}
         {...cardHandlers}
       />
-
-      {storeInfo && <StoreFeatureBanner storeInfo={storeInfo} onExplore={handleExplore} />}
 
       <StoreProductRow
         id="novidades"

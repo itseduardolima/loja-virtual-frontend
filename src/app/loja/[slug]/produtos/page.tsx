@@ -10,11 +10,13 @@ import {
   PlpFilterPanel,
   PlpFilterDrawer,
   PlpToolbar,
+  PlpMobileDock,
   PlpActiveChips,
   PlpProductGrid,
   PlpEmptyState,
   PlpLoadMore,
 } from '@/components/Store'
+import { storeAccentStyle } from '@/lib/storefront'
 import { useStorePage } from './useStorePage'
 
 export default function StoreProductsPage() {
@@ -37,7 +39,7 @@ export default function StoreProductsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white" style={storeAccentStyle(vm.storeInfo)}>
       <StoreHeader
         storeInfo={vm.storeInfo}
         slug={slug}
@@ -49,34 +51,34 @@ export default function StoreProductsPage() {
 
       <PlpHero
         slug={slug}
-        niche={vm.heroNiche}
+        storeName={vm.storeInfo?.name}
         title={vm.pageTitle}
         resultCount={vm.resultCount}
         search={vm.debouncedSearch || undefined}
       />
 
-      <div className="mx-auto max-w-[1280px] px-4 md:px-10">
-        <div className="flex gap-7 py-6">
+      <PlpToolbar
+        title={vm.pageTitle}
+        resultCount={vm.resultCount}
+        sort={vm.sort}
+        onSortChange={vm.setSort}
+        view={vm.view}
+        onViewChange={vm.setView}
+      />
+
+      <div className="mx-auto max-w-store px-4 md:px-10">
+        <div className="flex gap-8 py-7">
           <PlpFilterRail activeCount={vm.activeCount} onClearAll={vm.clearAll}>
             <PlpFilterPanel {...vm.panelProps} />
           </PlpFilterRail>
 
-          <main className="min-w-0 flex-1">
-            <PlpToolbar
-              resultCount={vm.resultCount}
-              activeCount={vm.activeCount}
-              sort={vm.sort}
-              onSortChange={vm.setSort}
-              view={vm.view}
-              onViewChange={vm.setView}
-              onOpenDrawer={() => vm.setIsDrawerOpen(true)}
-            />
-
+          <main className="min-w-0 flex-1 pb-24 lg:pb-0">
             {vm.chips.length > 0 && <PlpActiveChips chips={vm.chips} onClearAll={vm.clearAll} />}
 
             {!vm.productsLoading && vm.products.length === 0 ? (
               <PlpEmptyState
-                onClear={() => {
+                onClearFilters={vm.clearAll}
+                onViewAll={() => {
                   vm.clearAll()
                   vm.setSearch('')
                 }}
@@ -108,10 +110,18 @@ export default function StoreProductsPage() {
 
       {vm.storeInfo && <StoreNewFooter storeInfo={vm.storeInfo} slug={slug} />}
 
+      <PlpMobileDock
+        activeCount={vm.activeCount}
+        sort={vm.sort}
+        onSortChange={vm.setSort}
+        onOpenDrawer={() => vm.setIsDrawerOpen(true)}
+      />
+
       <PlpFilterDrawer
         open={vm.isDrawerOpen}
         onClose={() => vm.setIsDrawerOpen(false)}
         resultCount={vm.resultCount}
+        activeCount={vm.activeCount}
         onClearAll={vm.clearAll}
       >
         <PlpFilterPanel {...vm.panelProps} />
@@ -125,7 +135,11 @@ export default function StoreProductsPage() {
         currentPath={`/loja/${slug}`}
       />
 
-      <WhatsAppChatWidget whatsapp={vm.storeInfo?.whatsapp} storeName={vm.storeInfo?.name} />
+      <WhatsAppChatWidget
+        whatsapp={vm.storeInfo?.whatsapp}
+        storeName={vm.storeInfo?.name}
+        liftedOnMobile
+      />
     </div>
   )
 }

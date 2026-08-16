@@ -3,7 +3,6 @@ import isEqual from 'lodash/isEqual'
 import { useStore } from '@/hooks/useStore'
 import { useUpdateStore } from '@/hooks/useUpdateStore'
 import { heroContent, announcementText } from '@/lib/storefront'
-import { buildImageUrl } from '@/lib/imageUtils'
 import type { StoreInfo } from '@/types/store'
 
 export interface VitrineFormData {
@@ -11,26 +10,28 @@ export interface VitrineFormData {
   hero_title: string
   hero_subtitle: string
   announcement_text: string
-  campaign_title: string
-  campaign_text: string
+  /** cor de marca (hex) — validada por regex, não por limite de caracteres */
+  brand_color: string
 }
 
-const LIMITS: Record<keyof VitrineFormData, number> = {
+/** Campos de texto com limite de caracteres (exclui brand_color, validado por hex). */
+export type VitrineTextKey = Exclude<keyof VitrineFormData, 'brand_color'>
+
+const LIMITS: Record<VitrineTextKey, number> = {
   hero_eyebrow: 60,
   hero_title: 120,
   hero_subtitle: 300,
   announcement_text: 160,
-  campaign_title: 120,
-  campaign_text: 300,
 }
+
+const HEX_RE = /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/
 
 const initial: VitrineFormData = {
   hero_eyebrow: '',
   hero_title: '',
   hero_subtitle: '',
   announcement_text: '',
-  campaign_title: '',
-  campaign_text: '',
+  brand_color: '',
 }
 
 export function useVitrine() {
@@ -40,15 +41,6 @@ export function useVitrine() {
   const [formData, setFormData] = useState<VitrineFormData>(initial)
   const [server, setServer] = useState<VitrineFormData>(initial)
 
-  // campaign image: arquivo após crop + URL de preview (blob ou URL do backend)
-  const [campaignImageFile, setCampaignImageFile] = useState<File | null>(null)
-  const [campaignImagePreview, setCampaignImagePreview] = useState<string | null>(null)
-  // true quando o usuário removeu explicitamente a imagem existente (sem substituir)
-  const [campaignImageRemoved, setCampaignImageRemoved] = useState(false)
-
-  // crop dialog state — null = fechado
-  const [cropTarget, setCropTarget] = useState<{ imageSrc: string; fileName: string } | null>(null)
-
   useEffect(() => {
     if (!store) return
     const s = store as StoreInfo
@@ -57,49 +49,23 @@ export function useVitrine() {
       hero_title: s.hero_title ?? '',
       hero_subtitle: s.hero_subtitle ?? '',
       announcement_text: s.announcement_text ?? '',
-      campaign_title: s.campaign_title ?? '',
-      campaign_text: s.campaign_text ?? '',
+      brand_color: s.brand_color ?? '',
     }
     setFormData(next)
     setServer(next)
-    // preview inicial: URL do backend (se existir)
-    setCampaignImagePreview(s.campaign_image ? buildImageUrl(s.campaign_image) : null)
   }, [store])
 
-  /** Abre o dialog de crop ao selecionar um arquivo. */
-  const handleCampaignImageSelect = (file: File | null) => {
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = (e) =>
-      setCropTarget({ imageSrc: e.target?.result as string, fileName: file.name })
-    reader.readAsDataURL(file)
-  }
-
-  /** Chamado pelo ImageCropDialog ao confirmar o recorte. */
-  const handleCropDone = (croppedFile: File, previewUrl: string) => {
-    setCampaignImageFile(croppedFile)
-    setCampaignImagePreview(previewUrl)
-    setCropTarget(null)
-  }
-
-  /** Remove a imagem da campanha (volta ao estado sem imagem). */
-  const handleRemoveCampaignImage = () => {
-    setCampaignImageFile(null)
-    setCampaignImagePreview(null)
-    setCampaignImageRemoved(true)
-  }
-
-  const isDirty = useMemo(
-    () => !isEqual(formData, server) || campaignImageFile !== null || campaignImageRemoved,
-    [formData, server, campaignImageFile, campaignImageRemoved],
-  )
+  const isDirty = useMemo(() => !isEqual(formData, server), [formData, server])
 
   const errors = useMemo(() => {
     const errs: Partial<Record<keyof VitrineFormData, string>> = {}
-    for (const key of Object.keys(LIMITS) as Array<keyof VitrineFormData>) {
+    for (const key of Object.keys(LIMITS) as VitrineTextKey[]) {
       if (formData[key].length > LIMITS[key]) {
         errs[key] = `Máximo de ${LIMITS[key]} caracteres.`
       }
+    }
+    if (formData.brand_color && !HEX_RE.test(formData.brand_color.trim())) {
+      errs.brand_color = 'Use um hex válido, ex.: #2A2D7C.'
     }
     return errs
   }, [formData])
@@ -120,18 +86,10 @@ export function useVitrine() {
           hero_title: formData.hero_title.trim(),
           hero_subtitle: formData.hero_subtitle.trim(),
           announcement_text: formData.announcement_text.trim(),
-          campaign_title: formData.campaign_title.trim(),
-          campaign_text: formData.campaign_text.trim(),
-          ...(campaignImageFile
-            ? { campaign_image: campaignImageFile }
-            : campaignImageRemoved
-              ? { remove_campaign_image: true }
-              : {}),
+          brand_color: formData.brand_color.trim(),
         },
       })
       setServer(formData)
-      setCampaignImageFile(null)
-      setCampaignImageRemoved(false)
     } catch (err) {
       console.error('Erro ao salvar vitrine:', err)
     }
@@ -139,10 +97,6 @@ export function useVitrine() {
 
   const handleReset = () => {
     setFormData(server)
-    setCampaignImageFile(null)
-    setCampaignImageRemoved(false)
-    const s = store as StoreInfo | undefined
-    setCampaignImagePreview(s?.campaign_image ? buildImageUrl(s.campaign_image) : null)
   }
 
   // StoreInfo mesclado com formData — alimenta a pré-visualização em tempo real
@@ -154,11 +108,9 @@ export function useVitrine() {
       hero_title: formData.hero_title,
       hero_subtitle: formData.hero_subtitle,
       announcement_text: formData.announcement_text,
-      campaign_title: formData.campaign_title,
-      campaign_text: formData.campaign_text,
-      campaign_image: campaignImagePreview ?? (store as StoreInfo).campaign_image,
+      brand_color: formData.brand_color || undefined,
     }
-  }, [store, formData, campaignImagePreview])
+  }, [store, formData])
 
   // Placeholders mostrando o padrão derivado dos dados da loja
   const defaults = useMemo(() => {
@@ -187,11 +139,5 @@ export function useVitrine() {
     defaults,
     limits: LIMITS,
     previewStore,
-    campaignImagePreview,
-    cropTarget,
-    setCropTarget,
-    handleCampaignImageSelect,
-    handleCropDone,
-    handleRemoveCampaignImage,
   }
 }

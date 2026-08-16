@@ -4,7 +4,7 @@ import { Suspense } from 'react'
 import {
   Mail, User, Store,
   Clock, CheckCircle, Truck, PackageCheck, XCircle,
-  SearchX, ShoppingBag,
+  SearchX, ShoppingBag, Hourglass, Info,
 } from 'lucide-react'
 import { buildImageUrl, formatDate, formatPrice } from '@/lib/utils'
 import { cn } from '@/lib/utils'
@@ -44,15 +44,17 @@ function RastrearPedidoContent() {
     setInputCode,
     handleSearch,
     order,
+    history,
     isLoading,
     error,
     hasSearched,
     showCancelDialog,
-    cancelReason,
-    setCancelReason,
     isCancelling,
+    cancelError,
     cancelResult,
     canCancel,
+    cancelNeedsApproval,
+    blockedCancelReason,
     handleOpenCancelDialog,
     handleCloseCancelDialog,
     handleConfirmCancel,
@@ -141,6 +143,70 @@ function RastrearPedidoContent() {
                 </div>
               </div>
 
+              {/*
+                Cancelamento em duas etapas: enquanto a loja não aprovar, o pedido
+                CONTINUA valendo e o status acima segue "Confirmado". Sem este aviso
+                o cliente sai achando que já está cancelado.
+              */}
+              {cancelResult === 'requested' && (
+                <div className="rt-rise rounded-2xl border border-nxw/30 bg-nxw/[0.07] p-5">
+                  <div className="flex items-start gap-3.5">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-nxw text-white">
+                      <Hourglass size={20} />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-[15px] font-extrabold tracking-tight text-nxi1">
+                        Cancelamento solicitado — aguardando a loja
+                      </p>
+                      <p className="mt-1 text-[13px] leading-relaxed text-nxi2">
+                        A loja <b className="text-nxi1">{order.store?.name}</b> foi avisada do seu
+                        pedido de cancelamento.{' '}
+                        <b className="text-nxi1">O pedido ainda não está cancelado</b>: ele só é
+                        cancelado quando a loja aprovar a solicitação.
+                      </p>
+                    </div>
+                  </div>
+                  <ol className="mt-4 space-y-2 border-t border-nxw/25 pt-4">
+                    <li className="flex items-start gap-2.5 text-[12.5px] leading-relaxed text-nxi2">
+                      <span className="mt-[1px] flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-nxs text-white">
+                        <CheckCircle size={12} />
+                      </span>
+                      <span>
+                        <b className="text-nxi1">Solicitação registrada.</b> A loja já foi
+                        notificada.
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-[12.5px] leading-relaxed text-nxi2">
+                      <span className="mt-[1px] flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-nxw/25 text-[9.5px] font-extrabold text-nxw">
+                        2
+                      </span>
+                      <span>
+                        <b className="text-nxi1">Análise da loja.</b> Se for aprovada, o status muda
+                        para &ldquo;Cancelado&rdquo; nesta página. Volte aqui com o mesmo código
+                        para acompanhar.
+                      </span>
+                    </li>
+                  </ol>
+                </div>
+              )}
+
+              {cancelResult === 'cancelled' && (
+                <div className="rt-rise flex items-start gap-3.5 rounded-2xl border border-nxd/25 bg-nxd/[0.05] p-5">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-nxd text-white">
+                    <XCircle size={20} />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[15px] font-extrabold tracking-tight text-nxi1">
+                      Pedido cancelado
+                    </p>
+                    <p className="mt-1 text-[13px] leading-relaxed text-nxi2">
+                      Como a loja ainda não tinha confirmado o pedido, o cancelamento foi feito na
+                      hora e os itens voltaram para o estoque. Não é preciso fazer mais nada.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* progress stepper */}
               <div className="rt-rise rounded-2xl border border-nxborder bg-white p-6" style={{ animationDelay: '.05s' }}>
                 <h2 className="mb-6 text-[10px] font-bold uppercase tracking-[0.16em] text-nxi3">Progresso da entrega</h2>
@@ -148,11 +214,11 @@ function RastrearPedidoContent() {
               </div>
 
               {/* history timeline */}
-              {order.history && order.history.length > 0 && (
+              {history.length > 0 && (
                 <div className="rt-rise rounded-2xl border border-nxborder bg-white p-6" style={{ animationDelay: '.1s' }}>
                   <h2 className="mb-5 text-[10px] font-bold uppercase tracking-[0.16em] text-nxi3">Histórico do pedido</h2>
                   <div>
-                    {[...order.history].reverse().map((h, i, arr) => {
+                    {[...history].reverse().map((h, i, arr) => {
                       const hSt = STATUS_CONFIG[h.status as StatusKey]
                       const HIcon = hSt ? STATUS_ICONS[h.status as StatusKey] : null
                       const last = i === arr.length - 1
@@ -182,7 +248,7 @@ function RastrearPedidoContent() {
               )}
 
               {/* sem histórico — status atual */}
-              {(!order.history || order.history.length === 0) && (
+              {history.length === 0 && (
                 <div className="rt-rise rounded-2xl border border-nxborder bg-white p-6" style={{ animationDelay: '.1s' }}>
                   <h2 className="mb-5 text-[10px] font-bold uppercase tracking-[0.16em] text-nxi3">Status atual</h2>
                   <div className="flex gap-3.5 items-center">
@@ -243,23 +309,47 @@ function RastrearPedidoContent() {
                   </div>
                 </div>
 
-                {/* cancelamento */}
+                {/*
+                  Cancelamento SEM login: o checkout é de convidado, então o botão
+                  não pode depender de sessão — a posse do pedido é provada pelo
+                  telefone da compra dentro do modal.
+                */}
                 {cancelResult === 'cancelled' ? (
                   <div className="flex items-center justify-center gap-2 rounded-xl border border-nxd/25 bg-nxd/[0.05] py-2.5 text-[12.5px] font-bold text-nxd">
                     <XCircle size={15} /> Pedido cancelado
                   </div>
                 ) : cancelResult === 'requested' ? (
-                  <div className="flex items-center justify-center gap-2 rounded-xl border border-nxw/30 bg-nxw/[0.12] py-2.5 text-[12.5px] font-bold text-nxw">
-                    <Clock size={15} /> Cancelamento solicitado
+                  <div className="rounded-xl border border-nxw/30 bg-nxw/[0.09] px-3.5 py-3">
+                    <p className="flex items-center justify-center gap-2 text-[12.5px] font-bold text-nxw">
+                      <Hourglass size={15} /> Aguardando aprovação da loja
+                    </p>
+                    <p className="mt-1.5 text-center text-[11.5px] leading-relaxed text-nxi2">
+                      O pedido segue válido até a loja responder.
+                    </p>
                   </div>
                 ) : canCancel ? (
                   <button
                     onClick={handleOpenCancelDialog}
                     className="flex w-full items-center justify-center gap-2 rounded-full border border-nxd/30 py-2.5 text-[12.5px] font-bold text-nxd transition-colors hover:bg-nxd/[0.06]"
                   >
-                    <XCircle size={15} /> Solicitar cancelamento
+                    <XCircle size={15} />{' '}
+                    {cancelNeedsApproval ? 'Solicitar cancelamento' : 'Cancelar pedido'}
                   </button>
+                ) : blockedCancelReason ? (
+                  <div className="flex items-start gap-2.5 rounded-xl border border-nxborder bg-nxbg px-3.5 py-3">
+                    <Info size={14} className="mt-0.5 shrink-0 text-nxi3" />
+                    <p className="text-[11.5px] leading-relaxed text-nxi2">{blockedCancelReason}</p>
+                  </div>
                 ) : null}
+
+                {/* aviso de fluxo em duas etapas, antes de o cliente clicar */}
+                {canCancel && cancelNeedsApproval && (
+                  <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-relaxed text-nxi3">
+                    <Clock size={12} className="mt-[2px] shrink-0" />
+                    Pedido já confirmado: o cancelamento é uma solicitação e depende do aval da
+                    loja.
+                  </p>
+                )}
 
                 {/* continuar comprando */}
                 <Link
@@ -278,6 +368,8 @@ function RastrearPedidoContent() {
       {showCancelDialog && (
         <CancelModal
           order={order}
+          needsApproval={cancelNeedsApproval}
+          error={cancelError}
           onClose={handleCloseCancelDialog}
           onConfirm={handleConfirmCancel}
           isBusy={isCancelling}
