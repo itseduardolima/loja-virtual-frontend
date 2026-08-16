@@ -13,7 +13,8 @@ export interface UpdateStoreOptions {
   silent?: boolean
 }
 
-// Campos de conteúdo da vitrine: string vazia é enviada para limpar o override
+// Campos em que string vazia é enviada para limpar o valor no backend
+// (vitrine: limpa o override; contatos: apaga o contato)
 const CLEARABLE_FIELDS = new Set([
   'hero_eyebrow',
   'hero_title',
@@ -22,6 +23,10 @@ const CLEARABLE_FIELDS = new Set([
   'campaign_title',
   'campaign_text',
   'brand_color',
+  'whatsapp',
+  'instagram',
+  'facebook',
+  'email',
 ])
 
 export function useUpdateStore(options: UpdateStoreOptions = {}) {

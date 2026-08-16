@@ -195,28 +195,13 @@ export function useContatos() {
       cleanWhatsapp = cleanWhatsapp.replace(/\D/g, '')
       const whatsappWithCode = cleanWhatsapp ? `+${callingCode}${cleanWhatsapp}` : ''
       
-      const updateData: {
-        whatsapp?: string
-        instagram?: string
-        facebook?: string
-        email?: string
-      } = {
-        whatsapp: whatsappWithCode || undefined
-      }
-
-      const instagramValue = formData.instagram.trim()
-      if (instagramValue) {
-        updateData.instagram = instagramValue
-      }
-
-      const facebookValue = formData.facebook.trim()
-      if (facebookValue) {
-        updateData.facebook = facebookValue
-      }
-
-      const emailValue = formData.email.trim()
-      if (emailValue) {
-        updateData.email = emailValue
+      // Sempre envia os 4 campos: string vazia limpa o valor no backend
+      // (omitir o campo faria o backend ignorar a limpeza e o valor antigo voltar)
+      const updateData = {
+        whatsapp: whatsappWithCode,
+        instagram: formData.instagram.trim(),
+        facebook: formData.facebook.trim(),
+        email: formData.email.trim()
       }
 
       await updateStore({
