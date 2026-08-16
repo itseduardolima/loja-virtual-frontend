@@ -50,11 +50,11 @@ export function OrderListView({
     <div className="rounded-[16px] border border-nxborder bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden">
       {/* head */}
       <div className={cn(GRID, 'border-b border-nxborder bg-[#FBFBFD]')}>
-        <div className={HEAD_LABEL}>Código</div>
+        <div className={cn(HEAD_LABEL, 'text-center')}>Código</div>
         <button
           type="button"
           onClick={() => onSortBy(sortKey === 'az' ? 'za' : 'az')}
-          className={cn(HEAD_BTN, HEAD_LABEL)}
+          className={cn(HEAD_BTN, HEAD_LABEL, 'justify-self-center')}
         >
           Cliente
         </button>
@@ -107,7 +107,7 @@ export function OrderListView({
             />
 
             {/* Código */}
-            <div className="flex min-w-0 items-center gap-[7px] font-extrabold text-[13px] tabular-nums tracking-[0.02em] text-nxi1">
+            <div className="flex min-w-0 items-center justify-center gap-[7px] font-extrabold text-[13px] tabular-nums tracking-[0.02em] text-nxi1">
               <span
                 className={cn(
                   'h-[7px] w-[7px] flex-none rounded-full',
@@ -118,7 +118,7 @@ export function OrderListView({
             </div>
 
             {/* Cliente */}
-            <div className="min-w-0">
+            <div className="min-w-0 text-center">
               <div
                 className={cn(
                   'truncate text-[13.5px] text-nxi1',
