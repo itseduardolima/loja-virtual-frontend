@@ -62,7 +62,7 @@ export function OrderListView({
         <button
           type="button"
           onClick={() => onSortBy(sortKey === 'high' ? 'low' : 'high')}
-          className={cn(HEAD_BTN, HEAD_LABEL, 'justify-end pr-[28px]')}
+          className={cn(HEAD_BTN, HEAD_LABEL, 'justify-self-center')}
         >
           Total
           <ArrowUpDown size={12} className="text-[#B7B9C6]" />
@@ -70,12 +70,12 @@ export function OrderListView({
         <button
           type="button"
           onClick={() => onSortBy(sortKey === 'recent' ? 'old' : 'recent')}
-          className={cn(HEAD_BTN, HEAD_LABEL)}
+          className={cn(HEAD_BTN, HEAD_LABEL, 'justify-self-center')}
         >
           Data
           <ArrowDown size={12} className="text-[#B7B9C6]" />
         </button>
-        <div className={HEAD_LABEL}>Status</div>
+        <div className={cn(HEAD_LABEL, 'text-center')}>Status</div>
         <div className={cn(HEAD_LABEL, 'text-center')}>Ações</div>
       </div>
 
@@ -147,12 +147,12 @@ export function OrderListView({
             </div>
 
             {/* Total */}
-            <div className="pr-[28px] text-right text-[13.5px] font-extrabold tabular-nums text-nxi1">
+            <div className="text-center text-[13.5px] font-extrabold tabular-nums text-nxi1">
               {formatPrice(parseFloat(order.total))}
             </div>
 
             {/* Data */}
-            <div className="leading-[1.25]">
+            <div className="text-center leading-[1.25]">
               <div className="text-[12.5px] font-bold tabular-nums text-nxi2">
                 {dateShort(order.created_at)}
               </div>
@@ -162,7 +162,7 @@ export function OrderListView({
             </div>
 
             {/* Status */}
-            <div>
+            <div className="text-center">
               <span
                 className={cn(
                   'inline-flex items-center gap-[6px] rounded-[8px] pl-[8px] pr-[9px] py-[3px] text-[11.5px] font-extrabold whitespace-nowrap',
