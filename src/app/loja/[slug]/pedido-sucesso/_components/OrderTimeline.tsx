@@ -1,33 +1,13 @@
 'use client'
 
-import { Check, MessageCircle, Wallet, Truck } from 'lucide-react'
+import { Check, MessageCircle, Package, Truck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const STEPS = [
-  {
-    title: 'Pedido recebido',
-    description: 'Registramos seu pedido',
-    Icon: Check,
-    state: 'done' as const,
-  },
-  {
-    title: 'Combinar no WhatsApp',
-    description: 'Pagamento e entrega com a loja',
-    Icon: MessageCircle,
-    state: 'active' as const,
-  },
-  {
-    title: 'Pagamento',
-    description: 'Da forma combinada',
-    Icon: Wallet,
-    state: 'todo' as const,
-  },
-  {
-    title: 'Envio',
-    description: 'A caminho de você',
-    Icon: Truck,
-    state: 'todo' as const,
-  },
+  { title: 'Pedido recebido', Icon: Check, state: 'done' as const },
+  { title: 'Combinar no WhatsApp', Icon: MessageCircle, state: 'active' as const },
+  { title: 'Preparando', Icon: Package, state: 'todo' as const },
+  { title: 'A caminho', Icon: Truck, state: 'todo' as const },
 ]
 
 export function OrderTimeline() {
@@ -36,33 +16,43 @@ export function OrderTimeline() {
       <h3 className="mb-4 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-nxi3">
         Próximos passos
       </h3>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+
+      {/* trilho horizontal: linha de fundo + progresso até o nó ativo */}
+      <div className="relative grid grid-cols-4">
+        <span
+          aria-hidden="true"
+          className="absolute left-[12.5%] right-[12.5%] top-[13px] h-[3px] rounded-full bg-nxborder"
+        />
+        <span
+          aria-hidden="true"
+          className="absolute left-[12.5%] top-[13px] h-[3px] w-1/4 rounded-full bg-store"
+        />
+
         {STEPS.map((step) => (
-          <div
-            key={step.title}
-            className={cn(
-              'relative rounded-2xl border p-4',
-              step.state === 'active' ? 'border-nxp bg-nxp/[0.04]' : 'border-nxborder bg-white',
-            )}
-          >
-            <div
+          <div key={step.title} className="relative z-[1] px-1 text-center">
+            <span
               className={cn(
-                'flex h-9 w-9 items-center justify-center rounded-full',
-                step.state === 'done'
-                  ? 'bg-nxs text-white'
-                  : step.state === 'active'
-                    ? 'bg-nxp text-white'
-                    : 'bg-nxbg text-nxi3',
+                'mx-auto flex h-7 w-7 items-center justify-center rounded-full border-[2.5px]',
+                step.state === 'done' && 'border-store bg-store text-white',
+                step.state === 'active' &&
+                  'border-store bg-white text-store-ink shadow-[0_0_0_5px_hsl(var(--store-accent)/0.08)]',
+                step.state === 'todo' && 'border-nxborder bg-white text-nxi3',
               )}
             >
-              <step.Icon size={16} strokeWidth={2.5} />
-            </div>
-            <p className="mt-2.5 text-[12.5px] font-bold text-nxi1">{step.title}</p>
-            <p className="mt-0.5 text-[11px] leading-snug text-nxi3">{step.description}</p>
+              <step.Icon size={12} strokeWidth={2.6} />
+            </span>
+            <p
+              className={cn(
+                'mt-2 text-[11.5px] font-bold leading-tight',
+                step.state === 'todo' ? 'text-nxi3' : 'text-nxi1',
+              )}
+            >
+              {step.title}
+            </p>
             {step.state === 'active' && (
-              <span className="absolute right-3 top-3 text-[9px] font-bold uppercase tracking-wide text-nxp">
+              <p className="mt-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-store-ink">
                 agora
-              </span>
+              </p>
             )}
           </div>
         ))}

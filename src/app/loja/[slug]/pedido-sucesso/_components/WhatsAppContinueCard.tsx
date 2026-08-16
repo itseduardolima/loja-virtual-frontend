@@ -19,10 +19,10 @@ export function WhatsAppContinueCard({ storeName, whatsappHref }: WhatsAppContin
         {/* texto */}
         <div className="flex-1 text-center sm:text-left">
           <h2 className="text-[16px] font-extrabold tracking-tight text-nxi1">
-            Continue no WhatsApp
+            Combine o pagamento agora
           </h2>
           <p className="mt-1 max-w-[52ch] text-[13px] leading-relaxed text-nxi2">
-            Abrimos uma conversa com a {storeName ?? 'loja'} com o resumo do pedido. Combine{' '}
+            A conversa com a {storeName ?? 'loja'} já leva o resumo do seu pedido — combine{' '}
             <b>pagamento</b> e <b>entrega</b> por lá para concluir.
           </p>
         </div>

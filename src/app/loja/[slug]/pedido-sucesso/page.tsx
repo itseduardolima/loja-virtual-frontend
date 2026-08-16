@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { ShoppingBag } from 'lucide-react'
+import { ShoppingBag, Clock } from 'lucide-react'
 import { StoreHeader, CartSidebar, ErrorState, LoadingPage } from '@/components'
-import { WhatsAppChatWidget, StoreNewFooter } from '@/components/Store'
+import { StoreNewFooter } from '@/components/Store'
+import { storeAccentStyle } from '@/lib/storefront'
 import { usePedidoSucessoPage } from './usePedidoSucessoPage'
 import { SuccessHero } from './_components/SuccessHero'
 import { WhatsAppContinueCard } from './_components/WhatsAppContinueCard'
@@ -40,16 +41,17 @@ export default function PedidoSucessoPage() {
   }
 
   return (
-    <div className="min-h-screen bg-nxbg">
+    <div className="min-h-screen bg-nxbg" style={storeAccentStyle(storeInfo)}>
       <StoreHeader storeInfo={storeInfo} slug={slug} onCartClick={() => setIsCartOpen(true)} />
 
       <SuccessHero
         orderCode={orderCode}
         customerName={snapshot?.customer_name}
+        storeName={storeInfo?.name}
         onCopy={handleCopyCode}
       />
 
-      <div className="mx-auto max-w-[760px] px-4 py-10">
+      <div className="mx-auto max-w-[640px] px-4 py-7">
         {/* card WhatsApp */}
         {whatsappHref && (
           <WhatsAppContinueCard storeName={storeInfo?.name} whatsappHref={whatsappHref} />
@@ -67,13 +69,13 @@ export default function PedidoSucessoPage() {
           </div>
         )}
 
-        {/* continuar / acompanhar */}
-        <div className="mt-8 flex flex-col items-center gap-3">
+        {/* continuar / acompanhar — peso visual igual */}
+        <div className={`mt-6 grid gap-3 ${orderCode ? 'sm:grid-cols-2' : ''}`}>
           <Link
             href={`/loja/${slug}/produtos`}
-            className="flex h-12 items-center justify-center gap-2 rounded-full border border-nxborder bg-white px-6 text-[13.5px] font-bold text-nxi1 transition-colors hover:border-nxp hover:text-nxp"
+            className="flex h-[50px] items-center justify-center gap-2 rounded-full border-[1.5px] border-nxborder bg-white text-[13.5px] font-extrabold text-nxi1 transition-colors hover:border-nxi3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2"
           >
-            <ShoppingBag size={17} />
+            <ShoppingBag size={16} />
             Continuar comprando
           </Link>
 
@@ -81,8 +83,9 @@ export default function PedidoSucessoPage() {
             <button
               type="button"
               onClick={handleTrack}
-              className="text-[12.5px] font-semibold text-nxi3 hover:text-nxi1"
+              className="flex h-[50px] items-center justify-center gap-2 rounded-full bg-store text-[13.5px] font-extrabold text-white transition-[background,filter] hover:brightness-[1.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2"
             >
+              <Clock size={16} />
               Acompanhar pedido
             </button>
           )}
@@ -93,10 +96,10 @@ export default function PedidoSucessoPage() {
       {(productsLoading || suggestions.length > 0) && (
         <div className="mx-auto max-w-store border-t border-nxborder px-4 py-12 md:px-10">
           <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-nxi3">
-            Você pode gostar
+            Adicione ao próximo pedido
           </span>
-          <h2 className="mb-6 mt-2 text-[22px] font-extrabold tracking-[-0.02em] text-nxi1 sm:text-[26px]">
-            Sugestões para você
+          <h2 className="mb-6 mt-2 font-integral text-[20px] font-bold uppercase tracking-[-0.01em] text-nxi1 sm:text-[23px]">
+            Para combinar com a compra
           </h2>
 
           <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4 md:gap-3">
@@ -123,8 +126,7 @@ export default function PedidoSucessoPage() {
         storeId={storeId}
         storeSlug={slug}
       />
-
-      <WhatsAppChatWidget whatsapp={storeInfo?.whatsapp} storeName={storeInfo?.name} />
+      {/* sem FAB de WhatsApp aqui — o "Abrir conversa" é o único CTA verde da tela */}
     </div>
   )
 }
