@@ -202,7 +202,7 @@ export default function EnderecoPage() {
         </Field>
       </FieldGrid>
 
-      {/* Address preview — formatado como em NF-e */}
+      {/* Address preview — formatado como em correspondência */}
       {(formData.address || formData.city) && (
         <div className="mt-5 overflow-hidden rounded-xl border border-nxborder bg-gradient-to-br from-nxbg/50 to-white">
           <div className="flex items-start gap-3 px-4 py-3.5">

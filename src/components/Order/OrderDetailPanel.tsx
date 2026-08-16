@@ -35,7 +35,6 @@ import {
   generateWhatsAppMessage,
   parseDeliveryAddress,
 } from '@/lib/orderPanelUtils'
-import { OrderNfeCard } from './OrderNfeCard'
 import { OrderVendorTimeline } from './OrderVendorTimeline'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -105,15 +104,7 @@ const TABS: { id: TabKey; label: string }[] = [
 ]
 
 // ─── Resumo ──────────────────────────────────────────────────────────────────
-function ResumoBody({
-  order,
-  emitting,
-  onEmitNfe,
-}: {
-  order: Order
-  emitting?: boolean
-  onEmitNfe?: () => void
-}) {
+function ResumoBody({ order }: { order: Order }) {
   const total = parseFloat(order.total || '0')
   const discount = order.coupon_discount ? parseFloat(order.coupon_discount) : 0
   const hasCoupon = !!order.coupon_code
@@ -159,9 +150,6 @@ function ResumoBody({
           </div>
         )}
       </div>
-
-      {/* NF-e */}
-      <OrderNfeCard order={order} emitting={emitting} onEmit={onEmitNfe} />
 
       {/* Observação */}
       {order.notes ? (
@@ -423,8 +411,6 @@ interface OrderDetailPanelProps {
   order: Order
   /** Se vier, renderiza o X no header (desktop). */
   onClose?: () => void
-  emitting?: boolean
-  onEmitNfe?: () => void
   cancelReqLoading?: boolean
   onAcceptCancelReq?: () => void
   onDenyCancelReq?: () => void
@@ -434,8 +420,6 @@ interface OrderDetailPanelProps {
 export function OrderDetailPanel({
   order,
   onClose,
-  emitting,
-  onEmitNfe,
   cancelReqLoading,
   onAcceptCancelReq,
   onDenyCancelReq,
@@ -445,7 +429,6 @@ export function OrderDetailPanel({
   const [copied, setCopied] = useState(false)
 
   const meta = getStatusMeta(order.status)
-  const isBlingSynced = order.bling_sync?.status === 'synced'
   const hasCancelReq = order.cancellation_requested === 1
 
   const copyCode = () => {
@@ -469,12 +452,6 @@ export function OrderDetailPanel({
             <span className={cn('h-[6px] w-[6px] rounded-full', meta.dot)} />
             {meta.label}
           </span>
-          {isBlingSynced && (
-            <span className="inline-flex items-center gap-[5px] rounded-[8px] bg-[#EEF0FB] px-[9px] py-[3px] text-[11px] font-extrabold text-nxp">
-              <span className="h-[6px] w-[6px] rounded-full bg-nxp" />
-              Bling
-            </span>
-          )}
           {onClose && (
             <button
               type="button"
@@ -566,9 +543,7 @@ export function OrderDetailPanel({
 
       {/* ─── Corpo (scroll) ───────────────────────────────────────────────── */}
       <div className="min-h-0 flex-1 overflow-auto p-[16px]">
-        {activeTab === 'resumo' && (
-          <ResumoBody order={order} emitting={emitting} onEmitNfe={onEmitNfe} />
-        )}
+        {activeTab === 'resumo' && <ResumoBody order={order} />}
         {activeTab === 'itens' && <ItensBody order={order} />}
         {activeTab === 'cliente' && <ClienteBody order={order} onPrint={onPrint} />}
         {activeTab === 'hist' && <HistoricoBody order={order} />}

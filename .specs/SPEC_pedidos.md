@@ -15,7 +15,7 @@ A tela é **híbrida**: alterna entre **Lista** (tabela densa, padrão) e **Quad
 **Arquivos principais:**
 - `src/app/vendedor/pedidos/page.tsx` — montagem (só JSX)
 - `src/app/vendedor/pedidos/useOrdersPage.ts` — estado, derivados e wiring dos hooks
-- `src/lib/orderVendorMeta.ts` — **fundação**: rótulos/cores de status, `nfeMeta`, KPIs, ordenação/filtro, formatadores
+- `src/lib/orderVendorMeta.ts` — **fundação**: rótulos/cores de status, KPIs, ordenação/filtro, formatadores
 - `src/components/Order/*` — componentes (abaixo)
 
 ---
@@ -30,7 +30,6 @@ A tela é **híbrida**: alterna entre **Lista** (tabela densa, padrão) e **Quad
 | `OrderBoardView` + `KanbanColumn` + `OrderKanbanCard` | Kanban 4 colunas (view Quadro), drag-and-drop via `@dnd-kit` |
 | `OrderDetailDrawer` | Overlay 480px (desktop): fetch + header + footer + abas |
 | `OrderDetailPanel` | Conteúdo do drawer (header + alerta + abas Resumo/Itens/Cliente/Histórico); recebe `order` |
-| `OrderNfeCard` | Card de NF-e (6 sub-estados, prop-driven) |
 | `OrderVendorTimeline` | Timeline de status do drawer (não confundir com `OrderTrackingTimeline`, que é do cliente) |
 | `OrderEmptyStates` | `OrdersLoadingState`, `OrdersEmptyState`, `OrdersFilteredEmptyState`, `OrdersErrorState` |
 | `CancelReasonModal` | Motivo do cancelamento (lojista) |
@@ -95,7 +94,7 @@ Variações de linha: normal · **não-lido** (barra/dot `nxa`, nome em peso 800
 
 4 colunas de fluxo (Novo, Em preparação, Enviado, Entregue). **Cancelados ficam fora do fluxo** (banner abaixo do quadro → "Ver cancelados" abre Lista com filtro status 5).
 
-Drag-and-drop com `@dnd-kit` (`useDraggable` no card, `useDroppable` na coluna): arrastar para outra coluna muda o status. Estados visuais: card arrastado em opacidade reduzida, coluna-alvo destacada com zona "Solte aqui", `DragOverlay` com preview. Card rico (código, total, cliente, itens, tempo, chips de NF-e e cancelamento, dot de não-lido). Paginação por coluna via "Ver mais N".
+Drag-and-drop com `@dnd-kit` (`useDraggable` no card, `useDroppable` na coluna): arrastar para outra coluna muda o status. Estados visuais: card arrastado em opacidade reduzida, coluna-alvo destacada com zona "Solte aqui", `DragOverlay` com preview. Card rico (código, total, cliente, itens, tempo, chip de cancelamento, dot de não-lido). Paginação por coluna via "Ver mais N".
 
 Soltar um pedido com solicitação de cancelamento abre o `CancellationRequestModal` em vez de mover.
 
@@ -105,13 +104,13 @@ Soltar um pedido com solicitação de cancelamento abre o `CancellationRequestMo
 
 Overlay `fixed` 480px à direita, com scrim e slide-in. Faz `useOrderDetail(orderId)` (estados de carregando/erro próprios). Estrutura:
 
-- **Header**: badge de status, chip "Bling" (se `bling_sync.status === 'synced'`), `#código` + copiar, data completa · tempo relativo, nome do cliente.
+- **Header**: badge de status, `#código` + copiar, data completa · tempo relativo, nome do cliente.
 - **Alerta de cancelamento** (se `cancellation_requested === 1`): motivo + "Aceitar e cancelar" / "Recusar".
 - **Abas** (pílula): Resumo · Itens · Cliente · Histórico.
 - **Footer**: "Iniciar preparação/Marcar como enviado/..." (avançar) + "Cancelar" (abre `CancelReasonModal`).
 
 ### Aba Resumo
-Card de total (com composição de cupom quando houver) + `OrderNfeCard` + observação do cliente.
+Card de total (com composição de cupom quando houver) + observação do cliente.
 
 ### Aba Itens
 Lista de itens (thumbnail ou placeholder, badge de quantidade, chips de tamanho/cor, notas) + card de totais (subtotal / desconto / total).
@@ -121,21 +120,6 @@ Avatar + nome + `#código`; telefone (com/sem) e e-mail com copiar; ações What
 
 ### Aba Histórico
 Caixa de cancelamento (se status 5, com motivo) + `OrderVendorTimeline` (linha do tempo dos status, com ramo de cancelamento).
-
----
-
-## NF-e (`OrderNfeCard` — 6 sub-estados)
-
-Derivados de `bling_sync.status` + `nfe_status` (helper `nfeMeta`):
-
-| Estado | Condição |
-|---|---|
-| **Indisponível** | Bling não sincronizado → CTA "Conectar Bling" |
-| **Pronta para emitir** | sincronizado, sem `nfe_status` → botão "Emitir NF-e via Bling" (+ estado "Solicitando emissão…") |
-| **Aguardando autorização** | `nfe_status = em_processo` |
-| **Autorizada** | `nfe_status = autorizada` → número/série/chave + downloads DANFE/XML |
-| **Denegada** | `nfe_status = denegada` |
-| **Cancelada** | status 5 ou `nfe_status = cancelada` |
 
 ---
 
@@ -179,7 +163,6 @@ Apenas planos com `feature_order_export`. Botão "Exportar Excel" no header (est
 | Marcar como lido | `PATCH /orders/:id/read` |
 | Aceitar cancelamento | `PATCH /orders/:id/cancel-request/accept` |
 | Recusar cancelamento | `PATCH /orders/:id/cancel-request/deny` |
-| Emitir NF-e | (via `useEmitNfe(orderId)`) |
 | Exportar Excel | `GET /orders/export` |
 | Notificações | `GET /notifications` + socket `new_order` |
 

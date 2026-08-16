@@ -11,7 +11,6 @@ function invalidateAllPlanCaches(qc: QueryClient) {
   qc.invalidateQueries({ queryKey: ['dashboard'] })
   // Cupons de plano: usar a queryKey real de useAdminPlanCoupons
   qc.invalidateQueries({ queryKey: ['admin', 'plan-coupons'] })
-  qc.invalidateQueries({ queryKey: ['bling-status'] })
 }
 
 export function useAdminPlans(params?: { page?: number; limit?: number; status?: string }) {

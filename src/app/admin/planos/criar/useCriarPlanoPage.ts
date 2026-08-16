@@ -18,7 +18,6 @@ export function useCriarPlanoPage() {
     defaultValues: {
       status: 1,
       sort_order: 0,
-      feature_bling_integration: false,
       feature_product_questions: false,
       feature_advanced_dashboard: false,
       feature_order_export: false,

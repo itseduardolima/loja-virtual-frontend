@@ -6,7 +6,6 @@ import {
   Trash2,
   MoreHorizontal,
   Tag as TagIcon,
-  Plug,
   Clock,
   ShoppingBag,
   Check,
@@ -25,7 +24,7 @@ const AUDIT_LOG = [
   { who: 'Rafael Mendes',   what: 'marcou 4 pedidos como entregues',        when: 'ontem · 18:22',  icon: Check },
   { who: 'Mariana Tavares', what: 'convidou Júlia Carvalho como Financeiro', when: '30 abr · 14:11', icon: Plus },
   { who: 'Beatriz Lopes',   what: 'publicou 2 cupons de desconto',          when: '29 abr · 11:05', icon: TagIcon },
-  { who: 'Mariana Tavares', what: 'conectou conta do Bling',                when: '28 abr · 16:48', icon: Plug },
+  { who: 'Mariana Tavares', what: 'cadastrou 3 novos produtos',             when: '28 abr · 16:48', icon: Plus },
 ]
 
 export default function EquipePage() {

@@ -1,14 +1,6 @@
 'use client'
 
-import {
-  ArrowLeft,
-  Tag,
-  Plug,
-  MessageSquare,
-  BarChart3,
-  Download,
-  TrendingDown,
-} from 'lucide-react'
+import { ArrowLeft, Tag, MessageSquare, BarChart3, Download, TrendingDown } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -33,12 +25,6 @@ const FEATURE_OPTIONS = [
     icon: Tag,
     title: 'Cupons de desconto',
     desc: 'Criação de cupons fixos ou percentuais',
-  },
-  {
-    key: 'feature_bling_integration' as const,
-    icon: Plug,
-    title: 'Integração Bling ERP',
-    desc: 'Emissão automática de NF-e',
   },
   {
     key: 'feature_product_questions' as const,

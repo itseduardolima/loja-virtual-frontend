@@ -6,7 +6,6 @@ export interface SubscriptionPlan {
   price_monthly: string
   price_yearly: string | null
   max_products: number | null
-  feature_bling_integration: boolean
   feature_product_questions: boolean
   feature_advanced_dashboard: boolean
   feature_order_export: boolean

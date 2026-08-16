@@ -207,16 +207,11 @@ export function SubscriptionCard({
           </UsageCell>
 
           <UsageCell label="Integrações ativas">
-            <div className="text-[20px] font-bold tracking-tight text-nxi1">
-              {plan.feature_bling_integration ? 2 : 1}
-            </div>
+            <div className="text-[20px] font-bold tracking-tight text-nxi1">1</div>
             <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-nxbg">
               <div className="h-full w-full rounded-full bg-nxp opacity-20" />
             </div>
             <div className="mt-2 flex flex-wrap gap-1.5">
-              {plan.feature_bling_integration && (
-                <Chip success><span className="h-1.5 w-1.5 rounded-full bg-green-500" />Bling ERP</Chip>
-              )}
               <Chip success><span className="h-1.5 w-1.5 rounded-full bg-green-500" />WhatsApp</Chip>
             </div>
           </UsageCell>

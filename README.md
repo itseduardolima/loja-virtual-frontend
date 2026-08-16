@@ -10,7 +10,7 @@ experiências distintas na mesma base de código:
 1. **Vitrine pública** (`/loja/[slug]/...`) — catálogo, página de produto, carrinho e checkout de
    convidado (sem login), rastreamento de pedido e páginas institucionais da loja.
 2. **Painel do lojista** (`/vendedor/...`) — produtos, categorias, pedidos, cupons, perguntas,
-   personalização da vitrine, configurações da loja, integração com o Bling e plano/assinatura.
+   personalização da vitrine, configurações da loja e plano/assinatura.
 3. **Painel administrativo** (`/admin/...`) — usuários, lojas, planos, cupons de plano, assinaturas
    e estornos da plataforma.
 
@@ -175,7 +175,7 @@ src/
 │   ├── Cart/ Checkout/ Order/         Fluxo de compra
 │   ├── Product/ ProductForm/ ProductList/  Catálogo e wizard de produto
 │   ├── Store/ Landing/ Category/      Vitrine e home
-│   ├── Dashboard/ Table/ Dialog/ Form/ Layout/ Toast/ Auth/ Bling/ Subscription/ User/
+│   ├── Dashboard/ Table/ Dialog/ Form/ Layout/ Toast/ Auth/ Subscription/ User/
 │   └── index.ts              Barrel export
 ├── contexts/                 AuthContext (sessão, login/logout, Google) e ToastContext
 ├── hooks/                    ~66 hooks de dados (React Query) e de UI
@@ -227,7 +227,7 @@ public/                       Imagens e fontes locais
 | `/vendedor/cupons` (+ `criar`, `editar/[id]`) | Cupons de desconto da loja. |
 | `/vendedor/vitrine` | Identidade visual da vitrine (cor de marca, textos, campanha). |
 | `/vendedor/plano` | Plano atual, troca de plano e cobrança. |
-| `/vendedor/configuracoes/*` | `informacoes-basicas`, `contatos`, `endereco`, `documentos`, `entrega`, `horario`, `pagamento`, `nichos`, `ajuda` (páginas institucionais), `integracao-bling`. |
+| `/vendedor/configuracoes/*` | `informacoes-basicas`, `contatos`, `endereco`, `documentos`, `entrega`, `horario`, `pagamento`, `nichos`, `ajuda` (páginas institucionais). |
 
 **Administrador** — `/admin/*`, exige perfil Administrador (checado em `src/app/admin/layout.tsx`)
 

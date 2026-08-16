@@ -1,7 +1,7 @@
 'use client'
 
 import { useDraggable } from '@dnd-kit/core'
-import { Package, Clock, FileText, AlertTriangle } from 'lucide-react'
+import { Package, Clock, AlertTriangle } from 'lucide-react'
 import { type Order } from '@/types/order'
 import { itemsCount, itemsWord, relativeTime, formatPrice } from '@/lib/orderVendorMeta'
 import { cn } from '@/lib/utils'
@@ -18,27 +18,12 @@ export function parseOrderIdFromDraggableId(id: string): number | null {
   return Number.isNaN(num) ? null : num
 }
 
-/** Chip de NF-e a partir de order.nfe_status (espelha DCLogic.vmCard). */
-function nfeChip(order: Order): { label: string; fg: string; bg: string } | null {
-  switch (order.nfe_status) {
-    case 'autorizada':
-      return { label: 'NF-e ok', fg: 'text-[#2E6B4E]', bg: 'bg-[#E7F2EC]' }
-    case 'em_processo':
-      return { label: 'NF-e proc.', fg: 'text-[#8A6516]', bg: 'bg-[#FBF3E0]' }
-    case 'denegada':
-      return { label: 'NF-e neg.', fg: 'text-[#A82F4F]', bg: 'bg-[#FBE9EE]' }
-    default:
-      return null
-  }
-}
-
 /** Conteúdo interno do card (compartilhado entre card e preview). */
 function OrderKanbanCardBody({ order }: { order: Order }) {
   const isUnread = order.read === 0
   const hasCancelRequest = order.cancellation_requested === 1
   const count = itemsCount(order)
-  const chip = nfeChip(order)
-  const hasBadgeRow = hasCancelRequest || !!chip
+  const hasBadgeRow = hasCancelRequest
 
   return (
     <>
@@ -80,18 +65,6 @@ function OrderKanbanCardBody({ order }: { order: Order }) {
             <span className="inline-flex items-center gap-[4px] rounded-[6px] bg-[#FBEEE6] px-[7px] py-[2px] text-[10.5px] font-extrabold text-[#B5491D]">
               <AlertTriangle className="h-[11px] w-[11px]" />
               Cancelamento
-            </span>
-          )}
-          {chip && (
-            <span
-              className={cn(
-                'inline-flex items-center gap-[4px] rounded-[6px] px-[7px] py-[2px] text-[10.5px] font-extrabold',
-                chip.fg,
-                chip.bg,
-              )}
-            >
-              <FileText className="h-[11px] w-[11px]" />
-              {chip.label}
             </span>
           )}
         </div>

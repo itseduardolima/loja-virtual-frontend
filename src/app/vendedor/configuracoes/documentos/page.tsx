@@ -32,7 +32,7 @@ const DOC_TYPES: DocTypeMeta[] = [
     Icon: Building2,
     title: 'Pessoa Jurídica',
     subtitle: 'CNPJ · Empresa formal',
-    bullets: ['Emite NF-e como empresa', 'Mais credibilidade', 'Permite vender em marketplaces'],
+    bullets: ['Emite nota fiscal como empresa', 'Mais credibilidade', 'Permite vender em marketplaces'],
   },
   {
     id: 'cpf',

@@ -2,8 +2,6 @@
 
 import { useStore } from '@/hooks/useStore'
 import { useDashboard } from '@/hooks/useDashboard'
-import { useBlingStatus } from '@/hooks/useBlingStatus'
-import { usePlanFeatures } from '@/hooks/usePlanFeatures'
 import type { CheckItem } from '@/components/Vendor/Home'
 
 interface OnboardingResult {
@@ -15,9 +13,6 @@ interface OnboardingResult {
 export function useOnboardingChecklist(): OnboardingResult {
   const { data: store } = useStore()
   const { summary } = useDashboard()
-  const { features } = usePlanFeatures()
-  const blingAvailable = features.feature_bling_integration
-  const { data: blingStatus } = useBlingStatus(blingAvailable)
 
   const s = (store ?? {}) as any
 
@@ -99,17 +94,6 @@ export function useOnboardingChecklist(): OnboardingResult {
       cta: 'Criar produto',
       href: '/vendedor/produtos/criar',
     },
-    ...(blingAvailable
-      ? [
-          {
-            id: 'bling',
-            text: 'Conecte o Bling para sincronizar estoque',
-            done: !!blingStatus?.connected,
-            cta: 'Conectar',
-            href: '/vendedor/configuracoes/integracao-bling',
-          },
-        ]
-      : []),
   ]
 
   const firstPendingId = rawItems.find((i) => !i.done)?.id

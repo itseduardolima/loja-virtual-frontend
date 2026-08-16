@@ -299,7 +299,6 @@ Exibida na home enquanto houver itens incompletos. 11 itens:
 | 9 | Métodos de pagamento | `/vendedor/configuracoes/pagamento` |
 | 10 | Criar categorias | `/vendedor/categorias` |
 | 11 | Criar primeiro produto | `/vendedor/produtos/criar` |
-| *(12)* | Integração Bling (se feature ativa) | `/vendedor/configuracoes/integracao-bling` |
 
 - **Primeiro item incompleto** → botão primário (azul), destaque visual
 - Demais → botão ghost
@@ -332,7 +331,7 @@ Ver [`SPEC_produto-crud.md`](./SPEC_produto-crud.md) para detalhes completos. Re
 
 **Passo 4 — Especificações (opcional)**
 - Editor de texto rico para detalhes técnicos
-- Dados fiscais (NCM, origem, unidade, GTIN, CEST) — expande automaticamente se Bling conectado
+- Dados fiscais (NCM, origem, unidade, GTIN, CEST)
 
 ### Ações
 - "Salvar rascunho" → `save_as_draft: true`

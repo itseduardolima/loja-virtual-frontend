@@ -14,7 +14,6 @@ import {
   Clock,
   Coins,
   Users,
-  Plug,
   HelpCircle,
   ChevronDown,
   X,
@@ -50,7 +49,6 @@ const SECTIONS: SectionDef[] = [
   // "Equipe" só entra no menu com a flag FEATURE_EQUIPE ligada — hoje a tela é
   // 100% mock e não há backend de convites/papéis. Ver src/lib/featureFlags.ts.
   ...(FEATURE_EQUIPE ? [EQUIPE_SECTION] : []),
-  { id: 'integracao-bling', href: '/vendedor/configuracoes/integracao-bling', icon: Plug, title: 'Integração Bling', desc: 'ERP' },
 ]
 
 function NavItems({
