@@ -72,7 +72,6 @@ export function useCheckoutPage() {
     customer_name: '',
     customer_email: '',
     customer_phone: '',
-    customer_document: '',
     notes: '',
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -123,7 +122,6 @@ export function useCheckoutPage() {
               customer_name: data.name || prev.customer_name,
               customer_email: data.email || prev.customer_email,
               customer_phone: data.phone || prev.customer_phone,
-              customer_document: data.document || prev.customer_document,
             }))
           }
         })
@@ -182,12 +180,11 @@ export function useCheckoutPage() {
   const finalTotal = couponResult ? couponResult.final_total : totalPrice
 
   // Indicadores de seção completa — usados pelos SectionCards.
-  // Limiares espelham o checkoutFormSchema (telefone 8–15 dígitos, doc 11/14)
+  // Limiares espelham o checkoutFormSchema (telefone 8–15 dígitos)
   const dadosDone = !!(
     formData.customer_name.trim() &&
     /.+@.+\..+/.test(formData.customer_email) &&
-    formData.customer_phone.replace(/\D/g, '').length >= 8 &&
-    formData.customer_document.replace(/\D/g, '').length >= 11
+    formData.customer_phone.replace(/\D/g, '').length >= 8
   )
   const addrDone = !!getDeliveryAddressJson()
 
@@ -290,12 +287,6 @@ export function useCheckoutPage() {
 
     if (!sessionId || !storeId) return
 
-    const cleanDocument = formData.customer_document.replace(/\D/g, '') || undefined
-
-    if (isAuthenticated && cleanDocument) {
-      api.patch('/customers/profile', { document: cleanDocument }).catch(() => {})
-    }
-
     // Snapshot para a página de pedido-sucesso
     const snapshot: Omit<OrderSnapshot, 'order_code' | 'whatsapp_link'> = {
       customer_name: formData.customer_name.trim(),
@@ -322,7 +313,6 @@ export function useCheckoutPage() {
         customer_name: formData.customer_name.trim(),
         customer_email: formData.customer_email.trim(),
         customer_phone: formData.customer_phone.trim(),
-        customer_document: cleanDocument,
         notes: formData.notes.trim() || undefined,
         coupon_code: couponResult?.coupon_code,
         delivery_address: deliveryAddress,

@@ -23,19 +23,6 @@ export const checkoutFormSchema = yup.object({
       }
     )
     .trim(),
-  customer_document: yup
-    .string()
-    .required('CPF/CNPJ é obrigatório')
-    .test(
-      'document-valid',
-      'Digite um CPF (11 dígitos) ou CNPJ (14 dígitos) válido',
-      (value) => {
-        if (!value) return false
-        const clean = value.replace(/\D/g, '')
-        return clean.length === 11 || clean.length === 14
-      }
-    )
-    .trim(),
   notes: yup.string().optional().trim(),
 })
 

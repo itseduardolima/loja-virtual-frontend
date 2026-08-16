@@ -1,6 +1,5 @@
 'use client'
 
-import { User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { SectionCard } from './SectionCard'
 import { Field, inputCls } from './Field'
@@ -10,7 +9,6 @@ interface CustomerDataSectionProps {
     customer_name: string
     customer_email: string
     customer_phone: string
-    customer_document: string
     notes: string
   }
   errors: Record<string, string>
@@ -26,22 +24,6 @@ function fmtPhone(v: string): string {
   return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`
 }
 
-/** Formata CPF (000.000.000-00) ou CNPJ (00.000.000/0000-00) */
-function fmtDoc(v: string): string {
-  const d = v.replace(/\D/g, '').slice(0, 14)
-  if (d.length <= 11) {
-    return d
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
-  }
-  return d
-    .replace(/(\d{2})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1/$2')
-    .replace(/(\d{4})(\d{1,2})$/, '$1-$2')
-}
-
 export function CustomerDataSection({
   formData,
   errors,
@@ -51,7 +33,6 @@ export function CustomerDataSection({
   return (
     <SectionCard
       n="1"
-      icon={User}
       title="Seus dados"
       desc="Usados para identificar o pedido e o contato."
       done={dadosDone}
@@ -100,24 +81,6 @@ export function CustomerDataSection({
             className={inputCls(!!errors.customer_phone)}
           />
         </Field>
-
-        {/* CPF / CNPJ */}
-        <div className="sm:col-span-2">
-          <Field
-            label="CPF / CNPJ"
-            required
-            error={errors.customer_document}
-            hint={!errors.customer_document ? 'Necessário para emissão do pedido.' : undefined}
-          >
-            <input
-              value={formData.customer_document}
-              onChange={(e) => handleInput('customer_document', fmtDoc(e.target.value))}
-              inputMode="numeric"
-              placeholder="000.000.000-00"
-              className={inputCls(!!errors.customer_document)}
-            />
-          </Field>
-        </div>
 
         {/* Observações */}
         <div className="sm:col-span-2">

@@ -1,6 +1,6 @@
 'use client'
 
-import { Tag, BadgeCheck, X } from 'lucide-react'
+import { BadgeCheck, X } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
 import { SectionCard } from './SectionCard'
 import { inputCls } from './Field'
@@ -35,7 +35,6 @@ export function CouponSection({
   return (
     <SectionCard
       n="3"
-      icon={Tag}
       title="Cupom de desconto"
       desc="Tem um código? Aplique aqui."
       done={!!couponResult}

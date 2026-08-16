@@ -1,6 +1,6 @@
 'use client'
 
-import { MapPin, Check, Plus } from 'lucide-react'
+import { Check, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { SectionCard } from './SectionCard'
 import { Field, inputCls } from './Field'
@@ -238,7 +238,6 @@ export function AddressSection({
   return (
     <SectionCard
       n="2"
-      icon={MapPin}
       title="Endereço de entrega"
       desc="Para a loja calcular o envio no WhatsApp."
       done={addrDone}
