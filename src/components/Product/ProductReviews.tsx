@@ -414,10 +414,10 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-nxi3">
-            O que dizem
+            Avaliações
           </span>
           <h2 className="mt-2 font-integral text-[20px] font-bold uppercase tracking-[-0.01em] text-nxi1 sm:text-[23px]">
-            Avaliações
+            Quem comprou, aprovou
           </h2>
         </div>
         <button

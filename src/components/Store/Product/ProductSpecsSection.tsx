@@ -30,10 +30,10 @@ export function ProductSpecsSection({
   return (
     <section id="especificacoes" className="border-t border-nxborder py-12 md:py-14">
       <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-nxi3">
-        Ficha técnica
+        Especificações
       </span>
       <h2 className="mt-2 font-integral text-[20px] font-bold uppercase tracking-[-0.01em] text-nxi1 sm:text-[23px]">
-        Especificações
+        Ficha do produto
       </h2>
       <div
         className={cn(

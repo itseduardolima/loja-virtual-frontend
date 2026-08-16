@@ -95,10 +95,10 @@ export function RelatedProducts({ slug, currentProductId, categoryId }: RelatedP
   return (
     <section className="border-t border-nxborder py-12 md:py-14">
       <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-nxi3">
-        Combina com
+        Você também pode gostar
       </span>
       <h2 className="mb-6 mt-2 font-integral text-[20px] font-bold uppercase tracking-[-0.01em] text-nxi1 sm:text-[23px]">
-        Você também pode gostar
+        Para completar o pedido
       </h2>
       <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3">
         {related.map((product) => (

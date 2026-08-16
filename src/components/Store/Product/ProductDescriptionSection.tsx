@@ -25,10 +25,11 @@ export function ProductDescriptionSection({
   return (
     <section id="descricao" className="border-t border-nxborder py-12 md:py-14">
       <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-nxi3">
-        Sobre o produto
-      </span>
-      <h2 className="mt-2 font-integral text-[20px] font-bold uppercase tracking-[-0.01em] text-nxi1 sm:text-[23px]">
         Descrição
+      </span>
+      {/* Integral CF local é demo sem acentos — H2 fixos usam copy sem acento */}
+      <h2 className="mt-2 font-integral text-[20px] font-bold uppercase tracking-[-0.01em] text-nxi1 sm:text-[23px]">
+        Sobre o produto
       </h2>
       {description ? (
         <p className="mt-4 max-w-[68ch] break-words text-[14.5px] leading-relaxed text-nxi2">
