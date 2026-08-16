@@ -97,7 +97,7 @@ export function RelatedProducts({ slug, currentProductId, categoryId }: RelatedP
       <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-nxi3">
         Combina com
       </span>
-      <h2 className="mb-6 mt-2 text-[22px] font-extrabold tracking-[-0.02em] text-nxi1 sm:text-[26px]">
+      <h2 className="mb-6 mt-2 font-integral text-[20px] font-bold uppercase tracking-[-0.01em] text-nxi1 sm:text-[23px]">
         Você também pode gostar
       </h2>
       <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3">

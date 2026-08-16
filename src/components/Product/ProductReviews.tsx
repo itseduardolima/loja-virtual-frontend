@@ -120,7 +120,7 @@ function ReviewItem({ review, currentUserId, onEdit, isUpdating }: ReviewItemPro
     <div className="py-6">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-nxbg text-[12px] font-bold text-nxi2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-store/[0.08] text-[12px] font-bold text-store-ink">
             {initialsOf(review.user.name)}
           </div>
           <div>
@@ -264,7 +264,7 @@ function ReviewItem({ review, currentUserId, onEdit, isUpdating }: ReviewItemPro
             <button
               onClick={handleSaveEdit}
               disabled={editRating < 1 || isUpdating}
-              className="flex h-9 items-center gap-1.5 rounded-full bg-nxp px-4 text-[12.5px] font-semibold text-white disabled:opacity-50"
+              className="flex h-9 items-center gap-1.5 rounded-full bg-store px-4 text-[12.5px] font-semibold text-white disabled:opacity-50"
             >
               {isUpdating ? (
                 <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -416,13 +416,13 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
           <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-nxi3">
             O que dizem
           </span>
-          <h2 className="mt-2 text-[22px] font-extrabold tracking-[-0.02em] text-nxi1 sm:text-[26px]">
+          <h2 className="mt-2 font-integral text-[20px] font-bold uppercase tracking-[-0.01em] text-nxi1 sm:text-[23px]">
             Avaliações
           </h2>
         </div>
         <button
           onClick={() => setWriteReviewOpen(true)}
-          className="flex items-center gap-2 rounded-full border border-nxp px-4 py-2.5 text-[12.5px] font-semibold text-nxp transition-colors hover:bg-nxp hover:text-white"
+          className="flex items-center gap-2 rounded-full border border-store px-4 py-2.5 text-[12.5px] font-semibold text-store-ink transition-colors hover:bg-store hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2"
         >
           <PenLine size={15} /> Escrever avaliação
         </button>
@@ -455,7 +455,7 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
                         className={cn(
                           'transition-transform hover:scale-110',
                           value <= displayRating
-                            ? 'fill-amber-400 text-amber-400'
+                            ? 'fill-nxw text-nxw'
                             : 'fill-nxborder text-nxborder',
                         )}
                       />
@@ -524,7 +524,7 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
                 className={cn(
                   'h-11 w-full rounded-full text-[14px] font-semibold transition-colors',
                   rating >= 1 && !isCreating
-                    ? 'bg-nxp text-white hover:bg-nxp/90'
+                    ? 'bg-store text-white hover:brightness-[1.05]'
                     : 'cursor-not-allowed bg-nxbg text-nxi3',
                 )}
               >
@@ -545,11 +545,11 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
       {/* content */}
       {isLoading && allReviews.length === 0 ? (
         <div className="flex justify-center py-16">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-nxborder border-t-nxp" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-nxborder border-t-store" />
         </div>
       ) : allReviews.length === 0 ? (
         <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-nxborder bg-nxbg py-16 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-nxp shadow-sm">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-store-ink shadow-sm">
             <MessageSquarePlus size={28} />
           </div>
           <h3 className="mt-4 text-[16px] font-bold tracking-tight text-nxi1">
@@ -561,17 +561,20 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
           </p>
           <button
             onClick={() => setWriteReviewOpen(true)}
-            className="mt-5 rounded-full bg-nxp px-5 py-2.5 text-[12.5px] font-semibold text-white hover:bg-nxp/90"
+            className="mt-5 rounded-full bg-store px-5 py-2.5 text-[12.5px] font-semibold text-white hover:brightness-[1.05]"
           >
             Escrever a primeira avaliação
           </button>
         </div>
       ) : (
-        <>
-          {/* summary */}
-          <div className="mt-7 flex flex-col items-center gap-1 sm:items-start">
-            <div className="text-[56px] font-extrabold leading-none tracking-[-0.04em] text-nxi1">
-              {averageRating.toFixed(1)}
+        <div className="mt-7 lg:grid lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start lg:gap-12">
+          {/* summary — só o que o backend traz: média e total */}
+          <div className="flex flex-col items-center gap-1 sm:items-start lg:sticky lg:top-32">
+            <div className="flex items-baseline gap-2">
+              <span className="text-[56px] font-extrabold leading-none tracking-[-0.04em] tabular-nums text-nxi1">
+                {averageRating.toFixed(1)}
+              </span>
+              <span className="text-[14px] font-semibold text-nxi3">de 5</span>
             </div>
             <div className="mt-2">
               <Stars rating={averageRating} size={15} />
@@ -581,8 +584,9 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
             </div>
           </div>
 
+          <div>
           {/* sort + list */}
-          <div className="mt-8 flex flex-wrap items-center justify-between gap-2 border-b border-nxborder pb-3">
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-2 border-b border-nxborder pb-3 lg:mt-0">
             <span className="text-[12.5px] font-semibold text-nxi2">
               {allReviews.length} comentário{allReviews.length !== 1 ? 's' : ''}
             </span>
@@ -594,7 +598,7 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
                   onClick={() => changeSort(value)}
                   className={cn(
                     'rounded-full px-2.5 py-1 font-semibold transition-colors',
-                    sort === value ? 'bg-nxp text-white' : 'text-nxi2 hover:text-nxp',
+                    sort === value ? 'bg-store text-white' : 'text-nxi2 hover:text-store-ink',
                   )}
                 >
                   {label}
@@ -620,13 +624,14 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
               <button
                 onClick={() => setPage((p) => p + 1)}
                 disabled={isLoading}
-                className="w-full rounded-xl border border-dashed border-nxborder py-3 text-[12.5px] font-semibold text-nxi3 transition-colors hover:border-nxi3 hover:text-nxp disabled:opacity-50"
+                className="w-full rounded-xl border border-dashed border-nxborder py-3 text-[12.5px] font-semibold text-nxi3 transition-colors hover:border-nxi3 hover:text-store-ink disabled:opacity-50"
               >
                 {isLoading ? 'Carregando...' : 'Ver mais avaliações'}
               </button>
             </div>
           )}
-        </>
+          </div>
+        </div>
       )}
     </div>
   )

@@ -54,14 +54,14 @@ export function ProductQuestions({ slug, productId, enabled = true }: ProductQue
           <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-nxi3">
             Dúvidas
           </span>
-          <h2 className="mt-2 text-[22px] font-extrabold tracking-[-0.02em] text-nxi1 sm:text-[26px]">
+          <h2 className="mt-2 font-integral text-[20px] font-bold uppercase tracking-[-0.01em] text-nxi1 sm:text-[23px]">
             Perguntas e respostas
           </h2>
         </div>
         {!showForm && !isSuccess && (
           <button
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 rounded-full border border-nxp px-4 py-2.5 text-[12.5px] font-semibold text-nxp transition-colors hover:bg-nxp hover:text-white"
+            className="flex items-center gap-2 rounded-full border border-store px-4 py-2.5 text-[12.5px] font-semibold text-store-ink transition-colors hover:bg-store hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2"
           >
             <HelpCircle size={15} /> Fazer pergunta
           </button>
@@ -113,7 +113,7 @@ export function ProductQuestions({ slug, productId, enabled = true }: ProductQue
                   'flex h-9 items-center gap-1.5 rounded-full px-4 text-[12.5px] font-semibold transition-colors',
                   isCreating || !askerName.trim() || !questionText.trim()
                     ? 'cursor-not-allowed bg-nxbg text-nxi3'
-                    : 'bg-nxp text-white hover:bg-nxp/90',
+                    : 'bg-store text-white hover:brightness-[1.05]',
                 )}
               >
                 <Send size={13} />
@@ -147,11 +147,11 @@ export function ProductQuestions({ slug, productId, enabled = true }: ProductQue
       {/* lista */}
       {isLoading && questions.length === 0 ? (
         <div className="py-10 text-center">
-          <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-nxborder border-t-nxp" />
+          <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-nxborder border-t-store" />
         </div>
       ) : questions.length === 0 ? (
         <div className="mt-7 flex flex-col items-center justify-center rounded-2xl border border-nxborder bg-nxbg py-14 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-nxp shadow-sm">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-store-ink shadow-sm">
             <HelpCircle size={24} />
           </div>
           <h3 className="mt-4 text-[15px] font-bold tracking-tight text-nxi1">
@@ -178,14 +178,14 @@ export function ProductQuestions({ slug, productId, enabled = true }: ProductQue
               </div>
               {q.answer && (
                 <div className="mt-3 flex gap-3">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-nxp text-[11px] font-bold text-white">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-nxi1 text-[11px] font-bold text-white">
                     R
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="break-words text-[13.5px] leading-relaxed text-nxi2">
                       {q.answer}
                     </p>
-                    <span className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-nxp">
+                    <span className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-store-ink">
                       <Store size={11} /> Resposta da loja
                     </span>
                   </div>
@@ -200,7 +200,7 @@ export function ProductQuestions({ slug, productId, enabled = true }: ProductQue
         <button
           onClick={loadMore}
           disabled={isLoading}
-          className="mt-4 w-full rounded-xl border border-dashed border-nxborder py-3 text-[12.5px] font-semibold text-nxi3 transition-colors hover:border-nxi3 hover:text-nxp disabled:opacity-50"
+          className="mt-4 w-full rounded-xl border border-dashed border-nxborder py-3 text-[12.5px] font-semibold text-nxi3 transition-colors hover:border-nxi3 hover:text-store-ink disabled:opacity-50"
         >
           {isLoading ? 'Carregando...' : 'Ver todas as perguntas'}
         </button>

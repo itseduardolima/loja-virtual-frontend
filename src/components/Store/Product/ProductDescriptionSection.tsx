@@ -27,7 +27,7 @@ export function ProductDescriptionSection({
       <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-nxi3">
         Sobre o produto
       </span>
-      <h2 className="mt-2 text-[22px] font-extrabold tracking-[-0.02em] text-nxi1 sm:text-[26px]">
+      <h2 className="mt-2 font-integral text-[20px] font-bold uppercase tracking-[-0.01em] text-nxi1 sm:text-[23px]">
         Descrição
       </h2>
       {description ? (
