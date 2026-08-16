@@ -1,5 +1,7 @@
 export { ProductAddToCart } from './ProductAddToCart'
 export { ProductColorSelector } from './ProductColorSelector'
+export { ProductFactsCard } from './ProductFactsCard'
+export { ProductPaymentLine, ProductTrustSeals } from './ProductTrustSeals'
 export { ProductDescriptionSection } from './ProductDescriptionSection'
 export { ProductImageGallery } from './ProductImageGallery'
 export { ProductMobileBuyBar } from './ProductMobileBuyBar'

@@ -16,14 +16,9 @@ export function ProductPricing({ finalPrice, originalPrice, discountPercentage }
         {formatPrice(finalPrice?.toString() || originalPrice)}
       </span>
       {hasDiscount && (
-        <>
-          <span className="mb-1 text-[18px] font-medium text-nxi3 line-through">
-            {formatPrice(originalPrice)}
-          </span>
-          <span className="mb-1 rounded-full bg-nxa px-2.5 py-1 text-[12px] font-bold text-white">
-            -{Math.floor(discountPercentage)}%
-          </span>
-        </>
+        <span className="mb-1 text-[18px] font-medium text-nxi3 line-through">
+          {formatPrice(originalPrice)}
+        </span>
       )}
     </div>
   )

@@ -20,6 +20,9 @@ import {
   ProductMobileBuyBar,
   ProductStockLine,
   ProductSubNav,
+  ProductFactsCard,
+  ProductPaymentLine,
+  ProductTrustSeals,
   type SubNavSection,
   ProductDescriptionSection,
   ProductSpecsSection,
@@ -150,7 +153,8 @@ export default function ProductDetailPage() {
 
   const sections: SubNavSection[] = [
     { id: 'descricao', label: 'Descrição' },
-    { id: 'especificacoes', label: 'Especificações' },
+    // a seção só renderiza quando há specifications — o link acompanha
+    ...(product.specifications ? [{ id: 'especificacoes', label: 'Especificações' }] : []),
     { id: 'avaliacoes', label: 'Avaliações', count: totalReviews || null },
     { id: 'perguntas', label: 'Perguntas', count: questionsTotal || null },
   ]
@@ -250,18 +254,18 @@ export default function ProductDetailPage() {
           />
 
           <aside className="lg:sticky lg:top-28 lg:self-start">
-            <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-nxi3">
+            <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-store-ink">
               {product.category?.name}
             </span>
-            <h1 className="mt-1.5 break-words text-[26px] font-extrabold leading-[1.06] tracking-[-0.025em] text-nxi1 sm:text-[30px]">
+            <h1 className="mt-1.5 break-words font-integral text-[24px] font-bold uppercase leading-[1.06] tracking-[-0.01em] text-nxi1 sm:text-[28px]">
               {product.name}
             </h1>
 
             <button
               onClick={() => jumpTo('avaliacoes')}
-              className="mt-2 flex items-center gap-2 text-[12.5px] text-nxi3 transition-colors hover:text-nxi1"
+              className="mt-2.5 flex items-center gap-2 rounded text-[12.5px] text-nxi3 transition-colors hover:text-nxi1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store"
             >
-              <Stars rating={averageRating} size={14} />
+              {totalReviews > 0 && <Stars rating={averageRating} size={14} />}
               <span className="font-medium underline-offset-2 hover:underline">
                 {totalReviews
                   ? `${averageRating.toFixed(1)} · ${totalReviews} ${totalReviews === 1 ? 'avaliação' : 'avaliações'}`
@@ -275,13 +279,16 @@ export default function ProductDetailPage() {
                 originalPrice={product.price}
                 discountPercentage={product.discount_percentage}
               />
+              <ProductPaymentLine storeInfo={storeInfo} />
             </div>
 
             {product.description && (
-              <p className="mt-2.5 max-w-[46ch] break-words text-[13.5px] leading-relaxed text-nxi2">
+              <p className="mt-3 line-clamp-2 max-w-[46ch] break-words border-l-2 border-store pl-3 text-[13.5px] leading-relaxed text-nxi2">
                 {product.description}
               </p>
             )}
+
+            <ProductFactsCard fields={descriptiveFields} />
 
             <ProductColorSelector
               singleColor={!dynamicColorField ? product.color : undefined}
@@ -360,21 +367,15 @@ export default function ProductDetailPage() {
                 )}
               </div>
             </div>
+
+            <ProductTrustSeals storeInfo={storeInfo} />
           </aside>
         </div>
 
-        {/* seções contínuas */}
-        <ProductDescriptionSection
-          description={product.description}
-          category={product.category?.name}
-          dynamicFields={descriptiveFields}
-        />
+        {/* seções contínuas — dynamic_fields/categoria vivem só na ficha do buy box */}
+        <ProductDescriptionSection description={product.description} />
 
-        <ProductSpecsSection
-          specifications={product.specifications}
-          category={product.category?.name}
-          dynamicFields={descriptiveFields}
-        />
+        <ProductSpecsSection specifications={product.specifications} />
 
         <section id="avaliacoes" className="border-t border-nxborder">
           <ProductReviews slug={slug} productId={productId} productName={product.name} />

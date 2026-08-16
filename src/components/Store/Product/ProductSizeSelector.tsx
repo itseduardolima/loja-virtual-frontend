@@ -39,18 +39,18 @@ export function ProductSizeSelector({
               disabled={isOut}
               aria-pressed={isSelected}
               className={cn(
-                'relative h-11 rounded-lg text-[13.5px] font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2 active:scale-95',
+                'relative flex h-11 flex-col items-center justify-center rounded-lg text-[13.5px] font-semibold leading-tight transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2 active:scale-95',
                 isOut
-                  ? 'cursor-not-allowed bg-nxbg text-nxi3'
+                  ? 'cursor-not-allowed bg-nxbg text-nxi3 opacity-60'
                   : isSelected
                     ? 'bg-store text-white'
                     : 'bg-nxbg text-nxi2 hover:bg-nxborder',
               )}
             >
-              {size}
+              <span className={cn(isOut && 'line-through')}>{size}</span>
               {isOut && (
-                <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                  <span className="h-px w-7 rotate-[-18deg] bg-nxi3" />
+                <span className="font-mono text-[8px] font-semibold uppercase leading-none tracking-[0.1em]">
+                  esgotado
                 </span>
               )}
             </button>
