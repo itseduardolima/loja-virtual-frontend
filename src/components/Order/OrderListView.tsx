@@ -33,7 +33,7 @@ interface OrderListViewProps {
 // Cliente com fr moderado: com valor alto (ex-2.2fr) ele engolia toda a sobra
 // em telas largas e "Itens" parecia uma coluna gigante
 const GRID =
-  'grid grid-cols-[minmax(160px,1.1fr)_minmax(220px,1.3fr)_64px_minmax(120px,1fr)_minmax(150px,1.1fr)_minmax(140px,1fr)_104px] items-center gap-[10px] px-[18px] py-[11px]'
+  'grid grid-cols-[minmax(160px,1.1fr)_minmax(220px,1.3fr)_48px_minmax(140px,1.1fr)_minmax(170px,1.2fr)_minmax(140px,1fr)_104px] items-center gap-[10px] px-[18px] py-[11px]'
 const HEAD_LABEL = 'text-[11px] font-extrabold uppercase tracking-[0.06em] text-nxi3'
 const HEAD_BTN = 'flex items-center gap-[5px] border-none bg-transparent p-0 cursor-pointer'
 
@@ -62,7 +62,7 @@ export function OrderListView({
         <button
           type="button"
           onClick={() => onSortBy(sortKey === 'high' ? 'low' : 'high')}
-          className={cn(HEAD_BTN, HEAD_LABEL, 'justify-end pr-[18px]')}
+          className={cn(HEAD_BTN, HEAD_LABEL, 'justify-end pr-[28px]')}
         >
           Total
           <ArrowUpDown size={12} className="text-[#B7B9C6]" />
@@ -147,7 +147,7 @@ export function OrderListView({
             </div>
 
             {/* Total */}
-            <div className="pr-[18px] text-right text-[13.5px] font-extrabold tabular-nums text-nxi1">
+            <div className="pr-[28px] text-right text-[13.5px] font-extrabold tabular-nums text-nxi1">
               {formatPrice(parseFloat(order.total))}
             </div>
 
