@@ -8,7 +8,7 @@ interface WhatsAppFlowBannerProps {
 
 export function WhatsAppFlowBanner({ storeName }: WhatsAppFlowBannerProps) {
   return (
-    <div className="ck-rise mb-6 flex items-start gap-3 rounded-2xl border border-nxborder border-l-[3px] border-l-wa bg-white p-4">
+    <div className="ck-rise mb-6 flex items-start gap-3 rounded-2xl border border-nxborder bg-white p-4">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-wa/12 text-wa">
         <IconWhatsApp size={20} />
       </div>

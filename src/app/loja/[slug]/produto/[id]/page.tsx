@@ -283,7 +283,7 @@ export default function ProductDetailPage() {
             </div>
 
             {product.description && (
-              <p className="mt-3 line-clamp-2 max-w-[46ch] break-words border-l-2 border-store pl-3 text-[13.5px] leading-relaxed text-nxi2">
+              <p className="mt-3 line-clamp-2 max-w-[46ch] break-words text-[13.5px] leading-relaxed text-nxi2">
                 {product.description}
               </p>
             )}
