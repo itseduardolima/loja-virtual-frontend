@@ -18,8 +18,6 @@ interface OrderDetailDrawerProps {
   onAcceptCancelReq: (id: number) => void
   onDenyCancelReq: (id: number) => void
   acceptDenyLoading?: boolean
-  onEmitNfe: (id: number) => void
-  emitting?: boolean
 }
 
 // ─── F1 · Skeleton de carregamento ────────────────────────────────────────────
@@ -104,8 +102,6 @@ export function OrderDetailDrawer({
   onAcceptCancelReq,
   onDenyCancelReq,
   acceptDenyLoading,
-  onEmitNfe,
-  emitting,
 }: OrderDetailDrawerProps) {
   const { data: order, isLoading, error, refetch } = useOrderDetail(orderId ?? 0)
   const [isPrintOpen, setIsPrintOpen] = useState(false)
@@ -151,8 +147,6 @@ export function OrderDetailDrawer({
             <OrderDetailPanel
               order={order}
               onClose={onClose}
-              emitting={emitting}
-              onEmitNfe={() => onEmitNfe(order.id)}
               cancelReqLoading={acceptDenyLoading}
               onAcceptCancelReq={() => onAcceptCancelReq(order.id)}
               onDenyCancelReq={() => onDenyCancelReq(order.id)}

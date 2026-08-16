@@ -166,8 +166,6 @@ export default function OrdersPage() {
             onExport={p.handleExport}
             exporting={p.isExporting}
             exportLocked={p.exportLocked}
-            onEmitNfe={() => p.emitNfe()}
-            emitting={p.emitting}
             onAcceptCancelReq={p.acceptCancelRequest}
             onDenyCancelReq={p.denyCancelRequest}
             acceptDenyLoading={p.acceptDenyLoading}
@@ -185,8 +183,6 @@ export default function OrdersPage() {
           onAcceptCancelReq={p.acceptCancelRequest}
           onDenyCancelReq={p.denyCancelRequest}
           acceptDenyLoading={p.acceptDenyLoading}
-          onEmitNfe={() => p.emitNfe()}
-          emitting={p.emitting}
         />
       </div>
 

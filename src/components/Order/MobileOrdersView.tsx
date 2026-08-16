@@ -33,8 +33,6 @@ interface MobileOrdersViewProps {
   exporting?: boolean
   exportLocked?: boolean
   // callbacks do detalhe (repassados ao bottom sheet / OrderDetailPanel):
-  onEmitNfe: (id: number) => void
-  emitting?: boolean
   onAcceptCancelReq: (id: number) => void
   onDenyCancelReq: (id: number) => void
   acceptDenyLoading?: boolean
@@ -53,8 +51,6 @@ export function MobileOrdersView({
   onExport,
   exporting = false,
   exportLocked = false,
-  onEmitNfe,
-  emitting = false,
   onAcceptCancelReq,
   onDenyCancelReq,
   acceptDenyLoading = false,
@@ -282,8 +278,6 @@ export function MobileOrdersView({
         <OrderDetailSheet
           orderId={selectedId}
           onClose={() => onSelect(null)}
-          onEmitNfe={() => onEmitNfe(selectedId)}
-          emitting={emitting}
           onAcceptCancelReq={() => onAcceptCancelReq(selectedId)}
           onDenyCancelReq={() => onDenyCancelReq(selectedId)}
           acceptDenyLoading={acceptDenyLoading}
@@ -297,8 +291,6 @@ export function MobileOrdersView({
 interface OrderDetailSheetProps {
   orderId: number
   onClose: () => void
-  onEmitNfe: () => void
-  emitting: boolean
   onAcceptCancelReq: () => void
   onDenyCancelReq: () => void
   acceptDenyLoading: boolean
@@ -307,8 +299,6 @@ interface OrderDetailSheetProps {
 function OrderDetailSheet({
   orderId,
   onClose,
-  onEmitNfe,
-  emitting,
   onAcceptCancelReq,
   onDenyCancelReq,
   acceptDenyLoading,
@@ -372,8 +362,6 @@ function OrderDetailSheet({
           ) : (
             <OrderDetailPanel
               order={order}
-              emitting={emitting}
-              onEmitNfe={onEmitNfe}
               cancelReqLoading={acceptDenyLoading}
               onAcceptCancelReq={onAcceptCancelReq}
               onDenyCancelReq={onDenyCancelReq}

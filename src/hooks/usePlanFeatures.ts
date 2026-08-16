@@ -6,7 +6,6 @@ import { useAuth } from '@/contexts/AuthContext'
  * Mantém um único nome por feature em todo o frontend.
  */
 export interface PlanFeatures {
-  feature_bling_integration: boolean
   feature_product_questions: boolean
   feature_advanced_dashboard: boolean
   feature_order_export: boolean
@@ -16,7 +15,6 @@ export interface PlanFeatures {
 export type PlanFeatureKey = keyof PlanFeatures
 
 const DEFAULT_FEATURES: PlanFeatures = {
-  feature_bling_integration: false,
   feature_product_questions: false,
   feature_advanced_dashboard: false,
   feature_order_export: false,
@@ -24,7 +22,6 @@ const DEFAULT_FEATURES: PlanFeatures = {
 }
 
 const ALL_FEATURES_ON: PlanFeatures = {
-  feature_bling_integration: true,
   feature_product_questions: true,
   feature_advanced_dashboard: true,
   feature_order_export: true,
@@ -54,7 +51,6 @@ export function usePlanFeatures(): {
 
   return {
     features: {
-      feature_bling_integration: !!plan.feature_bling_integration,
       feature_product_questions: !!plan.feature_product_questions,
       feature_advanced_dashboard: !!plan.feature_advanced_dashboard,
       feature_order_export: !!plan.feature_order_export,

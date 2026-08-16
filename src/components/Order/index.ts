@@ -11,7 +11,6 @@ export {
 } from './OrderKanbanCard'
 export { OrderBoardView } from './OrderBoardView'
 export { OrderListView } from './OrderListView'
-export { OrderNfeCard } from './OrderNfeCard'
 export { OrderPrintModal } from './OrderPrintModal'
 export { getStatusIcon } from './OrderStatusIcon'
 export { OrderTrackingTimeline } from './OrderTrackingTimeline'

@@ -8,7 +8,6 @@ const FAQS = [
   {q:'Tem taxa por venda?',a:'Nenhuma. Você paga só a mensalidade do plano. O dinheiro das vendas cai direto na sua conta Asaas — sem passar pela gente.'},
   {q:'Como funciona o pagamento dos clientes?',a:'Seus clientes pagam via Pix (na hora), cartão de crédito ou boleto. O dinheiro vai direto para a sua conta, não para a Nexo.'},
   {q:'Consigo migrar de outra plataforma?',a:'Sim. Importamos seu catálogo (CSV ou manualmente) e o time ajuda na migração sem custo.'},
-  {q:'Posso emitir nota fiscal?',a:'Nos planos Pro e Max, sim — via integração com o Bling ERP. A NF-e é emitida automaticamente a cada pedido pago.'},
   {q:'Posso cancelar quando quiser?',a:'Sim, a qualquer momento pelo painel, sem multa. Você usa até o fim do período já pago.'},
   {q:'O suporte é em português?',a:'Sim, chat em português de segunda a sexta, das 9h às 19h. No plano Max, o suporte é prioritário.'},
 ]

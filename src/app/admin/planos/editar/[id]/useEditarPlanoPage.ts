@@ -30,7 +30,6 @@ export function useEditarPlanoPage() {
         price_monthly: Number(plan.price_monthly),
         price_yearly: plan.price_yearly != null ? Number(plan.price_yearly) : undefined,
         max_products: plan.max_products ?? undefined,
-        feature_bling_integration: !!plan.feature_bling_integration,
         feature_product_questions: !!plan.feature_product_questions,
         feature_advanced_dashboard: !!plan.feature_advanced_dashboard,
         feature_order_export: !!plan.feature_order_export,

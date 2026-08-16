@@ -199,7 +199,7 @@ Formulário em `SectionCard`:
 | Preço mensal | number (R$) |
 | Preço anual | number (R$) |
 | Máx. produtos | number (null = ilimitado) |
-| Features | toggles: Bling, Perguntas, Dashboard avançado, Exportar pedidos, Cupons |
+| Features | toggles: Perguntas, Dashboard avançado, Exportar pedidos, Cupons |
 | Status | toggle |
 | Ordem | number |
 

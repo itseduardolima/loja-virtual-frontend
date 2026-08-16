@@ -1,4 +1,4 @@
-import { Plug, MessageCircle, BarChart3, FileDown, Tag, type LucideIcon } from 'lucide-react'
+import { MessageCircle, BarChart3, FileDown, Tag, type LucideIcon } from 'lucide-react'
 import { SubscriptionPlan } from '@/types/subscription'
 import { AdminPlan } from '@/types/admin'
 import type { PlanFeatures } from '@/hooks/usePlanFeatures'
@@ -8,7 +8,6 @@ type AnyPlan = Pick<
   | 'max_products'
   | 'price_monthly'
   | 'price_yearly'
-  | 'feature_bling_integration'
   | 'feature_product_questions'
   | 'feature_advanced_dashboard'
   | 'feature_order_export'
@@ -27,12 +26,6 @@ interface FeatureMeta {
 }
 
 export const FEATURE_METADATA: Record<keyof PlanFeatures, FeatureMeta> = {
-  feature_bling_integration: {
-    title: 'Integração Bling ERP',
-    description:
-      'Sincronize automaticamente seus pedidos com o Bling ERP. Emita NF-e com seu próprio CNPJ e certificado digital, sem sair da plataforma.',
-    icon: Plug,
-  },
   feature_product_questions: {
     title: 'Perguntas e respostas',
     description:
@@ -88,7 +81,6 @@ export function derivePlanFeaturesList(plan: AnyPlan): string[] {
   if (plan.feature_advanced_dashboard) features.push('Dashboard avançado')
   if (plan.feature_product_questions) features.push('Perguntas e respostas')
   if (plan.feature_order_export) features.push('Exportar pedidos')
-  if (plan.feature_bling_integration) features.push('Integração Bling ERP')
   return features
 }
 
@@ -103,6 +95,5 @@ export function derivePlanFeaturesComparison(plan: AnyPlan): PlanFeatureRow[] {
     { label: 'Dashboard avançado', included: !!plan.feature_advanced_dashboard },
     { label: 'Perguntas e respostas', included: !!plan.feature_product_questions },
     { label: 'Exportar pedidos', included: !!plan.feature_order_export },
-    { label: 'Integração Bling ERP', included: !!plan.feature_bling_integration },
   ]
 }

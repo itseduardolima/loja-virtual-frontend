@@ -80,7 +80,6 @@ const VENDEDOR_BREADCRUMB_MAP: Record<string, string> = {
   '/vendedor/configuracoes/entrega': 'Entrega',
   '/vendedor/configuracoes/horario': 'Horário',
   '/vendedor/configuracoes/pagamento': 'Formas de Pagamento',
-  '/vendedor/configuracoes/integracao-bling': 'Integração Bling',
 }
 
 const ADMIN_BREADCRUMB_MAP: Record<string, { parent: string; current: string }> = {

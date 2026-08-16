@@ -1,6 +1,6 @@
 /**
  * Fundação do redesign de Pedidos (vendedor) — fonte de verdade de rótulos, cores,
- * regras de status, NF-e, KPIs e formatadores. Espelha a lógica `DCLogic` do design
+ * regras de status, KPIs e formatadores. Espelha a lógica `DCLogic` do design
  * `Pedidos.dc.html` (ver `.specs/Pedidos.design.html`).
  *
  * IMPORTANTE (rename de status — apenas vendedor): o backend mantém os códigos 1–5;
@@ -31,22 +31,6 @@ export interface VendorStatusMeta {
   badge: string
   /** Cor da bolinha (dot) do badge/segmento/coluna. */
   dot: string
-}
-
-export type NfeCardVariant = 'indigo' | 'amber' | 'green' | 'rose' | 'dashed' | 'plain'
-
-export interface NfeMeta {
-  variant: NfeCardVariant
-  /** Classe do container (borda + fundo). */
-  cardClass: string
-  /** Classe de cor do título-direito (rótulo) e do ícone. */
-  accentClass: string
-  state: string
-  desc: string
-  /** Mostra botão "Emitir NF-e via Bling". */
-  emit?: boolean
-  /** Mostra número/série/chave + downloads. */
-  authorized?: boolean
 }
 
 export interface OrderKpis {
@@ -132,85 +116,6 @@ export function canAdvance(status: number): boolean {
 
 export function canCancel(status: number): boolean {
   return status < 4 && status !== 5
-}
-
-// ─── NF-e ────────────────────────────────────────────────────────────────────
-const NFE_CARD: Record<NfeCardVariant, string> = {
-  indigo: 'border border-[#C7CAEC] bg-[#F4F5FD]',
-  amber: 'border border-[#F0DCA8] bg-[#FBF8EF]',
-  green: 'border border-[#BFE0CF] bg-[#F2F8F4]',
-  rose: 'border border-[#F3C8D4] bg-[#FCF2F4]',
-  dashed: 'border-[1.5px] border-dashed border-[#D7D9E3] bg-[#FAFAFC]',
-  plain: 'border border-nxborder bg-[#FBFBFD]',
-}
-
-const NFE_ACCENT: Record<NfeCardVariant, string> = {
-  indigo: 'text-nxp',
-  amber: 'text-[#8A6516]',
-  green: 'text-[#2E6B4E]',
-  rose: 'text-[#A82F4F]',
-  dashed: 'text-nxi3',
-  plain: 'text-nxi3',
-}
-
-function nfe(
-  variant: NfeCardVariant,
-  state: string,
-  desc: string,
-  extra?: Partial<NfeMeta>,
-): NfeMeta {
-  return {
-    variant,
-    cardClass: NFE_CARD[variant],
-    accentClass: NFE_ACCENT[variant],
-    state,
-    desc,
-    ...extra,
-  }
-}
-
-/**
- * Sub-estado da NF-e a partir dos campos reais do pedido. Espelha DCLogic.nfeMeta:
- * cancelada → denegada → em_processo → autorizada → pronta; "Indisponível" quando o
- * Bling não está sincronizado.
- */
-export function nfeMeta(order: Order): NfeMeta {
-  const blingSynced = order.bling_sync?.status === 'synced'
-  const st = order.nfe_status ?? null
-
-  if (order.status >= 5 || st === 'cancelada')
-    return nfe('plain', 'Cancelada', 'A NF-e deste pedido foi cancelada.')
-  if (!blingSynced)
-    return nfe(
-      'dashed',
-      'Indisponível',
-      'Conecte sua conta Bling em Configurações para emitir notas fiscais.',
-    )
-  if (st === 'denegada')
-    return nfe(
-      'rose',
-      'Denegada',
-      'A SEFAZ denegou a emissão. Verifique os dados do cliente e tente novamente.',
-    )
-  if (st === 'em_processo')
-    return nfe(
-      'amber',
-      'Aguardando autorização',
-      'A NF-e foi enviada e aguarda autorização da SEFAZ.',
-    )
-  if (st === 'autorizada')
-    return nfe(
-      'green',
-      'Autorizada',
-      'NF-e autorizada pela SEFAZ. Baixe o DANFE ou o XML abaixo.',
-      { authorized: true },
-    )
-  return nfe(
-    'indigo',
-    'Pronta para emitir',
-    'Emita a nota fiscal eletrônica deste pedido via Bling.',
-    { emit: true },
-  )
 }
 
 // ─── Itens ────────────────────────────────────────────────────────────────────

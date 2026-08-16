@@ -15,7 +15,6 @@ export const createPlanSchema = Yup.object({
     .transform((_, original) => (original === '' || original == null ? null : Number(original)))
     .nullable()
     .optional(),
-  feature_bling_integration: Yup.boolean().default(false),
   feature_product_questions: Yup.boolean().default(false),
   feature_advanced_dashboard: Yup.boolean().default(false),
   feature_order_export: Yup.boolean().default(false),

@@ -12,7 +12,6 @@ import { useFeatureLockedModal } from '@/hooks/useFeatureLockedModal'
 import { useMarkOrderAsRead } from '@/hooks/useMarkOrderAsRead'
 import { useAcceptCancellationRequest } from '@/hooks/useAcceptCancellationRequest'
 import { useDenyCancellationRequest } from '@/hooks/useDenyCancellationRequest'
-import { useEmitNfe } from '@/hooks/useEmitNfe'
 import { useOrderNotifications } from '@/hooks/useOrderNotifications'
 import {
   computeKpis,
@@ -86,7 +85,6 @@ export function useOrdersPage() {
   const { mutate: updateOrderStatus } = useUpdateOrderStatus()
   const { mutate: acceptRequest, isPending: isAccepting } = useAcceptCancellationRequest()
   const { mutate: denyRequest, isPending: isDenying } = useDenyCancellationRequest()
-  const emit = useEmitNfe(selectedOrderId)
   const { notifications } = useOrderNotifications(!!isVendor)
 
   const allOrders: Order[] = useMemo(() => data?.data ?? [], [data])
@@ -254,8 +252,6 @@ export function useOrdersPage() {
     window.open(`https://wa.me/${num}?text=${msg}`, '_blank', 'noopener,noreferrer')
   }, [])
 
-  const emitNfe = useCallback(() => emit.mutate(), [emit])
-
   const showMoreColumn = useCallback((status: number) => {
     setColumnLimits((prev) => ({
       ...prev,
@@ -342,9 +338,6 @@ export function useOrdersPage() {
     acceptDenyLoading: isAccepting || isDenying,
     // whatsapp
     handleWhatsApp,
-    // nf-e
-    emitNfe,
-    emitting: emit.isPending,
     // export
     handleExport,
     isExporting,

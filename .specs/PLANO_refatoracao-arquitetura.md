@@ -57,7 +57,7 @@ O padrão `(store as any)?.campo` aparece 40+ vezes porque `StoreInfo` está inc
 - [ ] Renomear `lib/orderPanelUtils.tsx` → separar helpers puros (`.ts`) do `getStatusIcon` (JSX → `components/Order/`)
 
 ### 0.4 Barrel exports (mecânico)
-- [ ] Criar `index.ts` nos 17 dirs sem barrel: Admin, Animation, Bling, Cart, Category, Checkout, Dashboard, Dialog, Form, Layout, Order, Product, ProductForm, Store, Store/Product, Subscription, Table, Toast, User
+- [ ] Criar `index.ts` nos 17 dirs sem barrel: Admin, Animation, Cart, Category, Checkout, Dashboard, Dialog, Form, Layout, Order, Product, ProductForm, Store, Store/Product, Subscription, Table, Toast, User
 - [ ] Atualizar os 82+ imports diretos para usar barrels (find&replace assistido; prioridade: ProductForm 37, Store 31, Store/Product 15, Order 10)
 
 ---
@@ -66,17 +66,16 @@ O padrão `(store as any)?.campo` aparece 40+ vezes porque `StoreInfo` está inc
 
 > **Status:** executada via workflow (6 agentes regionais + verificador); `tsc` e `pnpm build` verdes; ~92 arquivos. Resultados e desvios:
 > - **`any`: 180 → 59.** Os 59 restantes: casts `yupResolver(...)` (incompatibilidade estrutural Yup InferType × RHF generics — documentados), narrowing de catches e workarounds de libs.
-> - **`window.location`: só exceções documentadas** (OAuth Google/Bling, interceptor axios, `history.replaceState` pós-callback, leitura de `origin` p/ share). Zero `reload()`/`router.refresh()` em retries — loja usa `refetch()` dos hooks (queryClient só após Fase 3).
+> - **`window.location`: só exceções documentadas** (OAuth Google, interceptor axios, `history.replaceState` pós-callback, leitura de `origin` p/ share). Zero `reload()`/`router.refresh()` em retries — loja usa `refetch()` dos hooks (queryClient só após Fase 3).
 > - `useCreateSubscription`/`useValidatePlanCoupon`: onError NÃO adicionado de propósito — call sites usam `mutateAsync`+try/catch com toast próprio (evita toast duplicado). `usePreviewChangePlan` ganhou onError (call site usa `mutate()`).
 > - `useAdminPlans`: invalidate órfão `['coupons']` corrigido para `['admin', 'plan-coupons']`.
 > - `free_shipping_enabled` removido de `UpdateStoreData` e do payload do useEntrega (derivado de `free_delivery_min`).
 > - ⚠️ **Regressão evitada:** o verificador havia embrulhado o `AuthProvider` em `<Suspense>` (por `useSearchParams` no provider raiz) — isso esvaziava o HTML prerenderizado de TODAS as páginas (CSR-bailout global). Revertido manualmente para leituras de `window.location` em useEffect/handler (client-only, não afeta prerender) com comentários de exceção.
-> - Sobras anotadas p/ Fase 2: `STATUS_CONFIG` do rastrear (ícones JSX inline, página será reescrita); `fmtDate` UTC do admin/cupons-plano; `Intl.NumberFormat` em 6 components (OrderPrintModal, RenewSubscriptionModal, ProductForm/data, BlingImportCard, ProductReviews).
+> - Sobras anotadas p/ Fase 2: `STATUS_CONFIG` do rastrear (ícones JSX inline, página será reescrita); `fmtDate` UTC do admin/cupons-plano; `Intl.NumberFormat` em 6 components (OrderPrintModal, RenewSubscriptionModal, ProductForm/data, ProductReviews).
 
 ### 1.1 Navegação (20 violações)
 - [ ] `lib/axios.ts:62` — remover `window.location.href` no 401; propagar erro e deixar AuthContext/page decidir (avaliar: manter como fallback documentado se o refactor for arriscado)
 - [ ] `contexts/AuthContext.tsx` — `useSearchParams()` em vez de `window.location.search`; OAuth redirect é exceção legítima (`window.location.href` para URL externa do Google é correto — documentar)
-- [ ] `hooks/useBlingStatus.ts:40` — retornar `authUrl` da mutation; page decide navegação (OAuth externo = exceção ok)
 - [ ] 6× retry com `reload()`/`router.refresh()` → `queryClient.invalidateQueries` (pedido-sucesso, loja home, loja produtos, pedidos, produtos, produto detalhe)
 - [ ] `app/_landing/Navbar.tsx:27,31` — `<a href>` → `<Link>`
 - [ ] `vendedor/layout.tsx:60`, `useOrdersPage.ts:99`, `StoreHeader.tsx:120`, `useUnsavedChanges.ts:67,89` — `usePathname()`/`useSearchParams()` em vez de `window.location.*`
