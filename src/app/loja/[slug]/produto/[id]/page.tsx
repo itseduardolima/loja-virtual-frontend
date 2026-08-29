@@ -3,10 +3,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { notFound } from 'next/navigation'
 import { useParams, useRouter, usePathname } from 'next/navigation'
-import { Heart, Share2, Link as LinkIcon, MessageCircle } from 'lucide-react'
+import { Heart, Share2, Link as LinkIcon, MessageCircle, Check } from 'lucide-react'
 import { CartSidebar, ErrorState, StoreHeader, ProductReviews } from '@/components'
 import { useProductDetailPage } from './useProductDetailPage'
-import { useToastContext } from '@/contexts/ToastContext'
 import { AddToCartAnimation } from '@/components/Animation'
 import { RelatedProducts, ProductQuestions } from '@/components/Product'
 import { AnnouncementBar, WhatsAppChatWidget, StoreNewFooter } from '@/components/Store'
@@ -44,9 +43,8 @@ export default function ProductDetailPage() {
   const [searchValue, setSearchValue] = useState('')
   const [barVisible, setBarVisible] = useState(true)
   const [shareOpen, setShareOpen] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
   const shareRef = useRef<HTMLDivElement>(null)
-
-  const { success: showSuccess } = useToastContext()
 
   const {
     product,
@@ -80,7 +78,10 @@ export default function ProductDetailPage() {
 
   // fecha o dropdown de compartilhar ao clicar fora
   useEffect(() => {
-    if (!shareOpen) return
+    if (!shareOpen) {
+      setLinkCopied(false)
+      return
+    }
     const onClick = (e: MouseEvent) => {
       if (shareRef.current && !shareRef.current.contains(e.target as Node)) setShareOpen(false)
     }
@@ -187,10 +188,13 @@ export default function ProductDetailPage() {
     : `${process.env.NEXT_PUBLIC_APP_URL}${pathname}`
 
   const handleCopyLink = async () => {
-    setShareOpen(false)
     try {
       await navigator.clipboard.writeText(productUrl)
-      showSuccess('Link copiado!', 'Compartilhar')
+      setLinkCopied(true)
+      setTimeout(() => {
+        setLinkCopied(false)
+        setShareOpen(false)
+      }, 1800)
     } catch {
       // clipboard indisponível — ignora
     }
@@ -351,12 +355,18 @@ export default function ProductDetailPage() {
                 </button>
                 {shareOpen && (
                   <div className="absolute right-0 z-20 mt-2 w-44 rounded-xl border border-nxborder bg-white p-1.5 shadow-xl">
-                    <button
-                      onClick={handleCopyLink}
-                      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] font-medium text-nxi2 hover:bg-nxbg"
-                    >
-                      <LinkIcon size={14} /> Copiar link
-                    </button>
+                    {linkCopied ? (
+                      <div className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12.5px] font-bold text-nxs">
+                        <Check size={14} strokeWidth={2.6} /> Copiado!
+                      </div>
+                    ) : (
+                      <button
+                        onClick={handleCopyLink}
+                        className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] font-medium text-nxi2 hover:bg-nxbg"
+                      >
+                        <LinkIcon size={14} /> Copiar link
+                      </button>
+                    )}
                     <button
                       onClick={handleWhatsAppShare}
                       className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] font-medium text-nxi2 hover:bg-nxbg"

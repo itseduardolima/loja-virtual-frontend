@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 import { useStoreInfo } from '@/hooks/useStoreInfo'
 import { useStoreProducts } from '@/hooks/useStoreProducts'
 import { useCart } from '@/hooks/useCart'
-import { useToastContext } from '@/contexts/ToastContext'
 import { type OrderSnapshot, orderSnapshotKey } from '@/hooks/useCheckout'
 
 export function usePedidoSucessoPage() {
@@ -35,8 +34,6 @@ export function usePedidoSucessoPage() {
   const storeId = storeInfo?.id
   useCart(storeId)
 
-  const { success: toastSuccess } = useToastContext()
-
   // Lê-e-remove o snapshot do sessionStorage (refresh/aba nova caem no fallback sem recap)
   useEffect(() => {
     if (!orderCode) return
@@ -63,12 +60,9 @@ export function usePedidoSucessoPage() {
 
   const handleCopyCode = () => {
     if (!orderCode) return
-    navigator.clipboard
-      .writeText(orderCode)
-      .then(() => toastSuccess('Código copiado!'))
-      .catch(() => {
-        // clipboard indisponível (permissão/contexto inseguro) — o código segue visível na tela
-      })
+    navigator.clipboard.writeText(orderCode).catch(() => {
+      // clipboard indisponível (permissão/contexto inseguro) — o código segue visível na tela
+    })
   }
 
   const handleTrack = () => {

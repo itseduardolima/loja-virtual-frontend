@@ -122,9 +122,10 @@ export function useCart(storeId?: number) {
       const errorMessage =
         axiosError.response?.data?.message || error.message || 'Erro ao adicionar produto ao carrinho'
       toast({
-        title: 'Erro!',
+        title: 'Não deu para adicionar',
         description: errorMessage,
-        variant: 'destructive'
+        variant: 'destructive',
+        context: 'store'
       })
     }
   })
@@ -150,9 +151,10 @@ export function useCart(storeId?: number) {
       const errorMessage =
         axiosError.response?.data?.message || error.message || 'Erro ao remover produto do carrinho'
       toast({
-        title: 'Erro!',
+        title: 'Não deu para remover',
         description: errorMessage,
-        variant: 'destructive'
+        variant: 'destructive',
+        context: 'store'
       })
     }
   })
@@ -192,9 +194,10 @@ export function useCart(storeId?: number) {
       const errorMessage =
         axiosError.response?.data?.message || error.message || 'Erro ao atualizar item do carrinho'
       toast({
-        title: 'Erro!',
+        title: 'Não deu para atualizar',
         description: errorMessage,
-        variant: 'destructive'
+        variant: 'destructive',
+        context: 'store'
       })
     }
   })
@@ -220,9 +223,10 @@ export function useCart(storeId?: number) {
       const errorMessage =
         axiosError.response?.data?.message || error.message || 'Erro ao limpar carrinho'
       toast({
-        title: 'Erro!',
+        title: 'Não deu para limpar o carrinho',
         description: errorMessage,
-        variant: 'destructive'
+        variant: 'destructive',
+        context: 'store'
       })
     }
   })

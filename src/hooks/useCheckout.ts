@@ -156,9 +156,10 @@ export function useCheckout() {
     onError: (error: any) => {
       const errorMessage = error.response?.data?.message || 'Erro ao finalizar pedido'
       toast({
-        title: 'Erro!',
+        title: 'Não deu para finalizar o pedido',
         description: errorMessage,
         variant: 'destructive',
+        context: 'store',
       })
     },
   })

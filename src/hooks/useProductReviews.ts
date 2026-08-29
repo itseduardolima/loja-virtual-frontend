@@ -67,20 +67,16 @@ export function useProductReviews(
         queryKey: ['product-reviews', slug, productId],
       })
       onCreateSuccess?.()
-      toast({
-        title: 'Avaliação enviada!',
-        description: 'Sua avaliação foi publicada com sucesso.',
-        variant: 'success',
-      })
     },
     onError: (error: any) => {
       const message =
         error.response?.data?.message ||
         'Não foi possível enviar sua avaliação. Tente novamente.'
       toast({
-        title: 'Erro!',
+        title: 'Não deu para enviar a avaliação',
         description: message,
         variant: 'destructive',
+        context: 'store',
       })
     },
   })
@@ -129,20 +125,16 @@ export function useProductReviews(
       queryClient.invalidateQueries({
         queryKey: ['product-reviews', slug, productId],
       })
-      toast({
-        title: 'Avaliação atualizada!',
-        description: 'Sua avaliação foi atualizada com sucesso.',
-        variant: 'success',
-      })
     },
     onError: (error: any) => {
       const message =
         error.response?.data?.message ||
         'Não foi possível atualizar sua avaliação. Tente novamente.'
       toast({
-        title: 'Erro!',
+        title: 'Não deu para atualizar a avaliação',
         description: message,
         variant: 'destructive',
+        context: 'store',
       })
     },
   })

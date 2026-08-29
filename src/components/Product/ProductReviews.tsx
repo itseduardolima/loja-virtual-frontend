@@ -322,6 +322,7 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
   const [sort, setSort] = useState<'latest' | 'highest' | 'images'>('latest')
   const [allReviews, setAllReviews] = useState<ProductReview[]>([])
   const [writeReviewOpen, setWriteReviewOpen] = useState(false)
+  const [justSubmitted, setJustSubmitted] = useState(false)
 
   const {
     reviews,
@@ -335,7 +336,17 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
   } = useProductReviews(slug, productId, {
     page,
     sort,
-    onCreateSuccess: () => setPage(1),
+    onCreateSuccess: () => {
+      setPage(1)
+      setJustSubmitted(true)
+      setRating(0)
+      setComment('')
+      setSelectedImages([])
+      setTimeout(() => {
+        setWriteReviewOpen(false)
+        setJustSubmitted(false)
+      }, 1800)
+    },
   })
 
   const prevProductKey = useRef(`${slug}-${productId}`)
@@ -395,11 +406,6 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
       comment: comment.trim() || undefined,
       images: selectedImages.length > 0 ? selectedImages : undefined,
     })
-
-    setRating(0)
-    setComment('')
-    setSelectedImages([])
-    setWriteReviewOpen(false)
   }
 
   const changeSort = (value: 'latest' | 'highest' | 'images') => {
@@ -429,12 +435,30 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
       </div>
 
       {/* dialog */}
-      <Dialog open={writeReviewOpen} onOpenChange={setWriteReviewOpen}>
+      <Dialog
+        open={writeReviewOpen}
+        onOpenChange={(open) => {
+          setWriteReviewOpen(open)
+          if (!open) setJustSubmitted(false)
+        }}
+      >
         <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Escrever avaliação</DialogTitle>
           </DialogHeader>
-          {isAuthenticated ? (
+          {justSubmitted ? (
+            <div className="flex flex-col items-center gap-3 py-8 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-nxs/10">
+                <Check size={26} className="text-nxs" strokeWidth={2.6} />
+              </div>
+              <div className="font-integral text-[17px] font-bold uppercase tracking-[-0.01em] text-nxi1">
+                Avaliação publicada
+              </div>
+              <p className="max-w-[320px] text-[13px] leading-relaxed text-nxi2">
+                Já está visível para outros clientes na página do produto. Obrigado por avaliar!
+              </p>
+            </div>
+          ) : isAuthenticated ? (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="mb-2 block font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-nxi3">
