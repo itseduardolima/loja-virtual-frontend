@@ -51,13 +51,13 @@ export function StoreSearchDropdown({
   return (
     <div
       className={[
-        'absolute top-[calc(100%+10px)] left-1/2 w-[580px]',
+        'absolute top-[calc(100%+10px)] left-0 right-0 md:left-1/2 md:right-auto md:w-[580px] md:-translate-x-1/2',
         'bg-white rounded-[20px] border border-nxborder overflow-hidden z-[500]',
         'shadow-[0_20px_64px_-24px_rgba(7,8,21,0.35)]',
         'origin-top transition-[opacity,transform] duration-200 ease-[cubic-bezier(.22,1,.36,1)]',
         visible
-          ? 'opacity-100 translate-x-[-50%] translate-y-0 scale-100 pointer-events-auto'
-          : 'opacity-0 translate-x-[-50%] translate-y-[-10px] scale-[.96] pointer-events-none',
+          ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto'
+          : 'opacity-0 translate-y-[-10px] scale-[.96] pointer-events-none',
       ].join(' ')}
     >
       {!hasQ ? (

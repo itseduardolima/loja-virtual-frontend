@@ -86,6 +86,7 @@ export function StoreHeader({
   const searchInputRef = useRef<HTMLInputElement>(null)
   const mobileSearchInputRef = useRef<HTMLInputElement>(null)
   const searchContainerRef = useRef<HTMLDivElement>(null)
+  const mobileSearchContainerRef = useRef<HTMLDivElement>(null)
   const { user, isAuthenticated, logout } = useAuth()
   const { totalItems } = useCart(storeInfo?.id)
 
@@ -112,6 +113,7 @@ export function StoreHeader({
 
   const openMobileSearch = () => {
     setMobileSearchOpen(true)
+    setSearchFocused(true)
     setTimeout(() => mobileSearchInputRef.current?.focus(), 50)
   }
 
@@ -151,7 +153,10 @@ export function StoreHeader({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node
+      const insideDesktop = searchContainerRef.current?.contains(target)
+      const insideMobile = mobileSearchContainerRef.current?.contains(target)
+      if (!insideDesktop && !insideMobile) {
         setSearchFocused(false)
       }
     }
@@ -272,7 +277,7 @@ export function StoreHeader({
           <div
             className={cn(
               'flex-shrink-0 overflow-hidden transition-all duration-300 ease-[cubic-bezier(.22,1,.36,1)]',
-              mobileSearchOpen ? 'max-w-0 opacity-0' : 'max-w-[220px] opacity-100'
+              mobileSearchOpen ? 'max-w-0 -mr-2 opacity-0' : 'max-w-[220px] mr-0 opacity-100'
             )}
           >
             <button
@@ -287,6 +292,7 @@ export function StoreHeader({
           </div>
 
           <div
+            ref={mobileSearchContainerRef}
             className={cn(
               'relative transition-all duration-300 ease-[cubic-bezier(.22,1,.36,1)]',
               mobileSearchOpen ? 'flex-[1_1_0%] opacity-100' : 'flex-[0_0_0%] overflow-hidden opacity-0'
@@ -298,7 +304,20 @@ export function StoreHeader({
               value={searchValue || ''}
               onChange={handleInputChange}
               onKeyDown={handleSearchKeyDown}
+              onFocus={() => setSearchFocused(true)}
               containerClassName="h-10 gap-2 px-3 transition-[border-color,box-shadow]"
+            />
+
+            <StoreSearchDropdown
+              query={searchValue || ''}
+              visible={searchFocused && mobileSearchOpen}
+              suggestions={suggestions}
+              loading={isLoadingSuggestions}
+              categories={categories}
+              onClose={() => setSearchFocused(false)}
+              onSelect={handleSelectSuggestion}
+              onSelectCategory={handleCategorySelect}
+              onClickProduct={handleSuggestionClick}
             />
           </div>
 
@@ -328,7 +347,7 @@ export function StoreHeader({
           <div
             className={cn(
               'flex flex-shrink-0 items-center overflow-hidden transition-all duration-300 ease-[cubic-bezier(.22,1,.36,1)]',
-              mobileSearchOpen ? 'max-w-0 opacity-0' : 'max-w-[48px] opacity-100'
+              mobileSearchOpen ? 'max-w-0 -ml-2 opacity-0' : 'max-w-[48px] ml-0 opacity-100'
             )}
           >
             {cartButton}
@@ -336,8 +355,10 @@ export function StoreHeader({
 
           <div
             className={cn(
-              'flex-shrink-0 transition-[opacity] duration-300',
-              mobileSearchOpen ? 'pointer-events-none opacity-0' : 'pointer-events-auto opacity-100'
+              'flex flex-shrink-0 items-center overflow-hidden transition-all duration-300 ease-[cubic-bezier(.22,1,.36,1)]',
+              mobileSearchOpen
+                ? 'max-w-0 -ml-2 opacity-0 pointer-events-none'
+                : 'max-w-[120px] ml-0 opacity-100 pointer-events-auto'
             )}
           >
             {userButton}
