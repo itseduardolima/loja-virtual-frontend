@@ -18,8 +18,8 @@ export function StoreSectionHeader({ eyebrow, title, size = 'md' }: StoreSection
       <h2
         className={
           size === 'lg'
-            ? 'mt-3 font-integral text-[28px] leading-[1] tracking-[-0.03em] text-nxi1 sm:text-[38px]'
-            : 'mt-3 font-integral text-[24px] leading-[1] tracking-[-0.03em] text-nxi1 sm:text-[34px]'
+            ? 'mt-3 text-[28px] font-bold text-nxi1 sm:text-[38px]'
+            : 'mt-3 text-[24px] font-bold text-nxi1 sm:text-[34px]'
         }
       >
         {title}
