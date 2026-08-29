@@ -19,6 +19,7 @@ import { AdminProfileMenuDrawer } from './AdminProfileMenuDrawer'
 import { StoreSearchDropdown } from './StoreSearchDropdown'
 import { SearchField, StoreIconButton } from '@/components/Store/ui'
 import { PROFILE_IDS } from '@/types/auth'
+import { isOwnStore } from '@/lib/storefront'
 import Image from 'next/image'
 import { buildImageUrl } from '@/lib/imageUtils'
 
@@ -89,6 +90,8 @@ export function StoreHeader({
   const mobileSearchContainerRef = useRef<HTMLDivElement>(null)
   const { user, isAuthenticated, logout } = useAuth()
   const { totalItems } = useCart(storeInfo?.id)
+  const isVisitingVendor =
+    user?.profile_id === PROFILE_IDS.Vendedor && !isOwnStore(user, storeInfo)
 
   const debouncedSearch = useDebounce(searchValue || '', 300)
 
@@ -225,7 +228,7 @@ export function StoreHeader({
         </>
       )}
 
-      {isAuthenticated && user && user.profile_id === PROFILE_IDS.Vendedor && (
+      {isAuthenticated && user && user.profile_id === PROFILE_IDS.Vendedor && !isVisitingVendor && (
         <VendorSettingsDrawer
           isOpen={isProfileMenuOpen}
           onClose={() => setIsProfileMenuOpen(false)}
@@ -239,7 +242,7 @@ export function StoreHeader({
         />
       )}
 
-      {isAuthenticated && user && user.profile_id === PROFILE_IDS.Cliente && (
+      {isAuthenticated && user && (user.profile_id === PROFILE_IDS.Cliente || isVisitingVendor) && (
         <CustomerProfileMenuDrawer
           isOpen={isProfileMenuOpen}
           onClose={() => setIsProfileMenuOpen(false)}
@@ -417,7 +420,7 @@ export function StoreHeader({
         </div>
       </div>
 
-      {isAuthenticated && user && user.profile_id === PROFILE_IDS.Cliente && (
+      {isAuthenticated && user && (user.profile_id === PROFILE_IDS.Cliente || isVisitingVendor) && (
         <CustomerAccountDrawer
           isOpen={isAccountDrawerOpen}
           onClose={() => setIsAccountDrawerOpen(false)}

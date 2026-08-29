@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
+import { useToastContext } from '@/contexts/ToastContext'
 
 // Chave unica para a wishlist anonima. IDs de produto sao globalmente unicos
 // (PRODUCT.id autoincrement), entao uma unica lista de ids funciona corretamente
@@ -33,6 +34,7 @@ interface WishlistApiResponse {
 export function useWishlist() {
   const { isAuthenticated } = useAuth()
   const queryClient = useQueryClient()
+  const { error: toastError } = useToastContext()
 
   // Estado local para usuários não logados
   const [localIds, setLocalIds] = useState<number[]>([])
@@ -85,6 +87,9 @@ export function useWishlist() {
       queryClient.invalidateQueries({ queryKey: ['customer-wishlist'] })
       queryClient.invalidateQueries({ queryKey: ['customer-wishlist-items'] })
     },
+    onError: () => {
+      toastError('Não foi possível favoritar este produto.')
+    },
   })
 
   // Mutação: remover (logado)
@@ -95,6 +100,9 @@ export function useWishlist() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customer-wishlist'] })
       queryClient.invalidateQueries({ queryKey: ['customer-wishlist-items'] })
+    },
+    onError: () => {
+      toastError('Não foi possível remover este produto dos favoritos.')
     },
   })
 
