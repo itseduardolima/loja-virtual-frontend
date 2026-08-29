@@ -7,6 +7,7 @@ import { useStoreInfoById } from '@/hooks/useStoreInfoById'
 import { useCancelOrder } from '@/hooks/useCancelOrder'
 import { useRepeatOrder } from '@/hooks/useRepeatOrder'
 import { cn, formatPrice, formatDateShort } from '@/lib/utils'
+import { safeSocialHref } from '@/lib/socialLinks'
 import { IconWhatsApp } from '@/assets/icons/IconWhatsApp'
 import {
   Dialog,
@@ -226,7 +227,7 @@ export function OrderDetail({ orderId, onBack, onOpenCart }: OrderDetailProps) {
                   )}
                   {storeInfo.data.instagram && (
                     <a
-                      href={storeInfo.data.instagram}
+                      href={safeSocialHref('instagram', storeInfo.data.instagram)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-2.5 text-[12.5px] text-nxi2 transition-colors hover:text-nxi1"
@@ -237,7 +238,7 @@ export function OrderDetail({ orderId, onBack, onOpenCart }: OrderDetailProps) {
                   )}
                   {storeInfo.data.facebook && (
                     <a
-                      href={storeInfo.data.facebook}
+                      href={safeSocialHref('facebook', storeInfo.data.facebook)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-2.5 text-[12.5px] text-nxi2 transition-colors hover:text-nxi1"
