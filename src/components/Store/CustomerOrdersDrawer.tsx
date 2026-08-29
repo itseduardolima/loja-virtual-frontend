@@ -13,6 +13,7 @@ import { useCancelOrder } from '@/hooks/useCancelOrder'
 import { useRepeatOrder } from '@/hooks/useRepeatOrder'
 import { CUSTOMER_ORDER_STATUS } from '@/types/customer'
 import { cn, formatDate, formatPrice, buildImageUrl } from '@/lib/utils'
+import { safeSocialHref } from '@/lib/socialLinks'
 import { useDebounce } from '@/hooks/useDebounce'
 import Image from 'next/image'
 
@@ -374,7 +375,7 @@ export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOr
                                     className="h-10 px-4 border-pink-200 text-pink-600 hover:bg-pink-50 hover:border-pink-300"
                                   >
                                     <a
-                                      href={storeInfo.data.instagram}
+                                      href={safeSocialHref('instagram', storeInfo.data.instagram)}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="flex items-center gap-2"
@@ -393,7 +394,7 @@ export function CustomerOrdersDrawer({ isOpen, onClose, onOpenCart }: CustomerOr
                                     className="h-10 px-4 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300"
                                   >
                                     <a
-                                      href={storeInfo.data.facebook}
+                                      href={safeSocialHref('facebook', storeInfo.data.facebook)}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="flex items-center gap-2"

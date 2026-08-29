@@ -54,6 +54,7 @@ interface CheckoutResponse {
       notes: string
       coupon_code?: string
       coupon_discount?: string
+      total?: string | number
       created_at: string
     }
     items: Array<{
@@ -106,8 +107,26 @@ export function useCheckout() {
       // whatsapp_link reais só existem na resposta do backend
       if (orderCode && variables.orderSnapshot) {
         try {
+          // Total/desconto AUTORITATIVOS do backend (recalculados no /cart/checkout),
+          // nao os calculados no cliente — evita o recap mostrar um valor divergente
+          // do que a loja processou (bug S13). Fallback no snapshot do cliente.
+          const serverTotalRaw = data.data?.order?.total
+          const serverTotal =
+            serverTotalRaw != null ? Number(serverTotalRaw) : undefined
+          const serverDiscountRaw = data.data?.order?.coupon_discount
+          const serverDiscount =
+            serverDiscountRaw != null ? Number(serverDiscountRaw) : undefined
+
           const snapshot: OrderSnapshot = {
             ...variables.orderSnapshot,
+            total:
+              serverTotal != null && Number.isFinite(serverTotal)
+                ? serverTotal
+                : variables.orderSnapshot.total,
+            discount:
+              serverDiscount != null && Number.isFinite(serverDiscount)
+                ? serverDiscount
+                : variables.orderSnapshot.discount,
             order_code: orderCode,
             whatsapp_link: data.data?.whatsapp_link ?? '',
           }
@@ -137,9 +156,10 @@ export function useCheckout() {
     onError: (error: any) => {
       const errorMessage = error.response?.data?.message || 'Erro ao finalizar pedido'
       toast({
-        title: 'Erro!',
+        title: 'Não deu para finalizar o pedido',
         description: errorMessage,
         variant: 'destructive',
+        context: 'store',
       })
     },
   })
@@ -161,27 +181,9 @@ export function useCheckout() {
     })
   }
 
-  const getCheckoutData = () => {
-    const stored = localStorage.getItem('checkout-data')
-    if (stored) {
-      try {
-        return JSON.parse(stored)
-      } catch {
-        return null
-      }
-    }
-    return null
-  }
-
-  const clearCheckoutData = () => {
-    localStorage.removeItem('checkout-data')
-  }
-
   return {
     checkout: handleCheckout,
     isCheckoutLoading: checkoutMutation.isPending,
-    getCheckoutData,
-    clearCheckoutData,
     isAuthenticated,
   }
 }

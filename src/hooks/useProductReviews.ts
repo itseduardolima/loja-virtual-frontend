@@ -67,25 +67,16 @@ export function useProductReviews(
         queryKey: ['product-reviews', slug, productId],
       })
       onCreateSuccess?.()
-      toast({
-        title: 'Avaliação enviada!',
-        description: 'Sua avaliação foi publicada com sucesso.',
-        variant: 'success',
-      })
-    },
-    onError: (error: any) => {
-      const message =
-        error.response?.data?.message ||
-        'Não foi possível enviar sua avaliação. Tente novamente.'
-      toast({
-        title: 'Erro!',
-        description: message,
-        variant: 'destructive',
-      })
     },
   })
 
+  const createError = createReviewMutation.isError
+    ? (createReviewMutation.error as any)?.response?.data?.message ||
+      'Não foi possível enviar sua avaliação. Tente novamente.'
+    : null
+
   const createReview = (payload: CreateReviewRequest) => {
+    createReviewMutation.reset()
     createReviewMutation.mutate(payload)
   }
 
@@ -129,20 +120,16 @@ export function useProductReviews(
       queryClient.invalidateQueries({
         queryKey: ['product-reviews', slug, productId],
       })
-      toast({
-        title: 'Avaliação atualizada!',
-        description: 'Sua avaliação foi atualizada com sucesso.',
-        variant: 'success',
-      })
     },
     onError: (error: any) => {
       const message =
         error.response?.data?.message ||
         'Não foi possível atualizar sua avaliação. Tente novamente.'
       toast({
-        title: 'Erro!',
+        title: 'Não deu para atualizar a avaliação',
         description: message,
         variant: 'destructive',
+        context: 'store',
       })
     },
   })
@@ -163,5 +150,7 @@ export function useProductReviews(
     updateReview,
     isCreating: createReviewMutation.isPending,
     isUpdating: updateReviewMutation.isPending,
+    createError,
+    resetCreateError: createReviewMutation.reset,
   }
 }

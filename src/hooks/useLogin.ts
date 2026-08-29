@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/AuthContext'
 import { LoginRequest } from '@/types/auth'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
-import { useCheckout } from './useCheckout'
 import { fetchMyStore, myStoreQueryKey } from './useStore'
 
 // Erros de login propagam para a página exibir no banner inline (design Login.html).
@@ -13,7 +12,6 @@ export function useLogin() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const queryClient = useQueryClient()
-  const { getCheckoutData, clearCheckoutData } = useCheckout()
 
   const isRedirectAllowed = (path: string) => {
     const normalized = path.replace(/^https?:\/\/[^/]+/, '').split('?')[0] || '/'
@@ -47,20 +45,9 @@ export function useLogin() {
       return
     }
 
-    // Cliente: checkout > ?redirect > última loja visitada > /
-    const checkoutData = getCheckoutData()
-    if (checkoutData) {
-      clearCheckoutData()
-      if (checkoutData.redirectUrl && isRedirectAllowed(checkoutData.redirectUrl)) {
-        router.push(checkoutData.redirectUrl)
-        return
-      }
-      if (checkoutData.storeSlug) {
-        router.push(`/loja/${checkoutData.storeSlug}/produtos`)
-        return
-      }
-    }
-
+    // Cliente: ?redirect > última loja visitada > /
+    // (o antigo ramo 'checkout-data' era código morto — nada gravava essa chave;
+    // ?redirect + last-store já cobrem o retorno pós-login — bug B10.)
     const redirect = searchParams.get('redirect')
     if (redirect && isRedirectAllowed(redirect)) {
       router.push(redirect)

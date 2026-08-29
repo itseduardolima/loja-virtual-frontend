@@ -57,6 +57,7 @@ export function useAddresses(enabled = true) {
         title: 'Erro ao salvar endereço',
         description: error.response?.data?.message || 'Tente novamente',
         variant: 'destructive',
+        context: 'store',
       })
     },
   })
@@ -75,6 +76,7 @@ export function useAddresses(enabled = true) {
         title: 'Erro ao atualizar endereço',
         description: error.response?.data?.message || 'Tente novamente',
         variant: 'destructive',
+        context: 'store',
       })
     },
   })
@@ -93,6 +95,7 @@ export function useAddresses(enabled = true) {
         title: 'Erro ao remover endereço',
         description: error.response?.data?.message || 'Tente novamente',
         variant: 'destructive',
+        context: 'store',
       })
     },
   })

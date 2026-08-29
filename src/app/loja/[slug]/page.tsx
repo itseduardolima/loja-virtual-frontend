@@ -49,6 +49,7 @@ export default function StoreHomePage() {
     quickAdd,
     toggleWishlist,
     isWished,
+    showWishlist,
     handleSearchSubmit,
     jumpTo,
     refetch,
@@ -83,6 +84,7 @@ export default function StoreHomePage() {
     onQuickAdd: quickAdd,
     onToggleWishlist: toggleWishlist,
     isWished,
+    showWishlist,
   }
 
   return (
@@ -97,6 +99,10 @@ export default function StoreHomePage() {
         searchValue={search}
         onSearchChange={setSearch}
         onSearchSubmit={handleSearchSubmit}
+        onSelectCategory={(cat) => {
+          setActiveCategory(cat)
+          jumpTo('colecao')
+        }}
         onCartClick={() => setIsCartOpen(true)}
         categories={categoryNames}
       />

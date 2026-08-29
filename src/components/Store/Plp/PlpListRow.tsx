@@ -18,13 +18,21 @@ interface PlpListRowProps {
   onOpen: () => void
   onQuickAdd: () => void
   onToggleWishlist: () => void
+  showWishlist?: boolean
 }
 
 const focusRing =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2'
 
 /** Card horizontal da view em lista da PLP. */
-export function PlpListRow({ product, wished, onOpen, onQuickAdd, onToggleWishlist }: PlpListRowProps) {
+export function PlpListRow({
+  product,
+  wished,
+  onOpen,
+  onQuickAdd,
+  onToggleWishlist,
+  showWishlist = true,
+}: PlpListRowProps) {
   const imageUrl = getProductImageUrl(product)
   const price = getProductPrice(product)
   const hasPromo = !!(
@@ -106,7 +114,7 @@ export function PlpListRow({ product, wished, onOpen, onQuickAdd, onToggleWishli
         {/* preço + ações — abaixo do conteúdo no mobile, coluna própria no desktop */}
         <div className="mt-3 flex items-center justify-between gap-3 sm:hidden">
           <PriceBlock price={price} hasPromo={hasPromo} original={product.price} />
-          <WishlistButton wished={wished} onToggle={onToggleWishlist} />
+          {showWishlist && <WishlistButton wished={wished} onToggle={onToggleWishlist} />}
         </div>
       </div>
 
@@ -115,9 +123,11 @@ export function PlpListRow({ product, wished, onOpen, onQuickAdd, onToggleWishli
           <PriceBlock price={price} hasPromo={hasPromo} original={product.price} />
         </div>
         <div className="ml-auto flex items-center gap-2 sm:ml-0">
-          <div className="hidden sm:block">
-            <WishlistButton wished={wished} onToggle={onToggleWishlist} />
-          </div>
+          {showWishlist && (
+            <div className="hidden sm:block">
+              <WishlistButton wished={wished} onToggle={onToggleWishlist} />
+            </div>
+          )}
           {!soldOut && (
             <button
               type="button"

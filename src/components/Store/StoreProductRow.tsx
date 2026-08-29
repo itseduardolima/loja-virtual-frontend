@@ -17,6 +17,7 @@ interface StoreProductRowProps {
   onQuickAdd: (product: Product) => void
   onToggleWishlist: (product: Product) => void
   isWished: (productId: number) => boolean
+  showWishlist?: boolean
 }
 
 /**
@@ -40,6 +41,7 @@ export function StoreProductRow({
   onQuickAdd,
   onToggleWishlist,
   isWished,
+  showWishlist = true,
 }: StoreProductRowProps) {
   const trackRef = useRef<HTMLDivElement>(null)
 
@@ -96,6 +98,7 @@ export function StoreProductRow({
                 onQuickAdd={() => onQuickAdd(product)}
                 onToggleWishlist={() => onToggleWishlist(product)}
                 wished={isWished(product.id)}
+                showWishlist={showWishlist}
               />
             </div>
           ))}

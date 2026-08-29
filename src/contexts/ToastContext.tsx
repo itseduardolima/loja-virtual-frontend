@@ -8,6 +8,7 @@ export interface Toast {
   description?: string
   variant?: 'default' | 'destructive' | 'success' | 'warning'
   duration?: number
+  context?: 'store'
 }
 
 interface ToastContextType {
@@ -24,20 +25,22 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined)
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([])
 
-  const toast = useCallback(({ 
-    title, 
-    description, 
-    variant = 'default', 
-    duration = 5000 
+  const toast = useCallback(({
+    title,
+    description,
+    variant = 'default',
+    duration,
+    context,
   }: Omit<Toast, 'id'>) => {
     const id = Math.random().toString(36).substr(2, 9)
-    
-    setToasts((prev) => [...prev, { id, title, description, variant, duration }])
-    
+    const resolvedDuration = duration ?? (variant === 'destructive' ? 6500 : 5000)
+
+    setToasts((prev) => [...prev, { id, title, description, variant, duration: resolvedDuration, context }])
+
     // Auto remove toast after duration
     setTimeout(() => {
       setToasts((prev) => prev.filter((toast) => toast.id !== id))
-    }, duration)
+    }, resolvedDuration)
   }, [])
 
   const dismiss = useCallback((id: string) => {

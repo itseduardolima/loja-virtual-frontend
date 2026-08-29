@@ -55,6 +55,10 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
+        // Marca _retry antes de reexecutar: sem isto, uma request reenfileirada
+        // que tomasse 401 de novo (ex.: refresh ok mas endpoint nega por permissao)
+        // dispararia OUTRO ciclo de refresh (bug S4).
+        originalRequest._retry = true
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject })
         }).then(() => api(originalRequest))

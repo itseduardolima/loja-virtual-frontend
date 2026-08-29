@@ -10,6 +10,7 @@ import {
   MoreHorizontal,
   PenLine,
   MessageSquarePlus,
+  AlertOctagon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -22,7 +23,9 @@ import {
 import { useProductReviews } from '@/hooks/useProductReviews'
 import { useAuth } from '@/contexts/AuthContext'
 import { ProductReview } from '@/types/review'
+import { StoreInfo } from '@/types/store'
 import { buildImageUrl, cn } from '@/lib/utils'
+import { storeAccentStyle } from '@/lib/storefront'
 import { Stars } from '@/components/Store/Product'
 
 function formatReviewDate(date: Date): string {
@@ -46,6 +49,7 @@ interface ProductReviewsProps {
   slug: string
   productId: string
   productName: string
+  storeInfo?: StoreInfo | null
 }
 
 interface ReviewItemProps {
@@ -316,12 +320,13 @@ function ReviewItem({ review, currentUserId, onEdit, isUpdating }: ReviewItemPro
   )
 }
 
-export function ProductReviews({ slug, productId }: ProductReviewsProps) {
+export function ProductReviews({ slug, productId, storeInfo }: ProductReviewsProps) {
   const { isAuthenticated, user, loginWithGoogle } = useAuth()
   const [page, setPage] = useState(1)
   const [sort, setSort] = useState<'latest' | 'highest' | 'images'>('latest')
   const [allReviews, setAllReviews] = useState<ProductReview[]>([])
   const [writeReviewOpen, setWriteReviewOpen] = useState(false)
+  const [justSubmitted, setJustSubmitted] = useState(false)
 
   const {
     reviews,
@@ -332,10 +337,22 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
     updateReview,
     isCreating,
     isUpdating,
+    createError,
+    resetCreateError,
   } = useProductReviews(slug, productId, {
     page,
     sort,
-    onCreateSuccess: () => setPage(1),
+    onCreateSuccess: () => {
+      setPage(1)
+      setJustSubmitted(true)
+      setRating(0)
+      setComment('')
+      setSelectedImages([])
+      setTimeout(() => {
+        setWriteReviewOpen(false)
+        setJustSubmitted(false)
+      }, 1800)
+    },
   })
 
   const prevProductKey = useRef(`${slug}-${productId}`)
@@ -395,11 +412,6 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
       comment: comment.trim() || undefined,
       images: selectedImages.length > 0 ? selectedImages : undefined,
     })
-
-    setRating(0)
-    setComment('')
-    setSelectedImages([])
-    setWriteReviewOpen(false)
   }
 
   const changeSort = (value: 'latest' | 'highest' | 'images') => {
@@ -429,12 +441,34 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
       </div>
 
       {/* dialog */}
-      <Dialog open={writeReviewOpen} onOpenChange={setWriteReviewOpen}>
-        <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+      <Dialog
+        open={writeReviewOpen}
+        onOpenChange={(open) => {
+          setWriteReviewOpen(open)
+          resetCreateError()
+          if (!open) setJustSubmitted(false)
+        }}
+      >
+        <DialogContent
+          className="w-[calc(100%-32px)] max-h-[90vh] max-w-lg overflow-y-auto rounded-2xl"
+          style={storeAccentStyle(storeInfo)}
+        >
           <DialogHeader>
             <DialogTitle>Escrever avaliação</DialogTitle>
           </DialogHeader>
-          {isAuthenticated ? (
+          {justSubmitted ? (
+            <div className="flex flex-col items-center gap-3 py-8 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-nxs/10">
+                <Check size={26} className="text-nxs" strokeWidth={2.6} />
+              </div>
+              <div className="font-integral text-[17px] font-bold uppercase tracking-[-0.01em] text-nxi1">
+                Avaliação publicada
+              </div>
+              <p className="max-w-[320px] text-[13px] leading-relaxed text-nxi2">
+                Já está visível para outros clientes na página do produto. Obrigado por avaliar!
+              </p>
+            </div>
+          ) : isAuthenticated ? (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="mb-2 block font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-nxi3">
@@ -518,6 +552,14 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
                   )}
                 </div>
               </div>
+              {createError && (
+                <div className="flex items-start gap-2.5 rounded-2xl border border-nxd/20 bg-nxd/[0.06] p-3.5">
+                  <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-nxd/10 text-nxd">
+                    <AlertOctagon size={15} strokeWidth={2.2} />
+                  </span>
+                  <p className="text-[12.5px] leading-[1.45] text-nxi2">{createError}</p>
+                </div>
+              )}
               <button
                 type="submit"
                 disabled={rating < 1 || isCreating}

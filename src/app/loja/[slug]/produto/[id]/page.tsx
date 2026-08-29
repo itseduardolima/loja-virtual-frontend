@@ -3,10 +3,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { notFound } from 'next/navigation'
 import { useParams, useRouter, usePathname } from 'next/navigation'
-import { Heart, Share2, Link as LinkIcon, MessageCircle } from 'lucide-react'
+import { Heart, Share2, Link as LinkIcon, MessageCircle, Check } from 'lucide-react'
 import { CartSidebar, ErrorState, StoreHeader, ProductReviews } from '@/components'
 import { useProductDetailPage } from './useProductDetailPage'
-import { useToastContext } from '@/contexts/ToastContext'
 import { AddToCartAnimation } from '@/components/Animation'
 import { RelatedProducts, ProductQuestions } from '@/components/Product'
 import { AnnouncementBar, WhatsAppChatWidget, StoreNewFooter } from '@/components/Store'
@@ -44,9 +43,8 @@ export default function ProductDetailPage() {
   const [searchValue, setSearchValue] = useState('')
   const [barVisible, setBarVisible] = useState(true)
   const [shareOpen, setShareOpen] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
   const shareRef = useRef<HTMLDivElement>(null)
-
-  const { success: showSuccess } = useToastContext()
 
   const {
     product,
@@ -76,11 +74,15 @@ export default function ProductDetailPage() {
     isInWishlist,
     toggleWishlist,
     wishlistLoading,
+    showWishlist,
   } = useProductDetailPage(slug, productId)
 
   // fecha o dropdown de compartilhar ao clicar fora
   useEffect(() => {
-    if (!shareOpen) return
+    if (!shareOpen) {
+      setLinkCopied(false)
+      return
+    }
     const onClick = (e: MouseEvent) => {
       if (shareRef.current && !shareRef.current.contains(e.target as Node)) setShareOpen(false)
     }
@@ -187,10 +189,13 @@ export default function ProductDetailPage() {
     : `${process.env.NEXT_PUBLIC_APP_URL}${pathname}`
 
   const handleCopyLink = async () => {
-    setShareOpen(false)
     try {
       await navigator.clipboard.writeText(productUrl)
-      showSuccess('Link copiado!', 'Compartilhar')
+      setLinkCopied(true)
+      setTimeout(() => {
+        setLinkCopied(false)
+        setShareOpen(false)
+      }, 1800)
     } catch {
       // clipboard indisponível — ignora
     }
@@ -257,7 +262,7 @@ export default function ProductDetailPage() {
             <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-store-ink">
               {product.category?.name}
             </span>
-            <h1 className="mt-1.5 break-words font-integral text-[24px] font-bold uppercase leading-[1.06] tracking-[-0.01em] text-nxi1 sm:text-[28px]">
+            <h1 className="mt-1.5 break-words text-[32px] font-bold text-nxi1 sm:text-[28px]">
               {product.name}
             </h1>
 
@@ -329,34 +334,45 @@ export default function ProductDetailPage() {
 
             {/* favoritar + compartilhar */}
             <div className="mt-3 flex items-center gap-2">
-              <button
-                onClick={() => toggleWishlist(product.id)}
-                disabled={wishlistLoading}
-                className={cn(
-                  'flex h-10 flex-1 items-center justify-center gap-2 rounded-full border text-[12.5px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2 disabled:opacity-60',
-                  favorited
-                    ? 'border-nxd/30 bg-nxd/[0.06] text-nxd'
-                    : 'border-nxborder text-nxi2 hover:border-nxi3',
-                )}
-              >
-                <Heart size={15} fill={favorited ? 'currentColor' : 'none'} />
-                {favorited ? 'Favoritado' : 'Favoritar'}
-              </button>
-              <div className="relative" ref={shareRef}>
+              {showWishlist && (
+                <button
+                  onClick={() => toggleWishlist(product.id)}
+                  disabled={wishlistLoading}
+                  className={cn(
+                    'flex h-10 flex-1 items-center justify-center gap-2 rounded-full border text-[12.5px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2 disabled:opacity-60',
+                    favorited
+                      ? 'border-nxd/30 bg-nxd/[0.06] text-nxd'
+                      : 'border-nxborder text-nxi2 hover:border-nxi3',
+                  )}
+                >
+                  <Heart size={15} fill={favorited ? 'currentColor' : 'none'} />
+                  {favorited ? 'Favoritado' : 'Favoritar'}
+                </button>
+              )}
+              <div className={cn('relative', !showWishlist && 'flex-1')} ref={shareRef}>
                 <button
                   onClick={() => setShareOpen((o) => !o)}
-                  className="flex h-10 items-center justify-center gap-2 rounded-full border border-nxborder px-4 text-[12.5px] font-semibold text-nxi2 transition-colors hover:border-nxi3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2"
+                  className={cn(
+                    'flex h-10 items-center justify-center gap-2 rounded-full border border-nxborder text-[12.5px] font-semibold text-nxi2 transition-colors hover:border-nxi3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2',
+                    showWishlist ? 'px-4' : 'w-full',
+                  )}
                 >
                   <Share2 size={15} /> Compartilhar
                 </button>
                 {shareOpen && (
                   <div className="absolute right-0 z-20 mt-2 w-44 rounded-xl border border-nxborder bg-white p-1.5 shadow-xl">
-                    <button
-                      onClick={handleCopyLink}
-                      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] font-medium text-nxi2 hover:bg-nxbg"
-                    >
-                      <LinkIcon size={14} /> Copiar link
-                    </button>
+                    {linkCopied ? (
+                      <div className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12.5px] font-bold text-nxs">
+                        <Check size={14} strokeWidth={2.6} /> Copiado!
+                      </div>
+                    ) : (
+                      <button
+                        onClick={handleCopyLink}
+                        className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] font-medium text-nxi2 hover:bg-nxbg"
+                      >
+                        <LinkIcon size={14} /> Copiar link
+                      </button>
+                    )}
                     <button
                       onClick={handleWhatsAppShare}
                       className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] font-medium text-nxi2 hover:bg-nxbg"
@@ -378,7 +394,7 @@ export default function ProductDetailPage() {
         <ProductSpecsSection specifications={product.specifications} />
 
         <section id="avaliacoes" className="border-t border-nxborder">
-          <ProductReviews slug={slug} productId={productId} productName={product.name} />
+          <ProductReviews slug={slug} productId={productId} productName={product.name} storeInfo={storeInfo} />
         </section>
 
         <section id="perguntas" className="border-t border-nxborder">

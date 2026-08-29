@@ -89,6 +89,7 @@ export default function StoreProductsPage() {
                 view={vm.view}
                 loading={vm.productsLoading}
                 isWished={vm.isWished}
+                showWishlist={vm.showWishlist}
                 onOpen={vm.openProduct}
                 onQuickAdd={vm.quickAdd}
                 onToggleWishlist={vm.toggleWishlistProduct}

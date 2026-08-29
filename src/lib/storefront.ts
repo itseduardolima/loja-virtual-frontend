@@ -1,8 +1,15 @@
 import type { CSSProperties } from 'react'
 import type { Product } from '@/types/product'
 import type { StoreInfo } from '@/types/store'
+import type { User } from '@/types/auth'
 export { formatBRL } from '@/lib/utils'
 import { formatBRL } from '@/lib/utils'
+
+/** O usuário logado é o vendedor dono desta loja (visitando a própria vitrine)? */
+export function isOwnStore(user: User | null | undefined, store?: StoreInfo | null): boolean {
+  if (!user || !store?.user_id) return false
+  return user.profile === 'Vendedor' && user.id === store.user_id
+}
 
 // ─── Conteúdo da vitrine: defaults derivados dos dados reais da loja ─────────
 // Os campos hero_*/announcement_text/campaign_* do STORE, quando preenchidos

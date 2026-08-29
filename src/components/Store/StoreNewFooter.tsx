@@ -140,10 +140,10 @@ export function StoreNewFooter({ storeInfo, slug }: StoreNewFooterProps) {
 
       {/* main grid */}
       <div className="relative mx-auto max-w-store px-4 py-12 md:px-10 md:py-14">
-        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-12">
+        <div className="grid grid-cols-1 gap-y-10 md:grid-cols-12 md:gap-x-6">
 
           {/* Col 1 — Identidade (md:4) */}
-          <div className="col-span-2 md:col-span-4">
+          <div className="md:col-span-4">
             <div className="flex items-center gap-2.5">
               {storeInfo.logo ? (
                 <Image
@@ -264,7 +264,7 @@ export function StoreNewFooter({ storeInfo, slug }: StoreNewFooterProps) {
           )}
 
           {/* Col 4 — Atendimento (md:3) */}
-          <div className="col-span-2 md:col-span-3">
+          <div className="md:col-span-3">
             <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.14em] text-white/40">
               Atendimento
             </p>
@@ -335,7 +335,7 @@ export function StoreNewFooter({ storeInfo, slug }: StoreNewFooterProps) {
                   <span
                     key={m}
                     title={m}
-                    className="flex h-7 items-center gap-1.5 rounded-md bg-white/[0.06] px-2 text-[11px] font-medium text-white/55 ring-1 ring-inset ring-white/10"
+                    className="flex h-7 items-center gap-1.5 rounded-full bg-white/[0.06] px-2 text-[10px] font-medium text-white/55 ring-1 ring-inset ring-white/10"
                   >
                     {getPaymentIcon(m)}
                     <span className="hidden sm:inline">{paymentMethodLabel(m)}</span>

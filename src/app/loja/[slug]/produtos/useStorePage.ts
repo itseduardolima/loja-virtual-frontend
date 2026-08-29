@@ -7,7 +7,8 @@ import { useNiches, useStoreFields } from '@/hooks/useNiches'
 import { useWishlist } from '@/hooks/useWishlist'
 import { useCart } from '@/hooks/useCart'
 import { useDebounce } from '@/hooks/useDebounce'
-import { formatBRL } from '@/lib/storefront'
+import { useAuth } from '@/contexts/AuthContext'
+import { formatBRL, isOwnStore } from '@/lib/storefront'
 import type { Product } from '@/types/product'
 import type { StoreCategory, CollectionSort } from '@/types/store'
 import type { NicheField } from '@/types/niche'
@@ -115,6 +116,8 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
   const { data: storeFieldsData } = useStoreFields(storeInfo?.id ?? null)
   const { isInWishlist, toggleWishlist } = useWishlist()
   const { addToCart } = useCart(storeInfo?.id)
+  const { user } = useAuth()
+  const showWishlist = !isOwnStore(user, storeInfo)
 
   const allStoreFields: NicheField[] = useMemo(() => storeFieldsData ?? [], [storeFieldsData])
   const storeNiches = useMemo(() => nichesData?.data ?? [], [nichesData])
@@ -489,6 +492,7 @@ export function useStorePage({ slug, initialCategoryId }: UseStorePageProps): Us
     quickAdd,
     toggleWishlistProduct,
     isWished: isInWishlist,
+    showWishlist,
     refetch: refetchStore,
   }
 }

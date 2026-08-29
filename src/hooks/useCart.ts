@@ -5,6 +5,12 @@ import { api } from '@/lib/api'
 import { useToastContext } from '@/contexts/ToastContext'
 import { CartItem, CartResponse, AddToCartResponse } from '@/types/cart'
 
+// Promessas de criação de sessão em andamento, por loja. Deduplica chamadas
+// concorrentes de ensureSession: sem isto, dois "adicionar ao carrinho" disparados
+// em paralelo (sem sessão ainda) criavam DUAS sessões e o item da primeira ficava
+// órfão, sumindo da sacola (bug B3).
+const sessionCreationPromises = new Map<number, Promise<string>>()
+
 export function useCart(storeId?: number) {
   const { toast } = useToastContext()
   const queryClient = useQueryClient()
@@ -37,12 +43,24 @@ export function useCart(storeId?: number) {
     const stored = localStorage.getItem(`cart-session-${finalStoreId}`)
     if (stored) return stored
 
-    const response = await api.post('/cart/session', {}, {
-      params: { store_id: finalStoreId }
+    // Se já há uma criação em andamento para esta loja, reaproveita a mesma
+    // promessa em vez de criar outra sessão (dedupe da race — bug B3).
+    const inFlight = sessionCreationPromises.get(finalStoreId)
+    if (inFlight) return inFlight
+
+    const promise = (async () => {
+      const response = await api.post('/cart/session', {}, {
+        params: { store_id: finalStoreId }
+      })
+      const newSessionId = response.data.data.session_id
+      localStorage.setItem(`cart-session-${finalStoreId}`, newSessionId)
+      return newSessionId
+    })().finally(() => {
+      sessionCreationPromises.delete(finalStoreId)
     })
-    const newSessionId = response.data.data.session_id
-    localStorage.setItem(`cart-session-${finalStoreId}`, newSessionId)
-    return newSessionId
+
+    sessionCreationPromises.set(finalStoreId, promise)
+    return promise
   }
 
   // Buscar itens do carrinho
@@ -104,9 +122,10 @@ export function useCart(storeId?: number) {
       const errorMessage =
         axiosError.response?.data?.message || error.message || 'Erro ao adicionar produto ao carrinho'
       toast({
-        title: 'Erro!',
+        title: 'Não deu para adicionar',
         description: errorMessage,
-        variant: 'destructive'
+        variant: 'destructive',
+        context: 'store'
       })
     }
   })
@@ -132,9 +151,10 @@ export function useCart(storeId?: number) {
       const errorMessage =
         axiosError.response?.data?.message || error.message || 'Erro ao remover produto do carrinho'
       toast({
-        title: 'Erro!',
+        title: 'Não deu para remover',
         description: errorMessage,
-        variant: 'destructive'
+        variant: 'destructive',
+        context: 'store'
       })
     }
   })
@@ -174,9 +194,10 @@ export function useCart(storeId?: number) {
       const errorMessage =
         axiosError.response?.data?.message || error.message || 'Erro ao atualizar item do carrinho'
       toast({
-        title: 'Erro!',
+        title: 'Não deu para atualizar',
         description: errorMessage,
-        variant: 'destructive'
+        variant: 'destructive',
+        context: 'store'
       })
     }
   })
@@ -202,9 +223,10 @@ export function useCart(storeId?: number) {
       const errorMessage =
         axiosError.response?.data?.message || error.message || 'Erro ao limpar carrinho'
       toast({
-        title: 'Erro!',
+        title: 'Não deu para limpar o carrinho',
         description: errorMessage,
-        variant: 'destructive'
+        variant: 'destructive',
+        context: 'store'
       })
     }
   })
