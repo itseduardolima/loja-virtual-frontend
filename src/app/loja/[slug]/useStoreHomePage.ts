@@ -8,6 +8,8 @@ import { useStoreProducts } from '@/hooks/useStoreProducts'
 import { useWishlist } from '@/hooks/useWishlist'
 import { useCart } from '@/hooks/useCart'
 import { useDebounce } from '@/hooks/useDebounce'
+import { useAuth } from '@/contexts/AuthContext'
+import { isOwnStore } from '@/lib/storefront'
 import { Product } from '@/types/product'
 import type { StoreCategory, StoreInfo, CollectionSort, CollectionView } from '@/types/store'
 
@@ -48,6 +50,7 @@ export interface UseStoreHomePageReturn {
   quickAdd: (product: Product) => void
   toggleWishlist: (product: Product) => void
   isWished: (productId: number) => boolean
+  showWishlist: boolean
   handleSearchSubmit: (value: string) => void
   jumpTo: (id: string) => void
   refetch: () => void
@@ -66,6 +69,8 @@ export function useStoreHomePage(slug: string): UseStoreHomePageReturn {
   const { categories: allCategories, loading: categoriesLoading } = useStoreCategories(slug)
   const { isInWishlist, toggleWishlist: toggleWishlistId } = useWishlist()
   const { addToCart } = useCart(storeInfo?.id)
+  const { user } = useAuth()
+  const showWishlist = !isOwnStore(user, storeInfo)
 
   const sortParams = SORT_TO_PARAMS[sort]
   const categoryId = useMemo(() => {
@@ -183,6 +188,7 @@ export function useStoreHomePage(slug: string): UseStoreHomePageReturn {
     quickAdd,
     toggleWishlist,
     isWished: isInWishlist,
+    showWishlist,
     handleSearchSubmit,
     jumpTo,
     refetch: refetchStore,

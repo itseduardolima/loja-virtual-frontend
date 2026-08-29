@@ -49,6 +49,7 @@ export default function StoreHomePage() {
     quickAdd,
     toggleWishlist,
     isWished,
+    showWishlist,
     handleSearchSubmit,
     jumpTo,
     refetch,
@@ -83,6 +84,7 @@ export default function StoreHomePage() {
     onQuickAdd: quickAdd,
     onToggleWishlist: toggleWishlist,
     isWished,
+    showWishlist,
   }
 
   return (

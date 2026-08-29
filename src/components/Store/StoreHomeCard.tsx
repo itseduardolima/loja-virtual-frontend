@@ -23,6 +23,7 @@ interface StoreHomeCardProps {
   onQuickAdd: () => void
   onToggleWishlist: () => void
   wished: boolean
+  showWishlist?: boolean
 }
 
 /** Produto tem variação (cor/tamanho) que exige escolha antes de comprar? */
@@ -47,6 +48,7 @@ export function StoreHomeCard({
   onQuickAdd,
   onToggleWishlist,
   wished,
+  showWishlist = true,
 }: StoreHomeCardProps) {
   const imageUrl = getProductImageUrl(product)
   const price = getProductPrice(product)
@@ -142,7 +144,7 @@ export function StoreHomeCard({
         </div>
 
         {badge && <span className="absolute left-4 top-4 z-10">{badge}</span>}
-        <span className="absolute right-4 top-4 z-10">{wishlistButton}</span>
+        {showWishlist && <span className="absolute right-4 top-4 z-10">{wishlistButton}</span>}
 
         <div className="relative z-10 mt-auto w-full bg-gradient-to-t from-coal/85 via-coal/25 to-transparent p-6 pt-16 text-white">
           <span className="block font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-white/75">
@@ -198,7 +200,7 @@ export function StoreHomeCard({
         </div>
 
         {badge && <span className="absolute left-3 top-3">{badge}</span>}
-        <span className="absolute right-3 top-3">{wishlistButton}</span>
+        {showWishlist && <span className="absolute right-3 top-3">{wishlistButton}</span>}
 
         {/* quick add — desliza de baixo no hover/foco */}
         {!soldOut && (

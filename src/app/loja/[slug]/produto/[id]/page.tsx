@@ -74,6 +74,7 @@ export default function ProductDetailPage() {
     isInWishlist,
     toggleWishlist,
     wishlistLoading,
+    showWishlist,
   } = useProductDetailPage(slug, productId)
 
   // fecha o dropdown de compartilhar ao clicar fora
@@ -333,23 +334,28 @@ export default function ProductDetailPage() {
 
             {/* favoritar + compartilhar */}
             <div className="mt-3 flex items-center gap-2">
-              <button
-                onClick={() => toggleWishlist(product.id)}
-                disabled={wishlistLoading}
-                className={cn(
-                  'flex h-10 flex-1 items-center justify-center gap-2 rounded-full border text-[12.5px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2 disabled:opacity-60',
-                  favorited
-                    ? 'border-nxd/30 bg-nxd/[0.06] text-nxd'
-                    : 'border-nxborder text-nxi2 hover:border-nxi3',
-                )}
-              >
-                <Heart size={15} fill={favorited ? 'currentColor' : 'none'} />
-                {favorited ? 'Favoritado' : 'Favoritar'}
-              </button>
-              <div className="relative" ref={shareRef}>
+              {showWishlist && (
+                <button
+                  onClick={() => toggleWishlist(product.id)}
+                  disabled={wishlistLoading}
+                  className={cn(
+                    'flex h-10 flex-1 items-center justify-center gap-2 rounded-full border text-[12.5px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2 disabled:opacity-60',
+                    favorited
+                      ? 'border-nxd/30 bg-nxd/[0.06] text-nxd'
+                      : 'border-nxborder text-nxi2 hover:border-nxi3',
+                  )}
+                >
+                  <Heart size={15} fill={favorited ? 'currentColor' : 'none'} />
+                  {favorited ? 'Favoritado' : 'Favoritar'}
+                </button>
+              )}
+              <div className={cn('relative', !showWishlist && 'flex-1')} ref={shareRef}>
                 <button
                   onClick={() => setShareOpen((o) => !o)}
-                  className="flex h-10 items-center justify-center gap-2 rounded-full border border-nxborder px-4 text-[12.5px] font-semibold text-nxi2 transition-colors hover:border-nxi3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2"
+                  className={cn(
+                    'flex h-10 items-center justify-center gap-2 rounded-full border border-nxborder text-[12.5px] font-semibold text-nxi2 transition-colors hover:border-nxi3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store focus-visible:ring-offset-2',
+                    showWishlist ? 'px-4' : 'w-full',
+                  )}
                 >
                   <Share2 size={15} /> Compartilhar
                 </button>

@@ -39,6 +39,7 @@ interface StoreCollectionSectionProps {
   onQuickAdd: (product: Product) => void
   onToggleWishlist: (product: Product) => void
   isWished: (productId: number) => boolean
+  showWishlist?: boolean
   onClearFilters: () => void
   slug: string
 }
@@ -116,6 +117,7 @@ export function StoreCollectionSection({
   onQuickAdd,
   onToggleWishlist,
   isWished,
+  showWishlist = true,
   onClearFilters,
   slug,
 }: StoreCollectionSectionProps) {
@@ -130,6 +132,7 @@ export function StoreCollectionSection({
       onQuickAdd={() => onQuickAdd(product)}
       onToggleWishlist={() => onToggleWishlist(product)}
       wished={isWished(product.id)}
+      showWishlist={showWishlist}
     />
   )
 

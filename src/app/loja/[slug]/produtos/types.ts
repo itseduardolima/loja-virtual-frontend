@@ -58,5 +58,6 @@ export interface UseStorePageReturn {
   quickAdd: (product: Product) => void
   toggleWishlistProduct: (product: Product) => void
   isWished: (productId: number) => boolean
+  showWishlist: boolean
   refetch: () => void
 }

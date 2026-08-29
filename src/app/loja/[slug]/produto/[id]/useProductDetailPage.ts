@@ -7,6 +7,8 @@ import { useProductReviews } from '@/hooks/useProductReviews'
 import { useProductQuestionsCount } from '@/hooks/useProductQuestions'
 import { useWishlist } from '@/hooks/useWishlist'
 import { useStoreProduct } from '@/hooks/useStoreProduct'
+import { useAuth } from '@/contexts/AuthContext'
+import { isOwnStore } from '@/lib/storefront'
 
 interface AnimationData {
   imageUrl: string
@@ -177,6 +179,8 @@ export function useProductDetailPage(slug: string, productId: string) {
 
   // Wishlist
   const { isInWishlist, toggleWishlist, isLoading: wishlistLoading } = useWishlist()
+  const { user } = useAuth()
+  const showWishlist = !isOwnStore(user, storeInfo)
 
   const productNotFound =
     !isLoading && !!(error && (error as AxiosError)?.response?.status === 404)
@@ -214,5 +218,6 @@ export function useProductDetailPage(slug: string, productId: string) {
     isInWishlist,
     toggleWishlist,
     wishlistLoading,
+    showWishlist,
   }
 }

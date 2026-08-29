@@ -14,6 +14,7 @@ interface PlpProductGridProps {
   onOpen: (p: Product) => void
   onQuickAdd: (p: Product) => void
   onToggleWishlist: (p: Product) => void
+  showWishlist?: boolean
 }
 
 /** Grid (normal/denso), lista ou skeleton de carregamento da PLP. */
@@ -25,6 +26,7 @@ export function PlpProductGrid({
   onOpen,
   onQuickAdd,
   onToggleWishlist,
+  showWishlist = true,
 }: PlpProductGridProps) {
   if (loading) {
     if (view === 'list') {
@@ -87,6 +89,7 @@ export function PlpProductGrid({
               onOpen={() => onOpen(p)}
               onQuickAdd={() => onQuickAdd(p)}
               onToggleWishlist={() => onToggleWishlist(p)}
+              showWishlist={showWishlist}
             />
           </div>
         ))}
@@ -117,6 +120,7 @@ export function PlpProductGrid({
             onQuickAdd={() => onQuickAdd(p)}
             onToggleWishlist={() => onToggleWishlist(p)}
             wished={isWished(p.id)}
+            showWishlist={showWishlist}
           />
         </div>
       ))}
