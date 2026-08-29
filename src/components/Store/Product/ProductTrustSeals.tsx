@@ -16,9 +16,9 @@ export function ProductPaymentLine({ storeInfo }: StoreInfoProps) {
   if (methods.length === 0) return null
 
   return (
-    <p className="mt-2 text-[12.5px] text-nxi2">
+    <p className="mt-2 text-xs text-nxi2">
       <span className="font-bold text-store-ink">{methods.join(' · ')}</span>
-      {storeInfo?.whatsapp ? ' — combinado no WhatsApp' : null}
+      
     </p>
   )
 }

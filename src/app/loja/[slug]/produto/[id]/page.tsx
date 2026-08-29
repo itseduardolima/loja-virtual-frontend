@@ -257,7 +257,7 @@ export default function ProductDetailPage() {
             <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-store-ink">
               {product.category?.name}
             </span>
-            <h1 className="mt-1.5 break-words font-integral text-[24px] font-bold uppercase leading-[1.06] tracking-[-0.01em] text-nxi1 sm:text-[28px]">
+            <h1 className="mt-1.5 break-words text-[32px] font-bold text-nxi1 sm:text-[28px]">
               {product.name}
             </h1>
 
