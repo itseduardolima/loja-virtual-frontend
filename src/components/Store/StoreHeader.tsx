@@ -55,6 +55,7 @@ interface StoreHeaderProps {
   searchValue?: string
   onSearchChange?: (value: string) => void
   onSearchSubmit?: (value: string) => void
+  onSelectCategory?: (name: string) => void
   onCartClick?: () => void
   scrolled?: boolean
   categories?: string[]
@@ -66,6 +67,7 @@ export function StoreHeader({
   searchValue,
   onSearchChange,
   onSearchSubmit,
+  onSelectCategory,
   onCartClick,
   scrolled = true,
   categories = [],
@@ -166,6 +168,12 @@ export function StoreHeader({
     onSearchChange?.(term)
     setSearchFocused(false)
     if (onSearchSubmit) onSearchSubmit(term)
+  }
+
+  const handleCategorySelect = (name: string) => {
+    setSearchFocused(false)
+    onSearchChange?.('')
+    onSelectCategory?.(name)
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -375,6 +383,7 @@ export function StoreHeader({
                 categories={categories}
                 onClose={() => setSearchFocused(false)}
                 onSelect={handleSelectSuggestion}
+                onSelectCategory={handleCategorySelect}
                 onClickProduct={handleSuggestionClick}
               />
             </div>

@@ -28,6 +28,7 @@ export interface StoreSearchDropdownProps {
   categories: string[]
   onClose: () => void
   onSelect: (q: string) => void
+  onSelectCategory: (name: string) => void
   onClickProduct: (p: Product) => void
 }
 
@@ -39,6 +40,7 @@ export function StoreSearchDropdown({
   categories,
   onClose,
   onSelect,
+  onSelectCategory,
   onClickProduct,
 }: StoreSearchDropdownProps) {
   const q = query.trim()
@@ -67,7 +69,7 @@ export function StoreSearchDropdown({
               </StoreEyebrow>
               <div className="flex flex-wrap gap-[6px]">
                 {filteredCats.map(cat => (
-                  <button key={cat} onClick={() => onSelect(cat)} className={CHIP_CLASS}>
+                  <button key={cat} onClick={() => onSelectCategory(cat)} className={CHIP_CLASS}>
                     {cat}
                   </button>
                 ))}
@@ -166,7 +168,7 @@ export function StoreSearchDropdown({
           {filteredCats.length > 0 && (
             <div className="mt-4 flex flex-wrap justify-center gap-[6px]">
               {filteredCats.map(cat => (
-                <button key={cat} onClick={() => onSelect(cat)} className={CHIP_CLASS}>
+                <button key={cat} onClick={() => onSelectCategory(cat)} className={CHIP_CLASS}>
                   {cat}
                 </button>
               ))}
