@@ -198,7 +198,16 @@ export function CartSidebar({ isOpen, onClose, storeId, storeSlug }: CartSidebar
                             </span>
                             <button
                               onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                              disabled={item.quantity >= item.product.stock || isUpdatingCartItem}
+                              // Estoque ausente/invalido: nao deixa exceder um limite
+                              // desconhecido no cliente (o backend valida no checkout).
+                              // Antes, quantity >= undefined era sempre false e o botao
+                              // nunca desabilitava (bug S14).
+                              disabled={
+                                item.quantity >=
+                                  (Number.isFinite(item.product.stock)
+                                    ? item.product.stock
+                                    : item.quantity) || isUpdatingCartItem
+                              }
                               className="flex h-8 w-8 items-center justify-center text-nxi1 disabled:opacity-30"
                               aria-label="Aumentar quantidade"
                             >
