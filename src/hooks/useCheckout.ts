@@ -161,27 +161,9 @@ export function useCheckout() {
     })
   }
 
-  const getCheckoutData = () => {
-    const stored = localStorage.getItem('checkout-data')
-    if (stored) {
-      try {
-        return JSON.parse(stored)
-      } catch {
-        return null
-      }
-    }
-    return null
-  }
-
-  const clearCheckoutData = () => {
-    localStorage.removeItem('checkout-data')
-  }
-
   return {
     checkout: handleCheckout,
     isCheckoutLoading: checkoutMutation.isPending,
-    getCheckoutData,
-    clearCheckoutData,
     isAuthenticated,
   }
 }
