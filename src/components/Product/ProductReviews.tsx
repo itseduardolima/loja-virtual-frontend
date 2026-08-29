@@ -10,6 +10,7 @@ import {
   MoreHorizontal,
   PenLine,
   MessageSquarePlus,
+  AlertOctagon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -22,7 +23,9 @@ import {
 import { useProductReviews } from '@/hooks/useProductReviews'
 import { useAuth } from '@/contexts/AuthContext'
 import { ProductReview } from '@/types/review'
+import { StoreInfo } from '@/types/store'
 import { buildImageUrl, cn } from '@/lib/utils'
+import { storeAccentStyle } from '@/lib/storefront'
 import { Stars } from '@/components/Store/Product'
 
 function formatReviewDate(date: Date): string {
@@ -46,6 +49,7 @@ interface ProductReviewsProps {
   slug: string
   productId: string
   productName: string
+  storeInfo?: StoreInfo | null
 }
 
 interface ReviewItemProps {
@@ -316,7 +320,7 @@ function ReviewItem({ review, currentUserId, onEdit, isUpdating }: ReviewItemPro
   )
 }
 
-export function ProductReviews({ slug, productId }: ProductReviewsProps) {
+export function ProductReviews({ slug, productId, storeInfo }: ProductReviewsProps) {
   const { isAuthenticated, user, loginWithGoogle } = useAuth()
   const [page, setPage] = useState(1)
   const [sort, setSort] = useState<'latest' | 'highest' | 'images'>('latest')
@@ -333,6 +337,8 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
     updateReview,
     isCreating,
     isUpdating,
+    createError,
+    resetCreateError,
   } = useProductReviews(slug, productId, {
     page,
     sort,
@@ -439,10 +445,14 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
         open={writeReviewOpen}
         onOpenChange={(open) => {
           setWriteReviewOpen(open)
+          resetCreateError()
           if (!open) setJustSubmitted(false)
         }}
       >
-        <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+        <DialogContent
+          className="w-[calc(100%-32px)] max-h-[90vh] max-w-lg overflow-y-auto rounded-2xl"
+          style={storeAccentStyle(storeInfo)}
+        >
           <DialogHeader>
             <DialogTitle>Escrever avaliação</DialogTitle>
           </DialogHeader>
@@ -542,6 +552,14 @@ export function ProductReviews({ slug, productId }: ProductReviewsProps) {
                   )}
                 </div>
               </div>
+              {createError && (
+                <div className="flex items-start gap-2.5 rounded-2xl border border-nxd/20 bg-nxd/[0.06] p-3.5">
+                  <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-nxd/10 text-nxd">
+                    <AlertOctagon size={15} strokeWidth={2.2} />
+                  </span>
+                  <p className="text-[12.5px] leading-[1.45] text-nxi2">{createError}</p>
+                </div>
+              )}
               <button
                 type="submit"
                 disabled={rating < 1 || isCreating}

@@ -68,20 +68,15 @@ export function useProductReviews(
       })
       onCreateSuccess?.()
     },
-    onError: (error: any) => {
-      const message =
-        error.response?.data?.message ||
-        'Não foi possível enviar sua avaliação. Tente novamente.'
-      toast({
-        title: 'Não deu para enviar a avaliação',
-        description: message,
-        variant: 'destructive',
-        context: 'store',
-      })
-    },
   })
 
+  const createError = createReviewMutation.isError
+    ? (createReviewMutation.error as any)?.response?.data?.message ||
+      'Não foi possível enviar sua avaliação. Tente novamente.'
+    : null
+
   const createReview = (payload: CreateReviewRequest) => {
+    createReviewMutation.reset()
     createReviewMutation.mutate(payload)
   }
 
@@ -155,5 +150,7 @@ export function useProductReviews(
     updateReview,
     isCreating: createReviewMutation.isPending,
     isUpdating: updateReviewMutation.isPending,
+    createError,
+    resetCreateError: createReviewMutation.reset,
   }
 }

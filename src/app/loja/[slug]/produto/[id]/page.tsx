@@ -388,7 +388,7 @@ export default function ProductDetailPage() {
         <ProductSpecsSection specifications={product.specifications} />
 
         <section id="avaliacoes" className="border-t border-nxborder">
-          <ProductReviews slug={slug} productId={productId} productName={product.name} />
+          <ProductReviews slug={slug} productId={productId} productName={product.name} storeInfo={storeInfo} />
         </section>
 
         <section id="perguntas" className="border-t border-nxborder">
