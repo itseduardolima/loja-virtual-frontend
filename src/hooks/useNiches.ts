@@ -23,7 +23,14 @@ export function useAllNiches() {
   return useQuery({
     queryKey: ['all-niches'],
     queryFn: async (): Promise<NicheResponse> => {
-      const response = await api.get('/niches')
+      // GET /niches é paginado no backend (default 10 por página) — mas essa
+      // é a lista curada e pequena de nichos da plataforma (16 hoje), não
+      // conteúdo de usuário, e este hook serve pra listar TODOS. Sem o limit
+      // explícito, qualquer nicho além do 10º some silenciosamente do wizard
+      // de criar loja e da tela de nichos da loja (bug real: aconteceu assim
+      // que o 11º nicho foi criado). 100 é o máximo aceito pelo endpoint —
+      // folga bem acima do total real, sem precisar mudar o backend.
+      const response = await api.get('/niches', { params: { limit: 100 } })
       return response.data
     },
     retry: false,
