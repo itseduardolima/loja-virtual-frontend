@@ -174,10 +174,11 @@ export function OrderListView({
               </span>
             </div>
 
-            {/* Ações: sem spacer reservando espaço para o botão ausente, para
-                o(s) botão(ões) visível(is) ficar(em) centralizado(s) na coluna */}
+            {/* Ações: spacer do mesmo tamanho do botão "Avançar" quando ele não
+                existe, para o botão de WhatsApp ficar sempre na mesma posição
+                horizontal entre linhas — em vez de recentralizar sozinho. */}
             <div className="flex items-center justify-center gap-[5px]">
-              {advanceable && (
+              {advanceable ? (
                 <button
                   type="button"
                   title="Avançar status"
@@ -189,6 +190,8 @@ export function OrderListView({
                 >
                   <ArrowRight size={15} className="text-nxp" />
                 </button>
+              ) : (
+                <span className="h-[30px] w-[30px]" aria-hidden="true" />
               )}
               <button
                 type="button"

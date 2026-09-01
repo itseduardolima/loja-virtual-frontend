@@ -22,7 +22,14 @@ export function useUpdateOrderStatus() {
         variant: 'success'
       })
     },
-    onError: (error: any) => {
+    onError: (error: any, variables) => {
+      // A UI já aplicou a mudança de status otimisticamente (applyOptimisticStatus em
+      // useOrdersPage) antes da mutation rodar. Se ela falhar, o cache fica com o status
+      // errado até o próximo refetch natural (staleTime 30s) — invalida na hora para não
+      // deixar o vendedor vendo um status que o backend rejeitou.
+      queryClient.invalidateQueries({ queryKey: ['order-detail', variables.orderId] })
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+
       const errorMessage = error.response?.data?.message || 'Erro ao atualizar status do pedido'
       toast({
         title: 'Erro!',
