@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/axios'
 import { useToastContext } from '@/contexts/ToastContext'
 import { useRouter } from 'next/navigation'
+import { myStoreQueryKey } from './useStore'
 
 export interface CreateStoreData {
   name: string
@@ -98,9 +99,14 @@ export function useCreateStore() {
         variant: 'success'
       })
       
-      // Invalidar cache da loja
-      queryClient.invalidateQueries({ queryKey: ['store'] })
-      
+      // Semeia o cache com a loja recém-criada (resposta vem como {data, message})
+      // em vez de só invalidar: invalidar dispara um refetch assíncrono, e o
+      // router.push abaixo navega antes dele terminar — a página de destino
+      // (useVendedorPage) lê `store` como undefined nesse meio-tempo e redireciona
+      // de volta para /vendedor/criar-loja, o formulário reaparecendo em branco.
+      queryClient.setQueryData(myStoreQueryKey, data?.data ?? data)
+      queryClient.invalidateQueries({ queryKey: myStoreQueryKey })
+
       // Redirecionar para o dashboard
       router.push('/vendedor')
     },

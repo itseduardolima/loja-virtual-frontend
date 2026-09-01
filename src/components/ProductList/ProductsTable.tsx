@@ -185,10 +185,10 @@ export function ProductsTable({
                   {promoActive ? (
                     <div>
                       <div className="font-bold text-nxi1">{formatBRL(product.promo_price)}</div>
-                      <div className="text-[11px] text-nxi3 line-through">{formatBRL(product.price)}</div>
+                      <div className="text-[11px] text-nxi3 line-through">{formatBRL(parseFloat(product.price))}</div>
                     </div>
                   ) : (
-                    <div className="font-bold text-nxi1">{formatBRL(product.price)}</div>
+                    <div className="font-bold text-nxi1">{formatBRL(parseFloat(product.price))}</div>
                   )}
                 </td>
                 <td className="px-2 py-3">
