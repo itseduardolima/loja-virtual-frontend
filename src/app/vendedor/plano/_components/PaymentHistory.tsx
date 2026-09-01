@@ -1,10 +1,9 @@
 'use client'
 
-import { ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn, formatPrice, formatDateShort } from '@/lib/utils'
 import { PAYMENT_STATUS } from '@/lib/vendor'
 import type { StatusTone } from '@/lib/vendor'
-import { useGetPaymentLink } from '@/hooks/useSubscription'
 import { LoadingSpinner } from '@/components'
 import { Payment } from '@/types/subscription'
 
@@ -56,13 +55,10 @@ export function PaymentHistory({ planName, billingCycle, payments, total, totalP
             <table className="w-full text-[12.5px]">
               <thead>
                 <tr className="border-b border-nxborder bg-nxbg">
-                  {['Data', 'Descrição', 'Valor', 'Status', ''].map((h, i) => (
+                  {['Data', 'Descrição', 'Valor', 'Status'].map((h, i) => (
                     <th
                       key={i}
-                      className={cn(
-                        'px-6 py-3 text-[10.5px] font-bold uppercase tracking-widest text-nxi3',
-                        i === 2 ? 'text-right' : 'text-left',
-                      )}
+                      className="px-6 py-3 text-left text-[10.5px] font-bold uppercase tracking-widest text-nxi3"
                     >
                       {h}
                     </th>
@@ -128,30 +124,13 @@ function PaymentRow({ payment, planName, billingCycle }: { payment: Payment; pla
           <div className="text-[11px] text-nxi3">Criado em {formatDateShort(payment.created_at, { utc: true })}</div>
         )}
       </td>
-      <td className="px-6 py-3.5 text-right font-mono font-bold text-nxi1">
+      <td className="px-6 py-3.5 text-left font-mono font-bold text-nxi1">
         {formatPrice(Number(payment.amount))}
       </td>
       <td className="px-6 py-3.5">
         <span className={cn('rounded-full px-2.5 py-0.5 text-[11px] font-bold', cfg.cls)}>{cfg.label}</span>
       </td>
-      <td className="px-6 py-3.5 text-right">
-        {payment.payment_id && <LinkButton paymentId={payment.payment_id} />}
-      </td>
     </tr>
-  )
-}
-
-function LinkButton({ paymentId }: { paymentId: string }) {
-  const { mutate: getLink, isPending } = useGetPaymentLink()
-  return (
-    <button
-      onClick={() => getLink(paymentId)}
-      disabled={isPending}
-      className="text-nxp transition hover:text-nxp/80 disabled:opacity-50"
-      title="Ver fatura"
-    >
-      <ExternalLink className="h-3.5 w-3.5" strokeWidth={2} />
-    </button>
   )
 }
 
