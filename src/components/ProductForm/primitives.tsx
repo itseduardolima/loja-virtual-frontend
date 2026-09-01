@@ -419,7 +419,7 @@ export function NxBadge({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.04em] ring-1 ring-inset',
+        'inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.04em] ring-1 ring-inset',
         tones[tone],
         className,
       )}
