@@ -20,16 +20,6 @@ export function useInformacoesBasicas() {
     description?: string
   }>({})
 
-  const [logoFile, setLogoFile] = useState<File | null>(null)
-  const [bannerFile, setBannerFile] = useState<File | null>(null)
-  const [logoPreview, setLogoPreview] = useState<string | null>(null)
-  const [bannerPreview, setBannerPreview] = useState<string | null>(null)
-  const [cropTarget, setCropTarget] = useState<{
-    type: 'logo' | 'banner'
-    imageSrc: string
-    fileName: string
-  } | null>(null)
-
   useEffect(() => {
     if (store) {
       const next = {
@@ -38,13 +28,6 @@ export function useInformacoesBasicas() {
       }
       setFormData(next)
       setServer(next)
-
-      if (store.logo) {
-        setLogoPreview(store.logo)
-      }
-      if (store.banner) {
-        setBannerPreview(store.banner)
-      }
     }
   }, [store])
 
@@ -68,29 +51,7 @@ export function useInformacoesBasicas() {
     })
   }
 
-  const handleFileSelect = (type: 'logo' | 'banner', file: File | null) => {
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = (e) =>
-      setCropTarget({ type, imageSrc: e.target?.result as string, fileName: file.name })
-    reader.readAsDataURL(file)
-  }
-
-  const handleCropDone = (type: 'logo' | 'banner', croppedFile: File, previewUrl: string) => {
-    if (type === 'logo') {
-      setLogoFile(croppedFile)
-      setLogoPreview(previewUrl)
-    } else {
-      setBannerFile(croppedFile)
-      setBannerPreview(previewUrl)
-    }
-    setCropTarget(null)
-  }
-
-  const isDirty = useMemo(
-    () => !isEqual(formData, server) || logoFile !== null || bannerFile !== null,
-    [formData, server, logoFile, bannerFile],
-  )
+  const isDirty = useMemo(() => !isEqual(formData, server), [formData, server])
 
   const isFormValid = useMemo(() => {
     const hasErrors = Object.values(errors).some(error => error !== undefined && error !== '')
@@ -107,11 +68,6 @@ export function useInformacoesBasicas() {
   const handleReset = () => {
     setFormData(server)
     setErrors({})
-    setLogoFile(null)
-    setBannerFile(null)
-    setLogoPreview(store?.logo || null)
-    setBannerPreview(store?.banner || null)
-    setCropTarget(null)
   }
 
   const handleSave = async () => {
@@ -126,16 +82,11 @@ export function useInformacoesBasicas() {
         description: formData.description || undefined,
       }
 
-      if (logoFile) updateData.logo = logoFile
-      if (bannerFile) updateData.banner = bannerFile
-
       await updateStore({
         storeId: store.id,
         data: updateData,
       })
       setServer(formData)
-      setLogoFile(null)
-      setBannerFile(null)
     } catch (error) {
       if (error instanceof yup.ValidationError) {
         const validationErrors: { [key: string]: string } = {}
@@ -159,15 +110,7 @@ export function useInformacoesBasicas() {
     errors,
     isDirty,
     isFormValid,
-    logoFile,
-    bannerFile,
-    logoPreview,
-    bannerPreview,
     handleInputChange,
-    handleFileSelect,
-    handleCropDone,
-    cropTarget,
-    setCropTarget,
     handleSave,
     handleReset,
   }
