@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -35,8 +35,6 @@ export function useCreateProductPage(user: User | null) {
   const storeId = storeData?.id || null
   const { data: nichesData } = useNiches(storeId)
   const niches = nichesData?.data || []
-  const { data: nicheFieldsRaw } = useNicheFields(selectedNicheId)
-  const nicheFields = nicheFieldsRaw || []
 
   const form = useForm<CreateProductFormData>({
     resolver: yupResolver(createProductSchema) as any,
@@ -57,6 +55,23 @@ export function useCreateProductPage(user: User | null) {
       promo_ends_at: null,
     },
   })
+
+  // Categoria filtra quais campos dinâmicos do nicho aparecem (NICHE_FIELD_CATEGORY).
+  const categoryId = form.watch('category_id') || null
+  const { data: nicheFieldsRaw } = useNicheFields(selectedNicheId, categoryId)
+  const nicheFields = nicheFieldsRaw || []
+
+  // Trocar de categoria também invalida os valores de campos dinâmicos já
+  // preenchidos (mesmo motivo do reset ao trocar nicho, em handleNicheChange
+  // abaixo) — um campo preenchido pode não existir mais na nova lista
+  // filtrada. Ignora a primeira renderização (categoryId partindo de null).
+  const previousCategoryIdRef = useRef(categoryId)
+  useEffect(() => {
+    if (previousCategoryIdRef.current !== categoryId) {
+      previousCategoryIdRef.current = categoryId
+      setDynamicFieldValues({})
+    }
+  }, [categoryId, setDynamicFieldValues])
 
   const { categories } = useCategories(
     {

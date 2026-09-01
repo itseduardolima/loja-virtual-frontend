@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -40,8 +40,6 @@ export function useEditProductPage(productId: string, user: User | null) {
   const storeId = storeData?.id || null
   const { data: nichesData } = useNiches(storeId)
   const niches = nichesData?.data || []
-  const { data: nicheFieldsRaw } = useNicheFields(selectedNicheId)
-  const nicheFields = nicheFieldsRaw || []
 
   const { data: product, isLoading: productLoading, error: productError, refetch: refetchProduct } = useQuery({
     queryKey: ['product', productId],
@@ -84,6 +82,11 @@ export function useEditProductPage(productId: string, user: User | null) {
       promo_ends_at: null,
     },
   })
+
+  // Categoria filtra quais campos dinâmicos do nicho aparecem (NICHE_FIELD_CATEGORY).
+  const categoryId = form.watch('category_id') || null
+  const { data: nicheFieldsRaw } = useNicheFields(selectedNicheId, categoryId)
+  const nicheFields = nicheFieldsRaw || []
 
   // Initialize form from product data
   useEffect(() => {
@@ -157,6 +160,28 @@ export function useEditProductPage(productId: string, user: User | null) {
       if (Object.keys(map).length > 0) setDynamicFieldValues(map)
     }
   }, [product, setSelectedNicheId, setDynamicFieldValues])
+
+  // Trocar de categoria invalida os valores de campos dinâmicos já
+  // preenchidos — um campo pode não existir mais na nova lista filtrada.
+  // "Arma" o tracking só depois da inicialização (isInitialized), usando o
+  // category_id já carregado do produto como baseline — sem isso, o
+  // primeiro render (category_id passando de undefined pro valor do
+  // produto) dispararia um reset falso e apagaria os dynamic_fields recém
+  // carregados do produto.
+  const previousCategoryIdRef = useRef<number | null>(null)
+  const categoryTrackingArmedRef = useRef(false)
+  useEffect(() => {
+    if (!isInitialized) return
+    if (!categoryTrackingArmedRef.current) {
+      categoryTrackingArmedRef.current = true
+      previousCategoryIdRef.current = categoryId
+      return
+    }
+    if (previousCategoryIdRef.current !== categoryId) {
+      previousCategoryIdRef.current = categoryId
+      setDynamicFieldValues({})
+    }
+  }, [categoryId, isInitialized, setDynamicFieldValues])
 
   const updateProductMutation = useUpdateProduct()
 

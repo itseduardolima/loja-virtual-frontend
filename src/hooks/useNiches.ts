@@ -31,13 +31,18 @@ export function useAllNiches() {
   })
 }
 
-export function useNicheFields(nicheId: number | null) {
+// categoryId filtra os campos aplicáveis a essa categoria (NICHE_FIELD_CATEGORY,
+// backend). Sem categoryId (ou categoria sem categoria canônica vinculada),
+// retorna todos os campos do nicho — mesmo comportamento de sempre.
+export function useNicheFields(nicheId: number | null, categoryId?: number | null) {
   return useQuery({
-    queryKey: ['niche-fields', nicheId],
+    queryKey: ['niche-fields', nicheId, categoryId],
     queryFn: async (): Promise<NicheField[]> => {
       if (!nicheId) throw new Error('Niche ID é obrigatório')
-      
-      const response = await api.get(`/niches/fields/niche/${nicheId}`)
+
+      const response = await api.get(`/niches/fields/niche/${nicheId}`, {
+        params: categoryId ? { category_id: categoryId } : undefined,
+      })
       // Se a resposta vier com uma estrutura { data: [...] }, retorna data
       // Caso contrário, retorna a resposta diretamente
       return Array.isArray(response.data) ? response.data : (response.data?.data || [])
