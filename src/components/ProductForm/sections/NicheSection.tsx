@@ -287,7 +287,19 @@ export function NicheSection({
             </div>
           )}
 
-          {sortedFields.length > 0 && (
+          {/* Campos dinâmicos só aparecem depois da categoria escolhida — alguns
+              campos são restritos por categoria (NICHE_FIELD_CATEGORY, backend);
+              mostrar antes disso exibiria a lista sem filtro, que pode nem
+              corresponder à categoria que o vendedor vai escolher. */}
+          {!categoryId && sortedFields.length > 0 && (
+            <div className="mt-5">
+              <Notice variant="info" icon={MousePointerClick}>
+                Escolha uma categoria para ver os campos específicos dela.
+              </Notice>
+            </div>
+          )}
+
+          {categoryId && sortedFields.length > 0 && (
             <div className="mt-5">
               <div className="mb-3 text-[10px] font-bold uppercase tracking-[0.07em] text-nxi3">
                 Campos de {niche.name}
