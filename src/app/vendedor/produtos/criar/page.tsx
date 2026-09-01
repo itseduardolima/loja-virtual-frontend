@@ -60,13 +60,23 @@ export default function CreateProductPage() {
   } = useCreateProductPage(user)
 
   const { handleSubmit, setValue } = form
-  const { name, description, price, promoPrice, promoEndsAt, featured, categoryId, specifications, stockValue } =
-    useFormWatchers(form)
+  const {
+    name,
+    description,
+    price,
+    promoPrice,
+    promoEndsAt,
+    featured,
+    categoryId,
+    specifications,
+    stockValue,
+  } = useFormWatchers(form)
 
   const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
   const [showErrors, setShowErrors] = useState(false)
   const [saveAction, setSaveAction] = useState<'publish' | 'draft' | null>(null)
+  const [showZeroStockDialog, setShowZeroStockDialog] = useState(false)
 
   const colors = availableColors
   const sizes = availableSizes
@@ -77,10 +87,10 @@ export default function CreateProductPage() {
     if (colors.length > 0) {
       return colors.every((c) => {
         const len = orderedImagesByColor[c]?.length || 0
-        return len >= 2 && len <= 5
+        return len >= 1 && len <= 5
       })
     }
-    return selectedImages.length >= 2 && selectedImages.length <= 5
+    return selectedImages.length >= 1 && selectedImages.length <= 5
   }, [colors, orderedImagesByColor, selectedImages.length])
 
   const completion = useMemo(
@@ -95,10 +105,31 @@ export default function CreateProductPage() {
         variantStocks,
         imagesOk,
       }),
-    [name, price, categoryId, stockValue, specifications, selectedNicheId, nicheFields, dynamicFieldValues, colors, sizes, variantStocks, imagesOk],
+    [
+      name,
+      price,
+      categoryId,
+      stockValue,
+      specifications,
+      selectedNicheId,
+      nicheFields,
+      dynamicFieldValues,
+      colors,
+      sizes,
+      variantStocks,
+      imagesOk,
+    ],
   )
 
   const canPublish = completion.filter((c) => c.required).every((c) => c.done)
+
+  // Estoque efetivo: soma das variantes quando há cor/tamanho, senão o campo simples.
+  // Usado para avisar o vendedor antes de publicar com 0 — sem esse aviso, o backend
+  // cria o produto como inativo (invisível na loja) sem nenhum feedback claro do porquê.
+  const hasVariants = colors.length > 0 || sizes.length > 0
+  const effectiveStock = hasVariants
+    ? variantStocks.reduce((sum, v) => sum + (v.stock || 0), 0)
+    : stockValue || 0
 
   // Unsaved changes guard
   const hasUnsaved = !!(name || price || description || hasImages)
@@ -123,7 +154,12 @@ export default function CreateProductPage() {
   }, [colors, orderedImagesByColor, selectedImages])
 
   const coverUrl = useMemo(() => (coverFile ? URL.createObjectURL(coverFile) : null), [coverFile])
-  useEffect(() => () => { if (coverUrl) URL.revokeObjectURL(coverUrl) }, [coverUrl])
+  useEffect(
+    () => () => {
+      if (coverUrl) URL.revokeObjectURL(coverUrl)
+    },
+    [coverUrl],
+  )
 
   // Name/category resolution for preview
   const nicheName = useMemo(
@@ -140,14 +176,44 @@ export default function CreateProductPage() {
   const previewData = useMemo(
     () =>
       buildPreviewData({
-        name, description, price, promoPrice, promoEndsAt,
-        nicheName, categoryName, colors, sizes, variantStocks,
-        stockValue, orderedImagesByColor, selectedImages,
-        nicheFields, dynamicFieldValues, specifications,
-        orderedImageSrc, fileSrc,
+        name,
+        description,
+        price,
+        promoPrice,
+        promoEndsAt,
+        nicheName,
+        categoryName,
+        colors,
+        sizes,
+        variantStocks,
+        stockValue,
+        orderedImagesByColor,
+        selectedImages,
+        nicheFields,
+        dynamicFieldValues,
+        specifications,
+        orderedImageSrc,
+        fileSrc,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [name, description, price, promoPrice, promoEndsAt, nicheName, categoryName, colors, sizes, variantStocks, stockValue, orderedImagesByColor, selectedImages, nicheFields, dynamicFieldValues, specifications],
+    [
+      name,
+      description,
+      price,
+      promoPrice,
+      promoEndsAt,
+      nicheName,
+      categoryName,
+      colors,
+      sizes,
+      variantStocks,
+      stockValue,
+      orderedImagesByColor,
+      selectedImages,
+      nicheFields,
+      dynamicFieldValues,
+      specifications,
+    ],
   )
 
   const scrollToAnchor = (anchor: string) =>
@@ -177,6 +243,19 @@ export default function CreateProductPage() {
       scrollToAnchor(first.anchor)
       return
     }
+    // Com estoque 0 o backend cria o produto como inativo (invisível na loja) —
+    // confirma com o vendedor em vez de deixar isso acontecer em silêncio.
+    if (effectiveStock <= 0) {
+      setShowZeroStockDialog(true)
+      return
+    }
+    setValue('save_as_draft', false)
+    setSaveAction('publish')
+    submitForm()
+  }
+
+  const handleConfirmPublishZeroStock = () => {
+    setShowZeroStockDialog(false)
     setValue('save_as_draft', false)
     setSaveAction('publish')
     submitForm()
@@ -334,6 +413,16 @@ export default function CreateProductPage() {
         cancelText="Continuar editando"
         variant="destructive"
         onConfirm={handleConfirmCancel}
+      />
+
+      <ConfirmDialog
+        open={showZeroStockDialog}
+        onOpenChange={setShowZeroStockDialog}
+        title="Publicar sem estoque?"
+        description="Esse produto está com 0 unidades em estoque. Ele será salvo, mas ficará inativo e não vai aparecer na sua loja até você adicionar estoque. Quer publicar assim mesmo?"
+        confirmText="Publicar mesmo assim"
+        cancelText="Voltar e adicionar estoque"
+        onConfirm={handleConfirmPublishZeroStock}
       />
     </div>
   )

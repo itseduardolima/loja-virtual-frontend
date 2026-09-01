@@ -111,11 +111,11 @@ export default function EditProductPage() {
     if (colors.length > 0) {
       return colors.every((c) => {
         const len = orderedImagesByColor[c]?.length || 0
-        return len >= 2 && len <= 5
+        return len >= 1 && len <= 5
       })
     }
     const total = remainingExistingCount + selectedImages.length
-    return total >= 2 && total <= 5
+    return total >= 1 && total <= 5
   }, [colors, orderedImagesByColor, selectedImages.length, remainingExistingCount])
 
   const completion = useMemo(

@@ -135,7 +135,13 @@ export function SpecsSection({ form }: { form: UseFormReturn<CreateProductFormDa
       <SectionHeader
         icon={ScrollText}
         title="Especificações técnicas"
-        description="Detalhes ricos do produto. Aparecem na aba de especificações."
+        description={
+          <>
+            Detalhes ricos do produto (material, medidas, cuidados, garantia). Aparecem na aba de
+            especificações — diferente da <strong>Descrição curta</strong>, que é o resumo exibido
+            na listagem e no topo da página.
+          </>
+        }
       />
       <Controller
         control={form.control}

@@ -126,6 +126,10 @@ export function BasicInfoSection({
             maxLength={500}
             placeholder="Um resumo curto e vendedor. Aparece na listagem e no topo da página do produto."
           />
+          <FieldHelp>
+            Resumo rápido que aparece antes do cliente clicar no produto. Detalhes como material,
+            medidas e cuidados vão em <strong>Especificações técnicas</strong>, mais abaixo.
+          </FieldHelp>
         </Field>
       </FieldGrid>
 

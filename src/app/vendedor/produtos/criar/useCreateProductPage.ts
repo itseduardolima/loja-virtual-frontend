@@ -104,16 +104,16 @@ export function useCreateProductPage(user: User | null) {
       const hasSimpleImages = selectedImages.length > 0
 
       if (!hasColorImages && !hasSimpleImages) {
-        throw new Error('O produto deve ter no mínimo 2 imagens por cor')
+        throw new Error('O produto deve ter no mínimo 1 imagem por cor')
       }
 
       if (hasColorImages) {
         for (const [color, items] of Object.entries(orderedImagesByColor)) {
-          if (items.length < 2) throw new Error(`A cor "${color}" deve ter no mínimo 2 imagens`)
+          if (items.length < 1) throw new Error(`A cor "${color}" deve ter no mínimo 1 imagem`)
           if (items.length > 5) throw new Error(`A cor "${color}" pode ter no máximo 5 imagens`)
         }
       } else {
-        if (selectedImages.length < 2) throw new Error('O produto deve ter no mínimo 2 imagens')
+        if (selectedImages.length < 1) throw new Error('O produto deve ter no mínimo 1 imagem')
         if (selectedImages.length > 5) throw new Error('O produto pode ter no máximo 5 imagens')
       }
 

@@ -35,7 +35,13 @@ export function productHasVariations(product: Product): boolean {
 
 export function productColors(product: Product): string[] {
   if (product.colors && product.colors.length > 0) return product.colors
-  if (product.images_by_color) return Object.keys(product.images_by_color)
+  // Só trata as chaves de images_by_color como cores reais quando há mais de
+  // uma — chave única é o agrupamento "sem cor" (produto sem variante de cor
+  // nenhuma, ex.: chave sentinela "default"), não deve virar swatch falso.
+  // Mesma guarda de productHasVariations() acima.
+  if (product.images_by_color && Object.keys(product.images_by_color).length > 1) {
+    return Object.keys(product.images_by_color)
+  }
   return []
 }
 

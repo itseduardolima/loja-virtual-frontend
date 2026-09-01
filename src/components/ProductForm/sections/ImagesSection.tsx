@@ -19,7 +19,7 @@ import { getColorHex } from '../data'
 import { SectionCard, SectionHeader, FieldHelp, NxBadge, Swatch } from '../primitives'
 
 const MAX_PER = 5
-const MIN_PER = 2
+const MIN_PER = 1
 
 interface ImagesSectionProps {
   colors: string[]
@@ -81,7 +81,9 @@ function DropZone({
       <span className="text-[12.5px] font-semibold text-nxi2">
         Arraste imagens ou <span className="text-nxp">clique para enviar</span>
       </span>
-      <span className="text-[11px] text-nxi3">PNG, JPG ou WEBP · 2 a 5 imagens</span>
+      <span className="text-[11px] text-nxi3">
+        PNG, JPG ou WEBP · {MIN_PER} a {MAX_PER} imagens
+      </span>
     </button>
   )
 }
@@ -390,14 +392,16 @@ function ColorImages({
           )}
           {activeList.length < MIN_PER && (
             <div className="mt-3">
-              <FieldHelp variant="error">{active} precisa de no mínimo 2 imagens.</FieldHelp>
+              <FieldHelp variant="error">
+                {active} precisa de no mínimo {MIN_PER} imagem{MIN_PER > 1 ? 's' : ''}.
+              </FieldHelp>
             </div>
           )}
         </div>
       )}
       {showErrors && (
         <p className="mt-3 text-[11.5px] text-nxi3">
-          Cada cor precisa de no mínimo {MIN_PER} imagens para publicar.
+          Cada cor precisa de no mínimo {MIN_PER} imagem{MIN_PER > 1 ? 's' : ''} para publicar.
         </p>
       )}
     </SectionCard>

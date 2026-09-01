@@ -201,7 +201,7 @@ export function useEditProductPage(productId: string, user: User | null) {
 
     if (hasColorImages) {
       for (const [color, items] of Object.entries(orderedImagesByColor)) {
-        if (items.length < 2) { showError(`A cor "${color}" deve ter no mínimo 2 imagens`, 'Validação'); return }
+        if (items.length < 1) { showError(`A cor "${color}" deve ter no mínimo 1 imagem`, 'Validação'); return }
         if (items.length > 5) { showError(`A cor "${color}" pode ter no máximo 5 imagens`, 'Validação'); return }
       }
     } else {
@@ -209,7 +209,7 @@ export function useEditProductPage(productId: string, user: User | null) {
         ? (product.images as string[]).filter((_, i) => !removedExistingImages.includes(i)).length
         : 0
       const total = selectedImages.length + remainingExisting
-      if (total < 2) { showError('O produto deve ter no mínimo 2 imagens', 'Validação'); return }
+      if (total < 1) { showError('O produto deve ter no mínimo 1 imagem', 'Validação'); return }
       if (total > 5) { showError('O produto pode ter no máximo 5 imagens', 'Validação'); return }
     }
 
