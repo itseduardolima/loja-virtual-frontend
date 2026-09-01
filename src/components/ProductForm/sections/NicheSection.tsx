@@ -174,7 +174,7 @@ export function NicheSection({
       <SectionHeader
         icon={LayoutGrid}
         title="Tipo e nicho"
-        description="O nicho define os campos específicos e os filtros na vitrine."
+        description="Escolha o nicho primeiro: ele libera a categoria, e a categoria libera os campos específicos do produto."
       />
 
       {/* grid de nichos */}
