@@ -123,11 +123,6 @@ export function formatBRL(value: number): string {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
-/** Valida email com regex simples (mesma semântica usada em equipe/page.tsx). */
-export function isValidEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-}
-
 /** Dias até a data fornecida (negativo se já passou). */
 export function daysUntil(date: string | Date): number {
   return Math.ceil((new Date(date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))

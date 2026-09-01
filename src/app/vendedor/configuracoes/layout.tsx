@@ -3,7 +3,6 @@
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
-import { FEATURE_EQUIPE } from '@/lib/featureFlags'
 import {
   Box,
   Layers,
@@ -13,7 +12,6 @@ import {
   ShoppingBag,
   Clock,
   Coins,
-  Users,
   HelpCircle,
   ChevronDown,
   X,
@@ -28,14 +26,6 @@ interface SectionDef {
   desc: string
 }
 
-const EQUIPE_SECTION: SectionDef = {
-  id: 'equipe',
-  href: '/vendedor/configuracoes/equipe',
-  icon: Users,
-  title: 'Equipe',
-  desc: 'Usuários e permissões',
-}
-
 const SECTIONS: SectionDef[] = [
   { id: 'informacoes-basicas', href: '/vendedor/configuracoes/informacoes-basicas', icon: Box, title: 'Informações básicas', desc: 'Nome, descrição e logo' },
   { id: 'nichos', href: '/vendedor/configuracoes/nichos', icon: Layers, title: 'Nichos', desc: 'Categorias de produtos da loja' },
@@ -46,9 +36,6 @@ const SECTIONS: SectionDef[] = [
   { id: 'horario', href: '/vendedor/configuracoes/horario', icon: Clock, title: 'Horário', desc: 'Funcionamento e atendimento' },
   { id: 'pagamento', href: '/vendedor/configuracoes/pagamento', icon: Coins, title: 'Formas de pagamento', desc: 'Cartão, PIX e boleto' },
   { id: 'ajuda', href: '/vendedor/configuracoes/ajuda', icon: HelpCircle, title: 'Ajuda', desc: 'Páginas informativas da loja' },
-  // "Equipe" só entra no menu com a flag FEATURE_EQUIPE ligada — hoje a tela é
-  // 100% mock e não há backend de convites/papéis. Ver src/lib/featureFlags.ts.
-  ...(FEATURE_EQUIPE ? [EQUIPE_SECTION] : []),
 ]
 
 function NavItems({
