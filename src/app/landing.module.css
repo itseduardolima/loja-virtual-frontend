@@ -224,6 +224,10 @@
   gap: 10px;
   margin-top: 16px;
 }
+.mmCta .btn {
+  padding-left: 28px;
+  padding-right: 28px;
+}
 
 /* HERO */
 .hero {
