@@ -1,7 +1,9 @@
 'use client'
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 import s from '../landing.module.css'
+import { fadeUp, staggerContainer, viewportOnce } from './motion'
 
 const FAQS = [
   {q:'Preciso de computador para usar?',a:'Não. Todo o painel foi pensado para funcionar no celular. Você gerencia pedidos, cadastra produtos e acompanha vendas pelo iPhone ou Android.'},
@@ -18,12 +20,24 @@ export const FAQ = () => {
     <section className={s.sec} id="suporte">
       <div className={s.seam} />
       <div className={s.wrap}>
-        <div className={s.secHead}>
+        <motion.div
+          className={s.secHead}
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={viewportOnce}
+        >
           <h2 className={s.h2}>O que você ainda precisa saber.</h2>
-        </div>
-        <div className={s.faq}>
+        </motion.div>
+        <motion.div
+          className={s.faq}
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="show"
+          viewport={viewportOnce}
+        >
           {FAQS.map((f, i) => (
-            <div key={i} className={s.faqItem}>
+            <motion.div key={i} className={s.faqItem} variants={fadeUp}>
               <button className={s.faqQ} onClick={() => setOpen(open === i ? null : i)} type="button">
                 {f.q}
                 <span className={open === i ? `${s.faqChev} ${s.faqChevOpen}` : s.faqChev}>
@@ -31,9 +45,9 @@ export const FAQ = () => {
                 </span>
               </button>
               {open === i && <div className={s.faqA}>{f.a}</div>}
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   )

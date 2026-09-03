@@ -1,5 +1,9 @@
+'use client'
+
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import s from '../landing.module.css'
+import { fadeUp, staggerContainer, viewportOnce } from './motion'
 
 export const FinalCTA = () => (
   <div className={s.ctaBand}>
@@ -22,21 +26,27 @@ export const FinalCTA = () => (
         fill="none"
       />
     </svg>
-    <div className={s.wrap}>
-      <h2 className={s.ctaH2}>
+    <motion.div
+      className={s.wrap}
+      variants={staggerContainer}
+      initial="hidden"
+      whileInView="show"
+      viewport={viewportOnce}
+    >
+      <motion.h2 className={s.ctaH2} variants={fadeUp}>
         Sua loja no ar hoje.
         <br />
         Do celular mesmo.
-      </h2>
-      <p className={s.ctaSub}>
+      </motion.h2>
+      <motion.p className={s.ctaSub} variants={fadeUp}>
         Em 10 minutos você monta sua loja e já começa a vender, do celular mesmo. Pergunte sobre
         período de teste no chat.
-      </p>
-      <div className={s.ctaBtnWrap}>
+      </motion.p>
+      <motion.div className={s.ctaBtnWrap} variants={fadeUp}>
         <Link href="/assinatura" className={`${s.btn} ${s.btnLg} ${s.ctaBtn}`}>
           Criar minha loja agora
         </Link>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   </div>
 )

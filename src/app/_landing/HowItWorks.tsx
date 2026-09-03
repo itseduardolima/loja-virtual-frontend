@@ -1,5 +1,9 @@
+'use client'
+
+import { motion } from 'framer-motion'
 import { Package, Share2, CheckCircle2 } from 'lucide-react'
 import s from '../landing.module.css'
+import { fadeUp, staggerContainer, viewportOnce } from './motion'
 
 const STEPS = [
   {
@@ -32,13 +36,25 @@ export const HowItWorks = () => (
   <section className={s.sec} id="como-funciona">
     <div className={s.seam} />
     <div className={s.wrap}>
-      <div className={s.secHead}>
+      <motion.div
+        className={s.secHead}
+        variants={fadeUp}
+        initial="hidden"
+        whileInView="show"
+        viewport={viewportOnce}
+      >
         <h2 className={s.h2}>Três passos até a primeira venda.</h2>
         <p className={s.lead}>Três passos, direto do celular, sem precisar de ninguém de TI.</p>
-      </div>
-      <div className={s.stepsRow}>
+      </motion.div>
+      <motion.div
+        className={s.stepsRow}
+        variants={staggerContainer}
+        initial="hidden"
+        whileInView="show"
+        viewport={viewportOnce}
+      >
         {STEPS.map((step) => (
-          <div key={step.num} className={s.stepCard}>
+          <motion.div key={step.num} className={s.stepCard} variants={fadeUp}>
             <div className={s.stepTop}>
               <span className={s.stepIcon} style={{ background: step.iconBg }}>
                 {step.icon}
@@ -48,9 +64,9 @@ export const HowItWorks = () => (
             <h3 className={s.stepTitle}>{step.title}</h3>
             <p className={s.stepDesc}>{step.desc}</p>
             <span className={s.stepTime}>{step.time}</span>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     </div>
   </section>
 )

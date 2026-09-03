@@ -1,5 +1,9 @@
+'use client'
+
+import { motion } from 'framer-motion'
 import s from '../landing.module.css'
 import { SellerAvatar } from './components/SellerAvatar'
+import { fadeUp, staggerContainer, viewportOnce } from './motion'
 
 const TESTIMONIALS = [
   {
@@ -23,12 +27,24 @@ export const Testimonials = () => (
   <section className={s.sec}>
     <div className={s.seam} />
     <div className={s.wrap}>
-      <div className={s.secHead}>
+      <motion.div
+        className={s.secHead}
+        variants={fadeUp}
+        initial="hidden"
+        whileInView="show"
+        viewport={viewportOnce}
+      >
         <h2 className={s.h2}>De planilha bagunçada a pedido organizado.</h2>
-      </div>
-      <div className={s.testRow}>
+      </motion.div>
+      <motion.div
+        className={s.testRow}
+        variants={staggerContainer}
+        initial="hidden"
+        whileInView="show"
+        viewport={viewportOnce}
+      >
         {TESTIMONIALS.map((t) => (
-          <div key={t.name} className={s.testCol}>
+          <motion.div key={t.name} className={s.testCol} variants={fadeUp}>
             <p className={s.testQuote}>{t.q}</p>
             <div className={s.testWho}>
               <SellerAvatar name={t.name} size={34} />
@@ -37,9 +53,9 @@ export const Testimonials = () => (
                 <div className={s.testRole}>{t.role}</div>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     </div>
   </section>
 )

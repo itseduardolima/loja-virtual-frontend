@@ -1,5 +1,9 @@
+'use client'
+
+import { motion } from 'framer-motion'
 import { Heart, Star } from 'lucide-react'
 import v from './vitrine.module.css'
+import { fadeUp, staggerContainer, viewportOnce } from './motion'
 
 interface DemoProduct {
   id: string
@@ -92,7 +96,7 @@ const SILHOUETTES: Record<DemoProduct['silhouette'], JSX.Element> = {
 function ProductTile({ product }: { product: DemoProduct }) {
   const [from, to] = product.fill
   return (
-    <div className={v.card}>
+    <motion.div className={v.card} variants={fadeUp}>
       <div
         className={v.imgWrap}
         style={{ background: `linear-gradient(140deg, ${from}, ${to})` }}
@@ -128,15 +132,21 @@ function ProductTile({ product }: { product: DemoProduct }) {
           {product.discount && <span className={v.off}>{product.discount}</span>}
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
 export const Vitrine = () => (
   <section className={v.sec}>
     <div className={v.wrap}>
-      <div className={v.layout}>
-        <div className={v.text}>
+      <motion.div
+        className={v.layout}
+        variants={staggerContainer}
+        initial="hidden"
+        whileInView="show"
+        viewport={viewportOnce}
+      >
+        <motion.div className={v.text} variants={fadeUp}>
           <h2 className={v.heading}>Sua vitrine tem cara de loja de verdade.</h2>
           <p className={v.lead}>
             Fotos, variação de cor e tamanho, avaliação: o mesmo padrão de loja grande,
@@ -145,13 +155,13 @@ export const Vitrine = () => (
           <a href="#precos" className={v.cta}>
             Ver planos →
           </a>
-        </div>
-        <div className={v.grid}>
+        </motion.div>
+        <motion.div className={v.grid} variants={staggerContainer}>
           {PRODUCTS.map((product) => (
             <ProductTile key={product.id} product={product} />
           ))}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   </section>
 )

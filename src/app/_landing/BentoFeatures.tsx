@@ -1,3 +1,6 @@
+'use client'
+
+import { motion } from 'framer-motion'
 import {
   Home,
   BarChart3,
@@ -11,6 +14,7 @@ import {
   Crown,
 } from 'lucide-react'
 import s from '../landing.module.css'
+import { fadeUp, staggerContainer, viewportOnce } from './motion'
 
 const SECTIONS = [
   {
@@ -76,15 +80,27 @@ export const BentoFeatures = () => (
   <section className={s.sec} id="recursos">
     <div className={s.seam} />
     <div className={s.wrap}>
-      <div className={s.secHead}>
+      <motion.div
+        className={s.secHead}
+        variants={fadeUp}
+        initial="hidden"
+        whileInView="show"
+        viewport={viewportOnce}
+      >
         <h2 className={s.h2}>O resto da operação também mora aqui.</h2>
         <p className={s.lead}>
           O mesmo painel do catálogo cuida de relatório, cupom e dúvida de cliente. Nada disso
           pede outro app.
         </p>
-      </div>
-      <div className={s.panelLayout}>
-        <div className={s.panelRail}>
+      </motion.div>
+      <motion.div
+        className={s.panelLayout}
+        variants={staggerContainer}
+        initial="hidden"
+        whileInView="show"
+        viewport={viewportOnce}
+      >
+        <motion.div className={s.panelRail} variants={fadeUp}>
           <div className={s.railLogo}>
             <div className={s.railLogoMark}>N</div>
             <div className={s.railLogoWord}>nexo</div>
@@ -103,8 +119,8 @@ export const BentoFeatures = () => (
               ))}
             </div>
           ))}
-        </div>
-        <div className={s.panelFeats}>
+        </motion.div>
+        <motion.div className={s.panelFeats} variants={fadeUp}>
           {FEATS.map((feat) => (
             <div key={feat.title} className={s.panelFeat}>
               <span className={s.panelFeatIcon} style={{ background: feat.iconBg }}>
@@ -116,8 +132,8 @@ export const BentoFeatures = () => (
               </div>
             </div>
           ))}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   </section>
 )

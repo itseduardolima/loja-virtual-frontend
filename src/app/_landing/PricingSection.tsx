@@ -1,11 +1,13 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import { Check, X, Lock } from 'lucide-react'
 import s from '../landing.module.css'
 import { useSubscriptionPlans } from '@/hooks/useSubscriptionPlans'
 import { derivePlanFeaturesComparison, computeYearlySavings } from '@/lib/planUtils'
 import type { BillingCycle } from '@/types/subscription'
+import { fadeUp, staggerContainer, viewportOnce } from './motion'
 
 function formatBRL(value: string | number | null | undefined): string {
   if (value == null) return '—'
@@ -26,7 +28,13 @@ export const PricingSection = () => {
     <section className={`${s.sec} ${s.bgWht}`} id="precos">
       <div className={s.seam} />
       <div className={s.wrap}>
-        <div className={s.secHead}>
+        <motion.div
+          className={s.secHead}
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={viewportOnce}
+        >
           <h2 className={s.h2}>Um plano pra cada fase da loja.</h2>
           <p className={s.lead}>Sem taxa por venda. O dinheiro cai direto na sua conta.</p>
           <div className={s.billingToggleWrap}>
@@ -50,8 +58,14 @@ export const PricingSection = () => {
               </button>
             </div>
           </div>
-        </div>
-        <div className={s.plans}>
+        </motion.div>
+        <motion.div
+          className={s.plans}
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="show"
+          viewport={viewportOnce}
+        >
           {isLoading &&
             Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className={s.plan} style={{ opacity: 0.4, minHeight: 400 }} />
@@ -75,9 +89,10 @@ export const PricingSection = () => {
                 : 'cobrança mensal'
 
             return (
-              <div
+              <motion.div
                 key={plan.slug}
                 className={isReco ? `${s.plan} ${s.reco}` : s.plan}
+                variants={fadeUp}
               >
                 <div className={s.planNameRow}>
                   <div className={s.planName}>{plan.name}</div>
@@ -117,10 +132,10 @@ export const PricingSection = () => {
                 >
                   Assinar {plan.name}
                 </Link>
-              </div>
+              </motion.div>
             )
           })}
-        </div>
+        </motion.div>
         <div className={s.pricingFoot}>
           <Lock size={16} color="var(--t3)" />
           Sem taxa de transação em nenhum plano. Cancele quando quiser.
