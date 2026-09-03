@@ -145,31 +145,39 @@ export default function OrdersPage() {
       </div>
 
       {/* ===== Mobile (<lg) ===== */}
-      <div className="lg:hidden -mx-4 -mt-4">
+      <div className="lg:hidden">
         {p.isLoading ? (
-          <OrdersLoadingState />
+          <div className="-mx-4 -mt-4">
+            <OrdersLoadingState />
+          </div>
         ) : p.error ? (
-          <OrdersErrorState onRetry={p.refetchOrders} />
+          <div className="flex min-h-[60vh] items-center justify-center px-4">
+            <OrdersErrorState onRetry={p.refetchOrders} />
+          </div>
         ) : emptyAbsolute ? (
-          <OrdersEmptyState />
+          <div className="flex min-h-[60vh] items-center justify-center px-4">
+            <OrdersEmptyState />
+          </div>
         ) : (
-          <MobileOrdersView
-            orders={p.sortedOrders}
-            kpis={p.kpis}
-            selectedId={p.selectedOrderId}
-            onSelect={(id) => (id == null ? p.closeDrawer() : p.openOrder(id))}
-            search={p.search}
-            onSearchChange={p.setSearch}
-            statusFilter={p.statusFilter}
-            onStatusFilterChange={p.setStatusFilter}
-            counts={p.counts}
-            onExport={p.handleExport}
-            exporting={p.isExporting}
-            exportLocked={p.exportLocked}
-            onAcceptCancelReq={p.acceptCancelRequest}
-            onDenyCancelReq={p.denyCancelRequest}
-            acceptDenyLoading={p.acceptDenyLoading}
-          />
+          <div className="-mx-4 -mt-4">
+            <MobileOrdersView
+              orders={p.sortedOrders}
+              kpis={p.kpis}
+              selectedId={p.selectedOrderId}
+              onSelect={(id) => (id == null ? p.closeDrawer() : p.openOrder(id))}
+              search={p.search}
+              onSearchChange={p.setSearch}
+              statusFilter={p.statusFilter}
+              onStatusFilterChange={p.setStatusFilter}
+              counts={p.counts}
+              onExport={p.handleExport}
+              exporting={p.isExporting}
+              exportLocked={p.exportLocked}
+              onAcceptCancelReq={p.acceptCancelRequest}
+              onDenyCancelReq={p.denyCancelRequest}
+              acceptDenyLoading={p.acceptDenyLoading}
+            />
+          </div>
         )}
       </div>
 

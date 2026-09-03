@@ -81,7 +81,8 @@ export function NotificationsPopover({
       <PopoverContent
         align="end"
         sideOffset={12}
-        className="w-[calc(100vw-1rem)] overflow-hidden rounded-[16px] border border-nxborder p-0 shadow-[0_24px_48px_-16px_rgba(28,30,43,.25)] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-top-2 data-[state=open]:duration-150 sm:w-[384px]"
+        collisionPadding={16}
+        className="w-[calc(100vw-2rem)] overflow-hidden rounded-[16px] border border-nxborder p-0 shadow-[0_24px_48px_-16px_rgba(28,30,43,.25)] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-top-2 data-[state=open]:duration-150 sm:w-[384px]"
       >
         {/* Header */}
         <div className="flex items-center gap-[9px] border-b border-nxborder bg-[#FBFBFD] pb-[13px] pl-[16px] pr-[14px] pt-[14px]">

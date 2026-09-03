@@ -25,13 +25,6 @@ export function useOnboardingChecklist(): OnboardingResult {
       href: '/vendedor/configuracoes/informacoes-basicas',
     },
     {
-      id: 'banner',
-      text: 'Personalize o banner da loja',
-      done: !!s.banner,
-      cta: 'Personalizar',
-      href: '/vendedor/configuracoes/informacoes-basicas',
-    },
-    {
       id: 'description',
       text: 'Escreva uma descrição para a loja',
       done: !!s.description && String(s.description).trim().length > 0,
