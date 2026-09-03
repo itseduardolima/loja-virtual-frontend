@@ -761,6 +761,18 @@
   margin-top: 6px;
   min-height: 18px;
 }
+.planTrial {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  margin-top: 10px;
+  padding: 4px 10px;
+  border-radius: var(--r-tag);
+  background: var(--emr-soft);
+  color: var(--emr);
+  font-size: 12px;
+  font-weight: 800;
+}
 .planDesc {
   font-size: 13.5px;
   font-weight: 700;

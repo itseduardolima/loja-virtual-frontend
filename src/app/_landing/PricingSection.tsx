@@ -89,6 +89,9 @@ export const PricingSection = () => {
                   <small>/mês</small>
                 </div>
                 <div className={s.planSub}>{displaySub}</div>
+                {plan.trial_days != null && plan.trial_days > 0 && (
+                  <div className={s.planTrial}>Teste grátis por {plan.trial_days} dias</div>
+                )}
                 <ul className={s.planFeats}>
                   {features.map((f) => (
                     <li key={f.label} className={f.included ? '' : s.off}>

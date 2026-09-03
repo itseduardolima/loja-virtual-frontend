@@ -212,6 +212,7 @@ function AssinaturaContent() {
                   planName={plan?.name}
                   planMaxProducts={plan?.max_products}
                   planBillingCycle={selectedCycle}
+                  planTrialDays={plan?.trial_days}
                   couponInput={couponInput}
                   appliedCoupon={appliedCoupon}
                   isValidatingCoupon={isValidatingCoupon}
@@ -224,6 +225,7 @@ function AssinaturaContent() {
                   documentValue={documentValue}
                   onDocumentChange={handleDocumentChange}
                   onCreateSubscription={handleCreateSubscription}
+                  onStartTrial={plan ? () => handleStartTrial(plan, selectedCycle) : undefined}
                   onBack={handleBackToPlan}
                 />
               )}

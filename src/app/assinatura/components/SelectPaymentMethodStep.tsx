@@ -23,6 +23,7 @@ interface SelectPaymentMethodStepProps {
   planName?: string
   planMaxProducts?: number | null
   planBillingCycle?: string
+  planTrialDays?: number | null
   canContinue: boolean
   isCreatingSubscription: boolean
   isFreeCheckout?: boolean
@@ -35,6 +36,7 @@ interface SelectPaymentMethodStepProps {
   onApplyCoupon?: () => void
   onRemoveCoupon?: () => void
   onCreateSubscription: () => void
+  onStartTrial?: () => void
   onBack: () => void
 }
 
@@ -49,6 +51,7 @@ export function SelectPaymentMethodStep({
   planFeatures = [],
   planName,
   planBillingCycle,
+  planTrialDays,
   canContinue,
   isCreatingSubscription,
   isFreeCheckout = false,
@@ -61,9 +64,11 @@ export function SelectPaymentMethodStep({
   onApplyCoupon,
   onRemoveCoupon,
   onCreateSubscription,
+  onStartTrial,
   onBack,
 }: SelectPaymentMethodStepProps) {
   const [showCoupon, setShowCoupon] = useState<boolean>(!!appliedCoupon?.valid)
+  const hasTrialOption = !isFreeCheckout && !!onStartTrial && (planTrialDays ?? 0) > 0
 
   useEffect(() => {
     if (!appliedCoupon?.valid) setShowCoupon(false)
@@ -306,6 +311,18 @@ export function SelectPaymentMethodStep({
               </>
             )}
           </button>
+
+          {/* Alternativa: começar pelo trial em vez de pagar agora */}
+          {hasTrialOption && (
+            <button
+              type="button"
+              onClick={onStartTrial}
+              disabled={isCreatingSubscription}
+              className="mt-2.5 flex h-11 w-full items-center justify-center gap-1.5 rounded-lg border border-nxp/25 bg-nxp/[0.04] text-[13.5px] font-bold text-nxp transition-colors hover:bg-nxp/[0.08] disabled:opacity-50"
+            >
+              Prefiro testar grátis por {planTrialDays} dias primeiro
+            </button>
+          )}
 
           {/* Nota de redirecionamento */}
           {!isFreeCheckout && (
