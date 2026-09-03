@@ -58,6 +58,9 @@ const buildContentSecurityPolicy = () => {
 }
 
 const nextConfig = {
+  // Standalone: o build copia só o necessário para rodar (server.js + node_modules
+  // mínimos) para dist/, permitindo uma imagem Docker enxuta sem node_modules completo.
+  output: 'standalone',
   // Necessário no Next 14 (estável a partir do Next 15) para que src/instrumentation.ts
   // seja carregado e inicialize o Sentry no runtime server/edge.
   experimental: {
