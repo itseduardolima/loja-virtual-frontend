@@ -1,35 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { motion, type Variants } from 'framer-motion'
 import { Play, DollarSign, ShoppingBag, Receipt, TrendingUp } from 'lucide-react'
 import s from '../landing.module.css'
-
-const ThreadField = dynamic(() => import('./three/ThreadField'), { ssr: false })
-
-/** Ativa o campo de fios 3D só em telas grandes e quando o usuário não pediu menos movimento. */
-function useThreadFieldEnabled() {
-  const [enabled, setEnabled] = useState(false)
-
-  useEffect(() => {
-    const wideMq = window.matchMedia('(min-width: 1024px)')
-    const motionMq = window.matchMedia('(prefers-reduced-motion: reduce)')
-
-    const update = () => setEnabled(wideMq.matches && !motionMq.matches)
-    update()
-
-    wideMq.addEventListener('change', update)
-    motionMq.addEventListener('change', update)
-    return () => {
-      wideMq.removeEventListener('change', update)
-      motionMq.removeEventListener('change', update)
-    }
-  }, [])
-
-  return enabled
-}
 
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const
 
@@ -69,13 +43,9 @@ const cardVariants: Variants = {
 }
 
 export const Hero = () => {
-  const threadFieldEnabled = useThreadFieldEnabled()
-
   return (
     <section className={s.hero}>
-      <div className={s.threadFieldWrap}>
-        {threadFieldEnabled ? <ThreadField /> : <div className={s.threadFieldFallback} />}
-      </div>
+      <div className={s.threadFieldFallback} />
 
       <div className={s.wrap}>
         <motion.div

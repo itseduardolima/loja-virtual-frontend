@@ -1,4 +1,5 @@
 import s from './landing.module.css'
+import { PageThreadField } from './_landing/PageThreadField'
 import { Navbar } from './_landing/Navbar'
 import { Hero } from './_landing/Hero'
 import { Posicionamento } from './_landing/Posicionamento'
@@ -14,6 +15,7 @@ import { Footer } from './_landing/Footer'
 export default function Home() {
   return (
     <div className={s.nexo}>
+      <PageThreadField />
       <Navbar />
       <main>
         <Hero />
