@@ -2,11 +2,9 @@ import s from './landing.module.css'
 import { Navbar } from './_landing/Navbar'
 import { Hero } from './_landing/Hero'
 import { Posicionamento } from './_landing/Posicionamento'
-import { BeforeAfter } from './_landing/BeforeAfter'
 import { HowItWorks } from './_landing/HowItWorks'
 import { BentoFeatures } from './_landing/BentoFeatures'
 import { Vitrine } from './_landing/Vitrine'
-import { ComparisonTable } from './_landing/ComparisonTable'
 import { Testimonials } from './_landing/Testimonials'
 import { PricingSection } from './_landing/PricingSection'
 import { FAQ } from './_landing/FAQ'
@@ -20,11 +18,9 @@ export default function Home() {
       <main>
         <Hero />
         <Posicionamento />
-        <BeforeAfter />
         <HowItWorks />
         <BentoFeatures />
         <Vitrine />
-        <ComparisonTable />
         <Testimonials />
         <PricingSection />
         <FAQ />
