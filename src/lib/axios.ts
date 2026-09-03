@@ -46,10 +46,20 @@ api.interceptors.response.use(
 
     const isRefreshRequest = originalRequest?.url?.includes('/auth/refresh_token')
 
+    // Endpoints de auth pré-sessão: um 401 aqui é resposta normal do fluxo (senha
+    // errada, token de reset inválido/expirado) — não indica sessão expirada, então
+    // não deve disparar o ciclo de refresh nem o redirect de window.location.href
+    // (bug: login com senha errada dava reload da própria página de login e o
+    // usuário nunca via a mensagem de erro, porque o catch do componente nunca
+    // era alcançado).
+    const isPreAuthRequest =
+      originalRequest?.url?.includes('/auth/login') ||
+      originalRequest?.url?.includes('/auth/reset_password')
+
     // Se o próprio refresh falhar com 401, não tenta renovar de novo (evitaria
     // deadlock: essa chamada ficaria presa na fila esperando por si mesma).
     // Propaga o erro para o catch de quem chamou o refresh.
-    if (error.response?.status === 401 && isRefreshRequest) {
+    if (error.response?.status === 401 && (isRefreshRequest || isPreAuthRequest)) {
       return Promise.reject(error)
     }
 

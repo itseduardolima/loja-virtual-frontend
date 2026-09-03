@@ -14,6 +14,8 @@ import Image from 'next/image'
 import { GripVertical, ImagePlus, Image as ImageIcon, Star, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { buildImageUrl } from '@/lib/imageUtils'
+import { ACCEPTED_IMAGE_ACCEPT_ATTR, partitionValidImageFiles } from '@/lib/imageValidation'
+import { useToastContext } from '@/contexts/ToastContext'
 import type { OrderedImage } from '../types'
 import { getColorHex } from '../data'
 import { SectionCard, SectionHeader, FieldHelp, NxBadge, Swatch } from '../primitives'
@@ -254,13 +256,17 @@ function ColorImages({
   const dragIdx = useRef<number | null>(null)
   const [dragging, setDragging] = useState<number | null>(null)
   const [dropTarget, setDropTarget] = useState<number | null>(null)
+  const { error: showError } = useToastContext()
 
   const addFiles = (files: File[]) => {
     if (!active || files.length === 0) return
+    const { valid, errors } = partitionValidImageFiles(files)
+    if (errors.length > 0) showError(errors.join('\n'))
+    if (valid.length === 0) return
     const current = orderedImagesByColor[active] || []
     const remaining = MAX_PER - current.length
     if (remaining <= 0) return
-    const toAdd = files.slice(0, remaining).map((file) => ({ type: 'new' as const, file }))
+    const toAdd = valid.slice(0, remaining).map((file) => ({ type: 'new' as const, file }))
     onOrderedImagesChange(active, [...current, ...toAdd])
   }
 
@@ -432,6 +438,7 @@ function SimpleImages({
   const dragIdx = useRef<number | null>(null)
   const [dragging, setDragging] = useState<number | null>(null)
   const [dropTarget, setDropTarget] = useState<number | null>(null)
+  const { error: showError } = useToastContext()
 
   const activeExisting = existingImages
     .map((url, index) => ({ url, index }))
@@ -441,14 +448,21 @@ function SimpleImages({
 
   const pick = () => fileInputRef.current?.click()
 
-  const dropFiles = (files: File[]) => {
-    if (files.length === 0) return
-    const event = { target: { files } } as unknown as React.ChangeEvent<HTMLInputElement>
+  const forwardValidFiles = (files: File[]) => {
+    const { valid, errors } = partitionValidImageFiles(files)
+    if (errors.length > 0) showError(errors.join('\n'))
+    if (valid.length === 0) return
+    const event = { target: { files: valid } } as unknown as React.ChangeEvent<HTMLInputElement>
     onImageChange(event)
   }
 
+  const dropFiles = (files: File[]) => {
+    if (files.length === 0) return
+    forwardValidFiles(files)
+  }
+
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onImageChange(e)
+    forwardValidFiles(Array.from(e.target.files || []))
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 

@@ -3,13 +3,7 @@ import { PhoneCountryInput } from '@/components/Form'
 import { FieldLabel, FieldHelp, nxInputClass } from '@/app/vendedor/configuracoes/_shared'
 import { Phone, Mail, Instagram, Facebook, Youtube, Music2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import {
-  extractHandle,
-  toInstagramUrl,
-  toFacebookUrl,
-  toTiktokUrl,
-  toYoutubeUrl,
-} from '../utils/social'
+import { extractHandle, toInstagramUrl, toTiktokUrl } from '../utils/social'
 import type { CreateStoreData } from '@/hooks/useCreateStore'
 import type { Country } from '@/hooks/useCountries'
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime'
@@ -129,24 +123,13 @@ export function StepContact({
             Facebook
             <OptionalBadge />
           </FieldLabel>
-          <div className="relative">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 select-none whitespace-nowrap text-[12px] text-nxi3">
-              fb.com/
-            </span>
-            <Input
-              type="text"
-              value={extractHandle(formData.facebook ?? '')}
-              onChange={(e) => onChange('facebook', toFacebookUrl(e.target.value))}
-              placeholder="minhaloja"
-              className={cn(nxInputClass(!!errors.facebook), 'w-full pl-[60px]')}
-            />
-          </div>
-          {extractHandle(formData.facebook ?? '') && (
-            <FieldHelp>
-              facebook.com/
-              <strong className="text-nxi2">{extractHandle(formData.facebook ?? '')}</strong>
-            </FieldHelp>
-          )}
+          <Input
+            type="url"
+            value={formData.facebook ?? ''}
+            onChange={(e) => onChange('facebook', e.target.value)}
+            placeholder="https://facebook.com/sualoja"
+            className={cn(nxInputClass(!!errors.facebook), 'w-full')}
+          />
           {errors.facebook && <FieldHelp variant="error">{errors.facebook}</FieldHelp>}
         </div>
 
@@ -185,24 +168,13 @@ export function StepContact({
             YouTube
             <OptionalBadge />
           </FieldLabel>
-          <div className="relative">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 select-none text-[13px] text-nxi3">
-              @
-            </span>
-            <Input
-              type="text"
-              value={extractHandle(formData.youtube ?? '')}
-              onChange={(e) => onChange('youtube', toYoutubeUrl(e.target.value))}
-              placeholder="meucanal"
-              className={cn(nxInputClass(!!errors.youtube), 'w-full pl-7')}
-            />
-          </div>
-          {extractHandle(formData.youtube ?? '') && (
-            <FieldHelp>
-              youtube.com/@
-              <strong className="text-nxi2">{extractHandle(formData.youtube ?? '')}</strong>
-            </FieldHelp>
-          )}
+          <Input
+            type="url"
+            value={formData.youtube ?? ''}
+            onChange={(e) => onChange('youtube', e.target.value)}
+            placeholder="https://youtube.com/@seucanal"
+            className={cn(nxInputClass(!!errors.youtube), 'w-full')}
+          />
           {errors.youtube && <FieldHelp variant="error">{errors.youtube}</FieldHelp>}
         </div>
       </div>

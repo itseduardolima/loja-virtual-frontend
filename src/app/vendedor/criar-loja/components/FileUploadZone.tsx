@@ -2,34 +2,63 @@
 
 import { useRef, useState, useCallback } from 'react'
 import Image from 'next/image'
-import { Upload } from 'lucide-react'
+import { Upload, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { ACCEPTED_IMAGE_ACCEPT_ATTR, validateImageFile } from '@/lib/imageValidation'
 
 interface FileUploadZoneProps {
   label: string
   hint: string
   preview: string | null
   onFile: (file: File) => void
+  onRemove?: () => void
 }
 
-export function FileUploadZone({ label, hint, preview, onFile }: FileUploadZoneProps) {
+export function FileUploadZone({ label, hint, preview, onFile, onRemove }: FileUploadZoneProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [drag, setDrag] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const pickFile = useCallback(
+    (file: File | undefined) => {
+      if (!file) return
+      const validationError = validateImageFile(file)
+      if (validationError) {
+        setError(validationError)
+        return
+      }
+      setError(null)
+      onFile(file)
+    },
+    [onFile],
+  )
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault()
       setDrag(false)
-      const file = e.dataTransfer.files[0]
-      if (file?.type.startsWith('image/')) onFile(file)
+      pickFile(e.dataTransfer.files[0])
     },
-    [onFile],
+    [pickFile],
   )
 
   if (preview) {
     return (
-      <div className="relative rounded-xl overflow-hidden" style={{ height: 128 }}>
-        <Image src={preview} alt="" fill className="object-cover" />
+      <div
+        className="relative overflow-hidden rounded-xl border border-nxborder bg-nxbg"
+        style={{ height: 128 }}
+      >
+        <Image src={preview} alt="" fill className="object-contain p-2" />
+        {onRemove && (
+          <button
+            type="button"
+            onClick={onRemove}
+            aria-label={`Remover ${label.toLowerCase()}`}
+            className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-nxi2 shadow-sm transition-colors hover:bg-nxd hover:text-white"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
     )
   }
@@ -55,14 +84,15 @@ export function FileUploadZone({ label, hint, preview, onFile }: FileUploadZoneP
           <p className="mt-0.5 text-[11.5px] text-nxi3">{hint}</p>
         </div>
       </div>
+      {error && <p className="mt-1.5 text-[11.5px] font-medium text-nxd">{error}</p>}
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept={ACCEPTED_IMAGE_ACCEPT_ATTR}
         className="hidden"
         onChange={(e) => {
-          const file = e.target.files?.[0]
-          if (file) onFile(file)
+          pickFile(e.target.files?.[0])
+          e.target.value = ''
         }}
       />
     </>

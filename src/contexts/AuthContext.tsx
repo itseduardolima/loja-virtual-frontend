@@ -115,7 +115,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
     onError: (error) => {
       console.error('Erro no login:', error)
-      throw error
     },
   })
 

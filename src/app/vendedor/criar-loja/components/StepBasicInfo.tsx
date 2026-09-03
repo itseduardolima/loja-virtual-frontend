@@ -8,10 +8,10 @@ import type { CreateStoreData } from '@/hooks/useCreateStore'
 interface StepBasicInfoProps {
   formData: CreateStoreData
   logoPreview: string | null
-  bannerPreview: string | null
   errors: Record<string, string>
   onChange: (field: keyof CreateStoreData, value: CreateStoreData[keyof CreateStoreData]) => void
-  onFile: (field: 'logo' | 'banner', file: File) => void
+  onFile: (field: 'logo', file: File) => void
+  onRemoveFile: (field: 'logo') => void
 }
 
 function OptionalBadge() {
@@ -25,10 +25,10 @@ function OptionalBadge() {
 export function StepBasicInfo({
   formData,
   logoPreview,
-  bannerPreview,
   errors,
   onChange,
   onFile,
+  onRemoveFile,
 }: StepBasicInfoProps) {
   const slug = slugify(formData.name)
 
@@ -82,31 +82,18 @@ export function StepBasicInfo({
         <p className="mb-3 text-[12.5px] font-semibold tracking-[0.01em] text-nxi2">
           Identidade visual
         </p>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="mb-2 flex items-center gap-1.5 text-[11.5px] text-nxi3">
-              Logo
-              <OptionalBadge />
-            </p>
-            <FileUploadZone
-              label="Logo"
-              hint="PNG · JPG · máx. 2MB"
-              preview={logoPreview}
-              onFile={(file) => onFile('logo', file)}
-            />
-          </div>
-          <div>
-            <p className="mb-2 flex items-center gap-1.5 text-[11.5px] text-nxi3">
-              Banner
-              <OptionalBadge />
-            </p>
-            <FileUploadZone
-              label="Banner"
-              hint="PNG · JPG · proporção 3:1"
-              preview={bannerPreview}
-              onFile={(file) => onFile('banner', file)}
-            />
-          </div>
+        <div className="max-w-[240px]">
+          <p className="mb-2 flex items-center gap-1.5 text-[11.5px] text-nxi3">
+            Logo
+            <OptionalBadge />
+          </p>
+          <FileUploadZone
+            label="Logo"
+            hint="PNG · JPG · máx. 2MB"
+            preview={logoPreview}
+            onFile={(file) => onFile('logo', file)}
+            onRemove={() => onRemoveFile('logo')}
+          />
         </div>
       </div>
     </div>

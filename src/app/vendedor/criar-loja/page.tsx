@@ -72,10 +72,10 @@ export default function CriarLojaPage() {
               <StepBasicInfo
                 formData={h.formData}
                 logoPreview={h.logoPreview}
-                bannerPreview={h.bannerPreview}
                 errors={errors(1)}
                 onChange={h.handleInputChange}
                 onFile={h.handleFileChange}
+                onRemoveFile={h.handleRemoveFile}
               />
             )}
             {h.currentStep === 2 && (

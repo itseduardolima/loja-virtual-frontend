@@ -7,23 +7,32 @@ import { useStore } from '@/hooks/useStore'
 import { useUpdateStore } from '@/hooks/useUpdateStore'
 import { buildImageUrl, cn } from '@/lib/utils'
 import { getInitials, getStoreChannels } from '@/lib/vendor'
+import { ACCEPTED_IMAGE_ACCEPT_ATTR, validateImageFile } from '@/lib/imageValidation'
+import { useToastContext } from '@/contexts/ToastContext'
 
 export function StoreCard() {
   const { data: store } = useStore()
   const { updateStore } = useUpdateStore()
+  const { error: showError } = useToastContext()
   const logoRef = useRef<HTMLInputElement>(null)
   const [copied, setCopied] = useState(false)
   const [heroHover, setHeroHover] = useState(false)
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
+    e.target.value = ''
     if (!file || !store?.id) return
+    const validationError = validateImageFile(file)
+    if (validationError) {
+      showError(validationError)
+      return
+    }
     await updateStore({ storeId: store.id, data: { logo: file } })
   }
 
   const copySlug = () => {
     if (!store?.slug) return
-    navigator.clipboard.writeText(`loja.com/${store.slug}`)
+    navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_APP_URL}/loja/${store.slug}`)
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
   }
@@ -66,7 +75,7 @@ export function StoreCard() {
         <input
           ref={logoRef}
           type="file"
-          accept="image/*"
+          accept={ACCEPTED_IMAGE_ACCEPT_ATTR}
           onChange={handleLogoUpload}
           className="hidden"
         />
@@ -84,7 +93,7 @@ export function StoreCard() {
                 copied ? 'text-nxs' : 'text-nxi3',
               )}
             >
-              loja.com/{store.slug}
+              {process.env.NEXT_PUBLIC_APP_URL?.replace(/^https?:\/\//, '')}/loja/{store.slug}
               <Copy size={11} />
             </button>
           )}

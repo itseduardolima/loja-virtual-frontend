@@ -64,7 +64,6 @@ export function useCreateStorePage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState<CreateStoreData>(emptyForm)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
-  const [bannerPreview, setBannerPreview] = useState<string | null>(null)
   const [selectedCountry, setSelectedCountry] = useState('BR')
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -97,7 +96,6 @@ export function useCreateStorePage() {
     currentStep: 1 as const,
     formData,
     logoPreview,
-    bannerPreview,
     selectedCountry,
     setSelectedCountry,
     dropdownRef,
@@ -110,6 +108,7 @@ export function useCreateStorePage() {
     stepErrors,
     handleInputChange: () => {},
     handleFileChange: () => {},
+    handleRemoveFile: () => {},
     handleNicheToggle: () => {},
     nextStep: () => {},
     prevStep: () => {},
@@ -165,15 +164,19 @@ export function useCreateStorePage() {
     })
   }
 
-  const handleFileChange = (field: 'logo' | 'banner', file: File | null) => {
+  const handleFileChange = (field: 'logo', file: File | null) => {
     if (!file) return
     setFormData(prev => ({ ...prev, [field]: file }))
     const reader = new FileReader()
     reader.onload = (e) => {
-      if (field === 'logo') setLogoPreview(e.target?.result as string)
-      else setBannerPreview(e.target?.result as string)
+      setLogoPreview(e.target?.result as string)
     }
     reader.readAsDataURL(file)
+  }
+
+  const handleRemoveFile = (field: 'logo') => {
+    setFormData(prev => ({ ...prev, [field]: undefined }))
+    setLogoPreview(null)
   }
 
   const handleNicheToggle = (nicheId: string) => {
@@ -259,7 +262,6 @@ export function useCreateStorePage() {
     currentStep,
     formData,
     logoPreview,
-    bannerPreview,
     selectedCountry,
     setSelectedCountry,
     dropdownRef,
@@ -272,6 +274,7 @@ export function useCreateStorePage() {
     stepErrors,
     handleInputChange,
     handleFileChange,
+    handleRemoveFile,
     handleNicheToggle,
     nextStep,
     prevStep,

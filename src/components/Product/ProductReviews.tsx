@@ -27,6 +27,8 @@ import { StoreInfo } from '@/types/store'
 import { buildImageUrl, cn } from '@/lib/utils'
 import { storeAccentStyle } from '@/lib/storefront'
 import { Stars } from '@/components/Store/Product'
+import { ACCEPTED_IMAGE_ACCEPT_ATTR, partitionValidImageFiles } from '@/lib/imageValidation'
+import { useToastContext } from '@/contexts/ToastContext'
 
 function formatReviewDate(date: Date): string {
   return date.toLocaleDateString('pt-BR', {
@@ -100,13 +102,14 @@ function ReviewItem({ review, currentUserId, onEdit, isUpdating }: ReviewItemPro
     setEditNewImages([])
   }
 
+  const { error: showError } = useToastContext()
+
   const handleEditImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
-    const validFiles = files.filter(
-      (f) => f.type.startsWith('image/') && f.size <= 5 * 1024 * 1024
-    )
+    const { valid, errors } = partitionValidImageFiles(files)
+    if (errors.length > 0) showError(errors.join('\n'))
     const totalCount = editKeepImages.length + editNewImages.length
-    setEditNewImages((prev) => [...prev, ...validFiles].slice(0, MAX_IMAGES - totalCount))
+    setEditNewImages((prev) => [...prev, ...valid].slice(0, MAX_IMAGES - totalCount))
     e.target.value = ''
   }
 
@@ -214,7 +217,7 @@ function ReviewItem({ review, currentUserId, onEdit, isUpdating }: ReviewItemPro
             <input
               ref={editFileInputRef}
               type="file"
-              accept="image/jpeg,image/png,image/webp,image/jpg"
+              accept={ACCEPTED_IMAGE_ACCEPT_ATTR}
               multiple
               onChange={handleEditImageChange}
               className="hidden"
@@ -322,6 +325,7 @@ function ReviewItem({ review, currentUserId, onEdit, isUpdating }: ReviewItemPro
 
 export function ProductReviews({ slug, productId, storeInfo }: ProductReviewsProps) {
   const { isAuthenticated, user, loginWithGoogle } = useAuth()
+  const { error: showError } = useToastContext()
   const [page, setPage] = useState(1)
   const [sort, setSort] = useState<'latest' | 'highest' | 'images'>('latest')
   const [allReviews, setAllReviews] = useState<ProductReview[]>([])
@@ -395,10 +399,9 @@ export function ProductReviews({ slug, productId, storeInfo }: ProductReviewsPro
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
-    const validFiles = files.filter(
-      (f) => f.type.startsWith('image/') && f.size <= 5 * 1024 * 1024
-    )
-    setSelectedImages((prev) => [...prev, ...validFiles].slice(0, MAX_IMAGES))
+    const { valid, errors } = partitionValidImageFiles(files)
+    if (errors.length > 0) showError(errors.join('\n'))
+    setSelectedImages((prev) => [...prev, ...valid].slice(0, MAX_IMAGES))
     e.target.value = ''
   }
 
@@ -516,7 +519,7 @@ export function ProductReviews({ slug, productId, storeInfo }: ProductReviewsPro
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/jpeg,image/png,image/webp,image/jpg"
+                  accept={ACCEPTED_IMAGE_ACCEPT_ATTR}
                   multiple
                   onChange={handleImageChange}
                   className="hidden"

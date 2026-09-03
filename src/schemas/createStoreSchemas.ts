@@ -6,9 +6,12 @@ const instagramUrlRegex = /^(https?:\/\/)?(www\.)?(instagram\.com|instagr\.am)\/
 // Validação para URL do Facebook
 const facebookUrlRegex = /^(https?:\/\/)?(www\.)?(facebook\.com|fb\.com)\/.+$/i
 
-// Validação para URL do TikTok / YouTube (handle prefixado com @)
+// Validação para URL do TikTok (handle prefixado com @)
 const tiktokUrlRegex = /^(https?:\/\/)?(www\.)?tiktok\.com\/@.+$/i
-const youtubeUrlRegex = /^(https?:\/\/)?(www\.)?youtube\.com\/@.+$/i
+
+// YouTube aceita qualquer formato de link do canal (@handle, /channel/UC…, /c/Nome,
+// /user/Nome, ou um link curto youtu.be) — não só o formato @handle.
+const youtubeUrlRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/i
 
 // WhatsApp brasileiro: DDD (2) + número (8 ou 9 dígitos) = 10 ou 11 dígitos.
 // O código +55 é adicionado no envio; aqui validamos só o número local.
@@ -99,7 +102,7 @@ export const createStoreStep3Schema = yup.object({
   youtube: yup
     .string()
     .optional()
-    .test('youtube-url', 'Link inválido. Use: https://youtube.com/@seu-canal', (value) => {
+    .test('youtube-url', 'Link inválido. Cole a URL completa do seu canal do YouTube', (value) => {
       if (!value || value.trim() === '') return true
       return youtubeUrlRegex.test(value)
     }),
@@ -184,7 +187,7 @@ export const createStoreSchema = yup.object({
   youtube: yup
     .string()
     .optional()
-    .test('youtube-url', 'Link inválido. Use: https://youtube.com/@seu-canal', (value) => {
+    .test('youtube-url', 'Link inválido. Cole a URL completa do seu canal do YouTube', (value) => {
       if (!value || value.trim() === '') return true
       return youtubeUrlRegex.test(value)
     }),
