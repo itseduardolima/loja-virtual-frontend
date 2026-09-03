@@ -1,102 +1,171 @@
-import Image from 'next/image'
+'use client'
+
+import { useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { Play } from 'lucide-react'
+import { motion, type Variants } from 'framer-motion'
+import { Play, DollarSign, ShoppingBag, Receipt, TrendingUp } from 'lucide-react'
 import s from '../landing.module.css'
 
-const FACES = [
-  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&q=80&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&q=80&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&q=80&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=120&q=80&fit=crop&crop=faces',
-]
+const ThreadField = dynamic(() => import('./three/ThreadField'), { ssr: false })
 
-export const Hero = () => (
-  <section className={s.hero}>
-    <div className={s.wrap}>
-      <div className={s.heroGrid}>
-        <div data-rev>
-          <h1 className={s.h1}>Chega de perder venda no WhatsApp.</h1>
-          <p className={s.heroSub}>
-            Sua loja com Pix, cartão e WhatsApp automático. Gerencie do celular, venda 24h.
-          </p>
-          <div className={s.heroCtas}>
-            <Link
-              href="#precos"
-              style={{ color: 'var(--wht)' }}
-              className={`${s.btn} ${s.btnPri} ${s.btnLg}`}
-            >
-              Criar minha loja
-            </Link>
-            <button className={`${s.btn} ${s.btnOutline}`} type="button">
-              <Play size={17} color="#4F46E5" />
-              Ver como funciona (2 min)
-            </button>
-          </div>
-          <div className={s.heroProof}>
-            <div className={s.stackFaces}>
-              {FACES.map((src, i) => (
-                <Image key={i} src={src} alt="" width={32} height={32} />
-              ))}
-            </div>
-            Mais de 1.200 lojistas de moda já migraram do WhatsApp
-          </div>
-        </div>
+/** Ativa o campo de fios 3D só em telas grandes e quando o usuário não pediu menos movimento. */
+function useThreadFieldEnabled() {
+  const [enabled, setEnabled] = useState(false)
 
-        <div className={s.phoneStage} data-rev>
-          <div className={`${s.phone} ${s.floatAnim}`}>
-            <div className={s.phoneScreen}>
-              <div className={s.psHead}>
-                <div className={s.psHeadRow}>
-                  <span className={s.psTitle}>Pedidos</span>
-                  <span className={`${s.badge} ${s.bNovo}`}>3 novos</span>
+  useEffect(() => {
+    const wideMq = window.matchMedia('(min-width: 1024px)')
+    const motionMq = window.matchMedia('(prefers-reduced-motion: reduce)')
+
+    const update = () => setEnabled(wideMq.matches && !motionMq.matches)
+    update()
+
+    wideMq.addEventListener('change', update)
+    motionMq.addEventListener('change', update)
+    return () => {
+      wideMq.removeEventListener('change', update)
+      motionMq.removeEventListener('change', update)
+    }
+  }, [])
+
+  return enabled
+}
+
+const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const
+
+const heroVariants: Variants = {
+  hidden: {},
+  show: {
+    transition: { staggerChildren: 0.14, delayChildren: 0.05 },
+  },
+}
+
+const headlineVariants: Variants = {
+  hidden: { opacity: 0, y: 22, clipPath: 'inset(0 0 100% 0)' },
+  show: {
+    opacity: 1,
+    y: 0,
+    clipPath: 'inset(0 0 0% 0)',
+    transition: { duration: 0.8, ease: EASE_OUT_EXPO },
+  },
+}
+
+const fadeUpVariants: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease: EASE_OUT_EXPO },
+  },
+}
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 26 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, delay: 0.25, ease: EASE_OUT_EXPO },
+  },
+}
+
+export const Hero = () => {
+  const threadFieldEnabled = useThreadFieldEnabled()
+
+  return (
+    <section className={s.hero}>
+      <div className={s.threadFieldWrap}>
+        {threadFieldEnabled ? <ThreadField /> : <div className={s.threadFieldFallback} />}
+      </div>
+
+      <div className={s.wrap}>
+        <motion.div
+          className={s.heroGrid}
+          variants={heroVariants}
+          initial="hidden"
+          animate="show"
+        >
+          <div>
+            <motion.h1 className={s.h1} variants={headlineVariants}>
+              Chega de perder venda no WhatsApp.
+            </motion.h1>
+            <motion.p className={s.heroSub} variants={fadeUpVariants}>
+              Catálogo, carrinho e pedido organizado num link só. O pagamento continua
+              combinado no WhatsApp, do jeito que seu cliente já confia.
+            </motion.p>
+            <motion.div className={s.heroCtas} variants={fadeUpVariants}>
+              <Link
+                href="#precos"
+                style={{ color: 'var(--wht)' }}
+                className={`${s.btn} ${s.btnPri} ${s.btnLg}`}
+              >
+                Criar minha loja
+              </Link>
+              <button className={`${s.btn} ${s.btnOutline}`} type="button">
+                <Play size={17} color="#2A2D7C" />
+                Ver como funciona
+              </button>
+            </motion.div>
+          </div>
+
+          <motion.div className={s.dashStage} variants={cardVariants}>
+            <div className={`${s.dashCard} ${s.floatAnim}`}>
+              <div className={s.dashGreetRow}>
+                <div>
+                  <div className={s.dashGreet}>Bom dia, Marina</div>
+                  <div className={s.dashSub}>Gerencie sua loja e acompanhe suas vendas.</div>
                 </div>
-                <div className={s.psKpis}>
-                  <div className={s.psKpi}>
-                    <div className={s.psKpiLabel}>Hoje</div>
-                    <div className={s.psKpiVal}>R$ 890</div>
-                  </div>
-                  <div className={s.psKpi}>
-                    <div className={s.psKpiLabel}>Pedidos</div>
-                    <div className={s.psKpiVal}>14</div>
-                  </div>
-                  <div className={s.psKpi}>
-                    <div className={s.psKpiLabel}>A enviar</div>
-                    <div className={s.psKpiVal}>5</div>
-                  </div>
-                </div>
+                <span className={s.dashToday}>HOJE</span>
               </div>
-              <div className={s.psBody}>
-                <div className={s.psCard}>
-                  <div className={s.psCardRow}>
-                    <span className={s.psCode}>#A1B2C3</span>
-                    <span className={`${s.badge} ${s.bNovo} ${s.badgeMarginLeft}`}>Novo</span>
-                  </div>
-                  <div className={s.psCardName}>Vestido midi linho · Tam M</div>
-                  <div className={s.psCardMeta}>Marina · há 4 min · R$ 189,90</div>
-                </div>
-                <div className={s.psCard}>
-                  <div className={s.psCardRow}>
-                    <span className={s.psCode}>#F4G5H6</span>
-                    <span className={`${s.badge} ${s.bPrep} ${s.badgeMarginLeft}`}>
-                      Em preparação
+
+              <div className={s.kpiGrid}>
+                <div className={s.kpi}>
+                  <div className={s.kpiTop}>
+                    <span className={s.kpiLabel}>Receita hoje</span>
+                    <span className={`${s.kpiIcon} ${s.kpiIconPrimary}`}>
+                      <DollarSign size={13} strokeWidth={2} />
                     </span>
                   </div>
-                  <div className={s.psCardName}>Tênis branco · Tam 39</div>
-                  <div className={s.psCardMeta}>João · há 1 h · R$ 229,00</div>
+                  <div className={s.kpiVal}>R$ 890</div>
+                  <div className={`${s.kpiDelta} ${s.kpiDeltaUp}`}>↑ 12% vs ontem</div>
                 </div>
-                <div className={s.psCard}>
-                  <div className={s.psCardRow}>
-                    <span className={s.psCode}>#K7L8M9</span>
-                    <span className={`${s.badge} ${s.bEnv} ${s.badgeMarginLeft}`}>Enviado</span>
+
+                <div className={s.kpi}>
+                  <div className={s.kpiTop}>
+                    <span className={s.kpiLabel}>Pedidos hoje</span>
+                    <span className={`${s.kpiIcon} ${s.kpiIconAccent}`}>
+                      <ShoppingBag size={13} strokeWidth={2} />
+                    </span>
                   </div>
-                  <div className={s.psCardName}>Camisa social slim · G</div>
-                  <div className={s.psCardMeta}>Ana B. · há 3 h · R$ 139,00</div>
+                  <div className={s.kpiVal}>14</div>
+                  <div className={`${s.kpiDelta} ${s.kpiDeltaUp}`}>↑ 3 vs ontem</div>
+                </div>
+
+                <div className={s.kpi}>
+                  <div className={s.kpiTop}>
+                    <span className={s.kpiLabel}>Ticket médio</span>
+                    <span className={`${s.kpiIcon} ${s.kpiIconWarning}`}>
+                      <Receipt size={13} strokeWidth={2} />
+                    </span>
+                  </div>
+                  <div className={s.kpiVal}>R$ 63,50</div>
+                  <div className={`${s.kpiDelta} ${s.kpiDeltaFlat}`}>sem variação</div>
+                </div>
+
+                <div className={s.kpi}>
+                  <div className={s.kpiTop}>
+                    <span className={s.kpiLabel}>Conversão do carrinho</span>
+                    <span className={`${s.kpiIcon} ${s.kpiIconSuccess}`}>
+                      <TrendingUp size={13} strokeWidth={2} />
+                    </span>
+                  </div>
+                  <div className={s.kpiVal}>24,3%</div>
+                  <div className={`${s.kpiDelta} ${s.kpiDeltaUp}`}>↑ 2,1pp</div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
-    </div>
-  </section>
-)
+    </section>
+  )
+}

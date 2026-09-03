@@ -1,0 +1,186 @@
+/* ===  Vitrine — "Sua vitrine tem cara de loja de verdade"  ===
+   CSS module dedicado (não compartilha landing.module.css) — usa apenas os
+   custom properties herdados de .nexo (definidos em landing.module.css), já
+   que este componente é renderizado dentro do mesmo wrapper .nexo. */
+
+.sec {
+  padding: 64px 0;
+  position: relative;
+  border-top: 1px solid var(--bd);
+}
+
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 22px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+}
+
+.text {
+  max-width: 480px;
+}
+
+.eyebrow {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ind);
+}
+
+.heading {
+  margin-top: 10px;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
+  color: var(--t1);
+}
+
+.lead {
+  margin-top: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--t2);
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 20px;
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--ind);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.card {
+  background: var(--wht, #fff);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-card);
+  overflow: hidden;
+}
+
+.imgWrap {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 5px 10px;
+  border-radius: var(--r-tag);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  color: var(--t1);
+}
+
+.heart {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-pill);
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.body {
+  padding: 13px;
+}
+
+.stars {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.starRow {
+  display: flex;
+  gap: 1px;
+}
+
+.reviewCount {
+  font-size: 10.5px;
+  color: var(--t3);
+  font-weight: 700;
+}
+
+.name {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--t1);
+  margin-top: 6px;
+}
+
+.priceRow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 7px;
+  flex-wrap: wrap;
+}
+
+.price {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--t1);
+}
+
+.oldPrice {
+  font-size: 11.5px;
+  color: var(--t3);
+  text-decoration: line-through;
+  font-weight: 700;
+}
+
+.off {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 800;
+  color: #e23636;
+  background: rgba(226, 54, 54, 0.1);
+  padding: 3px 7px;
+  border-radius: var(--r-tag);
+}
+
+@media (min-width: 880px) {
+  .sec {
+    padding: 84px 0;
+  }
+  .layout {
+    grid-template-columns: 260px 1fr;
+    gap: 44px;
+    align-items: start;
+  }
+  .text {
+    position: sticky;
+    top: 96px;
+  }
+  .heading {
+    font-size: 32px;
+  }
+}

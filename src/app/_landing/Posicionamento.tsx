@@ -2,9 +2,9 @@ import { LayoutGrid, ClipboardList, Store } from 'lucide-react'
 import s from '../landing.module.css'
 
 const CARDS = [
-  { icon: <LayoutGrid size={20} color="#4F46E5" />, title: 'Catálogo organizado', desc: 'Suas peças por categoria, com foto, preço e variações — fácil do cliente achar e escolher.' },
-  { icon: <ClipboardList size={20} color="#4F46E5" />, title: 'Gestão dos pedidos', desc: 'Tudo num painel: o que entrou, o que falta enviar e o que já foi entregue. Sem planilha.' },
-  { icon: <Store size={20} color="#4F46E5" />, title: 'Sua loja, sua marca', desc: 'Um link só seu pra mandar no WhatsApp e no Instagram. O cliente é seu, não da plataforma.' },
+  { icon: <LayoutGrid size={20} color="var(--ind)" />, title: 'Catálogo organizado', desc: 'Suas peças por categoria, com foto, preço e variações, fácil do cliente achar e escolher.' },
+  { icon: <ClipboardList size={20} color="var(--ind)" />, title: 'Gestão dos pedidos', desc: 'Tudo num painel: o que entrou, o que falta enviar e o que já foi entregue. Sem planilha.' },
+  { icon: <Store size={20} color="var(--ind)" />, title: 'Sua loja, sua marca', desc: 'Um link só seu pra mandar no WhatsApp e no Instagram. O cliente é seu, não da plataforma.' },
 ]
 
 export const Posicionamento = () => (
@@ -17,7 +17,7 @@ export const Posicionamento = () => (
       </div>
       <div className={s.posGrid}>
         {CARDS.map((c) => (
-          <div key={c.title} className={s.posCard} data-rev>
+          <div key={c.title} className={s.posCard}>
             <span className={s.posIcon}>{c.icon}</span>
             <div className={s.posTitle}>{c.title}</div>
             <p className={s.posDesc}>{c.desc}</p>

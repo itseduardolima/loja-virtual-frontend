@@ -93,7 +93,7 @@ export const Navbar = () => {
           type="button"
           aria-label="Menu"
         >
-          {open ? <X size={22} color="#0F172A" /> : <Menu size={22} color="#0F172A" />}
+          {open ? <X size={22} color="var(--t1)" /> : <Menu size={22} color="var(--t1)" />}
         </button>
       </div>
       {open && (

@@ -4,11 +4,11 @@ import s from '../landing.module.css'
 export const ComparisonTable = () => (
   <section className={`${s.sec} ${s.bgWht}`}>
     <div className={s.wrap}>
-      <div className={s.secHead} data-rev>
+      <div className={s.secHead}>
         <div className={s.eyebrow}>Comparativo</div>
         <h2 className={s.h2}>Mais barato e com mais incluso</h2>
       </div>
-      <div className={s.cmp} data-rev>
+      <div className={s.cmp}>
         <div className={s.cmpScroll}>
           <table>
             <thead>
@@ -37,15 +37,15 @@ export const ComparisonTable = () => (
               </tr>
               <tr>
                 <td className={s.rowLabel}>Suporte em português</td>
-                <td className={s.colNexo}><Check size={19} color="#4F46E5" /></td>
-                <td className={s.colNexo}><Check size={19} color="#4F46E5" /></td>
+                <td className={s.colNexo}><Check size={19} color="var(--ind)" /></td>
+                <td className={s.colNexo}><Check size={19} color="var(--ind)" /></td>
                 <td>Limitado</td>
                 <td>Bot/inglês</td>
               </tr>
               <tr>
                 <td className={s.rowLabel}>Admin no celular</td>
-                <td className={s.colNexo}><Check size={19} color="#4F46E5" /></td>
-                <td className={s.colNexo}><Check size={19} color="#4F46E5" /></td>
+                <td className={s.colNexo}><Check size={19} color="var(--ind)" /></td>
+                <td className={s.colNexo}><Check size={19} color="var(--ind)" /></td>
                 <td>Parcial</td>
                 <td>Parcial</td>
               </tr>
@@ -53,7 +53,7 @@ export const ComparisonTable = () => (
           </table>
         </div>
         <div className={s.cmpNote}>
-          <Check size={20} color="#10B981" />
+          <Check size={20} color="var(--emr)" />
           Sem taxa de transação em nenhum plano.
         </div>
       </div>

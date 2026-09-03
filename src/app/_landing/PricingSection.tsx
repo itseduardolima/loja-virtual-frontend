@@ -25,11 +25,11 @@ export const PricingSection = () => {
   return (
     <section className={`${s.sec} ${s.bgWht}`} id="precos">
       <div className={s.wrap}>
-        <div className={s.secHead} data-rev>
+        <div className={s.secHead}>
           <div className={s.eyebrow}>Preços</div>
           <h2 className={s.h2}>Escolha seu plano</h2>
           <p className={s.lead}>
-            Sem taxa por venda — o dinheiro das vendas cai direto na sua conta.
+            Sem taxa por venda. O dinheiro das vendas cai direto na sua conta.
           </p>
           <div className={s.billingToggleWrap}>
             <div className={s.billingToggle}>
@@ -56,7 +56,7 @@ export const PricingSection = () => {
         <div className={s.plans}>
           {isLoading &&
             Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className={s.plan} style={{ opacity: 0.4, minHeight: 400 }} data-rev />
+              <div key={i} className={s.plan} style={{ opacity: 0.4, minHeight: 400 }} />
             ))}
           {plans?.map((plan, index) => {
             const isReco = index === 1 && plans.length >= 2
@@ -80,10 +80,11 @@ export const PricingSection = () => {
               <div
                 key={plan.slug}
                 className={isReco ? `${s.plan} ${s.reco}` : s.plan}
-                data-rev
               >
-                {isReco && <span className={s.planTag}>Mais popular</span>}
-                <div className={s.planName}>{plan.name}</div>
+                <div className={s.planNameRow}>
+                  <div className={s.planName}>{plan.name}</div>
+                  {isReco && <span className={s.planTag}>Mais popular</span>}
+                </div>
                 <div className={s.planDesc}>{plan.description}</div>
                 <div className={s.planPrice}>
                   {displayPrice}
@@ -94,9 +95,9 @@ export const PricingSection = () => {
                   {features.map((f) => (
                     <li key={f.label} className={f.included ? '' : s.off}>
                       {f.included ? (
-                        <Check size={17} color="#10B981" />
+                        <Check size={17} color="var(--emr)" />
                       ) : (
-                        <X size={17} color="#CBD5E1" />
+                        <X size={17} color="var(--t3)" />
                       )}
                       {f.label}
                     </li>
@@ -120,7 +121,7 @@ export const PricingSection = () => {
           })}
         </div>
         <div className={s.pricingFoot}>
-          <Lock size={16} color="#64748B" />
+          <Lock size={16} color="var(--t3)" />
           Sem taxa de transação em nenhum plano. Cancele quando quiser.
         </div>
       </div>
