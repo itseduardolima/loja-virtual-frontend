@@ -1,28 +1,40 @@
-import { LayoutGrid, ClipboardList, Store } from 'lucide-react'
 import s from '../landing.module.css'
 
-const CARDS = [
-  { icon: <LayoutGrid size={20} color="var(--ind)" />, title: 'Catálogo organizado', desc: 'Suas peças por categoria, com foto, preço e variações, fácil do cliente achar e escolher.' },
-  { icon: <ClipboardList size={20} color="var(--ind)" />, title: 'Gestão dos pedidos', desc: 'Tudo num painel: o que entrou, o que falta enviar e o que já foi entregue. Sem planilha.' },
-  { icon: <Store size={20} color="var(--ind)" />, title: 'Sua loja, sua marca', desc: 'Um link só seu pra mandar no WhatsApp e no Instagram. O cliente é seu, não da plataforma.' },
+const SPECS = [
+  {
+    label: 'Catálogo organizado',
+    desc: 'Suas peças por categoria, com foto, preço e variações, fácil do cliente achar e escolher.',
+  },
+  {
+    label: 'Gestão dos pedidos',
+    desc: 'Tudo num painel: o que entrou, o que falta enviar e o que já foi entregue. Sem planilha.',
+  },
+  {
+    label: 'Sua loja, sua marca',
+    desc: 'Um link só seu pra mandar no WhatsApp e no Instagram. O cliente é seu, não da plataforma.',
+  },
 ]
 
 export const Posicionamento = () => (
-  <section className={s.sec} style={{padding:'64px 0px'}}>
+  <section className={s.sec}>
+    <div className={s.seam} />
     <div className={s.wrap}>
-      <div style={{maxWidth:'760px',margin:'0 auto',textAlign:'center'}}>
-        <div className={s.eyebrow}>Pra quem é o Nexo</div>
-        <h2 className={s.h2} style={{marginTop:'10px'}}>Feito pra quem vende pro cliente local.</h2>
-        <p className={s.lead} style={{marginTop:'12px'}}>O Nexo organiza e mostra o seu catálogo do jeito certo e cuida da gestão dos seus pedidos. Não é um marketplace gigante como Shein ou Shopee — é a <b style={{color:'var(--t1)'}}>sua loja</b>, com os <b style={{color:'var(--t1)'}}>seus clientes</b> do bairro, da cidade e das suas redes.</p>
-      </div>
-      <div className={s.posGrid}>
-        {CARDS.map((c) => (
-          <div key={c.title} className={s.posCard}>
-            <span className={s.posIcon}>{c.icon}</span>
-            <div className={s.posTitle}>{c.title}</div>
-            <p className={s.posDesc}>{c.desc}</p>
-          </div>
-        ))}
+      <div className={s.posLayout}>
+        <div>
+          <h2 className={s.h2}>A loja é sua. Os clientes também.</h2>
+          <p className={s.lead}>
+            O Nexo organiza seu catálogo e cuida da gestão dos pedidos: não é um marketplace
+            gigante, é a sua loja, com os seus clientes do bairro, da cidade e das suas redes.
+          </p>
+        </div>
+        <div className={s.posSpecs}>
+          {SPECS.map((spec) => (
+            <div key={spec.label} className={s.posSpec}>
+              <div className={s.posSpecLabel}>{spec.label}</div>
+              <p className={s.posSpecDesc}>{spec.desc}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   </section>

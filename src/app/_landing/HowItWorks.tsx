@@ -1,37 +1,55 @@
+import { Package, Share2, CheckCircle2 } from 'lucide-react'
 import s from '../landing.module.css'
+
+const STEPS = [
+  {
+    icon: <Package size={18} color="var(--ind)" />,
+    iconBg: 'var(--ind-soft)',
+    num: '01',
+    title: 'Monte sua loja',
+    desc: 'Nome, fotos e preços dos produtos que você já vende.',
+    time: '~2 min',
+  },
+  {
+    icon: <Share2 size={18} color="var(--org)" />,
+    iconBg: 'var(--org-soft)',
+    num: '02',
+    title: 'Compartilhe o link',
+    desc: 'No story, na bio do Instagram, ou direto no WhatsApp.',
+    time: '~1 min',
+  },
+  {
+    icon: <CheckCircle2 size={18} color="var(--emr)" />,
+    iconBg: 'var(--emr-soft)',
+    num: '03',
+    title: 'Receba organizado',
+    desc: 'Pedido registrado com status, e o pagamento você combina no WhatsApp, como sempre fez.',
+    time: 'venda 24h',
+  },
+]
 
 export const HowItWorks = () => (
   <section className={s.sec} id="como-funciona">
+    <div className={s.seam} />
     <div className={s.wrap}>
       <div className={s.secHead}>
-        <div className={s.eyebrow}>Como funciona</div>
-        <h2 className={s.h2}>Sua loja no ar em 3 passos</h2>
+        <h2 className={s.h2}>Três passos até a primeira venda.</h2>
+        <p className={s.lead}>Três passos, direto do celular, sem precisar de ninguém de TI.</p>
       </div>
-      <div className={s.steps}>
-        <div className={s.step}>
-          <div className={s.stepTop}>
-            <span className={s.stepNum}>1</span>
-            <span className={s.stepLabel}>~2 min</span>
+      <div className={s.stepsRow}>
+        {STEPS.map((step) => (
+          <div key={step.num} className={s.stepCard}>
+            <div className={s.stepTop}>
+              <span className={s.stepIcon} style={{ background: step.iconBg }}>
+                {step.icon}
+              </span>
+              <span className={s.stepNum}>{step.num}</span>
+            </div>
+            <h3 className={s.stepTitle}>{step.title}</h3>
+            <p className={s.stepDesc}>{step.desc}</p>
+            <span className={s.stepTime}>{step.time}</span>
           </div>
-          <h3>Crie sua conta e escolha o plano</h3>
-          <p>Cadastro simples: escolhe Básico, Pro ou Max e assina com Pix na hora. Aí seu painel de vendedor libera.</p>
-        </div>
-        <div className={s.step}>
-          <div className={s.stepTop}>
-            <span className={s.stepNum}>2</span>
-            <span className={s.stepLabel}>~8 min</span>
-          </div>
-          <h3>Monte sua loja do celular</h3>
-          <p>Adicione produtos com fotos, defina preços e variações de tamanho e cor, configure a entrega. Sem computador.</p>
-        </div>
-        <div className={s.step}>
-          <div className={s.stepTop}>
-            <span className={s.stepNum}>3</span>
-            <span className={s.stepLabelEmr}>venda 24h</span>
-          </div>
-          <h3>Compartilhe e venda</h3>
-          <p>Envie o link da loja pelo WhatsApp e Instagram. Os pedidos chegam organizados no painel e você combina o pagamento com o cliente direto no WhatsApp.</p>
-        </div>
+        ))}
       </div>
     </div>
   </section>

@@ -137,7 +137,6 @@ export const Vitrine = () => (
     <div className={v.wrap}>
       <div className={v.layout}>
         <div className={v.text}>
-          <div className={v.eyebrow}>Sua vitrine</div>
           <h2 className={v.heading}>Sua vitrine tem cara de loja de verdade.</h2>
           <p className={v.lead}>
             Fotos, variação de cor e tamanho, avaliação: o mesmo padrão de loja grande,

@@ -24,13 +24,11 @@ export const PricingSection = () => {
 
   return (
     <section className={`${s.sec} ${s.bgWht}`} id="precos">
+      <div className={s.seam} />
       <div className={s.wrap}>
         <div className={s.secHead}>
-          <div className={s.eyebrow}>Preços</div>
-          <h2 className={s.h2}>Escolha seu plano</h2>
-          <p className={s.lead}>
-            Sem taxa por venda. O dinheiro das vendas cai direto na sua conta.
-          </p>
+          <h2 className={s.h2}>Um plano pra cada fase da loja.</h2>
+          <p className={s.lead}>Sem taxa por venda. O dinheiro cai direto na sua conta.</p>
           <div className={s.billingToggleWrap}>
             <div className={s.billingToggle}>
               <button
