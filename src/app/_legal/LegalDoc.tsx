@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
-import { AlertTriangle, ArrowUpRight, ChevronDown, ListOrdered } from 'lucide-react'
+import { ArrowUpRight, ChevronDown, ListOrdered } from 'lucide-react'
 
 /* ────────────────────────────────────────────────────────────────
    Shell compartilhado dos documentos legais (/termos e /privacidade).
@@ -19,7 +19,6 @@ interface LegalDocProps {
   eyebrow: string
   title: string
   summary: string
-  /** Data de vigência — passar o marcador <Fill> enquanto for minuta. */
   updatedAt: ReactNode
   sections: LegalSection[]
   related: { href: string; label: string }
@@ -75,8 +74,6 @@ export function LegalDoc({
       </div>
 
       <div className="mx-auto max-w-[1120px] px-5 sm:px-8">
-        <DraftBanner />
-
         <div className="mt-8 gap-10 lg:flex lg:items-start">
           {/* ── índice ─────────────────────────────────────── */}
           <nav
@@ -167,37 +164,6 @@ export function LegalDoc({
   )
 }
 
-/* ── aviso obrigatório de minuta ─────────────────────────────── */
-
-function DraftBanner() {
-  return (
-    <div className="mt-8 rounded-2xl border border-nxw/45 bg-nxw/10 p-5 sm:p-6">
-      <div className="flex gap-3">
-        <AlertTriangle size={18} className="mt-0.5 shrink-0 text-nxw" />
-        <div className="space-y-2">
-          <p className="text-[13.5px] font-extrabold tracking-[-0.01em] text-nxi1">
-            Minuta — não use comercialmente sem revisão jurídica
-          </p>
-          <p className="text-[13px] font-medium leading-[1.65] text-nxi2">
-            Este texto é uma <strong className="font-bold text-nxi1">minuta técnica</strong>,
-            redigida a partir do que a plataforma de fato faz. Ele{' '}
-            <strong className="font-bold text-nxi1">não substitui a análise de um advogado</strong> e
-            precisa de revisão profissional antes de entrar no ar cobrando assinatura.
-          </p>
-          <p className="text-[13px] font-medium leading-[1.65] text-nxi2">
-            Todos os trechos marcados como{' '}
-            <span className="whitespace-nowrap rounded-md border border-dashed border-nxw/70 bg-nxw/15 px-1.5 py-0.5 font-mono text-[11px] font-bold text-nxi1">
-              [PREENCHER: …]
-            </span>{' '}
-            precisam ser completados com dados reais antes da publicação — busque por{' '}
-            <span className="font-mono text-[12px] font-bold text-nxi1">PREENCHER</span> no arquivo
-            desta página para encontrar todos.
-          </p>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 /* ── primitivas tipográficas ─────────────────────────────────── */
 
@@ -226,21 +192,6 @@ export function Bullets({ items }: { items: ReactNode[] }) {
 
 export function Strong({ children }: { children: ReactNode }) {
   return <strong className="font-bold text-nxi1">{children}</strong>
-}
-
-/**
- * Marcador de dado que o dono precisa completar antes de publicar.
- * Renderiza literalmente `[PREENCHER: ...]` — grep por "PREENCHER" acha todos.
- */
-export function Fill({ children }: { children: string }) {
-  return (
-    <span
-      data-preencher
-      className="mx-0.5 inline-block whitespace-nowrap rounded-md border border-dashed border-nxw/70 bg-nxw/15 px-1.5 py-0.5 font-mono text-[11.5px] font-bold text-nxi1"
-    >
-      [PREENCHER: {children}]
-    </span>
-  )
 }
 
 export function Callout({ title, children }: { title: string; children: ReactNode }) {

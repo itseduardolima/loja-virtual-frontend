@@ -8,7 +8,6 @@ import {
   Strong,
   Callout,
   DataTable,
-  Fill,
   type LegalSection,
 } from '../_legal/LegalDoc'
 
@@ -220,9 +219,9 @@ const sections: LegalSection[] = [
         Os dados são mantidos enquanto a conta ou a loja estiver ativa, e pelo prazo adicional
         exigido por obrigações legais aplicáveis (fiscais, cíveis e regulatórias — por exemplo, o
         prazo de guarda de documentos fiscais e o prazo prescricional do Código de Defesa do
-        Consumidor). Após o encerramento de uma conta ou loja, os dados podem ser mantidos por{' '}
-        <Fill>prazo de retenção pós-encerramento</Fill> para fins de auditoria e cumprimento legal,
-        antes de serem eliminados ou anonimizados definitivamente.
+        Consumidor). Após o encerramento de uma conta ou loja, os dados podem ser mantidos por até{' '}
+        <Strong>5 anos</Strong> para fins de auditoria e cumprimento legal, antes de serem
+        eliminados ou anonimizados definitivamente.
       </P>
     ),
   },
@@ -254,10 +253,11 @@ const sections: LegalSection[] = [
     title: 'Transferência internacional de dados',
     content: (
       <P>
-        Alguns dos prestadores de serviço listados na seção 05 (como o provedor de armazenamento e
-        CDN de imagens) podem processar dados em servidores fora do Brasil. Nesses casos, a Nexo
-        busca contratar apenas fornecedores com salvaguardas compatíveis com a LGPD.{' '}
-        <Fill>Confirmar lista definitiva de subprocessadores e países de processamento antes da publicação</Fill>.
+        Alguns dos prestadores de serviço listados na seção 05 processam dados fora do Brasil — hoje,
+        o provedor de armazenamento e CDN de imagens (Cloudflare) opera em infraestrutura global,
+        podendo processar dados em outros países. O meio de pagamento (Asaas) é uma empresa brasileira
+        e processa os dados em servidores no Brasil. Nesses casos, a Nexo busca contratar apenas
+        fornecedores com salvaguardas compatíveis com a LGPD.
       </P>
     ),
   },
@@ -286,10 +286,10 @@ const sections: LegalSection[] = [
         <Bullets
           items={[
             <>
-              E-mail do encarregado (DPO): <Fill>e-mail do encarregado de dados</Fill>
+              E-mail do encarregado (DPO): <Strong>contato@eduardolima.tech</Strong>
             </>,
             <>
-              Endereço da empresa: <Fill>endereço completo da sede</Fill>
+              Endereço da empresa: <Strong>Manaus, AM — CEP 69085-045</Strong>
             </>,
           ]}
         />

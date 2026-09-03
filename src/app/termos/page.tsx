@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { LegalDoc, P, Sub, Bullets, Strong, Callout, Fill, type LegalSection } from '../_legal/LegalDoc'
+import { LegalDoc, P, Sub, Bullets, Strong, Callout, type LegalSection } from '../_legal/LegalDoc'
 
 export const metadata: Metadata = {
   title: 'Termos de Uso | Nexo',
@@ -216,8 +216,7 @@ const sections: LegalSection[] = [
         />
         <P>
           A responsabilidade da Nexo perante o lojista, quando aplicável, fica limitada ao valor
-          efetivamente pago pela assinatura do plano no período de{' '}
-          <Fill>prazo considerado para o teto de responsabilidade, ex.: últimos 12 meses</Fill>{' '}
+          efetivamente pago pela assinatura do plano nos <Strong>últimos 12 meses</Strong>{' '}
           anterior ao fato gerador.
         </P>
       </>
@@ -230,8 +229,8 @@ const sections: LegalSection[] = [
       <>
         <P>
           A marca Nexo, o software da plataforma, seu design e código-fonte pertencem à{' '}
-          <Fill>razão social e CNPJ da empresa responsável pela Nexo</Fill> e são protegidos por leis
-          de propriedade intelectual. Nenhuma disposição destes Termos transfere ao lojista ou ao
+          <Strong>57.976.158 EDUARDO LIMA CASTRO (CNPJ 57.976.158/0001-19)</Strong> e são protegidos
+          por leis de propriedade intelectual. Nenhuma disposição destes Termos transfere ao lojista ou ao
           comprador qualquer direito sobre a plataforma além do uso descrito aqui.
         </P>
         <P>
@@ -263,7 +262,7 @@ const sections: LegalSection[] = [
     content: (
       <P>
         Estes Termos são regidos pelas leis da República Federativa do Brasil. Fica eleito o foro da
-        comarca de <Fill>comarca/cidade eleita como foro</Fill> para dirimir quaisquer controvérsias
+        comarca de <Strong>Manaus, Amazonas</Strong> para dirimir quaisquer controvérsias
         decorrentes destes Termos, com renúncia a qualquer outro, por mais privilegiado que seja —
         ressalvado o foro de domicílio do consumidor, quando a lei assim exigir.
       </P>
@@ -278,10 +277,10 @@ const sections: LegalSection[] = [
         <Bullets
           items={[
             <>
-              E-mail: <Fill>e-mail de suporte/atendimento da Nexo</Fill>
+              E-mail: <Strong>contato@eduardolima.tech</Strong>
             </>,
             <>
-              Endereço da empresa: <Fill>endereço completo da sede</Fill>
+              Endereço da empresa: <Strong>Manaus, AM — CEP 69085-045</Strong>
             </>,
           ]}
         />
