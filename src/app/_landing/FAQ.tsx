@@ -1,6 +1,7 @@
 'use client'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { animate } from 'animejs'
 import { ChevronDown } from 'lucide-react'
 import s from '../landing.module.css'
 import { fadeUp, staggerContainer, viewportOnce } from './motion'
@@ -16,9 +17,45 @@ const FAQS = [
 
 export const FAQ = () => {
   const [open, setOpen] = useState<number | null>(null)
+  const answerRefs = useRef<Array<HTMLDivElement | null>>([])
+
+  const closeItem = (i: number) => {
+    const el = answerRefs.current[i]
+    if (!el) return
+    const from = el.getBoundingClientRect().height
+    animate(el, { height: [from, 0], opacity: [1, 0], duration: 260, ease: 'inOutQuad' })
+  }
+
+  const openItem = (i: number) => {
+    const el = answerRefs.current[i]
+    if (!el) return
+    el.style.height = 'auto'
+    const target = el.getBoundingClientRect().height
+    el.style.height = '0px'
+    animate(el, {
+      height: [0, target],
+      opacity: [0, 1],
+      duration: 320,
+      ease: 'outQuart',
+      onComplete: () => {
+        el.style.height = 'auto'
+      },
+    })
+  }
+
+  const toggle = (i: number) => {
+    if (open === i) {
+      closeItem(i)
+      setOpen(null)
+      return
+    }
+    if (open !== null) closeItem(open)
+    openItem(i)
+    setOpen(i)
+  }
+
   return (
     <section className={s.sec} id="suporte">
-      <div className={s.seam} />
       <div className={s.wrap}>
         <motion.div
           className={s.secHead}
@@ -27,7 +64,11 @@ export const FAQ = () => {
           whileInView="show"
           viewport={viewportOnce}
         >
-          <h2 className={s.h2}>O que você ainda precisa saber.</h2>
+          <span className={s.eyebrow}>
+            <span className={s.dot} />
+            Dúvidas
+          </span>
+          <h2 className={s.display}>O que você ainda precisa saber.</h2>
         </motion.div>
         <motion.div
           className={s.faq}
@@ -38,13 +79,21 @@ export const FAQ = () => {
         >
           {FAQS.map((f, i) => (
             <motion.div key={i} className={s.faqItem} variants={fadeUp}>
-              <button className={s.faqQ} onClick={() => setOpen(open === i ? null : i)} type="button">
+              <button className={s.faqQ} onClick={() => toggle(i)} type="button">
                 {f.q}
                 <span className={open === i ? `${s.faqChev} ${s.faqChevOpen}` : s.faqChev}>
-                  <ChevronDown size={20} color="var(--t3)" />
+                  <ChevronDown size={18} color="#000" />
                 </span>
               </button>
-              {open === i && <div className={s.faqA}>{f.a}</div>}
+              <div
+                ref={(el) => {
+                  answerRefs.current[i] = el
+                }}
+                className={s.faqA}
+                style={{ height: 0, opacity: 0, overflow: 'hidden' }}
+              >
+                {f.a}
+              </div>
             </motion.div>
           ))}
         </motion.div>

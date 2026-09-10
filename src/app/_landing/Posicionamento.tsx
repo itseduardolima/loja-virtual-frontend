@@ -21,17 +21,22 @@ const SPECS = [
 
 export const Posicionamento = () => (
   <section className={s.sec}>
-    <div className={s.seam} />
     <div className={s.wrap}>
       <motion.div
-        className={s.posLayout}
+        className={s.posGrid}
         variants={staggerContainer}
         initial="hidden"
         whileInView="show"
         viewport={viewportOnce}
       >
-        <motion.div variants={fadeUp}>
-          <h2 className={s.h2}>A loja é sua. Os clientes também.</h2>
+        <motion.div className={s.posHead} variants={fadeUp}>
+          <span className={s.eyebrow}>
+            <span className={s.dot} />
+            Como funciona
+          </span>
+          <h2 className={s.display} style={{ fontSize: 'clamp(28px,3.6vw,38px)' }}>
+            A loja é sua. Os clientes também.
+          </h2>
           <p className={s.lead}>
             O Nexo organiza seu catálogo e cuida da gestão dos pedidos: não é um marketplace
             gigante, é a sua loja, com os seus clientes do bairro, da cidade e das suas redes.

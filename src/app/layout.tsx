@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import localFont from 'next/font/local'
-import { Nunito, IBM_Plex_Mono } from 'next/font/google'
+import { Nunito, IBM_Plex_Mono, Poppins, Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import '../styles/toast.css'
 import { QueryProvider } from '@/providers/QueryProvider'
@@ -42,6 +42,28 @@ const ibmPlexMono = IBM_Plex_Mono({
   display: 'swap',
 })
 
+// Landing page (fusão Aaply): Poppins nos headlines, Inter no corpo, JetBrains Mono no dashboard mockup do hero
+const poppins = Poppins({
+  subsets: ['latin'],
+  variable: '--font-poppins',
+  weight: ['400', '500', '700'],
+  display: 'swap',
+})
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-jetbrains-mono',
+  weight: ['500', '600'],
+  display: 'swap',
+})
+
 
 export const metadata: Metadata = {
   title: 'Loja - Frontend',
@@ -55,7 +77,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className={`${satoshi.variable} ${integralCF.variable} ${nunito.variable} ${ibmPlexMono.variable} font-sans`}>
+      <body
+        className={`${satoshi.variable} ${integralCF.variable} ${nunito.variable} ${ibmPlexMono.variable} ${poppins.variable} ${inter.variable} ${jetbrainsMono.variable} font-sans`}
+      >
         <QueryProvider>
           <AuthProvider>
             <CompleteProfileGuard>

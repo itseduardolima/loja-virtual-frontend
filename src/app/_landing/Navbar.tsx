@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { LogOut, Menu, X } from 'lucide-react'
+import { LogOut, Menu, X, ArrowRight } from 'lucide-react'
 import s from '../landing.module.css'
 import { useAuth } from '@/contexts/AuthContext'
 import { PROFILE_ROUTES } from '@/types/auth'
@@ -47,10 +47,15 @@ export const Navbar = () => {
   }, [])
 
   return (
-    <nav className={s.nav}>
-      <div className={`${s.wrap} ${s.navIn}`}>
+    <div className={s.navbar}>
+      <nav className={`${s.navPill} ${s.wrap}`}>
         <Link href="/" className={s.logo}>
-          <span className={s.logoMark}>N</span>nexo
+          <span className={s.logoMark}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 15l8-9 8 9" />
+            </svg>
+          </span>
+          nexo
         </Link>
         <div className={s.navLinks}>
           {LINKS.map((link) => (
@@ -59,17 +64,17 @@ export const Navbar = () => {
             </a>
           ))}
         </div>
-        <div className={s.navCta}>
+        <div className={s.navActions}>
           {!isLoadingAuth && isAuthenticated ? (
             <>
-              <Link href={dashboardHref} className={`${s.btn} ${s.btnPri}`} style={{ height: '44px' }}>
+              <Link href={dashboardHref} className={`${s.btn} ${s.btnDark} ${s.navCta}`}>
                 Minha conta
               </Link>
               <button
                 type="button"
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className={`${s.btn} ${s.btnGhost}`}
+                className={`${s.btn} ${s.btnEnter}`}
                 aria-label="Sair"
               >
                 <LogOut size={16} />
@@ -78,24 +83,20 @@ export const Navbar = () => {
             </>
           ) : (
             <>
-              <Link href="/login" className={`${s.btn} ${s.btnGhost}`}>
+              <Link href="/login" className={`${s.btn} ${s.btnEnter}`}>
                 Entrar
               </Link>
-              <Link href="#precos" className={`${s.btn} ${s.btnPri}`} style={{ height: '44px' }}>
-                Ver planos
+              <Link href="#precos" className={`${s.btn} ${s.btnDark} ${s.navCta}`}>
+                Criar loja
+                <ArrowRight size={14} />
               </Link>
             </>
           )}
+          <button className={s.burger} onClick={() => setOpen((o) => !o)} type="button" aria-label="Menu">
+            {open ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
-        <button
-          className={s.burger}
-          onClick={() => setOpen((o) => !o)}
-          type="button"
-          aria-label="Menu"
-        >
-          {open ? <X size={22} color="var(--t1)" /> : <Menu size={22} color="var(--t1)" />}
-        </button>
-      </div>
+      </nav>
       {open && (
         <div className={s.mobileMenu}>
           {LINKS.map((link) => (
@@ -106,20 +107,14 @@ export const Navbar = () => {
           <div className={s.mmCta}>
             {!isLoadingAuth && isAuthenticated ? (
               <>
-                <Link
-                  href={dashboardHref}
-                  className={`${s.btn} ${s.btnPri}`}
-                  onClick={() => setOpen(false)}
-                  style={{ color: 'var(--wht)' }}
-                >
+                <Link href={dashboardHref} className={`${s.btn} ${s.btnDark}`} onClick={() => setOpen(false)}>
                   Minha conta
                 </Link>
                 <button
                   type="button"
                   onClick={handleLogout}
                   disabled={isLoggingOut}
-                  className={`${s.btn} ${s.btnOutline}`}
-                  style={{ height: '48px' }}
+                  className={`${s.btn} ${s.btnGhost}`}
                 >
                   <LogOut size={16} />
                   Sair
@@ -127,15 +122,10 @@ export const Navbar = () => {
               </>
             ) : (
               <>
-                <Link
-                  href="#precos"
-                  className={`${s.btn} ${s.btnPri}`}
-                  onClick={() => setOpen(false)}
-                  style={{ color: 'var(--wht)' }}
-                >
-                  Ver planos
+                <Link href="#precos" className={`${s.btn} ${s.btnDark}`} onClick={() => setOpen(false)}>
+                  Criar loja
                 </Link>
-                <Link href="/login" className={`${s.btn} ${s.btnOutline}`} style={{ height: '48px' }}>
+                <Link href="/login" className={`${s.btn} ${s.btnGhost}`}>
                   Entrar
                 </Link>
               </>
@@ -143,6 +133,6 @@ export const Navbar = () => {
           </div>
         </div>
       )}
-    </nav>
+    </div>
   )
 }

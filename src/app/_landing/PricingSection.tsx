@@ -1,7 +1,8 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { animate } from 'animejs'
 import { Check, X, Lock } from 'lucide-react'
 import s from '../landing.module.css'
 import { useSubscriptionPlans } from '@/hooks/useSubscriptionPlans'
@@ -15,18 +16,41 @@ function formatBRL(value: string | number | null | undefined): string {
   return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
+function PriceValue({ value }: { value: number | null }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  const prevValue = useRef<number | null>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el || value == null) return
+    const from = prevValue.current ?? value
+    prevValue.current = value
+    const counter = { v: from }
+    animate(counter, {
+      v: value,
+      duration: 500,
+      ease: 'outExpo',
+      onUpdate: () => {
+        el.textContent = counter.v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+      },
+    })
+  }, [value])
+
+  return <span ref={ref}>{value != null ? formatBRL(value) : '—'}</span>
+}
+
 export const PricingSection = () => {
   const [billing, setBilling] = useState<BillingCycle>('monthly')
   const { data: plans, isLoading } = useSubscriptionPlans()
 
   const annual = billing === 'yearly'
 
-  const savingsPercent =
-    plans?.length ? computeYearlySavings(plans[0].price_monthly, plans[0].price_yearly) : 17
+  const savingsPercent = plans?.length
+    ? computeYearlySavings(plans[0].price_monthly, plans[0].price_yearly)
+    : 17
 
   return (
-    <section className={`${s.sec} ${s.bgWht}`} id="precos">
-      <div className={s.seam} />
+    <section className={s.sec} id="precos">
       <div className={s.wrap}>
         <motion.div
           className={s.secHead}
@@ -35,30 +59,34 @@ export const PricingSection = () => {
           whileInView="show"
           viewport={viewportOnce}
         >
-          <h2 className={s.h2}>Um plano pra cada fase da loja.</h2>
+          <span className={s.eyebrow}>
+            <span className={s.dot} />
+            Planos
+          </span>
+          <h2 className={s.display}>Um plano pra cada fase da loja.</h2>
           <p className={s.lead}>Sem taxa por venda. O dinheiro cai direto na sua conta.</p>
-          <div className={s.billingToggleWrap}>
-            <div className={s.billingToggle}>
-              <button
-                className={billing === 'monthly' ? s.on : ''}
-                onClick={() => setBilling('monthly')}
-                type="button"
-              >
-                Mensal
-              </button>
-              <button
-                className={billing === 'yearly' ? s.on : ''}
-                onClick={() => setBilling('yearly')}
-                type="button"
-              >
-                Anual
-                {savingsPercent > 0 && (
-                  <span className={s.savePill}>-{savingsPercent}%</span>
-                )}
-              </button>
-            </div>
-          </div>
         </motion.div>
+
+        <div className={s.billingToggleWrap}>
+          <div className={s.billingToggle}>
+            <button
+              className={billing === 'monthly' ? s.on : ''}
+              onClick={() => setBilling('monthly')}
+              type="button"
+            >
+              Mensal
+            </button>
+            <button
+              className={billing === 'yearly' ? s.on : ''}
+              onClick={() => setBilling('yearly')}
+              type="button"
+            >
+              Anual
+              {savingsPercent > 0 && <span className={s.savePill}>-{savingsPercent}%</span>}
+            </button>
+          </div>
+        </div>
+
         <motion.div
           className={s.plans}
           variants={staggerContainer}
@@ -74,14 +102,11 @@ export const PricingSection = () => {
             const isReco = index === 1 && plans.length >= 2
             const features = derivePlanFeaturesComparison(plan)
 
-            const yearlyTotal =
-              plan.price_yearly != null ? parseFloat(plan.price_yearly) : null
+            const yearlyTotal = plan.price_yearly != null ? parseFloat(plan.price_yearly) : null
             const yearlyPerMonth = yearlyTotal != null ? yearlyTotal / 12 : null
 
-            const displayPrice =
-              annual && yearlyPerMonth != null
-                ? formatBRL(yearlyPerMonth)
-                : formatBRL(plan.price_monthly)
+            const monthlyValue = plan.price_monthly != null ? parseFloat(plan.price_monthly) : null
+            const displayValue = annual && yearlyPerMonth != null ? yearlyPerMonth : monthlyValue
 
             const displaySub =
               annual && yearlyTotal != null
@@ -100,7 +125,7 @@ export const PricingSection = () => {
                 </div>
                 <div className={s.planDesc}>{plan.description}</div>
                 <div className={s.planPrice}>
-                  {displayPrice}
+                  <PriceValue value={displayValue} />
                   <small>/mês</small>
                 </div>
                 <div className={s.planSub}>{displaySub}</div>
@@ -109,26 +134,15 @@ export const PricingSection = () => {
                 )}
                 <ul className={s.planFeats}>
                   {features.map((f) => (
-                    <li key={f.label} className={f.included ? '' : s.off}>
-                      {f.included ? (
-                        <Check size={17} color="var(--emr)" />
-                      ) : (
-                        <X size={17} color="var(--t3)" />
-                      )}
+                    <li key={f.label} className={f.included ? '' : 'off'}>
+                      {f.included ? <Check size={16} color="#2e8a5a" /> : <X size={16} color="#8f8f8f" />}
                       {f.label}
                     </li>
                   ))}
                 </ul>
                 <Link
                   href={`/assinatura?plano=${plan.slug}&cycle=${billing}`}
-                  className={isReco ? `${s.btn} ${s.btnPri}` : `${s.btn} ${s.btnOutline}`}
-                  style={{
-                    width: '100%',
-                    height: '48px',
-                    justifyContent: 'center',
-                    marginTop: 'auto',
-                    color: isReco ? 'var(--wht)' : 'var(--t1)',
-                  }}
+                  className={isReco ? `${s.btn} ${s.btnPri}` : `${s.btn} ${s.btnGhost}`}
                 >
                   Assinar {plan.name}
                 </Link>
@@ -137,7 +151,7 @@ export const PricingSection = () => {
           })}
         </motion.div>
         <div className={s.pricingFoot}>
-          <Lock size={16} color="var(--t3)" />
+          <Lock size={14} color="#8f8f8f" />
           Sem taxa de transação em nenhum plano. Cancele quando quiser.
         </div>
       </div>

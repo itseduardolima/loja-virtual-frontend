@@ -1,6 +1,9 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
+import { animate, stagger } from 'animejs'
+import Image from 'next/image'
 import {
   Home,
   BarChart3,
@@ -14,7 +17,7 @@ import {
   Crown,
 } from 'lucide-react'
 import s from '../landing.module.css'
-import { fadeUp, staggerContainer, viewportOnce } from './motion'
+import { fadeUp, viewportOnce } from './motion'
 
 const SECTIONS = [
   {
@@ -51,58 +54,67 @@ const SECTIONS = [
 
 const FEATS = [
   {
-    icon: <BarChart3 size={16} color="var(--emr)" />,
-    iconBg: 'var(--emr-soft)',
+    icon: '/landing/dashboard.svg',
     title: 'Saiba o que vende',
     desc: 'Receita por período, top produtos e categorias, direto no Dashboard. Decisões com dado, não com achismo.',
   },
   {
-    icon: <ShoppingBag size={16} color="var(--org)" />,
-    iconBg: 'var(--org-soft)',
-    title: 'Sem caos, sem planilhas',
-    desc: 'Em Pedidos, você arrasta o status e dispara mensagem no WhatsApp do cliente. Pronto.',
+    icon: '/landing/timeline.svg',
+    title: 'Sem caos, sem planilha',
+    desc: 'Estoque e pedido conectados: quando vende, o estoque desconta sozinho.',
   },
   {
-    icon: <Tag size={16} color="#C7861A" />,
-    iconBg: '#FBF1DE',
+    icon: '/landing/tag.svg',
     title: 'Descontos que convertem',
     desc: 'Em Cupons, fixo ou percentual, com validade e limite de uso. Lance promo de feriado em 30 segundos.',
   },
   {
-    icon: <HelpCircle size={16} color="var(--ind)" />,
-    iconBg: 'var(--ind-soft)',
+    icon: '/landing/decrease.svg',
     title: 'Tira-dúvida no produto',
-    desc: 'Em Perguntas, o cliente pergunta direto na página do produto e a resposta fica pública pra próxima venda.',
+    desc: 'Perguntas do cliente ficam registradas na página do produto, não perdidas no chat.',
   },
 ]
 
-export const BentoFeatures = () => (
-  <section className={s.sec} id="recursos">
-    <div className={s.seam} />
+export const BentoFeatures = () => {
+  const featsRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = featsRef.current
+    if (!el) return
+    const icons = el.querySelectorAll<HTMLElement>('[data-feat-icon]')
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return
+        animate(icons, {
+          scale: [0, 1],
+          rotate: [-18, 0],
+          opacity: [0, 1],
+          duration: 650,
+          delay: stagger(110, { start: 150 }),
+          ease: 'outBack',
+        })
+        observer.disconnect()
+      },
+      { threshold: 0.3 },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  return (
+  <section className={s.sec} id="recursos" style={{ paddingTop: 0 }}>
     <div className={s.wrap}>
       <motion.div
-        className={s.secHead}
-        variants={fadeUp}
-        initial="hidden"
-        whileInView="show"
-        viewport={viewportOnce}
-      >
-        <h2 className={s.h2}>O resto da operação também mora aqui.</h2>
-        <p className={s.lead}>
-          O mesmo painel do catálogo cuida de relatório, cupom e dúvida de cliente. Nada disso
-          pede outro app.
-        </p>
-      </motion.div>
-      <motion.div
         className={s.panelLayout}
-        variants={staggerContainer}
-        initial="hidden"
-        whileInView="show"
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
         viewport={viewportOnce}
+        transition={{ duration: 0.7 }}
       >
-        <motion.div className={s.panelRail} variants={fadeUp}>
+        <div className={s.panelRail}>
           <div className={s.railLogo}>
-            <div className={s.railLogoMark}>N</div>
+            <div className={s.railLogoMark} />
             <div className={s.railLogoWord}>nexo</div>
           </div>
           {SECTIONS.map((section) => (
@@ -113,27 +125,28 @@ export const BentoFeatures = () => (
                   key={item.label}
                   className={`${s.railItem} ${item.active ? s.railItemActive : ''}`}
                 >
-                  <item.icon size={17} />
+                  <item.icon size={15} />
                   {item.label}
                 </div>
               ))}
             </div>
           ))}
-        </motion.div>
-        <motion.div className={s.panelFeats} variants={fadeUp}>
+        </div>
+        <div className={s.panelFeats} ref={featsRef}>
           {FEATS.map((feat) => (
-            <div key={feat.title} className={s.panelFeat}>
-              <span className={s.panelFeatIcon} style={{ background: feat.iconBg }}>
-                {feat.icon}
+            <motion.div key={feat.title} className={s.panelFeat} variants={fadeUp}>
+              <span className={s.panelFeatIcon} data-feat-icon style={{ opacity: 0 }}>
+                <Image src={feat.icon} alt="" width={40} height={40} />
               </span>
               <div>
                 <div className={s.panelFeatTitle}>{feat.title}</div>
                 <p className={s.panelFeatDesc}>{feat.desc}</p>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </motion.div>
+        </div>
       </motion.div>
     </div>
   </section>
-)
+  )
+}
